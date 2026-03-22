@@ -44,4 +44,18 @@ STEPS LOG
   - Build verified: ✅ npm run build OK, 0 TypeScript errors
   - Commit: a0e0e98
 
+[2026-03-22] STEP 4 — Supabase Schema (doa_new_ prefix)
+  - Migration file: supabase/migrations/001_initial_schema.sql
+  - 8 tablas creadas en proyecto gterzsoapepzozgqbljk:
+    doa_new_profiles, doa_new_aircraft, doa_new_clients,
+    doa_new_projects, doa_new_project_members, doa_new_documents,
+    doa_new_tasks, doa_new_vector_documents
+  - 6 enums custom con prefijo doa_
+  - HNSW index en embedding vector(1536) para RAG
+  - Triggers updated_at + auto-create profile en auth
+  - RLS habilitado + políticas en todas las tablas
+  - Funciones: doa_new_current_user_role(), doa_new_match_documents()
+  - Migration aplicada en Supabase ✅
+  - Commit: 885a2b8
+
 ----------------------------------------------------------------
