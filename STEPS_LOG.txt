@@ -1,0 +1,45 @@
+================================================================
+  DESIGN ORGANIZATION APPROVAL - APP PRODUCTION
+  Development Log
+================================================================
+
+Project: Design Organization Approval (DOA) - Production App
+GitHub:  https://github.com/jesuswiki92/Design-Organization-Approval-APP-Production
+Started: 2026-03-22
+
+================================================================
+STEPS LOG
+================================================================
+
+[2026-03-22] STEP 1 — Project Setup
+  - Created GitHub repository: Design-Organization-Approval-APP-Production
+    URL: https://github.com/jesuswiki92/Design-Organization-Approval-APP-Production
+  - Initialized git repository in working directory
+  - Branch: main
+  - Created STEPS_LOG.txt (this file) to track all development steps
+
+----------------------------------------------------------------
+
+[2026-03-22] STEP 2 — Stack & Architecture Decision
+  - Framework: Next.js 15 App Router + TypeScript
+  - Styling: Tailwind CSS + shadcn/ui
+  - State: Zustand (client) + TanStack Table
+  - Backend: Supabase project 'Certification_Data_base' (existing, free plan)
+  - Table prefix: doa_new_ (e.g. doa_new_projects, doa_new_clients)
+  - AI: OpenRouter (text-embedding-3-small 1536d + claude-3.5-sonnet)
+  - Charts: Recharts (Tremor descartado)
+  - Forms: React Hook Form + Zod
+  - DnD: dnd-kit (kanban)
+  - Microsoft Graph: deferred to Phase 2
+  - Deployment: Vercel (CI/CD auto desde GitHub main)
+  - Build order: Visual base first → Backend → RAG → Email/n8n
+
+[2026-03-22] STEP 3 — Project Scaffold (Codex)
+  - Next.js 15 scaffolded with create-next-app
+  - Dependencies installed: supabase, zustand, react-hook-form, zod,
+    tanstack-table, recharts, dnd-kit, lucide-react, date-fns, shadcn/ui
+  - Tailwind configured with DOA design system colors
+  - Folder structure created: app/, components/, lib/, store/, services/, hooks/, types/
+  - .env.local created with placeholder keys
+
+----------------------------------------------------------------
