@@ -40,6 +40,8 @@ STEPS LOG
     tanstack-table, recharts, dnd-kit, lucide-react, date-fns, shadcn/ui
   - Tailwind configured with DOA design system colors
   - Folder structure created: app/, components/, lib/, store/, services/, hooks/, types/
-  - .env.local created with placeholder keys
+  - .env.local created with placeholder keys (gitignored)
+  - Build verified: ✅ npm run build OK, 0 TypeScript errors
+  - Commit: a0e0e98
 
 ----------------------------------------------------------------
