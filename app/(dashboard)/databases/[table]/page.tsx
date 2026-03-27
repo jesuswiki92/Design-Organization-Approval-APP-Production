@@ -51,7 +51,7 @@ export default async function DatabaseTablePage({
     redirect('/databases')
   }
 
-  const rows = (data ?? []) as RowRecord[]
+  const rows = (data ?? []) as unknown as RowRecord[]
   const totalRows = count ?? 0
   const columns = rows.length > 0 ? Object.keys(rows[0]) : []
   const currentRangeStart = totalRows === 0 ? 0 : page * TABLE_PAGE_SIZE + 1
