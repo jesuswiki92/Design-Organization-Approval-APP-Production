@@ -1,16 +1,22 @@
 import { TopBar } from '@/components/layout/TopBar'
 import {
-  FolderKanban, AlertTriangle, Clock, Mail, ShieldAlert,
-  ArrowUpRight, MoreHorizontal, CheckCircle2, Circle, Timer
+  FolderKanban,
+  AlertTriangle,
+  Clock,
+  Mail,
+  ShieldAlert,
+  ArrowUpRight,
+  Circle,
+  Timer,
+  Sparkles,
 } from 'lucide-react'
 
-// Mock data — will be replaced with Supabase queries
 const kpis = [
-  { label: 'Proyectos activos', value: '7', icon: FolderKanban, color: '#3B82F6', change: '+2 este mes' },
-  { label: 'Tareas urgentes', value: '3', icon: AlertTriangle, color: '#EF4444', change: '2 vencidas ayer' },
-  { label: 'Horas esta semana', value: '24h', icon: Clock, color: '#10B981', change: '↑ 6h vs semana anterior' },
-  { label: 'Correos pendientes', value: '8', icon: Mail, color: '#F59E0B', change: '3 de clientes' },
-  { label: 'Alertas compliance', value: '2', icon: ShieldAlert, color: '#EF4444', change: 'Documentos críticos' },
+  { label: 'Proyectos activos', value: '7', icon: FolderKanban, color: '#2563EB', change: '+2 este mes' },
+  { label: 'Tareas urgentes', value: '3', icon: AlertTriangle, color: '#E11D48', change: '2 vencidas ayer' },
+  { label: 'Horas esta semana', value: '24h', icon: Clock, color: '#059669', change: '↑ 6h vs semana anterior' },
+  { label: 'Correos pendientes', value: '8', icon: Mail, color: '#D97706', change: '3 de clientes' },
+  { label: 'Alertas compliance', value: '2', icon: ShieldAlert, color: '#DC2626', change: 'Documentos críticos' },
 ]
 
 const projects = [
@@ -28,104 +34,108 @@ const tasks = [
 ]
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  active:   { label: 'En curso',    color: '#3B82F6', bg: '#3B82F6/10' },
-  review:   { label: 'En revisión', color: '#F59E0B', bg: '#F59E0B/10' },
-  approved: { label: 'Aprobado',    color: '#10B981', bg: '#10B981/10' },
-  paused:   { label: 'En pausa',    color: '#6B7280', bg: '#6B7280/10' },
+  active: { label: 'En curso', color: '#2563EB', bg: '#DBEAFE' },
+  review: { label: 'En revisión', color: '#D97706', bg: '#FEF3C7' },
+  approved: { label: 'Aprobado', color: '#059669', bg: '#D1FAE5' },
+  paused: { label: 'En pausa', color: '#64748B', bg: '#E2E8F0' },
 }
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
-  critical: { label: 'Crítica', color: '#EF4444' },
-  high:     { label: 'Alta',    color: '#F59E0B' },
-  medium:   { label: 'Media',   color: '#3B82F6' },
-  low:      { label: 'Baja',    color: '#6B7280' },
+  critical: { label: 'Crítica', color: '#E11D48' },
+  high: { label: 'Alta', color: '#D97706' },
+  medium: { label: 'Media', color: '#2563EB' },
+  low: { label: 'Baja', color: '#64748B' },
 }
 
 export default function HomePage() {
-  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
+  const now = new Date()
+  const today = now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
+  const updatedAt = now.toLocaleString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
       <TopBar title="Inicio" subtitle={today.charAt(0).toUpperCase() + today.slice(1)} />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-slate-900">
+        <section className="rounded-[24px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                <Sparkles className="h-3.5 w-3.5" />
+                Visual refresh activa
+              </div>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-950">Buenos días, Ingeniero</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Tienes <span className="font-medium text-rose-600">3 tareas urgentes</span> y{' '}
+                <span className="font-medium text-amber-600">2 expedientes</span> con alertas de compliance.
+              </p>
+            </div>
 
-        {/* Welcome */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-[#E8E9F0]">Buenos días, Ingeniero</h2>
-            <p className="text-sm text-[#6B7280] mt-0.5">
-              Tienes <span className="text-[#EF4444] font-medium">3 tareas urgentes</span> y{' '}
-              <span className="text-[#F59E0B] font-medium">2 expedientes</span> con alertas de compliance.
-            </p>
+            <div className="rounded-2xl border border-sky-200 bg-white/85 px-4 py-3 text-right shadow-sm">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">Updated</div>
+              <div className="mt-1 font-mono text-sm text-slate-900">{updatedAt}</div>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* KPI Row */}
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-5">
           {kpis.map((kpi) => {
             const Icon = kpi.icon
             return (
-              <div key={kpi.label} className="bg-[#1A1D27] border border-[#2A2D3E] rounded-xl p-4 hover:border-[#6366F1]/30 transition-colors">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs text-[#6B7280] font-medium uppercase tracking-wider leading-tight">{kpi.label}</span>
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.color + '20' }}>
-                    <Icon className="w-3.5 h-3.5" style={{ color: kpi.color }} />
+              <div key={kpi.label} className="rounded-[18px] border border-slate-200 bg-white p-4 shadow-[0_10px_24px_rgba(148,163,184,0.12)] transition-colors hover:border-sky-300 hover:bg-sky-50/40">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs font-medium uppercase tracking-[0.14em] leading-tight text-slate-500">{kpi.label}</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200" style={{ backgroundColor: `${kpi.color}14` }}>
+                    <Icon className="h-4 w-4" style={{ color: kpi.color }} />
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-[#E8E9F0]">{kpi.value}</p>
-                <p className="text-xs text-[#6B7280] mt-1">{kpi.change}</p>
+                <p className="text-2xl font-semibold text-slate-950">{kpi.value}</p>
+                <p className="mt-1 text-xs text-slate-500">{kpi.change}</p>
               </div>
             )
           })}
         </div>
 
-        {/* Projects + Tasks */}
-        <div className="grid grid-cols-3 gap-5">
-
-          {/* My Projects (2/3) */}
-          <div className="col-span-2 bg-[#1A1D27] border border-[#2A2D3E] rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#2A2D3E]">
-              <h3 className="text-sm font-semibold text-[#E8E9F0]">Mis proyectos activos</h3>
-              <button className="text-xs text-[#6366F1] hover:text-[#4F46E5] flex items-center gap-1 transition-colors">
-                Ver todos <ArrowUpRight className="w-3 h-3" />
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+          <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-2">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 className="text-sm font-semibold text-slate-900">Mis proyectos activos</h3>
+              <button className="flex items-center gap-1 text-xs text-sky-700 transition-colors hover:text-sky-900">
+                Ver todos <ArrowUpRight className="h-3 w-3" />
               </button>
             </div>
-            <div className="divide-y divide-[#2A2D3E]">
+            <div className="divide-y divide-slate-200">
               {projects.map((p) => {
                 const s = statusConfig[p.status]
                 return (
-                  <div key={p.code} className="px-5 py-3.5 hover:bg-[#0F1117]/50 transition-colors cursor-pointer group">
+                  <div key={p.code} className="group cursor-pointer px-5 py-4 transition-colors hover:bg-sky-50/60">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-mono text-[#6B7280]">{p.code}</span>
-                          <span
-                            className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-                            style={{ color: s.color, backgroundColor: s.color + '20' }}
-                          >
+                        <div className="mb-1 flex items-center gap-2">
+                          <span className="text-xs font-mono text-slate-500">{p.code}</span>
+                          <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ color: s.color, backgroundColor: s.bg }}>
                             {s.label}
                           </span>
                         </div>
-                        <p className="text-sm font-medium text-[#E8E9F0] truncate">{p.name}</p>
-                        <p className="text-xs text-[#6B7280] mt-0.5">{p.aircraft} · {p.client}</p>
+                        <p className="truncate text-sm font-medium text-slate-950">{p.name}</p>
+                        <p className="mt-0.5 text-xs text-slate-500">{p.aircraft} · {p.client}</p>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs text-[#6B7280]">{new Date(p.delivery).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</p>
-                        {p.tasks > 0 && (
-                          <p className="text-xs text-[#F59E0B] mt-0.5">{p.tasks} tarea{p.tasks > 1 ? 's' : ''}</p>
-                        )}
+                      <div className="shrink-0 text-right">
+                        <p className="text-xs text-slate-500">{new Date(p.delivery).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</p>
+                        {p.tasks > 0 && <p className="mt-0.5 text-xs text-amber-600">{p.tasks} tarea{p.tasks > 1 ? 's' : ''}</p>}
                       </div>
                     </div>
-                    {/* Progress bar */}
-                    <div className="mt-2.5 flex items-center gap-2">
-                      <div className="flex-1 h-1 bg-[#2A2D3E] rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${p.pct}%`, backgroundColor: p.pct === 100 ? '#10B981' : '#6366F1' }}
-                        />
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                        <div className="h-full rounded-full bg-[linear-gradient(90deg,#2563EB,#38BDF8)]" style={{ width: `${p.pct}%` }} />
                       </div>
-                      <span className="text-[10px] text-[#6B7280] tabular-nums">{p.pct}%</span>
+                      <span className="text-[10px] tabular-nums text-slate-500">{p.pct}%</span>
                     </div>
                   </div>
                 )
@@ -133,32 +143,26 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* My Tasks (1/3) */}
-          <div className="bg-[#1A1D27] border border-[#2A2D3E] rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#2A2D3E]">
-              <h3 className="text-sm font-semibold text-[#E8E9F0]">Mis tareas</h3>
-              <span className="text-xs text-[#6B7280]">Hoy / semana</span>
+          <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+              <h3 className="text-sm font-semibold text-slate-900">Mis tareas</h3>
+              <span className="text-xs text-slate-500">Hoy / semana</span>
             </div>
-            <div className="divide-y divide-[#2A2D3E]">
+            <div className="divide-y divide-slate-200">
               {tasks.map((t, i) => {
                 const pr = priorityConfig[t.priority]
                 return (
-                  <div key={i} className="px-4 py-3 hover:bg-[#0F1117]/50 transition-colors cursor-pointer">
+                  <div key={i} className="cursor-pointer px-4 py-3 transition-colors hover:bg-sky-50/60">
                     <div className="flex items-start gap-2.5">
-                      {t.status === 'in_progress'
-                        ? <Timer className="w-4 h-4 text-[#6366F1] shrink-0 mt-0.5" />
-                        : <Circle className="w-4 h-4 text-[#2A2D3E] shrink-0 mt-0.5" />
-                      }
+                      {t.status === 'in_progress' ? <Timer className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" /> : <Circle className="mt-0.5 h-4 w-4 shrink-0 text-slate-300" />}
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm text-[#E8E9F0] leading-tight">{t.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-mono text-[#6B7280]">{t.project}</span>
+                        <p className="text-sm leading-tight text-slate-900">{t.title}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-[10px] font-mono text-slate-500">{t.project}</span>
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-medium" style={{ color: pr.color }}>
-                            {pr.label}
-                          </span>
-                          <span className="text-[10px] text-[#6B7280]">· {t.due}</span>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-[10px] font-medium" style={{ color: pr.color }}>{pr.label}</span>
+                          <span className="text-[10px] text-slate-500">· {t.due}</span>
                         </div>
                       </div>
                     </div>
@@ -167,21 +171,18 @@ export default function HomePage() {
               })}
             </div>
           </div>
-
         </div>
 
-        {/* Email stub */}
-        <div className="bg-[#1A1D27] border border-[#2A2D3E] border-dashed rounded-xl px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-[22px] border border-dashed border-sky-200 bg-white/70 px-5 py-4 shadow-[0_10px_24px_rgba(148,163,184,0.10)]">
           <div className="flex items-center gap-3">
-            <Mail className="w-4 h-4 text-[#6B7280]" />
+            <Mail className="h-4 w-4 text-slate-400" />
             <div>
-              <p className="text-sm text-[#6B7280]">Bandeja de correos de proyectos</p>
-              <p className="text-xs text-[#6B7280]/60">Integración Outlook — Fase 2</p>
+              <p className="text-sm text-slate-700">Bandeja de correos de proyectos</p>
+              <p className="text-xs text-slate-500">Integración Outlook — Fase 2</p>
             </div>
           </div>
-          <span className="text-xs text-[#6B7280] bg-[#2A2D3E] px-2 py-1 rounded-md">Coming soon</span>
+          <span className="rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-xs text-sky-700">Updated {updatedAt}</span>
         </div>
-
       </main>
     </div>
   )

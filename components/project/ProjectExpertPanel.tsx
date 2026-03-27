@@ -46,20 +46,20 @@ export function ProjectExpertPanel({
   ]
 
   return (
-    <aside className="flex min-h-[520px] flex-col overflow-hidden rounded-[20px] border border-[#243041] bg-[#111827] xl:sticky xl:top-6">
-      <div className="border-b border-[#243041] bg-[linear-gradient(180deg,rgba(20,184,166,0.12),rgba(11,18,32,0.2)_35%,rgba(11,18,32,0.92))] px-5 py-5">
+    <aside className="flex min-h-[520px] flex-col overflow-hidden rounded-[24px] border border-sky-200 bg-white xl:sticky xl:top-6">
+      <div className="border-b border-sky-100 bg-[linear-gradient(180deg,#e0f2fe_0%,#f8fbff_36%,#ffffff_100%)] px-5 py-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#243041] bg-[#0B1220] text-[#14B8A6]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-[#0B1220] text-sky-700">
             <PanelRightOpen className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[#64748B]">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
               Experto contextual
             </div>
-            <h3 className="mt-2 text-lg font-semibold text-[#E5E7EB]">
+            <h3 className="mt-2 text-lg font-semibold text-slate-950">
               Asistencia técnica dentro del expediente
             </h3>
-            <p className="mt-2 text-sm leading-6 text-[#94A3B8]">
+            <p className="mt-2 text-sm leading-6 text-slate-500">
               La asistencia se mantiene discreta, declara contexto activo y prioriza respuestas accionables sobre el workspace actual.
             </p>
           </div>
@@ -77,27 +77,27 @@ export function ProjectExpertPanel({
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-        <section className="rounded-2xl border border-[#243041] bg-[#0B1220]/70 p-4">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#64748B]">
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
             <Sparkles className="h-3.5 w-3.5" />
             {analysis.eyebrow}
           </div>
-          <h4 className="mt-3 text-base font-semibold text-[#E5E7EB]">{analysis.title}</h4>
-          <p className="mt-3 text-sm leading-6 text-[#CBD5E1]">{analysis.summary}</p>
+          <h4 className="mt-3 text-base font-semibold text-slate-950">{analysis.title}</h4>
+          <p className="mt-3 text-sm leading-6 text-slate-700">{analysis.summary}</p>
           <div className="mt-4 space-y-2">
             {analysis.bullets.map((item) => (
-              <div key={item} className="flex items-start gap-2 text-sm text-[#94A3B8]">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 text-[#14B8A6]" />
+              <div key={item} className="flex items-start gap-2 text-sm text-slate-500">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-sky-700" />
                 <span>{item}</span>
               </div>
             ))}
           </div>
-          <div className="mt-4 rounded-xl border border-[#243041] bg-[#111827] p-3">
-            <div className="text-[11px] uppercase tracking-[0.16em] text-[#64748B]">Acciones sugeridas</div>
-            <ul className="mt-2 space-y-2 text-sm leading-6 text-[#CBD5E1]">
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Acciones sugeridas</div>
+            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
               {analysis.actions.map((item) => (
                 <li key={item} className="flex items-start gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#3B82F6]" />
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-sky-600" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -105,8 +105,8 @@ export function ProjectExpertPanel({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#243041] bg-[#0B1220]/55 p-4">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#64748B]">
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
             <Bot className="h-3.5 w-3.5" />
             Contexto activo
           </div>
@@ -116,8 +116,8 @@ export function ProjectExpertPanel({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#243041] bg-[#0B1220]/55 p-4">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-[#64748B]">Cobertura documental</div>
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Cobertura documental</div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <MiniMetric
               label="Cobertura base"
@@ -126,7 +126,7 @@ export function ProjectExpertPanel({
             <MiniMetric label="Piezas por localizar" value={String(coverage.missing.length)} />
           </div>
           {coverage.missing.length > 0 && (
-            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/8 p-3 text-sm text-amber-100">
+            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-50 p-3 text-sm text-amber-700">
               Faltan referencias claras para: {coverage.missing.join(', ')}.
             </div>
           )}
@@ -152,7 +152,7 @@ function ModeButton({
       variant={current === value ? 'secondary' : 'outline'}
       size="sm"
       className={cn(
-        'border-[#334155] bg-[#0B1220] text-[#CBD5E1] hover:bg-[#172033]',
+        'border-[#334155] bg-[#0B1220] text-slate-700 hover:bg-[#172033]',
         current === value && 'bg-[#172033] text-white',
       )}
       onClick={() => onModeChange(value)}
@@ -174,8 +174,8 @@ function SourceList({
   dimmed?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-[#243041] bg-[#111827] p-3">
-      <div className="flex items-center gap-2 text-xs font-medium text-[#CBD5E1]">
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
         {icon}
         {title}
       </div>
@@ -183,7 +183,7 @@ function SourceList({
         {items.map((item) => (
           <li
             key={item}
-            className={cn('text-sm leading-6', dimmed ? 'text-[#64748B]' : 'text-[#94A3B8]')}
+            className={cn('text-sm leading-6', dimmed ? 'text-slate-400' : 'text-slate-500')}
           >
             {item}
           </li>
@@ -195,9 +195,9 @@ function SourceList({
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[#243041] bg-[#111827] p-3">
-      <div className="text-[11px] uppercase tracking-[0.16em] text-[#64748B]">{label}</div>
-      <div className="mt-2 text-lg font-semibold text-[#E5E7EB]">{value}</div>
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{label}</div>
+      <div className="mt-2 text-lg font-semibold text-slate-950">{value}</div>
     </div>
   )
 }

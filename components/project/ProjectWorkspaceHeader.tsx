@@ -38,12 +38,12 @@ export function ProjectWorkspaceHeader({
   const deliveryDays = daysRemaining(project.fecha_prevista)
 
   return (
-    <section className="overflow-hidden rounded-[20px] border border-[#243041] bg-[#111827] shadow-[0_24px_60px_rgba(2,6,23,0.32)]">
-      <div className="border-b border-[#243041] bg-[linear-gradient(135deg,rgba(59,130,246,0.08),rgba(20,184,166,0.02)_52%,rgba(11,18,32,0.8))] px-6 py-5">
+    <section className="overflow-hidden rounded-[24px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+      <div className="border-b border-sky-100 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_52%,#e0f2fe_100%)] px-6 py-5">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full border border-[#334155] bg-[#0B1220] px-3 py-1 font-mono text-[11px] tracking-[0.16em] text-[#94A3B8] uppercase">
+              <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 font-mono text-[11px] tracking-[0.16em] text-slate-500 uppercase">
                 {project.numero_proyecto}
               </span>
               <span
@@ -56,27 +56,27 @@ export function ProjectWorkspaceHeader({
                 {status.label}
               </span>
               {project.clasificacion_cambio && (
-                <span className="rounded-full border border-[#334155] bg-[#172033] px-3 py-1 text-xs text-[#CBD5E1]">
+                <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs text-slate-700">
                   {project.clasificacion_cambio}
                 </span>
               )}
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-[28px] leading-[1.1] font-semibold text-[#E5E7EB]">
+              <h1 className="text-[28px] leading-[1.1] font-semibold text-slate-950">
                 {project.titulo}
               </h1>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#94A3B8]">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-2">
-                  <Plane className="h-4 w-4 text-[#64748B]" />
+                  <Plane className="h-4 w-4 text-slate-400" />
                   {getAircraftLabel(project.modelo)}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <User className="h-4 w-4 text-[#64748B]" />
+                  <User className="h-4 w-4 text-slate-400" />
                   {getClientLabel(project.cliente)}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-[#64748B]" />
+                  <Shield className="h-4 w-4 text-slate-400" />
                   {project.base_certificacion ?? 'Cert Basis pendiente'}
                 </span>
               </div>
@@ -149,19 +149,19 @@ export function ProjectWorkspaceHeader({
           />
         </div>
 
-        <div className="rounded-2xl border border-[#243041] bg-[#0B1220]/70 p-4">
-          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-[#64748B]">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-400">
             <span>Control operativo</span>
             <span>{projectProgress}% estimado</span>
           </div>
           <div className="space-y-3">
-            <div className="h-2 overflow-hidden rounded-full bg-[#172033]">
+            <div className="h-2 overflow-hidden rounded-full bg-slate-200">
               <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#3B82F6,#14B8A6)] transition-all"
+                className="h-full rounded-full bg-[linear-gradient(90deg,#2563EB,#38BDF8)] transition-all"
                 style={{ width: `${Math.max(projectProgress, 8)}%` }}
               />
             </div>
-            <div className="grid gap-2 text-sm text-[#CBD5E1] sm:grid-cols-3">
+            <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
               <InfoPill label="Owner" value={userName(project.owner)} />
               <InfoPill
                 label="Aeronaves"
@@ -201,7 +201,7 @@ function ActionButton({
     <Button
       variant="outline"
       size="sm"
-      className="border-[#334155] bg-[#0B1220]/70 text-[#CBD5E1] hover:border-[#3B82F6]/40 hover:bg-[#172033] hover:text-white"
+      className="border-[#334155] bg-slate-50 text-slate-700 hover:border-[#3B82F6]/40 hover:bg-slate-200 hover:text-white"
       onClick={onClick}
       title={title}
     >
@@ -230,12 +230,12 @@ function MetricCard({
           ? 'border-orange-500/25 bg-orange-500/6'
           : tone === 'medium'
             ? 'border-amber-500/20 bg-amber-500/5'
-            : 'border-[#243041] bg-[#0B1220]/55',
+            : 'border-slate-200 bg-slate-50',
       )}
     >
-      <div className="text-[11px] uppercase tracking-[0.18em] text-[#64748B]">{label}</div>
-      <div className="mt-3 text-lg font-semibold text-[#E5E7EB]">{value}</div>
-      <div className="mt-2 text-sm leading-6 text-[#94A3B8]">{hint}</div>
+      <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">{label}</div>
+      <div className="mt-3 text-lg font-semibold text-slate-950">{value}</div>
+      <div className="mt-2 text-sm leading-6 text-slate-500">{hint}</div>
     </div>
   )
 }
@@ -250,9 +250,9 @@ function InfoPill({
   danger?: boolean
 }) {
   return (
-    <div className="rounded-xl border border-[#243041] bg-[#111827] px-3 py-2">
-      <div className="text-[11px] uppercase tracking-[0.16em] text-[#64748B]">{label}</div>
-      <div className={cn('mt-1 text-sm', danger ? 'text-orange-300' : 'text-[#E5E7EB]')}>{value}</div>
+    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+      <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{label}</div>
+      <div className={cn('mt-1 text-sm', danger ? 'text-orange-600' : 'text-slate-950')}>{value}</div>
     </div>
   )
 }

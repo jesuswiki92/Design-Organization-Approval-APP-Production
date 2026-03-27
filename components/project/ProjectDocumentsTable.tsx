@@ -40,17 +40,17 @@ export function ProjectDocumentsTable({
   }, [docs, query, statusFilter])
 
   return (
-    <section className="overflow-hidden rounded-[20px] border border-[#243041] bg-[#111827]">
-      <div className="border-b border-[#243041] px-5 py-4">
+    <section className="overflow-hidden rounded-[24px] border border-sky-200 bg-white">
+      <div className="border-b border-slate-200 px-5 py-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[#64748B]">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
               Paquete documental
             </div>
-            <h2 className="mt-2 text-xl font-semibold text-[#E5E7EB]">
+            <h2 className="mt-2 text-xl font-semibold text-slate-950">
               MDL digital refinada para revisión operativa
             </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#94A3B8]">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
               La tabla mantiene tono documental formal, pero permite lanzar acciones discretas,
               revisar estado y activar contexto para el experto sin salir del expediente.
             </p>
@@ -61,8 +61,8 @@ export function ProjectDocumentsTable({
               variant={density === 'compact' ? 'secondary' : 'outline'}
               size="sm"
               className={cn(
-                'border-[#334155] bg-[#0B1220] text-[#CBD5E1]',
-                density === 'compact' ? 'bg-[#172033] text-white' : 'hover:bg-[#172033]',
+                'border-[#334155] bg-slate-50 text-slate-700',
+                density === 'compact' ? 'bg-[#172033] text-white' : 'hover:bg-sky-50',
               )}
               onClick={() => onDensityChange('compact')}
             >
@@ -72,8 +72,8 @@ export function ProjectDocumentsTable({
               variant={density === 'detailed' ? 'secondary' : 'outline'}
               size="sm"
               className={cn(
-                'border-[#334155] bg-[#0B1220] text-[#CBD5E1]',
-                density === 'detailed' ? 'bg-[#172033] text-white' : 'hover:bg-[#172033]',
+                'border-[#334155] bg-slate-50 text-slate-700',
+                density === 'detailed' ? 'bg-[#172033] text-white' : 'hover:bg-sky-50',
               )}
               onClick={() => onDensityChange('detailed')}
             >
@@ -85,20 +85,20 @@ export function ProjectDocumentsTable({
         <div className="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-col gap-3 sm:flex-row">
             <label className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar por documento, tipo o revisión..."
-                className="h-10 w-full rounded-xl border border-[#243041] bg-[#0B1220] pl-9 pr-3 text-sm text-[#E5E7EB] placeholder:text-[#64748B] focus:border-[#3B82F6]/40 focus:outline-none"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 placeholder:text-slate-400 focus:border-sky-300 focus:outline-none"
               />
             </label>
             <label className="relative min-w-[220px]">
-              <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#64748B]" />
+              <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="h-10 w-full appearance-none rounded-xl border border-[#243041] bg-[#0B1220] pl-9 pr-3 text-sm text-[#E5E7EB] focus:border-[#3B82F6]/40 focus:outline-none"
+                className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 focus:border-sky-300 focus:outline-none"
               >
                 <option value="all">Todos los estados</option>
                 <option value="aprobado">Vigente</option>
@@ -109,7 +109,7 @@ export function ProjectDocumentsTable({
             </label>
           </div>
 
-          <div className="text-sm text-[#94A3B8]">
+          <div className="text-sm text-slate-500">
             {filteredDocs.length} documentos visibles · {docs.length} total en expediente
           </div>
         </div>
@@ -117,13 +117,13 @@ export function ProjectDocumentsTable({
 
       <div className="overflow-x-auto">
         <table className="min-w-full">
-          <thead className="bg-[#0B1220]">
-            <tr className="border-b border-[#243041]">
+          <thead className="bg-slate-50">
+            <tr className="border-b border-slate-200">
               {['Documento', 'Tipo / paquete', 'Revisión', 'Estado', 'Control', 'Acciones'].map(
                 (heading) => (
                   <th
                     key={heading}
-                    className="whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]"
+                    className="whitespace-nowrap px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400"
                   >
                     {heading}
                   </th>
@@ -134,7 +134,7 @@ export function ProjectDocumentsTable({
           <tbody>
             {filteredDocs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-12 text-center text-sm text-[#94A3B8]">
+                <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-500">
                   No hay documentos que coincidan con los filtros actuales.
                 </td>
               </tr>
@@ -147,8 +147,8 @@ export function ProjectDocumentsTable({
                   <tr
                     key={doc.id}
                     className={cn(
-                      'border-b border-[#243041]/80 transition-colors',
-                      isSelected ? 'bg-[#172033]/80' : 'hover:bg-[#172033]/45',
+                      'border-b border-slate-200/80 transition-colors',
+                      isSelected ? 'bg-sky-50' : 'hover:bg-sky-50/45',
                     )}
                   >
                     <td className="px-4 py-3 align-top">
@@ -158,15 +158,15 @@ export function ProjectDocumentsTable({
                         onClick={() => onSelectDoc(doc)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="mt-0.5 rounded-lg border border-[#243041] bg-[#0B1220] p-2 text-[#94A3B8]">
+                          <div className="mt-0.5 rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-500">
                             <FileText className="h-4 w-4" />
                           </div>
                           <div className="min-w-0">
-                            <div className="truncate text-sm font-medium text-[#E5E7EB]">
+                            <div className="truncate text-sm font-medium text-slate-950">
                               {doc.nombre}
                             </div>
                             {density === 'detailed' && (
-                              <div className="mt-1 line-clamp-2 text-sm leading-6 text-[#94A3B8]">
+                              <div className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
                                 Documento asociado al paquete {doc.tipo_documento}. Desde aquí se
                                 puede lanzar análisis contextual sin abandonar el workspace.
                               </div>
@@ -175,16 +175,16 @@ export function ProjectDocumentsTable({
                         </div>
                       </button>
                     </td>
-                    <td className="px-4 py-3 align-top text-sm text-[#CBD5E1]">
+                    <td className="px-4 py-3 align-top text-sm text-slate-700">
                       <div>{doc.tipo_documento}</div>
                       {density === 'detailed' && (
-                        <div className="mt-1 text-xs text-[#64748B]">Estructura DOA / expediente</div>
+                        <div className="mt-1 text-xs text-slate-400">Estructura DOA / expediente</div>
                       )}
                     </td>
                     <td className="px-4 py-3 align-top">
-                      <div className="font-mono text-sm text-[#E5E7EB]">{doc.version}</div>
+                      <div className="font-mono text-sm text-slate-950">{doc.version}</div>
                       {doc.fecha_ultima_revision && (
-                        <div className="mt-1 text-xs text-[#64748B]">
+                        <div className="mt-1 text-xs text-slate-400">
                           Rev. {doc.fecha_ultima_revision}
                         </div>
                       )}
@@ -200,9 +200,9 @@ export function ProjectDocumentsTable({
                         {status.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 align-top text-sm text-[#94A3B8]">
+                    <td className="px-4 py-3 align-top text-sm text-slate-500">
                       <div>{doc.fecha_ultima_revision ?? 'Sin fecha'}</div>
-                      <div className="mt-1 text-xs text-[#64748B]">
+                      <div className="mt-1 text-xs text-slate-400">
                         {doc.notas ? 'Con notas asociadas' : 'Sin notas registradas'}
                       </div>
                     </td>
@@ -254,7 +254,7 @@ function ActionIcon({
     <Button
       variant="outline"
       size="icon-sm"
-      className="border-[#334155] bg-[#0B1220] text-[#CBD5E1] hover:bg-[#172033] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+      className="border-[#334155] bg-slate-50 text-slate-700 hover:bg-sky-50 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
       onClick={onClick}
       disabled={disabled}
       title={label}

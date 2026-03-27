@@ -38,7 +38,8 @@ export function ProjectWorkspaceClient({
   }
 
   return (
-    <div className="flex h-full flex-col bg-[#0B1220]">
+    <div className="flex h-full flex-col bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_38%,#f8fafc_100%)]">
+
       <TopBar title={project.numero_proyecto} subtitle={project.titulo} />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
