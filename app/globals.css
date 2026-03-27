@@ -48,73 +48,69 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* DOA Operations Hub — Always Dark Theme */
 :root {
-  --background: #0F1117;
-  --foreground: #E8E9F0;
-  --card: #1A1D27;
-  --card-foreground: #E8E9F0;
-  --popover: #1A1D27;
-  --popover-foreground: #E8E9F0;
-  --primary: #6366F1;
+  --background: #f8fbff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: #2A2D3E;
-  --secondary-foreground: #E8E9F0;
-  --muted: #1A1D27;
-  --muted-foreground: #6B7280;
-  --accent: #6366F1;
-  --accent-foreground: #ffffff;
-  --destructive: #EF4444;
-  --border: #2A2D3E;
-  --input: #2A2D3E;
-  --ring: #6366F1;
-  --radius: 0.5rem;
-  --sidebar: #0F1117;
-  --sidebar-foreground: #E8E9F0;
-  --sidebar-primary: #6366F1;
+  --secondary: #eef4ff;
+  --secondary-foreground: #0f172a;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #e0f2fe;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #dbe5f0;
+  --input: #dbe5f0;
+  --ring: #38bdf8;
+  --radius: 0.75rem;
+  --sidebar: #f3f8ff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1A1D27;
-  --sidebar-accent-foreground: #E8E9F0;
-  --sidebar-border: #2A2D3E;
-  --sidebar-ring: #6366F1;
-
-  /* DOA Status Colors */
-  --status-active: #3B82F6;
-  --status-review: #F59E0B;
-  --status-approved: #10B981;
-  --status-paused: #6B7280;
-  --status-closed: #374151;
-  --status-alert: #EF4444;
+  --sidebar-accent: #eaf4ff;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #d9e7f5;
+  --sidebar-ring: #38bdf8;
+  --status-active: #2563eb;
+  --status-review: #d97706;
+  --status-approved: #059669;
+  --status-paused: #64748b;
+  --status-closed: #475569;
+  --status-alert: #dc2626;
 }
 
-/* Dark class mirrors :root since we're always dark */
 .dark {
-  --background: #0F1117;
-  --foreground: #E8E9F0;
-  --card: #1A1D27;
-  --card-foreground: #E8E9F0;
-  --popover: #1A1D27;
-  --popover-foreground: #E8E9F0;
-  --primary: #6366F1;
+  --background: #f8fbff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: #2A2D3E;
-  --secondary-foreground: #E8E9F0;
-  --muted: #1A1D27;
-  --muted-foreground: #6B7280;
-  --accent: #6366F1;
-  --accent-foreground: #ffffff;
-  --destructive: #EF4444;
-  --border: #2A2D3E;
-  --input: #2A2D3E;
-  --ring: #6366F1;
-  --sidebar: #0F1117;
-  --sidebar-foreground: #E8E9F0;
-  --sidebar-primary: #6366F1;
+  --secondary: #eef4ff;
+  --secondary-foreground: #0f172a;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #e0f2fe;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #dbe5f0;
+  --input: #dbe5f0;
+  --ring: #38bdf8;
+  --sidebar: #f3f8ff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1A1D27;
-  --sidebar-accent-foreground: #E8E9F0;
-  --sidebar-border: #2A2D3E;
-  --sidebar-ring: #6366F1;
+  --sidebar-accent: #eaf4ff;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #d9e7f5;
+  --sidebar-ring: #38bdf8;
 }
 
 @layer base {

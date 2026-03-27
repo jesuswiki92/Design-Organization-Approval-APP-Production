@@ -23,28 +23,26 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'relative flex flex-col h-full bg-[#0F1117] border-r border-[#2A2D3E] transition-all duration-200 shrink-0',
+        'relative flex h-full shrink-0 flex-col border-r border-sky-100 bg-[linear-gradient(180deg,#f3f8ff_0%,#eef6ff_100%)] transition-all duration-200',
         sidebarCollapsed ? 'w-16' : 'w-52'
       )}
     >
-      {/* Logo */}
       <div className={cn(
-        'flex items-center gap-3 px-4 py-4 border-b border-[#2A2D3E]',
+        'flex items-center gap-3 border-b border-sky-100 px-4 py-4',
         sidebarCollapsed && 'justify-center px-0'
       )}>
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#6366F1] shrink-0">
-          <Shield className="w-4 h-4 text-white" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#2563eb,#38bdf8)] shadow-sm">
+          <Shield className="h-4 w-4 text-white" />
         </div>
         {!sidebarCollapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[#E8E9F0] truncate">DOA Hub</p>
-            <p className="text-[10px] text-[#6B7280] truncate">Part 21J</p>
+            <p className="truncate text-sm font-semibold text-slate-950">DOA Hub</p>
+            <p className="truncate text-[10px] text-slate-500">Part 21J</p>
           </div>
         )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5">
+      <nav className="flex-1 space-y-1 px-2 py-3">
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
           return (
@@ -52,41 +50,39 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors group',
+                'flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm transition-colors group',
                 active
-                  ? 'bg-[#6366F1]/15 text-[#6366F1]'
-                  : 'text-[#6B7280] hover:text-[#E8E9F0] hover:bg-[#1A1D27]',
+                  ? 'bg-white text-sky-700 shadow-[0_6px_18px_rgba(148,163,184,0.12)] border border-sky-100'
+                  : 'text-slate-500 hover:text-slate-950 hover:bg-white/80',
                 sidebarCollapsed && 'justify-center px-0'
               )}
               title={sidebarCollapsed ? label : undefined}
             >
-              <Icon className={cn('w-4 h-4 shrink-0', active ? 'text-[#6366F1]' : '')} />
+              <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-sky-700' : '')} />
               {!sidebarCollapsed && <span>{label}</span>}
             </Link>
           )
         })}
       </nav>
 
-      {/* Bottom */}
-      <div className="border-t border-[#2A2D3E] py-3 px-2 space-y-0.5">
+      <div className="space-y-1 border-t border-sky-100 px-2 py-3">
         <Link
           href="/settings"
           className={cn(
-            'flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm text-[#6B7280] hover:text-[#E8E9F0] hover:bg-[#1A1D27] transition-colors',
+            'flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm text-slate-500 transition-colors hover:bg-white/80 hover:text-slate-950',
             sidebarCollapsed && 'justify-center px-0'
           )}
         >
-          <Settings className="w-4 h-4 shrink-0" />
+          <Settings className="h-4 w-4 shrink-0" />
           {!sidebarCollapsed && <span>Configuración</span>}
         </Link>
       </div>
 
-      {/* Collapse toggle */}
       <button
         onClick={toggleSidebar}
-        className="absolute -right-3 top-6 w-6 h-6 rounded-full bg-[#1A1D27] border border-[#2A2D3E] flex items-center justify-center text-[#6B7280] hover:text-[#E8E9F0] transition-colors z-10"
+        className="absolute -right-3 top-6 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-sky-200 bg-white text-slate-500 shadow-sm transition-colors hover:text-slate-950"
       >
-        {sidebarCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        {sidebarCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
       </button>
     </aside>
   )
