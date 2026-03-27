@@ -60,9 +60,13 @@ export default async function DatabaseTablePage({
   const hasNextPage = currentRangeEnd < totalRows
   const previousPageHref = `/databases/${encodeURIComponent(allowedTable)}?page=${page - 1}`
   const nextPageHref = `/databases/${encodeURIComponent(allowedTable)}?page=${page + 1}`
+  const tableEntries = TABLE_GROUPS.flatMap((group) => [...group.tables]) as ReadonlyArray<{
+    table: AllowedTable
+    description: string
+  }>
   const tableDescription =
-    TABLE_GROUPS.flatMap((group) => group.tables).find((entry) => entry.table === allowedTable)
-      ?.description ?? 'Vista detallada de la tabla'
+    tableEntries.find((entry) => entry.table === allowedTable)?.description ??
+    'Vista detallada de la tabla'
 
   return (
     <div className="flex h-full flex-col bg-[#0F1117]">
