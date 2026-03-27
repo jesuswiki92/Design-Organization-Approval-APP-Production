@@ -27,6 +27,8 @@ export async function proxy(request: NextRequest) {
   const isDashboard = request.nextUrl.pathname.startsWith('/home') ||
     request.nextUrl.pathname.startsWith('/engineering') ||
     request.nextUrl.pathname.startsWith('/clients') ||
+    request.nextUrl.pathname.startsWith('/databases') ||
+    request.nextUrl.pathname.startsWith('/tools') ||
     request.nextUrl.pathname.startsWith('/ai-expert')
 
   if (!user && isDashboard) {

@@ -20,6 +20,19 @@ STEPS LOG
 
 ----------------------------------------------------------------
 
+=== Step 5 — 2026-03-24 ===
+Documentation pass: README.md, CLAUDE.md, AGENTS.md fully rewritten.
+Full codebase review completed. Status snapshot:
+- Auth: functional (Supabase)
+- UI: all pages complete with mock data
+- DB: schema applied, pgvector ready, 0 docs indexed
+- Deployment: Docker + VPS 145.223.116.37:3010
+- Known bugs: 3 (see README Known Issues)
+- Phase 2 items: AI/RAG, Outlook, DnD, non-conformity form
+Next: connect all pages to real Supabase data (replace MOCK_ arrays)
+
+----------------------------------------------------------------
+
 [2026-03-22] STEP 2 — Stack & Architecture Decision
   - Framework: Next.js 15 App Router + TypeScript
   - Styling: Tailwind CSS + shadcn/ui
