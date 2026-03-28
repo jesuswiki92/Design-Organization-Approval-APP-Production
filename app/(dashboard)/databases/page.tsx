@@ -25,9 +25,10 @@ export default async function DatabasesPage() {
 
   const tableGroups: TableGroup[] = TABLE_GROUPS.map((group) => ({
     name: group.name,
-    tables: group.tables.map((table) => ({
-      ...table,
-      count: counts.get(table.table) ?? 0,
+    tables: group.tables.map((t) => ({
+      table: t.table as AllowedTable,
+      description: t.description as string,
+      count: counts.get(t.table) ?? 0,
     })),
   }))
 
