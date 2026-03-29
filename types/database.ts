@@ -176,11 +176,54 @@ export interface UsuarioDoa {
   activo: boolean
 }
 
+export type EstadoCotizacion =
+  | 'new_entry'
+  | 'new'
+  | 'unassigned'
+  | 'ongoing'
+  | 'pending_customer'
+  | 'pending_internal'
+  | 'rfi_sent'
+  | 'quotation_sent'
+  | 'won'
+  | 'cancelled'
+
+export type EstadoProyectoLegacy =
+  | 'oferta'
+  | 'activo'
+  | 'en_revision'
+  | 'pendiente_aprobacion_cve'
+  | 'pendiente_aprobacion_easa'
+  | 'en_pausa'
+  | 'cancelado'
+  | 'cerrado'
+  | 'guardado_en_base_de_datos'
+
+export type EstadoProyectoWorkflow =
+  | 'op_00_prepay'
+  | 'op_01_data_collection'
+  | 'op_02_pending_info'
+  | 'op_03_pending_tests'
+  | 'op_04_under_evaluation'
+  | 'op_05_in_work'
+  | 'op_06_customer_review'
+  | 'op_07_internal_review'
+  | 'op_08_pending_signature'
+  | 'op_09_pending_authority'
+  | 'op_10_ready_for_delivery'
+  | 'op_11_delivered'
+  | 'op_12_closed'
+  | 'op_13_invoiced'
+
+export type EstadoProyecto = EstadoProyectoWorkflow
+export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLegacy
+
 // ─── doa_proyectos_generales ──────────────────────────────────────────────────
 
 export interface Proyecto {
   id: string
   numero_proyecto: string
+  oferta_id?: string | null
   titulo: string
   descripcion: string | null
   cliente_id: string | null
@@ -188,7 +231,10 @@ export interface Proyecto {
   tipo_modificacion: string
   clasificacion_cambio: 'menor' | 'mayor' | 'stc' | 'reparacion' | 'otro' | null
   base_certificacion: string | null
-  estado: 'oferta' | 'activo' | 'en_revision' | 'pendiente_aprobacion_cve' | 'pendiente_aprobacion_easa' | 'en_pausa' | 'cancelado' | 'cerrado'
+  estado: EstadoProyectoPersistido
+  estado_updated_at?: string | null
+  estado_updated_by?: string | null
+  estado_motivo?: string | null
   fecha_apertura: string | null
   fecha_cierre: string | null
   fecha_prevista: string | null
@@ -208,6 +254,7 @@ export interface ProyectoConRelaciones extends Proyecto {
   cliente: Cliente | null
   modelo: AeronaveModelo | null
   owner: UsuarioDoa | null
+  estado_historial?: ProyectoEstadoHistorial[]
 }
 
 // ─── doa_proyectos_documentos ─────────────────────────────────────────────────
@@ -252,4 +299,58 @@ export interface ProyectoTarea {
   horas_estimadas: number | null
   horas_reales: number | null
   created_at: string
+}
+
+export interface Oferta {
+  id: string
+  numero_oferta: string | null
+  solicitud_id: string | null
+  cliente_id: string | null
+  descripcion: string | null
+  horas_estimadas: number | null
+  estado: EstadoCotizacion
+  estado_updated_at?: string | null
+  estado_updated_by?: string | null
+  estado_motivo?: string | null
+  created_at: string
+  updated_at: string | null
+}
+
+export interface OfertaConRelaciones extends Oferta {
+  cliente: Cliente | null
+  proyecto_relacionado: Proyecto | null
+}
+
+export interface ConsultaEntrante {
+  id: string
+  created_at: string
+  asunto: string | null
+  remitente: string | null
+  cuerpo_original: string | null
+  clasificacion: string | null
+  respuesta_ia: string | null
+  estado?: string | null
+  correo_cliente_enviado_at?: string | null
+  correo_cliente_enviado_by?: string | null
+  ultimo_borrador_cliente?: string | null
+}
+
+export interface ProyectoEstadoHistorial {
+  id: string
+  proyecto_id: string
+  estado_anterior: string | null
+  estado_nuevo: EstadoProyecto
+  motivo: string | null
+  changed_at: string
+  changed_by: string | null
+}
+
+export interface OfertaEstadoHistorial {
+  id: string
+  oferta_id: string
+  estado_anterior: string | null
+  estado_nuevo: EstadoCotizacion
+  motivo: string | null
+  changed_at: string
+  changed_by: string | null
 }

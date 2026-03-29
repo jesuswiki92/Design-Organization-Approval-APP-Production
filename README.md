@@ -1,179 +1,163 @@
 # DOA Operations Hub
 
-**Design Organization Approval (DOA) Operations Hub** is an internal web application for aerospace engineering teams operating under EASA Part 21J. It centralises project tracking, document management, task coordination, client/aircraft data, and engineering tooling for Design Organisation Approval workflows.
+Internal web app for DOA operations work. The product is not intended to replace Odoo; it is evolving into a specialized DOA layer for quotations, project execution, tooling, and operational support around EASA Part 21J workflows.
 
----
+## Current Product Direction
+
+- Keep Odoo as the wider business system.
+- Use this app as a focused DOA operations surface.
+- Keep `quotations` and `projects` as separate workflows.
+- Add AI-assisted tooling on top of the operational workflows.
+
+## Current Runtime State
+
+- Authentication is active through Supabase.
+- The dashboard shell is active and protected by `proxy.ts`.
+- `quotations` has its own route, list UI, state badges, and transition flow.
+- `projects` has an operational workflow visible in engineering portfolio and project workspace.
+- `tools/experto` is a live OpenRouter chat surface.
+- `home` and parts of `tools` still contain product placeholders and are not yet fully production-grade.
 
 ## Tech Stack
 
 | Layer | Technology |
-|---|---|
-| Framework | Next.js 16, App Router, TypeScript (strict) |
+| --- | --- |
+| Framework | Next.js 16, App Router, TypeScript |
 | UI | React 19, Tailwind CSS v4, shadcn/ui |
 | State | Zustand |
-| Backend / Auth | Supabase (PostgreSQL + Storage + Auth) |
-| AI / Embeddings | OpenRouter (planned — Phase 2) |
-| Containerisation | Docker + Docker Compose |
-| Deployment | VPS at 145.223.116.37:3010 |
+| Backend / Auth | Supabase |
+| AI chat | OpenRouter |
+| Deployment | Docker / VPS |
 
----
+## Local Development
 
-## Prerequisites
+### Prerequisites
 
-- Node.js 20 or later
-- Docker and Docker Compose
-- A Supabase account with a project configured
+- Node.js 20+
+- npm
+- Supabase project credentials
+- OpenRouter API key if you want the AI chat to answer
 
----
+### Environment
 
-## Environment Variables
-
-Create a `.env.local` file at the project root (never commit this file):
-
-```
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-The production project ID is `gterzsoapepzozgqbljk` (Supabase project: `Certification_Data_base`).
-
----
-
-## Local Development Setup
+Create `.env.local` in the project root:
 
 ```bash
-# 1. Install dependencies
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+OPENROUTER_API_KEY=<openrouter-key>
+OPENROUTER_MODEL=anthropic/claude-sonnet-4
+```
+
+### Install
+
+```bash
 npm install
+```
 
-# 2. Create environment file and fill in the values shown above
-cp .env.example .env.local
+### Run
 
-# 3. Start development server
+Default script:
+
+```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:3000`.
-
----
-
-## Supabase Setup
-
-1. Create (or use) your Supabase project. The production project ID is `gterzsoapepzozgqbljk`.
-2. Apply the initial database migration:
-   - Open the Supabase SQL editor for your project.
-   - Run the full contents of `supabase/migrations/001_initial_schema.sql`.
-3. Create the storage bucket for project documents **manually** in the Supabase dashboard:
-   - Bucket name: `doa-project-docs`
-   - Set visibility to private; RLS policies will control access.
-
----
-
-## Route Map
-
-| Route | Purpose |
-|---|---|
-| `/` | Landing / redirect to dashboard |
-| `/auth/login` | Login page (Supabase email + password) |
-| `/auth/callback` | OAuth / magic-link callback handler |
-| `/dashboard` | Overview: KPI cards, recent activity, quick links |
-| `/projects` | Project list with status filters |
-| `/projects/[id]` | Project detail: tasks, documents, members, timeline |
-| `/clients` | Client list with contact info |
-| `/aircraft` | Aircraft register (type, registration, MTOW, etc.) |
-| `/documents` | Document library with upload and version tracking |
-| `/tasks` | Task board / list across all projects |
-| `/tools` | Engineering utilities (calculations, references) |
-| `/databases` | Internal reference databases |
-| `/profile` | User profile and settings |
-
----
-
-## Feature Status
-
-| Feature | Status | Notes |
-|---|---|---|
-| Authentication (login / logout) | Live | Supabase Auth |
-| Dashboard KPI cards | Mock | Hardcoded values |
-| Project list | Mock | `MOCK_PROJECTS` array defined inline in page file |
-| Project detail | Mock | Always renders same mock project regardless of `[id]` |
-| Client list | Mock | `MOCK_CLIENTS` array defined inline in page file |
-| Aircraft register | Mock | `MOCK_AIRCRAFT` array defined inline in page file |
-| Document library | Mock | `MOCK_DOCUMENTS` array defined inline in page file |
-| Task board | Mock | `MOCK_TASKS` array defined inline in page file |
-| Tools page | Live (UI only) | No backend integration; not protected by auth |
-| Databases page | Live (UI only) | No backend integration; not protected by auth |
-| AI / RAG search | Phase 2 | Placeholder at `lib/openrouter/` |
-| Outlook / calendar | Phase 2 | Microsoft Graph deferred |
-| DnD kanban | Phase 2 | `dnd-kit` installed but not wired up |
-| Non-conformity form | Phase 2 | Not started |
-
----
-
-## Deployment
-
-The application is deployed via Docker to a VPS.
-
-**Server:** `145.223.116.37:3010`
+Stable fallback used during recent sanitation/debugging:
 
 ```bash
-# Deploy from local machine
-./deploy.sh
+npm run dev -- --webpack --port 3000
 ```
 
-`deploy.sh` commits any pending changes and triggers a Docker build and restart on the VPS. Review the script before running in a clean state.
+If `localhost:3000` gives connection refused, first confirm the dev server is actually running.
 
-Docker files:
-- `Dockerfile` — multi-stage Next.js build
-- `docker-compose.yml` — service definition with port mapping and environment injection
+## Current Route Surface
 
----
+| Route | Purpose |
+| --- | --- |
+| `/login` | Auth entry |
+| `/home` | Dashboard home |
+| `/engineering/portfolio` | Project portfolio / operational view |
+| `/engineering/projects/[id]` | Project workspace |
+| `/quotations` | Commercial quotations workflow |
+| `/clients` | Client records |
+| `/databases` | Internal data browsing tools |
+| `/tools` | Tool index |
+| `/tools/experto` | OpenRouter-backed DOA assistant |
 
-## Database Schema Summary
+## Current Domain Model
 
-All tables use the prefix `doa_new_`. The schema is defined in `supabase/migrations/001_initial_schema.sql`.
+The current runtime source of truth is the `doa_*` family of tables and types used by the active app surface.
 
-### Tables
+The `doa_new_*` model still exists in docs, migration history, and some legacy type sections, but it is not the active runtime source for the current workflows. That mismatch is known technical debt and is being normalized conservatively.
 
-| Table | Description |
-|---|---|
-| `doa_new_profiles` | Extended user profiles linked to Supabase Auth |
-| `doa_new_clients` | Client organisations |
-| `doa_new_aircraft` | Aircraft entries (type, registration, MTOW) |
-| `doa_new_projects` | Engineering change projects |
-| `doa_new_project_members` | Many-to-many: projects x profiles with roles |
-| `doa_new_documents` | Documents with storage references and versioning |
-| `doa_new_tasks` | Tasks linked to projects and assignees |
-| `doa_new_vector_documents` | Chunked text embeddings for RAG (pgvector) |
+See [CURRENT_DOMAIN_MODEL.md](./CURRENT_DOMAIN_MODEL.md) for the current domain and naming rules.
 
-### Enums
+## Workflow Split
 
-Six custom PostgreSQL enums are defined with the `doa_` prefix (e.g. `doa_project_status`, `doa_task_priority`). All enum values are in English. The corresponding TypeScript types are generated in `types/database.ts`.
+### Quotations
 
-### Extensions
+Commercial pipeline aligned with `SP-07`:
 
-- `pgvector` is enabled. The `doa_new_vector_documents` table stores `vector(1536)` embeddings with an HNSW index. As of the last schema update, 0 documents are indexed.
-- A helper function `doa_new_match_documents()` is available for similarity search queries.
+- `new`
+- `unassigned`
+- `ongoing`
+- `pending_customer`
+- `pending_internal`
+- `rfi_sent`
+- `quotation_sent`
+- `won`
+- `cancelled`
 
-### Row-Level Security
+### Projects
 
-RLS is enabled on all tables. Policies are defined in the migration. The helper function `doa_new_current_user_role()` is used across policies to resolve the authenticated user's role.
+Operational workflow aligned with `SP-08`:
 
----
+- `op_00_prepay`
+- `op_01_data_collection`
+- `op_02_pending_info`
+- `op_03_pending_tests`
+- `op_04_under_evaluation`
+- `op_05_in_work`
+- `op_06_customer_review`
+- `op_07_internal_review`
+- `op_08_pending_signature`
+- `op_09_pending_authority`
+- `op_10_ready_for_delivery`
+- `op_11_delivered`
+- `op_12_closed`
+- `op_13_invoiced`
 
-## Known Issues / Bugs
+The handoff between both domains should remain explicit: `quotation won -> create/activate project`.
 
-1. **Missing auth middleware on `/tools` and `/databases`**: These routes are not protected by the authentication middleware. Unauthenticated users can access them directly by navigating to the URL.
+## Important Files
 
-2. **Project detail route ignores the `[id]` parameter**: The `/projects/[id]` page does not fetch project data by ID. It always renders the same hardcoded mock project regardless of which ID appears in the URL.
+- `lib/workflow-states.ts`: shared workflow logic
+- `app/api/workflow/transition/route.ts`: transition API
+- `app/(dashboard)/quotations/`: quotations UI
+- `app/(dashboard)/engineering/portfolio/`: operational project view
+- `app/(dashboard)/tools/experto/page.tsx`: current AI chat UI
+- `app/api/tools/chat/route.ts`: OpenRouter chat backend
+- `supabase/migrations/202603281710_project_and_quotation_states.sql`: workflow state migration
 
-3. **Mock data uses Spanish strings; database enums use English**: Several `MOCK_` arrays in page files use Spanish labels for status and priority fields (e.g. `"En progreso"`, `"Alta"`). The actual database enums use English values (e.g. `"in_progress"`, `"high"`). This mismatch will cause mapping errors when pages are connected to real Supabase data.
+## Known Gaps
 
----
+- Workflow persistence still depends on applying the migration above and validating RLS with a real session.
+- `home` and parts of `tools` still need product cleanup.
+- Documentation has recently been realigned, but the broader `doa_*` vs `doa_new_*` debt still exists in code/type history.
+- There is not yet a smoke-test baseline.
 
-## Phase 2 Roadmap
+## Project Docs
 
-- **AI / RAG**: Connect OpenRouter (text-embedding-3-small + claude-3.5-sonnet) to index project documents and power semantic search. Placeholder directories at `lib/openrouter/` and `components/ai/`.
-- **Outlook / Microsoft Graph**: Calendar integration for project deadlines and meeting scheduling.
-- **DnD Kanban**: Drag-and-drop task board using `dnd-kit` (already installed as a dependency).
-- **Non-conformity form**: Structured form for logging and tracking non-conformities under EASA Part 21J.
+- [CURRENT_DOMAIN_MODEL.md](./CURRENT_DOMAIN_MODEL.md)
+- [SANITATION_REPORT_2026-03-28.txt](./SANITATION_REPORT_2026-03-28.txt)
+- [PROJECT_HANDOFF_2026-03-28.txt](./PROJECT_HANDOFF_2026-03-28.txt)
+- [problemas-soluciones.txt](./problemas-soluciones.txt)
+
+## Next Recommended Work
+
+1. Validate workflow persistence with real session and RLS.
+2. Keep sanitizing placeholders and product polish.
+3. Add the clean handoff `quotation won -> create/activate project`.
+4. Continue with AI-specific features after the workflow baseline is stable.

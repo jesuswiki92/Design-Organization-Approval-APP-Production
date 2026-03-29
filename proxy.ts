@@ -26,10 +26,10 @@ export async function proxy(request: NextRequest) {
   const isAuth = request.nextUrl.pathname.startsWith('/login')
   const isDashboard = request.nextUrl.pathname.startsWith('/home') ||
     request.nextUrl.pathname.startsWith('/engineering') ||
+    request.nextUrl.pathname.startsWith('/quotations') ||
     request.nextUrl.pathname.startsWith('/clients') ||
     request.nextUrl.pathname.startsWith('/databases') ||
-    request.nextUrl.pathname.startsWith('/tools') ||
-    request.nextUrl.pathname.startsWith('/ai-expert')
+    request.nextUrl.pathname.startsWith('/tools')
 
   if (!user && isDashboard) {
     return NextResponse.redirect(new URL('/login', request.url))

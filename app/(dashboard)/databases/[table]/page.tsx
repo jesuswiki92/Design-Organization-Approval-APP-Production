@@ -69,48 +69,48 @@ export default async function DatabaseTablePage({
     'Vista detallada de la tabla'
 
   return (
-    <div className="flex h-full flex-col bg-[#0F1117]">
+    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
       <TopBar title="Bases de datos" subtitle="Gestion de datos estructurados y vectoriales" />
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 text-slate-900">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
             <Link
               href="/databases"
-              className="inline-flex items-center gap-2 text-sm text-[#6B7280] transition-colors hover:text-[#E8E9F0]"
+              className="inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-950"
             >
               <ArrowLeft size={16} />
               Volver a Bases de datos
             </Link>
 
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="break-all font-mono text-2xl font-semibold text-[#E8E9F0]">{table}</h1>
-              <span className="rounded-full border border-[#2A2D3E] bg-[#1A1D27] px-3 py-1 text-sm text-[#E8E9F0]">
+              <h1 className="break-all font-mono text-2xl font-semibold text-slate-950">{table}</h1>
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700 shadow-sm">
                 {totalRows} filas
               </span>
             </div>
 
-            <p className="max-w-3xl text-sm text-[#6B7280]">{tableDescription}</p>
+            <p className="max-w-3xl text-sm text-slate-500">{tableDescription}</p>
           </div>
 
           <div className="flex items-center gap-2">
             {hasPreviousPage && (
               <Link
                 href={previousPageHref}
-                className="rounded-lg border border-[#2A2D3E] bg-[#1A1D27] px-3 py-2 text-sm text-[#E8E9F0] transition-colors hover:border-[#6366F1]/40"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition-colors hover:border-sky-300 hover:text-sky-700"
               >
                 Anterior
               </Link>
             )}
 
-            <span className="rounded-lg border border-[#2A2D3E] bg-[#1A1D27] px-3 py-2 text-sm text-[#E8E9F0]">
+            <span className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">
               Pagina {page + 1}
             </span>
 
             {hasNextPage && (
               <Link
                 href={nextPageHref}
-                className="rounded-lg border border-[#2A2D3E] bg-[#1A1D27] px-3 py-2 text-sm text-[#E8E9F0] transition-colors hover:border-[#6366F1]/40"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition-colors hover:border-sky-300 hover:text-sky-700"
               >
                 Siguiente
               </Link>
@@ -118,25 +118,25 @@ export default async function DatabaseTablePage({
           </div>
         </div>
 
-        <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-[#2A2D3E] bg-[#1A1D27]">
-          <div className="border-b border-[#2A2D3E] px-5 py-3 text-sm text-[#6B7280]">
-            <span className="font-semibold text-[#E8E9F0]">{totalRows}</span> registros
+        <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <div className="border-b border-slate-200 px-5 py-3 text-sm text-slate-500 bg-slate-50">
+            <span className="font-semibold text-slate-950">{totalRows}</span> registros
             {totalRows > 0 && ` | Mostrando ${currentRangeStart}-${currentRangeEnd}`}
           </div>
 
           <div className="min-h-0 flex-1 overflow-auto">
             {rows.length === 0 ? (
-              <div className="flex h-full min-h-64 items-center justify-center px-6 text-sm text-[#6B7280]">
+              <div className="flex h-full min-h-64 items-center justify-center px-6 text-sm text-slate-400">
                 No hay datos para mostrar en esta pagina.
               </div>
             ) : (
               <table className="min-w-full text-sm">
-                <thead className="sticky top-0 z-10 bg-[#1A1D27]">
-                  <tr className="border-b border-[#2A2D3E]">
+                <thead className="sticky top-0 z-10 bg-slate-50">
+                  <tr className="border-b border-slate-200">
                     {columns.map((column) => (
                       <th
                         key={column}
-                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+                        className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
                       >
                         {column}
                       </th>
@@ -147,12 +147,12 @@ export default async function DatabaseTablePage({
                   {rows.map((row, index) => (
                     <tr
                       key={String(row.id ?? `${page}-${index}`)}
-                      className="border-b border-[#2A2D3E]/60"
+                      className="border-b border-slate-200/60 hover:bg-sky-50/40 transition-colors"
                     >
                       {columns.map((column) => (
                         <td
                           key={column}
-                          className="max-w-64 whitespace-pre-wrap break-words px-4 py-3 align-top text-[#E8E9F0]"
+                          className="max-w-64 whitespace-pre-wrap break-words px-4 py-3 align-top text-slate-700"
                         >
                           {formatValue(row[column])}
                         </td>

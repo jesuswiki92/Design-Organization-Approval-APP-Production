@@ -1,15 +1,26 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 echo "🚀 Deploying DOA Operations Hub..."
 
-git add -A
-git commit -m "deploy: $(date '+%Y-%m-%d %H:%M')" --allow-empty
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Working tree is dirty. Commit or stash changes before deploying."
+  exit 1
+fi
+
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$current_branch" != "main" ]; then
+  echo "deploy.sh must be run from branch 'main'. Current branch: $current_branch"
+  exit 1
+fi
+
 git push origin main
 
 ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@145.223.116.37 << 'ENDSSH'
+  set -e
   cd /root/apps/doa-ops-hub
-  git pull origin main
+  git fetch origin main
+  git reset --hard origin/main
   if [ -f .env.production ]; then
     cp .env.production .env.local
   fi

@@ -1,0 +1,155 @@
+DOA Operations Hub
+Sanitation Report
+Date: 2026-03-28
+
+Scope executed in this pass
+- Lote 1: calidad/seguridad base
+- Lote 2: código muerto y legacy
+
+What was cleaned
+1. Build quality baseline
+- Removed TypeScript build error suppression from `next.config.ts`.
+- Fixed the OpenRouter route typing in `app/api/tools/chat/route.ts` so production build passes without `ignoreBuildErrors`.
+- Cleaned the remaining low-cost lint warnings in `app/(dashboard)/clients/ClientsPageClient.tsx`.
+
+2. Route protection and navigation sanity
+- Updated `proxy.ts` so protected dashboard routes now include `/quotations`.
+- Removed obsolete `/ai-expert` route checks from `proxy.ts`.
+- Removed the broken `/settings` link from `components/layout/Sidebar.tsx`.
+
+3. Dead code removal
+- Deleted legacy API route `app/api/experto/chat/route.ts`.
+- Deleted unused store `store/authStore.ts`.
+- Simplified `store/uiStore.ts` to keep only the sidebar collapsed state that is actually used.
+- Updated `components/layout/TopBar.tsx` to link directly to `/tools/experto` instead of using dead side-panel state.
+
+4. Repo hygiene
+- Removed empty directories `hooks/` and `services/`.
+- Removed `.codex-*.log` files from the repository root.
+- Added `.codex-*.log` to `.gitignore`.
+
+Validation executed
+- `npm.cmd run lint` -> OK
+- `npm.cmd run build` -> OK
+
+Key files modified
+- `.gitignore`
+- `next.config.ts`
+- `proxy.ts`
+- `components/layout/Sidebar.tsx`
+- `components/layout/TopBar.tsx`
+- `store/uiStore.ts`
+- `app/api/tools/chat/route.ts`
+- `app/(dashboard)/clients/ClientsPageClient.tsx`
+
+Key files removed
+- `app/api/experto/chat/route.ts`
+- `store/authStore.ts`
+
+What was intentionally NOT cleaned yet
+- `README.md`, `AGENTS.md`, `CLAUDE.md` remain desynchronized and need a dedicated documentation pass.
+- `types/database.ts` still reflects the broader `doa_*` vs `doa_new_*` tension.
+- `app/(dashboard)/home/page.tsx` and `app/(dashboard)/tools/page.tsx` still contain product-level placeholders that belong to a later functional cleanup.
+- `components/project/workspace-utils.ts` still needs a domain cleanup pass after the quotations/projects split settles.
+- Dependency pruning was not executed in this pass.
+- No smoke tests were added yet.
+
+Why some items were left out
+- The goal of this pass was to improve quality and remove dead code without triggering a larger product refactor.
+- Product-level cleanup and domain normalization should happen in later batches after confirming the current app behavior remains stable.
+
+Recommended next sanitation batches
+1. Documentation and domain alignment
+- Rewrite `README.md` to reflect the current product.
+- Align `AGENTS.md` and `CLAUDE.md` with real routes, workflows, and environment variables.
+- Clarify canonical terminology around `doa_*` vs `doa_new_*`.
+
+2. Functional product cleanup
+- Reduce placeholders in `tools` and `home`.
+- Simplify `tools/experto` so it only exposes the current OpenRouter chat behavior.
+- Review `databases` to decide whether it remains an internal admin tool or leaves the product surface.
+
+3. Dependency and maintenance cleanup
+- Audit package usage and remove unused dependencies.
+- Replace or remove `deploy.sh` if it still performs unsafe git automation.
+- Add a minimal smoke-test baseline for the main routes.
+
+Current baseline after this sanitation pass
+- The app builds without ignoring TypeScript errors.
+- Quotations is protected by auth.
+- Broken navigation was removed.
+- Legacy chat API and unused auth store are gone.
+- Repo noise from Codex logs is under control.
+
+Lote 3 update - domain and documentation normalization
+- `README.md` was rewritten to reflect the current runtime product instead of the earlier scaffold.
+- `AGENTS.md` and `CLAUDE.md` were aligned with the real route surface, OpenRouter chat, and the current workflow split.
+- `CURRENT_DOMAIN_MODEL.md` was added as the canonical explanation of the active runtime domain.
+- The current source of truth is now documented explicitly as `doa_*`.
+- `doa_new_*` is documented as legacy/reference debt, not as the active runtime source.
+- The separation between `quotations` and `projects` is now explicit in project docs.
+
+What was intentionally not changed in Lote 3
+- No broad functional cleanup of `home` or `tools` placeholders.
+- No large refactor of `types/database.ts` beyond clarifying comments.
+- No schema consolidation between `doa_*` and `doa_new_*`.
+
+Lote 4 update - conservative product cleanup
+- `app/(dashboard)/home/page.tsx` now behaves as a stable product overview instead of showing fake operational data.
+- The visible version/update marker in home is now fixed through `lib/app-release.ts` and no longer changes on each refresh.
+- `app/(dashboard)/tools/page.tsx` now separates what is truly available from roadmap items instead of exposing fake buttons and placeholder modals.
+- `app/(dashboard)/tools/experto/page.tsx` was simplified to match the real behavior of the OpenRouter chat.
+- The right panel in `tools/experto` now describes current capabilities and limits instead of pretending to show document sources.
+
+Validation after Lote 4
+- `npm.cmd run lint` -> OK
+- `npm.cmd run build` -> OK
+
+What was intentionally not changed in Lote 4
+- No auth/session changes
+- No workflow transition changes
+- No migration/schema changes
+- No deep refactor of `types/database.ts`
+
+Lote 5 update - foundations, deploy hygiene and functional test baseline
+- `deploy.sh` no longer auto-commits local changes during deployment.
+- `deploy.sh` now requires a clean worktree and the `main` branch before pushing.
+- `FUNCTIONAL_TEST_PLAN.md` was added as the regression baseline for startup, auth, protected routes, quotations, portfolio, tools expert, APIs and workflow checks.
+- Dependency pruning was reviewed conservatively and intentionally deferred where removal was not safe enough without a dedicated pass.
+- The visible release marker was updated to `2026.03.29-l5` / `29/03/2026` to reflect this sanitation batch.
+
+Validation after Lote 5
+- `npm.cmd run lint` -> OK
+- `npm.cmd run build` -> blocked by environment `spawn EPERM` after successful compile, not by an app code error
+
+What was intentionally not changed in Lote 5
+- No aggressive dependency uninstall
+- No workflow or auth refactor
+- No migration changes
+- No CI/test runner automation yet
+
+Lote 6 update - lightweight dependency pruning and smoke automation baseline
+- Removed clearly unused dependencies with no imports in the active codebase:
+  - `@google/genai`
+  - `@google/generative-ai`
+  - `@hookform/resolvers`
+  - `react-hook-form`
+  - `recharts`
+  - `@dnd-kit/core`
+  - `@dnd-kit/sortable`
+  - `@dnd-kit/utilities`
+  - `zod`
+- Added `npm run smoke` as a lightweight automated baseline using Node's built-in runtime.
+- Added `scripts/smoke-tests.mjs` for route, redirect and endpoint verification without introducing a heavy test framework.
+- Updated `FUNCTIONAL_TEST_PLAN.md` to document the automated smoke command and environment variables.
+- Updated the fixed release marker to `2026.03.29-l6` / `Saneamiento Lote 6`.
+
+Validation after Lote 6
+- `npm.cmd run lint` -> expected
+- `npm.cmd run smoke` -> available baseline command; requires a running app and optional auth/chat env depending on scope
+
+What was intentionally not changed in Lote 6
+- No aggressive dependency pruning beyond packages with zero active imports
+- No Playwright/Cypress/Vitest installation
+- No auth automation with credentials storage
+- No deploy pipeline redesign beyond previous hardening

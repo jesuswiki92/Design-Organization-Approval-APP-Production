@@ -1,9 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { Search, Bell, Bot, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { useUIStore } from '@/store/uiStore'
 
 interface TopBarProps {
   title: string
@@ -13,7 +13,6 @@ interface TopBarProps {
 export function TopBar({ title, subtitle }: TopBarProps) {
   const router = useRouter()
   const supabase = createClient()
-  const { openSidePanel } = useUIStore()
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -40,13 +39,13 @@ export function TopBar({ title, subtitle }: TopBarProps) {
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-rose-500" />
         </button>
 
-        <button
-          onClick={() => openSidePanel('ai-expert')}
+        <Link
+          href="/tools/experto"
           className="flex items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100"
         >
           <Bot className="h-3.5 w-3.5" />
           <span>Experto</span>
-        </button>
+        </Link>
 
         <button
           onClick={handleLogout}

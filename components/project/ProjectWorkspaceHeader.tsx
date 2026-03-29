@@ -4,6 +4,7 @@ import { ClipboardPlus, Copy, History, Plane, Shield, Timer, User } from 'lucide
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { WorkflowStateChanger } from '@/components/workflow/WorkflowStateChanger'
 import { cn } from '@/lib/utils'
 import type { ProyectoConRelaciones } from '@/types/database'
 
@@ -36,6 +37,9 @@ export function ProjectWorkspaceHeader({
   const status = getProjectStatusMeta(project.estado)
   const projectProgress = calcProjectProgress(project)
   const deliveryDays = daysRemaining(project.fecha_prevista)
+  const lastStateChange = project.estado_updated_at
+    ? new Date(project.estado_updated_at).toLocaleString('es-ES')
+    : null
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
@@ -79,6 +83,24 @@ export function ProjectWorkspaceHeader({
                   <Shield className="h-4 w-4 text-slate-400" />
                   {project.base_certificacion ?? 'Cert Basis pendiente'}
                 </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <WorkflowStateChanger
+                  entity="project"
+                  entityId={project.id}
+                  currentState={project.estado}
+                  variant="full"
+                />
+                {lastStateChange && (
+                  <span className="text-xs text-slate-500">
+                    Ultimo cambio: {lastStateChange}
+                  </span>
+                )}
+                {project.estado_motivo && (
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-700">
+                    Motivo: {project.estado_motivo}
+                  </span>
+                )}
               </div>
             </div>
           </div>

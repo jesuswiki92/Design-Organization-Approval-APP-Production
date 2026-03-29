@@ -6,6 +6,7 @@ import type {
   ProyectoTarea,
   UsuarioDoa,
 } from '@/types/database'
+import { getProjectStatusMeta as getSharedProjectStatusMeta } from '@/lib/workflow-states'
 
 export type ExpertMode = 'overview' | 'document' | 'missing' | 'next' | 'references'
 
@@ -15,56 +16,56 @@ export const PROJECT_STATUS_CONFIG: Record<
 > = {
   oferta: {
     label: 'Oferta',
-    badge: 'border-slate-500/20 bg-slate-500/10 text-slate-300',
+    badge: 'border-slate-200 bg-slate-100 text-slate-600',
     dot: 'bg-slate-400',
     emphasis: 'low',
   },
   activo: {
     label: 'Activo',
-    badge: 'border-blue-500/20 bg-blue-500/10 text-blue-300',
-    dot: 'bg-blue-400',
+    badge: 'border-blue-200 bg-blue-50 text-blue-700',
+    dot: 'bg-blue-500',
     emphasis: 'low',
   },
   en_revision: {
     label: 'En revisión',
-    badge: 'border-amber-500/20 bg-amber-500/10 text-amber-300',
-    dot: 'bg-amber-400',
+    badge: 'border-amber-200 bg-amber-50 text-amber-700',
+    dot: 'bg-amber-500',
     emphasis: 'medium',
   },
   pendiente_aprobacion_cve: {
     label: 'En aprobación',
-    badge: 'border-orange-500/20 bg-orange-500/10 text-orange-300',
-    dot: 'bg-orange-400',
+    badge: 'border-orange-200 bg-orange-50 text-orange-700',
+    dot: 'bg-orange-500',
     emphasis: 'high',
   },
   pendiente_aprobacion_easa: {
     label: 'En aprobación',
-    badge: 'border-orange-500/20 bg-orange-500/10 text-orange-300',
-    dot: 'bg-orange-400',
+    badge: 'border-orange-200 bg-orange-50 text-orange-700',
+    dot: 'bg-orange-500',
     emphasis: 'high',
   },
   en_pausa: {
     label: 'En pausa',
-    badge: 'border-violet-500/20 bg-violet-500/10 text-violet-300',
-    dot: 'bg-violet-400',
+    badge: 'border-violet-200 bg-violet-50 text-violet-700',
+    dot: 'bg-violet-500',
     emphasis: 'high',
   },
   cancelado: {
     label: 'Cancelado',
-    badge: 'border-red-500/20 bg-red-500/10 text-red-300',
-    dot: 'bg-red-400',
+    badge: 'border-rose-200 bg-rose-50 text-rose-700',
+    dot: 'bg-rose-500',
     emphasis: 'medium',
   },
   cerrado: {
     label: 'Cerrado',
-    badge: 'border-slate-600/20 bg-slate-700/20 text-slate-400',
-    dot: 'bg-slate-500',
+    badge: 'border-slate-200 bg-slate-100 text-slate-500',
+    dot: 'bg-slate-400',
     emphasis: 'low',
   },
   guardado_en_base_de_datos: {
     label: 'Guardado en base de datos',
-    badge: 'border-slate-700/20 bg-slate-800/30 text-slate-500',
-    dot: 'bg-slate-600',
+    badge: 'border-slate-200 bg-slate-50 text-slate-500',
+    dot: 'bg-slate-400',
     emphasis: 'low',
   },
 }
@@ -75,28 +76,28 @@ export const DOCUMENT_STATUS_CONFIG: Record<
 > = {
   pendiente: {
     label: 'Pendiente',
-    badge: 'border-amber-500/20 bg-amber-500/10 text-amber-300',
-    accent: 'bg-amber-400',
+    badge: 'border-amber-200 bg-amber-50 text-amber-700',
+    accent: 'bg-amber-500',
   },
   en_redaccion: {
     label: 'En redacción',
-    badge: 'border-sky-500/20 bg-sky-500/10 text-sky-300',
-    accent: 'bg-sky-400',
+    badge: 'border-sky-200 bg-sky-50 text-sky-700',
+    accent: 'bg-sky-500',
   },
   en_revision: {
     label: 'En revisión',
-    badge: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-300',
-    accent: 'bg-cyan-400',
+    badge: 'border-cyan-200 bg-cyan-50 text-cyan-700',
+    accent: 'bg-cyan-500',
   },
   aprobado: {
     label: 'Vigente',
-    badge: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300',
-    accent: 'bg-emerald-400',
+    badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    accent: 'bg-emerald-500',
   },
   bloqueado: {
     label: 'Bloqueado',
-    badge: 'border-red-500/20 bg-red-500/10 text-red-300',
-    accent: 'bg-red-400',
+    badge: 'border-rose-200 bg-rose-50 text-rose-700',
+    accent: 'bg-rose-500',
   },
 }
 
@@ -149,7 +150,27 @@ export function getClientLabel(client: Cliente | null) {
 }
 
 export function getProjectStatusMeta(status: string) {
-  return PROJECT_STATUS_CONFIG[status] ?? PROJECT_STATUS_CONFIG.cerrado
+  const meta = getSharedProjectStatusMeta(status)
+  return {
+    label: meta.label,
+    badge: `${meta.border} ${meta.bg} ${meta.color}`,
+    dot: meta.dot,
+    emphasis:
+      status === 'op_02_pending_info' ||
+      status === 'op_03_pending_tests' ||
+      status === 'en_pausa' ||
+      status === 'cancelado' ||
+      status === 'pendiente_aprobacion_cve' ||
+      status === 'pendiente_aprobacion_easa'
+        ? 'high'
+        : status === 'op_06_customer_review' ||
+            status === 'op_07_internal_review' ||
+            status === 'op_08_pending_signature' ||
+            status === 'op_09_pending_authority' ||
+            status === 'en_revision'
+          ? 'medium'
+          : 'low',
+  }
 }
 
 export function getDocumentStatusMeta(status: string) {

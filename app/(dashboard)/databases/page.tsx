@@ -1,6 +1,6 @@
 import DatabasesClient from './DatabasesClient'
 import { createClient } from '@/lib/supabase/server'
-import { TABLE_GROUPS, type TableGroup } from '@/lib/databases'
+import { TABLE_GROUPS, type TableGroup, type AllowedTable } from '@/lib/databases'
 
 export default async function DatabasesPage() {
   const supabase = await createClient()
