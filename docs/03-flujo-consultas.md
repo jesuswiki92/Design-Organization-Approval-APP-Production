@@ -47,8 +47,8 @@ Cliente envia email
 | Parte del flujo | Archivo | Que hace |
 |-----------------|---------|----------|
 | Workspace de quotations | `app/(dashboard)/quotations/page.tsx` | Pagina principal con tablero/lista y la base visual del flujo comercial |
-| Cabecera, tabs y tablero | `app/(dashboard)/quotations/QuotationStatesBoard.tsx` | Selector de vistas, columnas reales, cards mock, alta y borrado local de estados |
-| Datos compartidos de quotations | `app/(dashboard)/quotations/quotation-board-data.ts` | Datos mock, helpers de persistencia local y normalizacion de estados |
+| Cabecera, tabs y tablero | `app/(dashboard)/quotations/QuotationStatesBoard.tsx` | Selector de vistas, columnas reales, editor de estados y superficie limpia sin cards mock |
+| Datos compartidos de quotations | `app/(dashboard)/quotations/quotation-board-data.ts` | Helpers de persistencia local y normalizacion de estados sin datos ficticios |
 | Detalle de quotation | `app/(dashboard)/quotations/[id]/page.tsx` | Pagina de detalle con bloques preparados para crecer |
 | Panel de consultas nuevas | `app/(dashboard)/quotations/IncomingQueriesPanel.tsx` | Panel que muestra las consultas pendientes |
 | Detalle de consulta | `app/(dashboard)/quotations/incoming/[id]/page.tsx` | Vista detallada de una consulta |
@@ -60,8 +60,8 @@ Cliente envia email
 
 ## Estado actual de la UI
 
-- Las cards del tablero de quotations incluyen `Mas detalle` y abren `/quotations/[id]`.
-- La vista `Lista` usa los mismos datos del board para mantener coherencia visual.
+- El tablero de quotations arranca sin cards ficticias para trabajar ya con ejemplos reales.
+- La vista `Lista` usa los mismos estados del board y se mantiene vacia hasta que existan quotations reales.
 - Los estados nuevos de quotations se crean y eliminan localmente por ahora.
 - Los estados base de `Quotations` y del flujo de consultas ya pueden renombrarse, reordenarse y recolorearse desde la propia app sin cambiar el `state_code` tecnico.
 - La seccion visible de `Engineering` ya se presenta como `Proyectos` y tiene vistas `Tablero` y `Lista` mock.

@@ -17,6 +17,7 @@ La pagina `/quotations` ya no es una vista estatica. Ahora funciona como un work
 - `Lista` muestra los mismos datos en formato tabla ligera.
 - El board tiene scroll horizontal real porque las columnas tienen ancho fijo.
 - La pagina conserva scroll vertical real porque la shell principal usa contenedores con `overflow-y-auto`.
+- Las columnas base ya no cargan cards mock; quedan vacias hasta que entren casos reales.
 
 ### Estados del board
 
@@ -41,7 +42,7 @@ Los estados base ya tienen una capa de configuracion editable:
 
 ### Detalle de quotation
 
-Cada card del tablero y la lista incluyen un boton `Mas detalle` que abre `/quotations/[id]`.
+El detalle de quotation sigue preparado en `/quotations/[id]`, pero ahora la vista principal de quotations ya no fabrica cards ficticias para llegar a él.
 
 La pagina de detalle ya tiene bloques preparados para crecer:
 

@@ -16,7 +16,6 @@ import {
   RotateCcw,
   Save,
   Settings2,
-  Sparkles,
   Trash2,
 } from 'lucide-react'
 
@@ -210,16 +209,14 @@ function BoardLane({
           <BoardCard key={card.id} card={card} />
         ))}
 
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-[22px] border border-dashed border-slate-200 bg-white/80 px-4 py-3 text-left text-sm text-slate-600 transition-colors hover:border-sky-300 hover:bg-sky-50/60 hover:text-sky-800"
-        >
-          <span className="inline-flex items-center gap-2">
-            <Plus className="h-3.5 w-3.5" />
-            Add quotation card
-          </span>
-          <Sparkles className="h-3.5 w-3.5" />
-        </button>
+        {lane.cards.length === 0 ? (
+          <div className="rounded-[22px] border border-dashed border-slate-200 bg-white/80 px-4 py-5 text-center">
+            <p className="text-sm font-medium text-slate-900">Sin quotations reales todavía</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Esta columna queda preparada para recibir casos reales.
+            </p>
+          </div>
+        ) : null}
       </div>
     </section>
   )
@@ -248,9 +245,11 @@ function ListRow({
       <td className="px-4 py-3 align-top text-sm text-slate-600">{lane.cards.length}</td>
       <td className="px-4 py-3 align-top text-sm text-slate-600">
         <div className="space-y-1">
-          <p className="font-medium text-slate-900">{leadCard?.title ?? 'No cards yet'}</p>
+          <p className="font-medium text-slate-900">
+            {leadCard?.title ?? 'Sin quotations reales todavía'}
+          </p>
           <p className="text-slate-500">
-            {leadCard?.note ?? 'Add a card to show a preview in the list view.'}
+            {leadCard?.note ?? 'Esta fila se activará cuando entren ejemplos reales.'}
           </p>
         </div>
       </td>
