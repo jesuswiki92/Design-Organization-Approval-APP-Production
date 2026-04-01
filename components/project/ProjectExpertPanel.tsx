@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Bot, BookCopy, CheckCircle2, Files, PanelRightOpen, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -41,7 +41,7 @@ export function ProjectExpertPanel({
 
   const excludedSources = [
     'Correos del proyecto',
-    'Engineering Data Base histórica',
+    'Base de datos histórica de proyectos',
     'Notas externas no cargadas en esta vista',
   ]
 

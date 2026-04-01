@@ -1,9 +1,12 @@
-import { NextRequest } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+// ✅ doa_consultas_entrantes RECONECTADA
+import { NextRequest } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
+import { isMissingSchemaError } from '@/lib/supabase/errors'
 
-export const runtime = "nodejs"
+export const runtime = 'nodejs'
 
-const WEBHOOK_URL = "https://sswebhook.testn8n.com/webhook/doa-send-client-email"
+const WEBHOOK_URL = 'https://sswebhook.testn8n.com/webhook/doa-send-client-email'
 
 type IncomingQueryPayload = {
   codigo?: string | null
@@ -18,23 +21,6 @@ function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
 }
 
-function isMissingSchemaError(message: string) {
-  return (
-    message.includes("Could not find the table") ||
-    message.includes("column") ||
-    message.includes("schema cache") ||
-    message.includes("does not exist")
-  )
-}
-
-function buildConsultasEntrantesSchemaError(message: string) {
-  if (message.includes("estado")) {
-    return "La tabla public.doa_consultas_entrantes aun no tiene la columna `estado`. Aplica la migracion de Supabase pendiente y reintenta el envio."
-  }
-
-  return "La tabla public.doa_consultas_entrantes no coincide con el esquema esperado. Aplica la migracion de Supabase pendiente y reintenta el envio."
-}
-
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -47,22 +33,22 @@ export async function POST(
     }
 
     const message =
-      typeof body.message === "string" ? body.message.trim() : ""
+      typeof body.message === 'string' ? body.message.trim() : ''
 
     if (!id) {
-      return jsonResponse(400, "Consulta no válida.")
+      return jsonResponse(400, 'Consulta no válida.')
     }
 
     if (!message) {
-      return jsonResponse(400, "El mensaje al cliente es obligatorio.")
+      return jsonResponse(400, 'El mensaje al cliente es obligatorio.')
     }
 
     const query = body.query ?? {}
 
     const webhookPayload = {
-      event: "doa.consulta.reviewed_send_client",
+      event: 'doa.consulta.reviewed_send_client',
       sentAt: new Date().toISOString(),
-      source: "doa-ops-hub",
+      source: 'doa-ops-hub',
       id,
       consultaId: id,
       codigo: query.codigo ?? null,
@@ -90,12 +76,10 @@ export async function POST(
     }
 
     const webhookResponse = await fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookPayload),
-      cache: "no-store",
+      cache: 'no-store',
     })
 
     const rawText = await webhookResponse.text()
@@ -124,13 +108,16 @@ export async function POST(
 
     const now = new Date().toISOString()
     const stateUpdate = await supabase
-      .from("doa_consultas_entrantes")
-      .update({ estado: "espera_formulario_cliente" })
-      .eq("id", id)
+      .from('doa_consultas_entrantes')
+      .update({ estado: CONSULTA_ESTADOS.ESPERANDO_FORMULARIO })
+      .eq('id', id)
 
     if (stateUpdate.error) {
-      if (isMissingSchemaError(stateUpdate.error.message)) {
-        return jsonResponse(409, buildConsultasEntrantesSchemaError(stateUpdate.error.message))
+      if (isMissingSchemaError(stateUpdate.error)) {
+        return jsonResponse(
+          409,
+          'La tabla public.doa_consultas_entrantes no coincide con el esquema esperado. Aplica la migracion de Supabase pendiente y reintenta el envio.',
+        )
       }
 
       return jsonResponse(
@@ -140,40 +127,41 @@ export async function POST(
     }
 
     const metadataUpdate = await supabase
-      .from("doa_consultas_entrantes")
+      .from('doa_consultas_entrantes')
       .update({
         correo_cliente_enviado_at: now,
         correo_cliente_enviado_by: user?.id ?? null,
         ultimo_borrador_cliente: message,
       })
-      .eq("id", id)
+      .eq('id', id)
 
     const statePersisted = true
     let warning: string | null = null
 
     if (metadataUpdate.error) {
-      if (isMissingSchemaError(metadataUpdate.error.message)) {
+      if (isMissingSchemaError(metadataUpdate.error)) {
         warning =
-          "La consulta paso a espera_formulario_cliente, pero faltan columnas de persistencia en public.doa_consultas_entrantes. Aplica la migracion de Supabase pendiente para guardar los metadatos del envio."
+          'La consulta paso a esperando_formulario, pero faltan columnas de persistencia en public.doa_consultas_entrantes. Aplica la migracion de Supabase pendiente para guardar los metadatos del envio.'
       } else {
-        warning = `La consulta paso a espera_formulario_cliente, pero no se pudieron guardar los metadatos del envio: ${metadataUpdate.error.message}`
+        warning = `La consulta paso a esperando_formulario, pero no se pudieron guardar los metadatos del envio: ${metadataUpdate.error.message}`
       }
     }
 
     return Response.json({
       ok: true,
       message: statePersisted
-        ? "Mensaje enviado correctamente al cliente. La consulta paso a Espera formulario cliente."
-        : "Mensaje enviado correctamente al cliente.",
+        ? 'Mensaje enviado correctamente al cliente. La consulta paso a Esperando formulario.'
+        : 'Mensaje enviado correctamente al cliente.',
       statePersisted,
       warning,
       webhookPayload,
       webhookResponse: responsePayload,
     })
   } catch (error) {
+    console.error('send-client POST error:', error)
     return jsonResponse(
       500,
-      error instanceof Error ? error.message : "Unexpected server error.",
+      error instanceof Error ? error.message : 'Unexpected server error.',
     )
   }
 }

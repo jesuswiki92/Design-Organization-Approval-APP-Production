@@ -1,23 +1,169 @@
 import type {
-  EstadoCotizacion,
   EstadoProyecto,
   EstadoProyectoLegacy,
   EstadoProyectoPersistido,
   EstadoProyectoWorkflow,
 } from '@/types/database'
 
-export const QUOTATION_STATES: EstadoCotizacion[] = [
-  'new_entry',
-  'new',
-  'unassigned',
-  'ongoing',
-  'pending_customer',
-  'pending_internal',
-  'rfi_sent',
-  'quotation_sent',
-  'won',
-  'cancelled',
-]
+// ==========================================
+// ESTADOS VISUALES DE QUOTATIONS
+// ==========================================
+
+export const QUOTATION_BOARD_STATES = {
+  ENTRADA_RECIBIDA: 'entrada_recibida',
+  TRIAGE: 'triage',
+  ALCANCE_DEFINIDO: 'alcance_definido',
+  OFERTA_EN_REDACCION: 'oferta_en_redaccion',
+  REVISION_INTERNA: 'revision_interna',
+  PENDIENTE_ENVIO: 'pendiente_envio',
+  SEGUIMIENTO_CIERRE: 'seguimiento_cierre',
+} as const
+
+export type QuotationBoardState =
+  typeof QUOTATION_BOARD_STATES[keyof typeof QUOTATION_BOARD_STATES]
+
+type QuotationBoardConfig = {
+  label: string
+  shortLabel: string
+  description: string
+  color: string
+  bg: string
+  border: string
+  dot: string
+}
+
+export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, QuotationBoardConfig> = {
+  entrada_recibida: {
+    label: 'Entrada recibida',
+    shortLabel: 'Entrada',
+    description: 'Consulta comercial que acaba de entrar en la bandeja',
+    color: 'text-sky-700',
+    bg: 'bg-sky-50',
+    border: 'border-sky-200',
+    dot: 'bg-sky-500',
+  },
+  triage: {
+    label: 'Triage',
+    shortLabel: 'Triage',
+    description: 'Revisión inicial para clasificar urgencia y contexto',
+    color: 'text-cyan-700',
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-200',
+    dot: 'bg-cyan-500',
+  },
+  alcance_definido: {
+    label: 'Alcance definido',
+    shortLabel: 'Alcance',
+    description: 'El alcance ya está clarificado y listo para estimar',
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    dot: 'bg-emerald-500',
+  },
+  oferta_en_redaccion: {
+    label: 'Oferta en redaccion',
+    shortLabel: 'Redaccion',
+    description: 'Se está construyendo la cotización o propuesta comercial',
+    color: 'text-amber-700',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    dot: 'bg-amber-500',
+  },
+  revision_interna: {
+    label: 'Revision interna',
+    shortLabel: 'Revision',
+    description: 'La oferta pasa por validacion interna antes de salir',
+    color: 'text-violet-700',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    dot: 'bg-violet-500',
+  },
+  pendiente_envio: {
+    label: 'Pendiente de envio',
+    shortLabel: 'Envio',
+    description: 'Lista para enviarse al cliente desde la app',
+    color: 'text-indigo-700',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    dot: 'bg-indigo-500',
+  },
+  seguimiento_cierre: {
+    label: 'Seguimiento / cierre',
+    shortLabel: 'Cierre',
+    description: 'Cotizacion enviada, seguimiento activo o cierre final',
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    dot: 'bg-slate-500',
+  },
+}
+
+export function getQuotationBoardStatusMeta(state: string) {
+  const config = QUOTATION_BOARD_STATE_CONFIG[state as QuotationBoardState]
+  if (!config) {
+    return {
+      label: state,
+      shortLabel: state,
+      description: 'Estado de quotations desconocido',
+      color: 'text-slate-600',
+      bg: 'bg-slate-100',
+      border: 'border-slate-200',
+      dot: 'bg-slate-400',
+    }
+  }
+
+  return config
+}
+
+// ==========================================
+// ESTADOS DE CONSULTAS ENTRANTES
+// ==========================================
+
+export const CONSULTA_ESTADOS = {
+  NUEVO: 'nuevo',
+  ESPERANDO_FORMULARIO: 'esperando_formulario',
+  FORMULARIO_RECIBIDO: 'formulario_recibido',
+} as const
+
+export type EstadoConsulta = typeof CONSULTA_ESTADOS[keyof typeof CONSULTA_ESTADOS]
+
+export const CONSULTA_STATE_CONFIG: Record<EstadoConsulta, { label: string; color: string; description: string }> = {
+  nuevo: {
+    label: 'Nuevo',
+    color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    description: 'Consulta recibida, pendiente de revisión por ingeniero',
+  },
+  esperando_formulario: {
+    label: 'Esperando formulario',
+    color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    description: 'Email enviado al cliente con enlace al formulario',
+  },
+  formulario_recibido: {
+    label: 'Formulario recibido',
+    color: 'bg-green-500/20 text-green-400 border-green-500/30',
+    description: 'Cliente completó el formulario, listo para siguiente fase',
+  },
+}
+
+export function getConsultaStatusMeta(estado: string) {
+  const config = CONSULTA_STATE_CONFIG[estado as EstadoConsulta]
+  if (!config) return { label: estado, color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30', description: 'Estado desconocido' }
+  return config
+}
+
+export const CONSULTA_TRANSITIONS: Record<EstadoConsulta, EstadoConsulta[]> = {
+  nuevo: ['esperando_formulario'],
+  esperando_formulario: ['formulario_recibido'],
+  formulario_recibido: [],
+}
+
+export function getAllowedConsultaTransitions(current: string): EstadoConsulta[] {
+  return CONSULTA_TRANSITIONS[current as EstadoConsulta] ?? []
+}
+
+// ==========================================
+// ESTADOS DE PROYECTOS
+// ==========================================
 
 export const PROJECT_WORKFLOW_STATES = [
   'op_00_prepay',
@@ -59,89 +205,6 @@ type WorkflowConfig = {
   bg: string
   border: string
   dot: string
-}
-
-export const QUOTATION_STATE_CONFIG: Record<EstadoCotizacion, WorkflowConfig> = {
-  new_entry: {
-    label: 'New entry',
-    shortLabel: 'New entry',
-    color: 'text-slate-700',
-    bg: 'bg-white',
-    border: 'border-slate-300',
-    dot: 'bg-slate-500',
-  },
-  new: {
-    label: 'New',
-    shortLabel: 'New',
-    color: 'text-slate-700',
-    bg: 'bg-slate-50',
-    border: 'border-slate-200',
-    dot: 'bg-slate-400',
-  },
-  unassigned: {
-    label: 'Unassigned',
-    shortLabel: 'Unassigned',
-    color: 'text-zinc-700',
-    bg: 'bg-zinc-50',
-    border: 'border-zinc-200',
-    dot: 'bg-zinc-400',
-  },
-  ongoing: {
-    label: 'On going',
-    shortLabel: 'Ongoing',
-    color: 'text-blue-700',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    dot: 'bg-blue-500',
-  },
-  pending_customer: {
-    label: 'Pending customer',
-    shortLabel: 'Pending customer',
-    color: 'text-amber-700',
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    dot: 'bg-amber-500',
-  },
-  pending_internal: {
-    label: 'Pending internal',
-    shortLabel: 'Pending internal',
-    color: 'text-orange-700',
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    dot: 'bg-orange-500',
-  },
-  rfi_sent: {
-    label: 'RFI sent',
-    shortLabel: 'RFI sent',
-    color: 'text-cyan-700',
-    bg: 'bg-cyan-50',
-    border: 'border-cyan-200',
-    dot: 'bg-cyan-500',
-  },
-  quotation_sent: {
-    label: 'Quotation sent',
-    shortLabel: 'Quote sent',
-    color: 'text-indigo-700',
-    bg: 'bg-indigo-50',
-    border: 'border-indigo-200',
-    dot: 'bg-indigo-500',
-  },
-  won: {
-    label: 'Won',
-    shortLabel: 'Won',
-    color: 'text-emerald-700',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    dot: 'bg-emerald-500',
-  },
-  cancelled: {
-    label: 'Cancelled',
-    shortLabel: 'Cancelled',
-    color: 'text-rose-700',
-    bg: 'bg-rose-50',
-    border: 'border-rose-200',
-    dot: 'bg-rose-500',
-  },
 }
 
 export const PROJECT_STATE_CONFIG: Record<EstadoProyectoWorkflow, WorkflowConfig> = {
@@ -334,19 +397,6 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
   },
 }
 
-const QUOTATION_TRANSITIONS: Record<EstadoCotizacion, EstadoCotizacion[]> = {
-  new_entry: ['new', 'unassigned', 'cancelled'],
-  new: ['unassigned', 'ongoing', 'cancelled'],
-  unassigned: ['ongoing', 'cancelled'],
-  ongoing: ['pending_customer', 'pending_internal', 'rfi_sent', 'quotation_sent', 'cancelled'],
-  pending_customer: ['ongoing', 'quotation_sent', 'cancelled'],
-  pending_internal: ['ongoing', 'quotation_sent', 'cancelled'],
-  rfi_sent: ['ongoing', 'quotation_sent', 'cancelled'],
-  quotation_sent: ['pending_customer', 'won', 'cancelled'],
-  won: [],
-  cancelled: [],
-}
-
 const PROJECT_TRANSITIONS: Record<EstadoProyecto, EstadoProyecto[]> = {
   op_00_prepay: ['op_01_data_collection'],
   op_01_data_collection: ['op_02_pending_info', 'op_03_pending_tests', 'op_04_under_evaluation'],
@@ -388,20 +438,10 @@ const PROJECT_LEGACY_TO_WORKFLOW: Partial<Record<EstadoProyectoLegacy, EstadoPro
   cerrado: 'op_12_closed',
 }
 
-const QUOTATION_REASON_REQUIRED = new Set<EstadoCotizacion>([
-  'pending_customer',
-  'pending_internal',
-  'cancelled',
-])
-
 const PROJECT_REASON_REQUIRED = new Set<EstadoProyecto>([
   'op_02_pending_info',
   'op_03_pending_tests',
 ])
-
-export function getQuotationStatusMeta(status: string) {
-  return QUOTATION_STATE_CONFIG[status as EstadoCotizacion] ?? QUOTATION_STATE_CONFIG.new_entry
-}
 
 export function getProjectStatusMeta(status: string) {
   if (isProjectWorkflowState(status)) {
@@ -422,10 +462,6 @@ export function getProjectStatusMeta(status: string) {
   }
 }
 
-export function getAllowedQuotationTransitions(status: string) {
-  return QUOTATION_TRANSITIONS[status as EstadoCotizacion] ?? []
-}
-
 export function getAllowedProjectTransitions(status: string) {
   if (isProjectWorkflowState(status)) {
     return PROJECT_TRANSITIONS[status] ?? []
@@ -438,13 +474,8 @@ export function getAllowedProjectTransitions(status: string) {
   return []
 }
 
-export function requiresWorkflowReason(entity: 'quotation' | 'project', state: string) {
-  if (entity === 'quotation') return QUOTATION_REASON_REQUIRED.has(state as EstadoCotizacion)
+export function requiresWorkflowReason(entity: 'project', state: string) {
   return PROJECT_REASON_REQUIRED.has(state as EstadoProyecto)
-}
-
-export function isQuotationState(value: string): value is EstadoCotizacion {
-  return QUOTATION_STATES.includes(value as EstadoCotizacion)
 }
 
 export function isProjectWorkflowState(value: string): value is EstadoProyecto {

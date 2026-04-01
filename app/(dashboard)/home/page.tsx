@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import {
   Bot,
   BriefcaseBusiness,
@@ -22,7 +22,7 @@ const activeAreas = [
     badge: 'Activo',
   },
   {
-    title: 'Engineering Portfolio',
+    title: 'Proyectos',
     description: 'Workflow operativo de proyectos con estados OP-00..OP-13 y separación de dominio.',
     href: '/engineering/portfolio',
     icon: FolderKanban,
@@ -49,7 +49,7 @@ const activeAreas = [
 
 const sanitationHighlights = [
   'Build y lint en verde sin depender de ignoreBuildErrors.',
-  'Quotations y Projects ya trabajan como workflows separados.',
+  'Quotations y Proyectos ya trabajan como workflows separados.',
   'La navegacion y la proteccion de rutas se sanearon en el lote base.',
   'La documentacion ya refleja que doa_* es la fuente activa de runtime.',
 ]
@@ -73,9 +73,7 @@ export default function HomePage() {
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Baseline saneada
               </div>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-                DOA Operations Hub
-              </h2>
+              <h2 className="mt-3 text-2xl font-semibold text-slate-950">DOA Operations Hub</h2>
               <p className="mt-1 text-sm leading-7 text-slate-600">
                 Esta portada ya no muestra datos simulados. Resume el estado real del producto,
                 los modulos activos y el siguiente bloque de trabajo.
@@ -191,3 +189,4 @@ export default function HomePage() {
     </div>
   )
 }
+

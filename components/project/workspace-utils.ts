@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   AeronaveModelo,
   Cliente,
   ProyectoConRelaciones,
@@ -246,7 +246,7 @@ export function buildExpertAnalysis(params: {
       actions: [
         'Priorizar la revisión del paquete documental antes del siguiente hito',
         'Confirmar si las piezas faltantes existen con otra nomenclatura',
-        'Abrir Engineering Data Base para buscar referencias equivalentes en proyectos previos',
+        'Abrir la base histórica de proyectos para buscar referencias equivalentes en expedientes previos',
       ],
     }
   }
@@ -254,7 +254,7 @@ export function buildExpertAnalysis(params: {
   if (mode === 'references') {
     return {
       eyebrow: 'Reutilización técnica',
-      title: 'Consulta sugerida para Engineering Data Base',
+      title: 'Consulta sugerida para la base histórica de proyectos',
       summary:
         'El valor del histórico está en recuperar expedientes similares y reutilizar criterios, estructuras y documentación.',
       bullets: [

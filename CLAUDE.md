@@ -1,116 +1,55 @@
-# CLAUDE.md - DOA Operations Hub
+# CLAUDE.md — Instrucciones para la IA
 
-## Project Overview
+## Sobre este proyecto
+DOA Operations Hub — aplicación interna para gestión de consultas, cotizaciones y proyectos de ingeniería aeronáutica (EASA Part 21J).
 
-DOA Operations Hub is a Next.js / Supabase internal app for DOA operations. It is being shaped as a specialized DOA layer rather than a replacement for Odoo.
+**Stack**: Next.js 16, React 19, Supabase, Tailwind CSS v4, shadcn/ui, OpenRouter, n8n, Zustand.
 
-The current app already contains:
+## Estado actual
+La app está en reestructuración. Las bases de datos están desconectadas. Se reconectan una a una según se necesiten (ver `docs/02-bases-de-datos.md`).
 
-- quotations workflow
-- engineering portfolio
-- project workspace
-- client management
-- internal data tools
-- OpenRouter chat in `tools/experto`
+## Documentación
+Toda la documentación está en la carpeta `docs/`:
+- `docs/01-guia-proyecto.md` — Mapa completo del proyecto
+- `docs/02-bases-de-datos.md` — Inventario de tablas y plan de reconexión
+- `docs/03-flujo-consultas.md` — Flujo de consultas entrantes (3 estados)
+- `docs/04-como-añadir-cosas.md` — Recetas para cambios comunes
+- `docs/05-buenas-practicas.md` — Reglas de código
 
-## Current Architecture Reality
+Lee los docs relevantes ANTES de hacer cambios.
 
-- Framework: Next.js 16 App Router
-- UI: React 19 + Tailwind v4 + shadcn/ui
-- Backend/Auth: Supabase
-- AI chat: OpenRouter
-- State: minimal Zustand usage
+## Reglas obligatorias
 
-## Current Canonical Runtime Domain
+### Estructura
+- `page.tsx` = servidor (datos). `*Client.tsx` = cliente (interfaz). No mezclar.
+- Tipos en `types/database.ts`. Estados en `lib/workflow-states.ts`. Utilidades en `lib/`.
+- No crear archivos fuera de la estructura existente sin justificación.
 
-The current runtime code works primarily on the `doa_*` domain model.
+### Estados
+- SIEMPRE usar constantes de `lib/workflow-states.ts` (ej: `CONSULTA_ESTADOS.NUEVO`)
+- NUNCA hardcodear strings de estado
+- Para añadir estados, seguir la receta en `docs/04-como-añadir-cosas.md`
 
-The `doa_new_*` model still appears in older docs and in parts of `types/database.ts`, but it is not the canonical source for the current active workflows. Treat that as migration/documentation debt unless a task explicitly targets schema consolidation.
+### Base de datos
+- Las tablas están desconectadas. Ver `docs/02-bases-de-datos.md` para saber cuáles reconectar.
+- Para reconectar: seguir la receta en `docs/04-como-añadir-cosas.md`
+- Usar `createClient` de `@/lib/supabase/server` en server components
+- SIEMPRE verificar autenticación en API routes
 
-## Workflow Separation
+### Código limpio
+- No dejar código comentado — borrar lo que no se use
+- No duplicar funciones — si se repite, mover a `lib/`
+- URLs externas en variables de entorno (.env.local), nunca hardcodeadas
+- Errores con contexto: `console.error('Descripción:', error)`
+- Si tocas algo, actualiza el doc correspondiente en `docs/`
 
-Keep these domains separate.
+### Estilos
+- Tailwind CSS directo, no CSS custom
+- Modo oscuro siempre activo
+- Reutilizar componentes shadcn/ui de `components/ui/`
 
-### Quotations
-
-Commercial pipeline:
-
-- `new`
-- `unassigned`
-- `ongoing`
-- `pending_customer`
-- `pending_internal`
-- `rfi_sent`
-- `quotation_sent`
-- `won`
-- `cancelled`
-
-### Projects
-
-Operational pipeline:
-
-- `op_00_prepay`
-- `op_01_data_collection`
-- `op_02_pending_info`
-- `op_03_pending_tests`
-- `op_04_under_evaluation`
-- `op_05_in_work`
-- `op_06_customer_review`
-- `op_07_internal_review`
-- `op_08_pending_signature`
-- `op_09_pending_authority`
-- `op_10_ready_for_delivery`
-- `op_11_delivered`
-- `op_12_closed`
-- `op_13_invoiced`
-
-Only connect both domains at:
-
-- `quotation won -> create/activate project`
-
-## Important Paths
-
-| Path | Purpose |
-| --- | --- |
-| `app/(dashboard)/quotations/` | Quotations UI |
-| `app/(dashboard)/engineering/portfolio/` | Project operational portfolio |
-| `app/(dashboard)/engineering/projects/[id]/` | Project workspace |
-| `app/(dashboard)/tools/experto/` | Current OpenRouter chat UI |
-| `app/api/workflow/transition/route.ts` | Workflow transition API |
-| `app/api/tools/chat/route.ts` | OpenRouter chat route |
-| `lib/workflow-states.ts` | Workflow definitions and transitions |
-| `types/database.ts` | Shared domain types, including transitional debt |
-
-## Auth and Route Protection
-
-- Login route: `/login`
-- Protected areas are enforced through `proxy.ts`
-- Current protected route families include `/home`, `/engineering`, `/quotations`, `/clients`, `/databases`, and `/tools`
-
-## Development Rules
-
-- Do not reintroduce removed legacy files such as `app/api/experto/chat/route.ts` or `store/authStore.ts`.
-- Do not mix quotation states into project workflow logic.
-- Do not mix project states into quotation workflow logic.
-- Do not edit the original base migration file. Add new migrations only.
-- If you touch workflow, auth, or types, validate with `npm run lint` and `npm run build`.
-- Prefer small, conservative refactors over broad rewrites while the app is still stabilizing.
-
-## Current Operational Notes
-
-- `tools/experto` uses OpenRouter
-- Default model is `anthropic/claude-sonnet-4`
-- Requires `OPENROUTER_API_KEY`
-- Dev fallback that has been useful in this environment:
-
-```bash
-npm run dev -- --webpack --port 3000
-```
-
-## Current Documentation Set
-
-- `README.md`
-- `CURRENT_DOMAIN_MODEL.md`
-- `SANITATION_REPORT_2026-03-28.txt`
-- `PROJECT_HANDOFF_2026-03-28.txt`
-- `problemas-soluciones.txt`
+### Lo que NO hacer
+- No crear archivos de documentación en la raíz (van en `docs/`)
+- No tocar `proxy.ts` ni `lib/supabase/server.ts` sin razón
+- No instalar dependencias nuevas sin justificar
+- No crear tipos fuera de `types/database.ts`

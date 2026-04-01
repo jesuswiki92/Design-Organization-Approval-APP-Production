@@ -4,7 +4,6 @@ import { ClipboardPlus, Copy, History, Plane, Shield, Timer, User } from 'lucide
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { WorkflowStateChanger } from '@/components/workflow/WorkflowStateChanger'
 import { cn } from '@/lib/utils'
 import type { ProyectoConRelaciones } from '@/types/database'
 
@@ -85,12 +84,6 @@ export function ProjectWorkspaceHeader({
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <WorkflowStateChanger
-                  entity="project"
-                  entityId={project.id}
-                  currentState={project.estado}
-                  variant="full"
-                />
                 {lastStateChange && (
                   <span className="text-xs text-slate-500">
                     Ultimo cambio: {lastStateChange}

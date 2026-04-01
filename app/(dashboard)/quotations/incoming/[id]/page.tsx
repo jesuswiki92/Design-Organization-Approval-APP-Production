@@ -1,5 +1,5 @@
+// ✅ doa_consultas_entrantes RECONECTADA
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { ArrowLeft, ScanSearch } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
@@ -24,7 +24,33 @@ export default async function IncomingQuotationDetailPage({
     .maybeSingle()
 
   if (error || !data) {
-    notFound()
+    return (
+      <div className="flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)]">
+        <TopBar
+          title="Detalle de consulta"
+          subtitle="Entrada comercial previa a quotation"
+        />
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
+          <Link
+            href="/quotations"
+            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver a quotations
+          </Link>
+          <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+                Consulta no encontrada
+              </h1>
+              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+                {error ? `Error: ${error.message}` : 'No se encontró una consulta con este identificador.'}
+              </p>
+            </div>
+          </section>
+        </div>
+      </div>
+    )
   }
 
   const query = toIncomingQuery(data as ConsultaEntrante)

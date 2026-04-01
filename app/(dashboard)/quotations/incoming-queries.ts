@@ -1,11 +1,10 @@
 import type { ConsultaEntrante } from '@/types/database'
+import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
 
 export type IncomingQueryStatus =
   | 'nuevo'
-  | 'en_revision'
-  | 'espera_formulario_cliente'
-  | 'convertida_a_quotation'
-  | 'descartado'
+  | 'esperando_formulario'
+  | 'formulario_recibido'
 
 export type IncomingQuery = {
   id: string
@@ -20,40 +19,26 @@ export type IncomingQuery = {
   estado: IncomingQueryStatus
 }
 
-const PENDING_INCOMING_STATES = new Set(['nuevo', 'new_entry', 'pendiente', 'pending'])
-
 function normalizeIncomingStatus(value: string | null | undefined): IncomingQueryStatus {
   const normalized = value?.trim().toLowerCase()
 
-  if (!normalized || PENDING_INCOMING_STATES.has(normalized)) {
-    return 'nuevo'
+  if (!normalized || normalized === 'new_entry' || normalized === 'pendiente' || normalized === 'pending') {
+    return CONSULTA_ESTADOS.NUEVO as IncomingQueryStatus
   }
 
-  if (normalized === 'en_revision' || normalized === 'reviewed') {
-    return 'en_revision'
+  if (normalized === 'esperando_formulario' || normalized === 'espera_formulario_cliente' || normalized === 'awaiting_client_form' || normalized === 'waiting_customer_form') {
+    return CONSULTA_ESTADOS.ESPERANDO_FORMULARIO as IncomingQueryStatus
   }
 
-  if (
-    normalized === 'espera_formulario_cliente' ||
-    normalized === 'formulario_enviado' ||
-    normalized === 'awaiting_client_form'
-  ) {
-    return 'espera_formulario_cliente'
+  if (normalized === 'formulario_recibido') {
+    return CONSULTA_ESTADOS.FORMULARIO_RECIBIDO as IncomingQueryStatus
   }
 
-  if (normalized === 'convertida_a_quotation' || normalized === 'converted_to_quotation') {
-    return 'convertida_a_quotation'
-  }
-
-  if (normalized === 'descartado' || normalized === 'discarded') {
-    return 'descartado'
-  }
-
-  return 'nuevo'
+  return CONSULTA_ESTADOS.NUEVO as IncomingQueryStatus
 }
 
-export function isIncomingQueryPending(query: IncomingQuery) {
-  return query.estado === 'nuevo'
+export function isIncomingQueryPending(q: IncomingQuery) {
+  return q.estado === CONSULTA_ESTADOS.NUEVO || !q.estado
 }
 
 function buildIncomingCode(query: ConsultaEntrante) {

@@ -5,67 +5,20 @@ import { useMemo } from 'react'
 import { Inbox, Mail, Sparkles } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { getConsultaStatusMeta } from '@/lib/workflow-states'
 
 import type { IncomingQuery, IncomingQueryStatus } from './incoming-queries'
 
-function statusMeta(status: IncomingQueryStatus) {
-  switch (status) {
-    case 'nuevo':
-      return {
-        label: 'Nueva entrada',
-        color: 'text-sky-700',
-        bg: 'bg-sky-50',
-        border: 'border-sky-200',
-        dot: 'bg-sky-500',
-      }
-    case 'en_revision':
-      return {
-        label: 'En revision',
-        color: 'text-emerald-700',
-        bg: 'bg-emerald-50',
-        border: 'border-emerald-200',
-        dot: 'bg-emerald-500',
-      }
-    case 'espera_formulario_cliente':
-      return {
-        label: 'Espera formulario cliente',
-        color: 'text-amber-700',
-        bg: 'bg-amber-50',
-        border: 'border-amber-200',
-        dot: 'bg-amber-500',
-      }
-    case 'convertida_a_quotation':
-      return {
-        label: 'Convertida a quotation',
-        color: 'text-violet-700',
-        bg: 'bg-violet-50',
-        border: 'border-violet-200',
-        dot: 'bg-violet-500',
-      }
-    case 'descartado':
-      return {
-        label: 'Descartado',
-        color: 'text-slate-600',
-        bg: 'bg-slate-100',
-        border: 'border-slate-200',
-        dot: 'bg-slate-400',
-      }
-  }
-}
-
 function IncomingStatusBadge({ status }: { status: IncomingQueryStatus }) {
-  const meta = statusMeta(status)
+  const meta = getConsultaStatusMeta(status)
 
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium',
         meta.color,
-        meta.bg,
-        meta.border,
       )}
     >
-      <span className={cn('h-1.5 w-1.5 rounded-full', meta.dot)} />
       {meta.label}
     </span>
   )

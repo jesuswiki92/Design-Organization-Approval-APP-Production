@@ -14,7 +14,6 @@ import {
   User,
 } from 'lucide-react'
 
-import { WorkflowStateChanger } from '@/components/workflow/WorkflowStateChanger'
 import {
   PROJECT_PORTFOLIO_STATES,
   getProjectOperationalState,
@@ -155,14 +154,6 @@ function KanbanCard({ project }: { project: ProyectoConRelaciones }) {
         )}
       </div>
 
-      <div className="mt-3 border-t border-slate-200 pt-3">
-        <WorkflowStateChanger
-          entity="project"
-          entityId={project.id}
-          currentState={project.estado}
-          className="w-full"
-        />
-      </div>
     </div>
   )
 }
@@ -283,14 +274,7 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
                 <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">{client}</td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">{aircraft}</td>
                 <td className="min-w-[220px] px-3 py-2.5">
-                  <div className="space-y-2">
-                    <StatusBadge estado={project.estado} />
-                    <WorkflowStateChanger
-                      entity="project"
-                      entityId={project.id}
-                      currentState={project.estado}
-                    />
-                  </div>
+                  <StatusBadge estado={project.estado} />
                 </td>
                 <td className="px-3 py-2.5">
                   <span
