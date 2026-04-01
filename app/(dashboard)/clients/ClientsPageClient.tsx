@@ -151,7 +151,7 @@ function EmptyClientDetail() {
         <div className="w-full rounded-[26px] border border-dashed border-sky-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_100%)] p-6 text-center">
           <p className="text-sm font-semibold text-slate-950">Selecciona un cliente</p>
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            La mitad izquierda muestra nombre, dirección y teléfono. Al pulsar una fila, aquí verás
+            La zona izquierda muestra nombre, dirección y teléfono. Al pulsar una fila, aquí verás
             el resto de la información disponible del cliente.
           </p>
         </div>
@@ -184,7 +184,7 @@ export default function ClientsPageClient({ clients }: { clients: Cliente[] }) {
       <TopBar title="Clientes" subtitle="Base de datos de clientes" />
 
       <div className="flex min-h-0 flex-1 gap-5 p-5 text-slate-900">
-        <div className="flex min-h-0 basis-1/2 flex-col gap-4">
+        <div className="flex min-h-0 basis-2/3 flex-col gap-4">
           <div className="flex items-center gap-3">
             <div className="relative max-w-lg flex-1">
               <Search
@@ -288,7 +288,7 @@ export default function ClientsPageClient({ clients }: { clients: Cliente[] }) {
           </div>
         </div>
 
-        <div className="min-h-0 basis-1/2">
+        <div className="min-h-0 basis-1/3">
           {selectedClient ? (
             <ClientDetailPanel client={selectedClient} onClose={() => setSelectedClient(null)} />
           ) : (
