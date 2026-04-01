@@ -1,9 +1,19 @@
-// ⏸️ BASE DE DATOS DESCONECTADA - ver BASES-DE-DATOS.md para reconectar
-import type { ClienteWithContactos } from '@/types/database'
+import { createClient } from '@/lib/supabase/server'
+import type { Cliente } from '@/types/database'
 import ClientsPageClient from './ClientsPageClient'
 
 export default async function ClientsPage() {
-  const clientesWithContactos: ClienteWithContactos[] = []
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('doa_clientes_datos_generales')
+    .select('*')
+    .order('nombre', { ascending: true })
 
-  return <ClientsPageClient clients={clientesWithContactos} />
+  if (error) {
+    console.error('Error cargando clientes desde doa_clientes_datos_generales:', error)
+  }
+
+  const clients: Cliente[] = data ?? []
+
+  return <ClientsPageClient clients={clients} />
 }

@@ -19,7 +19,7 @@ Estas son las tablas públicas que siguen presentes y visibles en el proyecto tr
 
 | Tabla | Para que sirve | Usada en | Estado |
 |-------|----------------|----------|--------|
-| `doa_clientes_datos_generales` | Datos maestros de cada cliente: nombre de la empresa, CIF (identificacion fiscal), pais, ciudad, y tipo de cliente. Es como la "ficha" principal de cada cliente. | /clients, /engineering/portfolio, /quotations | ⏸️ Desconectada |
+| `doa_clientes_datos_generales` | Datos maestros de cada cliente: nombre de la empresa, CIF (identificacion fiscal), pais, ciudad, y tipo de cliente. Es como la "ficha" principal de cada cliente. | /clients, /engineering/portfolio, /quotations | ✅ Conectada |
 | `doa_clientes_contactos` | Las personas de contacto de cada cliente: nombre, email, cargo que ocupa, y si es el contacto principal. Un cliente puede tener varios contactos. | /clients | ⏸️ Desconectada |
 
 ### Proyectos
