@@ -44,10 +44,11 @@ En Next.js, cada carpeta dentro de `app/` se convierte en una pagina web (una UR
 | `app/page.tsx` | `/` | Redirige automaticamente a `/home` | Ninguno |
 | `app/login/` | `/login` | Pagina de inicio de sesion con email y contrasena | Supabase Auth |
 | `app/home/` | `/home` | Panel principal (dashboard) con resumen general | Estadisticas generales |
-| `app/engineering/` | `/engineering` | Pagina indice de la seccion de ingenieria | Ninguno (es un menu) |
+| `app/engineering/` | `/engineering` | Pagina indice visible como `Proyectos` con tablero y lista mock | Ninguno (es un menu) |
 | `app/engineering/portfolio/` | `/engineering/portfolio` | Lista de todos los proyectos de ingenieria con filtros | `doa_proyectos_generales`, `doa_clientes_datos_generales`, `doa_aeronaves_modelos` |
 | `app/engineering/projects/[id]/` | `/engineering/projects/123` | Espacio de trabajo de un proyecto individual: documentos, tareas, detalles | `doa_proyectos_generales`, `doa_proyectos_documentos`, `doa_proyectos_tareas`, `doa_usuarios` |
-| `app/quotations/` | `/quotations` | Gestion de cotizaciones con tablero visual de estados y consultas entrantes de clientes | `doa_ofertas`, `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
+| `app/quotations/` | `/quotations` | Workspace de quotations con selector `Tablero` / `Lista` | `doa_ofertas`, `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
+| `app/quotations/[id]/` | `/quotations/456` | Detalle de una quotation con bloques preparados para crecer | Datos mock de quotations mientras no exista backend final |
 | `app/quotations/incoming/[id]/` | `/quotations/incoming/456` | Detalle de una consulta entrante especifica: email original, datos del cliente, respuesta IA | `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
 | `app/clients/` | `/clients` | Gestion de clientes: lista, busqueda, detalles y contactos | `doa_clientes_datos_generales`, `doa_clientes_contactos` |
 | `app/databases/` | `/databases` | Navegador de tablas: permite ver todas las tablas de la base de datos | Catalogo de tablas (`lib/databases.ts`) |
@@ -56,6 +57,8 @@ En Next.js, cada carpeta dentro de `app/` se convierte en una pagina web (una UR
 | `app/tools/experto/` | `/tools/experto` | Chat con el asistente de IA experto | OpenRouter API |
 
 > **Nota sobre `[id]` y `[table]`**: Los corchetes significan que es una ruta "dinamica". Es decir, el valor cambia. Por ejemplo, `/engineering/projects/123` muestra el proyecto numero 123, y `/engineering/projects/456` muestra el 456.
+
+> **Nota actual sobre `Engineering`**: En la interfaz visible, esta seccion se presenta como `Proyectos`. El nombre tecnico de la ruta sigue siendo `engineering`.
 
 ---
 

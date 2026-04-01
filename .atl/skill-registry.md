@@ -1,66 +1,49 @@
-# Skill Registry - doa-operations-hub
+# Skill Registry
 
-Generated: 2026-03-28
-Persistence: local file only
+**Orchestrator use only.** Read this once per session to resolve skill paths and project conventions before launching any sub-agent or continuing work.
 
----
+**Project**: doa-ops-hub  
+**Generated**: 2026-04-01  
+**Persistence**: openspec + local registry + engram
 
-## User-Level Skills (`~/.codex/skills/` and `~/.agents/skills/`)
+## User Skills
 
-| Skill | Path | Trigger |
-|-------|------|---------|
-| continuous-project-documentation | `C:\Users\Jesús Andrés\.codex\skills\continuous-project-documentation\SKILL.md` | Create and maintain project documentation, handoffs, specs, and progress state across sessions |
-| frontend-design | `C:\Users\Jesús Andrés\.agents\skills\frontend-design\SKILL.md` | Build web components, pages, dashboards, React components, HTML/CSS layouts, or style frontend UIs |
-| n8n-code-javascript | `C:\Users\Jesús Andrés\.codex\skills\n8n-code-javascript\SKILL.md` | Write JavaScript in n8n Code nodes, use $input/$json/$node syntax, HTTP requests with $helpers, DateTime, or troubleshoot Code node errors |
-| n8n-code-python | `C:\Users\Jesús Andrés\.codex\skills\n8n-code-python\SKILL.md` | Write Python in n8n Code nodes, use _input/_json/_node syntax, standard library, or understand Python limitations in n8n |
-| n8n-expression-syntax | `C:\Users\Jesús Andrés\.codex\skills\n8n-expression-syntax\SKILL.md` | Validate and fix n8n expressions, use {{}} syntax, access $json/$node variables, or troubleshoot expression errors |
-| n8n-mcp-tools-expert | `C:\Users\Jesús Andrés\.codex\skills\n8n-mcp-tools-expert\SKILL.md` | Use n8n-mcp tools to search nodes, validate configs, access templates, and manage workflows |
-| n8n-node-configuration | `C:\Users\Jesús Andrés\.codex\skills\n8n-node-configuration\SKILL.md` | Configure n8n nodes, understand property dependencies, and determine required fields |
-| n8n-validation-expert | `C:\Users\Jesús Andrés\.codex\skills\n8n-validation-expert\SKILL.md` | Interpret and fix n8n validation errors, false positives, and operator structure issues |
-| n8n-workflow-patterns | `C:\Users\Jesús Andrés\.codex\skills\n8n-workflow-patterns\SKILL.md` | Design n8n workflow architecture for webhooks, HTTP APIs, database ops, AI agents, and scheduled tasks |
-| sdd-apply | `C:\Users\Jesús Andrés\.codex\skills\sdd-apply\SKILL.md` | Implement tasks from a change using specs and design |
-| sdd-archive | `C:\Users\Jesús Andrés\.codex\skills\sdd-archive\SKILL.md` | Sync delta specs to main specs and archive completed changes |
-| sdd-design | `C:\Users\Jesús Andrés\.codex\skills\sdd-design\SKILL.md` | Create technical design documents with architecture decisions and rationale |
-| sdd-explore | `C:\Users\Jesús Andrés\.codex\skills\sdd-explore\SKILL.md` | Explore and investigate ideas before committing to a change |
-| sdd-init | `C:\Users\Jesús Andrés\.codex\skills\sdd-init\SKILL.md` | Initialize SDD context in a project, detect stack and conventions, and bootstrap persistence |
-| sdd-propose | `C:\Users\Jesús Andrés\.codex\skills\sdd-propose\SKILL.md` | Create a change proposal with intent, scope, and approach |
-| sdd-spec | `C:\Users\Jesús Andrés\.codex\skills\sdd-spec\SKILL.md` | Write specifications with requirements and scenarios |
-| sdd-tasks | `C:\Users\Jesús Andrés\.codex\skills\sdd-tasks\SKILL.md` | Break down a change into an implementation task checklist |
-| sdd-verify | `C:\Users\Jesús Andrés\.codex\skills\sdd-verify\SKILL.md` | Validate that implementation matches specs, design, and tasks |
-| skill-registry | `C:\Users\Jesús Andrés\.codex\skills\skill-registry\SKILL.md` | Create or update the project skill registry and write `.atl/skill-registry.md` |
-| streamlit-best-practices | `C:\Users\Jesús Andrés\.codex\skills\streamlit-best-practices\SKILL.md` | Create or review Streamlit apps: project structure, state, caching, Supabase integration, theming, and deployment |
+| Trigger | Skill | Path |
+|---------|-------|------|
+| Buscar o instalar una skill para una necesidad concreta | `find-skills` | `/home/coder/.agents/skills/find-skills/SKILL.md` |
+| Construir o refinar UI/frontend en React o web | `frontend-design` | `/home/coder/.agents/skills/frontend-design/SKILL.md` |
+| Revisar o optimizar React/Next.js con prácticas de Vercel | `vercel-react-best-practices` | `/home/coder/.agents/skills/vercel-react-best-practices/SKILL.md` |
+| Crear o mejorar una skill | `skill-creator` | `/home/coder/.agents/skills/skill-creator/SKILL.md` |
+| Generar o editar imágenes raster | `imagegen` | `/root/.codex/skills/.system/imagegen/SKILL.md` |
+| Consultar documentación oficial de OpenAI | `openai-docs` | `/root/.codex/skills/.system/openai-docs/SKILL.md` |
+| Crear plugins locales de Codex | `plugin-creator` | `/root/.codex/skills/.system/plugin-creator/SKILL.md` |
+| Instalar skills desde catálogo o repositorio | `skill-installer` | `/root/.codex/skills/.system/skill-installer/SKILL.md` |
 
-### System Skills (`~/.codex/skills/.system/`)
+## Project Conventions
 
-| Skill | Path | Trigger |
-|-------|------|---------|
-| imagegen | `C:\Users\Jesús Andrés\.codex\skills\.system\imagegen\SKILL.md` | Generate or edit bitmap images, mockups, textures, illustrations, or raster assets |
-| openai-docs | `C:\Users\Jesús Andrés\.codex\skills\.system\openai-docs\SKILL.md` | Use when working with OpenAI products or APIs and you need current official docs |
-| plugin-creator | `C:\Users\Jesús Andrés\.codex\skills\.system\plugin-creator\SKILL.md` | Scaffold local plugin directories and `.codex-plugin/plugin.json` files |
-| skill-creator | `C:\Users\Jesús Andrés\.codex\skills\.system\skill-creator\SKILL.md` | Create or update a skill for Codex |
-| skill-installer | `C:\Users\Jesús Andrés\.codex\skills\.system\skill-installer\SKILL.md` | Install Codex skills from a curated list or a GitHub repository path |
-
-## Project-Level Convention Files
-
-| File | Purpose |
-|------|---------|
-| `AGENTS.md` | DOA Operations Hub conventions, stack, Supabase usage, deployment, and mock data rules |
-| `CLAUDE.md` | Detailed architecture, auth, route map, known bugs, and phase 2 roadmap |
+| File | Path | Notes |
+|------|------|-------|
+| `CLAUDE.md` | `CLAUDE.md` | Guía primaria del proyecto. Leer antes de tocar código. |
+| `docs/01-guia-proyecto.md` | `docs/01-guia-proyecto.md` | Mapa funcional y estructural de la app. |
+| `docs/02-bases-de-datos.md` | `docs/02-bases-de-datos.md` | Estado real de tablas, reconexión y servicios externos. |
+| `docs/03-flujo-consultas.md` | `docs/03-flujo-consultas.md` | Flujo comercial principal y archivos implicados. |
+| `docs/04-como-añadir-cosas.md` | `docs/04-como-añadir-cosas.md` | SOP para añadir páginas, APIs, estados y reconectar DB. |
+| `docs/05-buenas-practicas.md` | `docs/05-buenas-practicas.md` | Reglas de estructura, Supabase, Tailwind y entrega. |
+| `docs/06-estado-actual.md` | `docs/06-estado-actual.md` | Snapshot funcional más reciente de Quotations y Proyectos. |
+| `openspec/config.yaml` | `openspec/config.yaml` | Configuración SDD ya inicializada para este repo. |
 
 ## SDD Persistence
 
 | Path | Purpose |
 |------|---------|
-| `openspec/config.yaml` | Project SDD configuration and rules |
-| `openspec/specs/` | Specification source of truth |
-| `openspec/changes/` | Active change workspace |
-| `openspec/changes/archive/` | Archived completed changes |
+| `openspec/config.yaml` | Reglas SDD del proyecto y contexto detectado. |
+| `openspec/specs/` | Fuente de verdad para especificaciones base. |
+| `openspec/changes/` | Workspace para cambios activos. |
+| `openspec/changes/archive/` | Historial de cambios completados. |
 
-## Shared Conventions (`~/.codex/skills/_shared/`)
+## Current Initialization Notes
 
-| File | Purpose |
-|------|---------|
-| `engram-convention.md` | Topic key naming, mem_save/mem_search usage patterns |
-| `openspec-convention.md` | File-based artifact structure and conventions |
-| `persistence-contract.md` | Rules for when and how sub-agents read and write artifacts |
-| `sdd-phase-common.md` | Shared logic across all SDD phase skills |
+- El repo ya tiene `openspec/` creado; no hace falta reinicializar desde cero.
+- La guía operativa real del proyecto vive en `CLAUDE.md` + `docs/`.
+- El stack detectado es Next.js 16 + React 19 + TypeScript + Tailwind v4 + Supabase + Zustand.
+- Hay cambios locales sin commit en gran parte del repo; tomar el working tree actual como baseline antes de abrir un change nuevo.

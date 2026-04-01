@@ -20,6 +20,7 @@ Requiere `.env.local` con las variables de Supabase y OpenRouter. Ver `docs/01-g
 | [Flujo de consultas](docs/03-flujo-consultas.md) | Los 3 estados del flujo principal |
 | [Cómo añadir cosas](docs/04-como-añadir-cosas.md) | Recetas paso a paso |
 | [Buenas prácticas](docs/05-buenas-practicas.md) | Reglas de código |
+| [Estado actual](docs/06-estado-actual.md) | Lo que hay implementado ahora mismo en la app |
 
 ## Para la IA
 

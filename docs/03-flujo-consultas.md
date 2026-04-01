@@ -46,14 +46,23 @@ Cliente envia email
 
 | Parte del flujo | Archivo | Que hace |
 |-----------------|---------|----------|
-| Tablero y lista de quotations | `app/(dashboard)/quotations/page.tsx` | Pagina principal con tablero visual de estados y bandeja de consultas |
-| Cabecera, tabs y tablero | `app/(dashboard)/quotations/QuotationStatesBoard.tsx` | Selector de vistas, columnas reales, cards mock y alta local de estados |
+| Workspace de quotations | `app/(dashboard)/quotations/page.tsx` | Pagina principal con tablero/lista y la base visual del flujo comercial |
+| Cabecera, tabs y tablero | `app/(dashboard)/quotations/QuotationStatesBoard.tsx` | Selector de vistas, columnas reales, cards mock, alta y borrado local de estados |
+| Datos compartidos de quotations | `app/(dashboard)/quotations/quotation-board-data.ts` | Datos mock, helpers de persistencia local y normalizacion de estados |
+| Detalle de quotation | `app/(dashboard)/quotations/[id]/page.tsx` | Pagina de detalle con bloques preparados para crecer |
 | Panel de consultas nuevas | `app/(dashboard)/quotations/IncomingQueriesPanel.tsx` | Panel que muestra las consultas pendientes |
 | Detalle de consulta | `app/(dashboard)/quotations/incoming/[id]/page.tsx` | Vista detallada de una consulta |
 | Enviar al cliente | `app/api/consultas/[id]/send-client/route.ts` | API que envia el email via n8n |
 | Estados | `lib/workflow-states.ts` | Definicion de los estados visuales del board y de las consultas entrantes |
 | Tipos de datos | `types/database.ts` -> `ConsultaEntrante` | Estructura de datos de una consulta |
 | Logica de estados | `app/(dashboard)/quotations/incoming-queries.ts` | Funciones para filtrar y normalizar estados |
+
+## Estado actual de la UI
+
+- Las cards del tablero de quotations incluyen `Mas detalle` y abren `/quotations/[id]`.
+- La vista `Lista` usa los mismos datos del board para mantener coherencia visual.
+- Los estados nuevos de quotations se crean y eliminan localmente por ahora.
+- La seccion visible de `Engineering` ya se presenta como `Proyectos` y tiene vistas `Tablero` y `Lista` mock.
 
 ## Como anadir un nuevo estado
 

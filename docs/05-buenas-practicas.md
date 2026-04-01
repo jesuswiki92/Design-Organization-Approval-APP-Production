@@ -114,3 +114,10 @@ if (error) {
 3. ¿Los strings de estado vienen de constantes? → No hay strings sueltos
 4. ¿La documentación está actualizada? → Si cambiaste algo, actualizar el doc correspondiente
 5. ¿Las URLs están en variables de entorno? → No hay URLs hardcodeadas
+
+---
+
+## Notas operativas / errores conocidos
+
+- **Nota: No reutilizar `node_modules` copiado desde otro sistema operativo**, porque puede dejar binarios nativos incorrectos y provocar errores como `Cannot find module '../lightningcss.linux-x64-gnu.node'` durante `npm run build`.
+- **En su lugar**, ejecutar `npm install` en el entorno actual para que npm descargue las dependencias opcionales correctas para Linux/macOS/Windows antes de validar con `npm run build`.

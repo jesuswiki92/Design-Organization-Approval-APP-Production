@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+.atl/
 
 # debug
 npm-debug.log*
@@ -43,3 +44,4 @@ next-env.d.ts
 .env.local
 .env.*.local
 .npm-cache/
+VPS_DEPLOYMENT_RUNBOOK_PRIVATE.txt

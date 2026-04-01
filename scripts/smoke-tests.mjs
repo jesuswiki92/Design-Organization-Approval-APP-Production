@@ -108,7 +108,7 @@ async function main() {
     await expectPage('/tools/experto', { statuses: [307], locationIncludes: '/login' })
   }
 
-  await expectJsonError('/api/workflow/transition', {}, 400)
+  await expectJsonError('/api/workflow/transition', {}, 503)
 
   if (ENABLE_CHAT) {
     await expectChat('/api/tools/chat')

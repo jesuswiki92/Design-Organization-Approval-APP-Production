@@ -6,8 +6,6 @@ import { isMissingSchemaError } from '@/lib/supabase/errors'
 
 export const runtime = 'nodejs'
 
-const WEBHOOK_URL = 'https://sswebhook.testn8n.com/webhook/doa-send-client-email'
-
 type IncomingQueryPayload = {
   codigo?: string | null
   asunto?: string | null
@@ -43,6 +41,14 @@ export async function POST(
       return jsonResponse(400, 'El mensaje al cliente es obligatorio.')
     }
 
+    const webhookUrl = process.env.DOA_SEND_CLIENT_WEBHOOK_URL?.trim()
+    if (!webhookUrl) {
+      return jsonResponse(
+        500,
+        'DOA_SEND_CLIENT_WEBHOOK_URL no está configurada. Añádela en el entorno antes de enviar correos al cliente.',
+      )
+    }
+
     const query = body.query ?? {}
 
     const webhookPayload = {
@@ -75,7 +81,7 @@ export async function POST(
       },
     }
 
-    const webhookResponse = await fetch(WEBHOOK_URL, {
+    const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookPayload),

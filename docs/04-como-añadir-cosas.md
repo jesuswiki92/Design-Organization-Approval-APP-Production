@@ -124,6 +124,8 @@ const response = await fetch(process.env.TU_WEBHOOK_URL!, {
 ```
 4. **Documentar** en `docs/02-bases-de-datos.md` sección "Servicios externos"
 
+> Ejemplo actual del proyecto: `DOA_SEND_CLIENT_WEBHOOK_URL` para `app/api/consultas/[id]/send-client/route.ts`
+
 ---
 
 ## Añadir un nuevo componente shadcn/ui

@@ -91,7 +91,7 @@ Ademas de las tablas, la aplicacion se conecta a estos servicios:
 |----------|---------------|-------------------|
 | **Supabase Auth** | Gestiona el inicio de sesion (login) y las sesiones de usuario. Controla quien puede entrar a la app. | Variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `.env.local` |
 | **OpenRouter** | Conexion con modelos de inteligencia artificial. Es lo que hace funcionar el chat "Experto IA" en `/tools/experto`. | Variable `OPENROUTER_API_KEY` en `.env.local` |
-| **n8n (webhook)** | Automatizacion para enviar emails a clientes. Cuando un ingeniero responde a una consulta, la app llama a un webhook de n8n que envia el email real. | La URL del webhook esta escrita directamente en el codigo (`app/api/consultas/[id]/send-client/route.ts`). **Pendiente**: mover esta URL a una variable de entorno para que sea mas facil de cambiar. |
+| **n8n (webhook)** | Automatizacion para enviar emails a clientes. Cuando un ingeniero responde a una consulta, la app llama a un webhook de n8n que envia el email real. | Variable `DOA_SEND_CLIENT_WEBHOOK_URL` en `.env.local` / entorno de despliegue. |
 
 ---
 
