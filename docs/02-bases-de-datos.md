@@ -11,9 +11,9 @@ Este documento es el inventario de TODAS las tablas de la base de datos (Supabas
 
 ---
 
-## Tablas activas (doa_*)
+## Tablas activas actuales
 
-Estas son las tablas que la aplicacion realmente usa. Todas empiezan con el prefijo `doa_` (por Design Organisation Approval).
+Estas son las tablas públicas que siguen presentes y visibles en el proyecto tras la limpieza del esquema a fecha 2026-04-01.
 
 ### Clientes
 
@@ -26,25 +26,13 @@ Estas son las tablas que la aplicacion realmente usa. Todas empiezan con el pref
 
 | Tabla | Para que sirve | Usada en | Estado |
 |-------|----------------|----------|--------|
-| `doa_proyectos_generales` | Los proyectos de ingenieria: numero de proyecto, titulo, estado actual, presupuesto asignado, horas estimadas. Es la tabla central de cada proyecto. | /engineering/portfolio, /engineering/projects/[id], /quotations | ⏸️ Desconectada |
-| `doa_proyectos_documentos` | Documentos asociados a un proyecto: tipo de documento (informe, plano, etc.), version, estado de revision, y URL donde esta guardado el archivo. | /engineering/projects/[id] | ⏸️ Desconectada |
-| `doa_proyectos_tareas` | Tareas dentro de un proyecto: titulo de la tarea, quien es el responsable, prioridad (alta, media, baja), y estado (pendiente, en progreso, completada). | /engineering/projects/[id] | ⏸️ Desconectada |
-| `doa_proyectos_hitos` | Hitos (milestones) de un proyecto: descripcion del hito, fecha prevista para completarlo, y si ya esta completado o no. Los hitos son los "puntos clave" del proyecto. | /databases (solo en el navegador de tablas) | ⏸️ Desconectada |
-| `doa_proyectos_estado_historial` | Historial de cambios de estado de los proyectos. Cada vez que un proyecto cambia de estado (por ejemplo de "En progreso" a "En revision"), se guarda un registro aqui con la fecha, quien lo cambio, y el estado anterior y nuevo. | /api/workflow/transition | ⏸️ Desconectada |
+| `doa_proyectos_generales` | Los proyectos de ingenieria: numero de proyecto, titulo, estado actual, presupuesto asignado y horas estimadas. Es la tabla central de cada proyecto. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
 
 ### Cotizaciones / Ofertas
 
 | Tabla | Para que sirve | Usada en | Estado |
 |-------|----------------|----------|--------|
-| `doa_ofertas` | Las ofertas o cotizaciones: numero de oferta, cliente asociado, estado actual (Borrador, Enviada, Aceptada, Rechazada), horas estimadas de trabajo. | /quotations, /api/workflow/transition | ⏸️ Desconectada |
-| `doa_ofertas_estado_historial` | Historial de cambios de estado de las ofertas. Similar al historial de proyectos: guarda cada transicion con fecha y detalle. | /api/workflow/transition | ⏸️ Desconectada |
 | `doa_consultas_entrantes` | Las consultas que llegan de clientes por email. Cada registro tiene: asunto del email, remitente, contenido, clasificacion automatica (hecha por IA), y la respuesta sugerida por la IA. Es el punto de entrada del flujo principal. | /quotations, /quotations/incoming/[id] | ✅ Conectada |
-
-### Aeronaves
-
-| Tabla | Para que sirve | Usada en | Estado |
-|-------|----------------|----------|--------|
-| `doa_aeronaves_modelos` | Catalogo de modelos de aeronave: fabricante (Airbus, Boeing, etc.), familia (A320, 737, etc.), y modelo especifico. Se usa para asociar proyectos con las aeronaves sobre las que se trabaja. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
 
 ### Usuarios
 
@@ -52,21 +40,39 @@ Estas son las tablas que la aplicacion realmente usa. Todas empiezan con el pref
 |-------|----------------|----------|--------|
 | `doa_usuarios` | Los usuarios internos del equipo DOA: nombre completo, email, rol dentro del equipo (ingeniero, jefe de proyecto, etc.), y titulo profesional. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
 
-### Solo visibles en el navegador de tablas (/databases)
+### Chat, IA y tablas auxiliares visibles en `/databases`
 
-Estas tablas existen en la base de datos y se pueden ver desde la seccion `/databases`, pero no tienen un tipo TypeScript definido (es decir, el codigo no sabe exactamente que columnas tienen).
+Estas tablas existen en la base de datos y se muestran en la sección `/databases`, aunque no formen parte aún del modelo tipado principal de la app.
 
 | Tabla | Para que sirve | Usada en | Estado |
 |-------|----------------|----------|--------|
-| `doa_solicitudes` | Solicitudes internas. No tiene tipo TypeScript definido, por lo que solo se puede explorar visualmente desde el navegador de tablas. | /databases (solo navegador) | ⏸️ Desconectada |
-| `doa_aeronaves_registro` | Registro de aeronaves individuales (no modelos, sino aeronaves concretas con matricula). No tiene tipo TypeScript definido. | /databases (solo navegador) | ⏸️ Desconectada |
-| `doa_aeronaves_tcds` | TCDs (Type Certificate Data Sheets) de aeronaves. Son los certificados de tipo emitidos por la autoridad. No tiene tipo TypeScript definido. | /databases (solo navegador) | ⏸️ Desconectada |
+| `chat_sessions` | Sesiones de conversación persistidas para el asistente IA. | /databases | ⏸️ Desconectada |
+| `chat_history` | Historial de mensajes por sesión de chat. | /databases | ⏸️ Desconectada |
+| `salud_sintomas` | Tabla auxiliar usada en pruebas o clasificación de síntomas. | /databases | ⏸️ Desconectada |
+| `DocumentacionCertificacion` | Corpus documental de certificación indexado para búsqueda. | /databases | ⏸️ Desconectada |
+| `documents` | Metadatos de documentos vectorizados del sistema RAG. | /databases | ⏸️ Desconectada |
+| `doa_chunks` | Fragmentos indexados del corpus DOA para recuperación semántica. | /databases | ⏸️ Desconectada |
 
 ---
 
 ## Tablas legacy (doa_new_*)
 
 Las tablas legacy `doa_new_*` ya fueron eliminadas de Supabase y no forman parte del esquema activo. Si vuelven a aparecer en algun entorno, deben tratarse como deriva de esquema y no como parte soportada por la app.
+
+## Tablas eliminadas del esquema público
+
+Estas tablas aparecían en documentación o en catálogos antiguos del proyecto, pero ya no forman parte del esquema público actual:
+
+- `doa_proyectos_documentos`
+- `doa_proyectos_tareas`
+- `doa_proyectos_hitos`
+- `doa_proyectos_estado_historial`
+- `doa_ofertas`
+- `doa_ofertas_estado_historial`
+- `doa_aeronaves_modelos`
+- `doa_aeronaves_registro`
+- `doa_aeronaves_tcds`
+- `doa_solicitudes`
 
 ---
 

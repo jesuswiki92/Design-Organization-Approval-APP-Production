@@ -15,48 +15,15 @@ export const TABLE_GROUPS = [
     ],
   },
   {
-    name: 'Proyectos',
+    name: 'Consultas y proyectos',
     tables: [
+      {
+        table: 'doa_consultas_entrantes',
+        description: 'Consultas comerciales entrantes procesadas desde email y formularios.',
+      },
       {
         table: 'doa_proyectos_generales',
         description: 'Registro maestro de proyectos y expedientes de ingenieria.',
-      },
-      {
-        table: 'doa_proyectos_documentos',
-        description: 'Documentos vinculados al desarrollo y certificacion de proyectos.',
-      },
-      {
-        table: 'doa_proyectos_hitos',
-        description: 'Hitos planificados y completados para el seguimiento del proyecto.',
-      },
-      {
-        table: 'doa_proyectos_tareas',
-        description: 'Tareas operativas y tecnicas asignadas dentro de cada proyecto.',
-      },
-      {
-        table: 'doa_solicitudes',
-        description: 'Solicitudes de trabajo, cambios o soporte recibidas por la organizacion.',
-      },
-      {
-        table: 'doa_ofertas',
-        description: 'Ofertas comerciales y propuestas emitidas para nuevas oportunidades.',
-      },
-    ],
-  },
-  {
-    name: 'Aeronaves',
-    tables: [
-      {
-        table: 'doa_aeronaves_modelos',
-        description: 'Catalogo de fabricantes, familias y modelos de aeronaves.',
-      },
-      {
-        table: 'doa_aeronaves_registro',
-        description: 'Registro operativo de aeronaves, matriculas y configuraciones.',
-      },
-      {
-        table: 'doa_aeronaves_tcds',
-        description: 'Referencias TCDS y datos de certificacion asociados a modelos.',
       },
     ],
   },
@@ -70,6 +37,23 @@ export const TABLE_GROUPS = [
     ],
   },
   {
+    name: 'Chat e IA',
+    tables: [
+      {
+        table: 'chat_sessions',
+        description: 'Sesiones de conversación del asistente y su contexto operativo.',
+      },
+      {
+        table: 'chat_history',
+        description: 'Historial de mensajes almacenados para cada sesión de chat.',
+      },
+      {
+        table: 'salud_sintomas',
+        description: 'Tabla auxiliar de síntomas y clasificación usada en pruebas o flujos de IA.',
+      },
+    ],
+  },
+  {
     name: 'RAG/Vectores',
     tables: [
       {
@@ -79,6 +63,10 @@ export const TABLE_GROUPS = [
       {
         table: 'documents',
         description: 'Documentos vectorizados y metadatos usados por el sistema RAG.',
+      },
+      {
+        table: 'doa_chunks',
+        description: 'Chunks indexados del corpus DOA para recuperación semántica.',
       },
     ],
   },
@@ -99,4 +87,4 @@ export const ALLOWED_TABLES = TABLE_GROUPS.flatMap((group) => group.tables.map((
 
 export const ALLOWED_TABLE_SET = new Set<string>(ALLOWED_TABLES)
 
-export const RAG_TABLE_SET = new Set<AllowedTable>(['DocumentacionCertificacion', 'documents'])
+export const RAG_TABLE_SET = new Set<AllowedTable>(['DocumentacionCertificacion', 'documents', 'doa_chunks'])
