@@ -45,3 +45,4 @@ next-env.d.ts
 .env.*.local
 .npm-cache/
 VPS_DEPLOYMENT_RUNBOOK_PRIVATE.txt
+VPS_DEPLOYMENT_RUNBOOK_CODEX_PRIVATE.txt

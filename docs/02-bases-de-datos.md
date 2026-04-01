@@ -66,20 +66,7 @@ Estas tablas existen en la base de datos y se pueden ver desde la seccion `/data
 
 ## Tablas legacy (doa_new_*)
 
-Estas tablas fueron creadas durante una migracion inicial del proyecto, pero **NUNCA se usan** en la aplicacion actual. Tienen tipos TypeScript definidos en el archivo `types/database.ts`, pero ningun codigo del proyecto las referencia para leer o escribir datos.
-
-| Tabla legacy | Tabla activa equivalente | Notas |
-|-------------|------------------------|-------|
-| `doa_new_profiles` | `doa_usuarios` | Misma funcion: perfiles de usuario |
-| `doa_new_aircraft` | `doa_aeronaves_modelos` | Misma funcion: catalogo de aeronaves |
-| `doa_new_clients` | `doa_clientes_datos_generales` | Misma funcion: datos de clientes |
-| `doa_new_projects` | `doa_proyectos_generales` | Misma funcion: proyectos |
-| `doa_new_project_members` | (sin equivalente) | Miembros de proyecto - esta funcionalidad se maneja de otra forma |
-| `doa_new_documents` | `doa_proyectos_documentos` | Misma funcion: documentos de proyecto |
-| `doa_new_tasks` | `doa_proyectos_tareas` | Misma funcion: tareas de proyecto |
-| `doa_new_vector_documents` | (sin equivalente) | Era para un corpus RAG (documentos para IA). No se implemento. |
-
-**Decision**: Las tablas `doa_new_*` se pueden eliminar de Supabase cuando se confirme que no contienen datos importantes. Antes de borrarlas, conviene revisar si tienen registros utiles que se deban migrar a las tablas activas.
+Las tablas legacy `doa_new_*` ya fueron eliminadas de Supabase y no forman parte del esquema activo. Si vuelven a aparecer en algun entorno, deben tratarse como deriva de esquema y no como parte soportada por la app.
 
 ---
 
