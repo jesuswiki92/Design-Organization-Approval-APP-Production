@@ -185,6 +185,36 @@ export interface ConsultaEntrante {
   ultimo_borrador_cliente?: string | null
 }
 
+export type WorkflowStateScope = 'incoming_queries' | 'quotation_board'
+
+export type WorkflowStateColorToken =
+  | 'sky'
+  | 'cyan'
+  | 'emerald'
+  | 'amber'
+  | 'violet'
+  | 'indigo'
+  | 'slate'
+  | 'blue'
+  | 'green'
+  | 'yellow'
+  | 'rose'
+
+export interface WorkflowStateConfigRow {
+  id?: string
+  scope: WorkflowStateScope
+  state_code: string
+  label: string
+  short_label: string | null
+  description: string | null
+  color_token: WorkflowStateColorToken
+  sort_order: number
+  is_system: boolean
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+}
+
 export interface ProyectoEstadoHistorial {
   id: string
   proyecto_id: string
@@ -194,4 +224,3 @@ export interface ProyectoEstadoHistorial {
   changed_at: string
   changed_by: string | null
 }
-

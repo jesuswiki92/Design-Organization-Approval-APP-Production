@@ -9,16 +9,36 @@ import {
   useState,
   type FormEvent,
 } from 'react'
-import { LayoutGrid, List, Plus, Sparkles, Trash2 } from 'lucide-react'
+import {
+  LayoutGrid,
+  List,
+  Plus,
+  RotateCcw,
+  Save,
+  Settings2,
+  Sparkles,
+  Trash2,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  getWorkflowStateColorOptions,
+  replaceWorkflowStateRowsForScope,
+  resolveWorkflowStateRows,
+  WORKFLOW_STATE_SCOPES,
+} from '@/lib/workflow-state-config'
 import { cn } from '@/lib/utils'
+import type {
+  WorkflowStateConfigRow,
+  WorkflowStateScope,
+} from '@/types/database'
 import type { QuotationLane } from './quotation-board-data'
 import {
   canDeleteQuotationLane,
   defaultQuotationLanes,
-  loadStoredQuotationLanes,
+  loadStoredCustomQuotationLanes,
   makeCustomQuotationLane,
   stripQuotationLaneAccent,
   type QuotationCard,
@@ -26,6 +46,11 @@ import {
 } from './quotation-board-data'
 
 type BoardView = 'board' | 'list'
+
+type ScopeSaveState = {
+  status: 'idle' | 'saving' | 'success' | 'error'
+  message: string | null
+}
 
 const VIEW_OPTIONS: Array<{
   value: BoardView
@@ -35,6 +60,71 @@ const VIEW_OPTIONS: Array<{
   { value: 'board', label: 'Tablero', icon: LayoutGrid },
   { value: 'list', label: 'Lista', icon: List },
 ]
+
+const SCOPE_COPY: Record<
+  WorkflowStateScope,
+  { title: string; description: string; helper: string }
+> = {
+  quotation_board: {
+    title: 'Board de quotations',
+    description: 'Configura columnas, color, etiquetas cortas y orden visual del tablero.',
+    helper: 'Estos estados controlan el board y la vista lista de Quotations.',
+  },
+  incoming_queries: {
+    title: 'Consultas entrantes',
+    description: 'Configura cómo se muestran los estados del flujo previo a quotation.',
+    helper: 'Los códigos técnicos siguen fijos en Supabase; aquí solo cambias presentación.',
+  },
+}
+
+const COLOR_OPTIONS = getWorkflowStateColorOptions()
+
+function normalizeEditableRows(
+  rows: WorkflowStateConfigRow[],
+): Record<WorkflowStateScope, WorkflowStateConfigRow[]> {
+  return {
+    quotation_board: resolveWorkflowStateRows(
+      WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
+      rows,
+    ).map(stripResolvedStateMeta),
+    incoming_queries: resolveWorkflowStateRows(
+      WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
+      rows,
+    ).map(stripResolvedStateMeta),
+  }
+}
+
+function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
+  const {
+    id,
+    scope,
+    state_code,
+    label,
+    short_label,
+    description,
+    color_token,
+    sort_order,
+    is_system,
+    is_active,
+    created_at,
+    updated_at,
+  } = row
+
+  return {
+    id,
+    scope,
+    state_code,
+    label,
+    short_label,
+    description,
+    color_token,
+    sort_order,
+    is_system,
+    is_active,
+    created_at,
+    updated_at,
+  }
+}
 
 function BoardCard({ card }: { card: QuotationCard }) {
   return (
@@ -192,7 +282,9 @@ function ListRow({
               Delete
             </button>
           ) : (
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">Locked</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+              Locked
+            </span>
           )}
         </div>
       </td>
@@ -200,18 +292,221 @@ function ListRow({
   )
 }
 
-export function QuotationStatesBoard() {
-  const [lanes, setLanes] = useState<QuotationLane[]>(defaultQuotationLanes)
+function ScopeEditor({
+  scope,
+  rows,
+  saveState,
+  onChangeRow,
+  onReset,
+  onSave,
+}: {
+  scope: WorkflowStateScope
+  rows: WorkflowStateConfigRow[]
+  saveState: ScopeSaveState
+  onChangeRow: (
+    scope: WorkflowStateScope,
+    stateCode: string,
+    patch: Partial<WorkflowStateConfigRow>,
+  ) => void
+  onReset: (scope: WorkflowStateScope) => void
+  onSave: (scope: WorkflowStateScope) => void
+}) {
+  return (
+    <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_12px_28px_rgba(148,163,184,0.12)]">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold text-slate-950">{SCOPE_COPY[scope].title}</h3>
+          <p className="text-sm text-slate-600">{SCOPE_COPY[scope].description}</p>
+          <p className="text-xs text-slate-500">{SCOPE_COPY[scope].helper}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 rounded-[16px] border-slate-200 bg-white px-4 text-slate-700 hover:bg-slate-50"
+            onClick={() => onReset(scope)}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Restaurar
+          </Button>
+          <Button
+            type="button"
+            className="h-10 rounded-[16px] bg-sky-600 px-4 text-white hover:bg-sky-500"
+            onClick={() => onSave(scope)}
+            disabled={saveState.status === 'saving'}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {saveState.status === 'saving' ? 'Guardando...' : 'Guardar'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {rows.map((row) => (
+          <article
+            key={`${scope}-${row.state_code}`}
+            className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 font-mono text-[11px] text-slate-500">
+                  {row.state_code}
+                </span>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                  ID técnico fijo
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span>Orden visual</span>
+                <input
+                  type="number"
+                  value={row.sort_order}
+                  onChange={(event) =>
+                    onChangeRow(scope, row.state_code, {
+                      sort_order: Number(event.target.value),
+                    })
+                  }
+                  className="h-10 w-24 rounded-[14px] border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-colors focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Nombre visible
+                  </span>
+                  <input
+                    value={row.label}
+                    onChange={(event) =>
+                      onChangeRow(scope, row.state_code, { label: event.target.value })
+                    }
+                    className="h-11 w-full rounded-[16px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    placeholder="Nombre visible del estado"
+                  />
+                </label>
+
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Etiqueta corta
+                  </span>
+                  <input
+                    value={row.short_label ?? ''}
+                    onChange={(event) =>
+                      onChangeRow(scope, row.state_code, {
+                        short_label: event.target.value,
+                      })
+                    }
+                    className="h-11 w-full rounded-[16px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    placeholder="Versión corta del estado"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+                <label className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Color
+                  </span>
+                  <select
+                    value={row.color_token}
+                    onChange={(event) =>
+                      onChangeRow(scope, row.state_code, {
+                        color_token: event.target.value as WorkflowStateConfigRow['color_token'],
+                      })
+                    }
+                    className="h-11 w-full rounded-[16px] border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition-colors focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                  >
+                    {COLOR_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Vista previa
+                  </span>
+                  <div
+                    className={cn(
+                      'inline-flex h-11 items-center rounded-full border px-4 text-sm font-semibold',
+                      COLOR_OPTIONS.find((option) => option.value === row.color_token)?.editorChip,
+                    )}
+                  >
+                    {row.label}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <label className="mt-4 block space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Descripción
+              </span>
+              <Textarea
+                value={row.description ?? ''}
+                onChange={(event) =>
+                  onChangeRow(scope, row.state_code, {
+                    description: event.target.value,
+                  })
+                }
+                className="min-h-[96px] rounded-[18px] border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800"
+                placeholder="Explica el significado operativo del estado"
+              />
+            </label>
+          </article>
+        ))}
+      </div>
+
+      {saveState.message ? (
+        <div
+          className={cn(
+            'mt-4 rounded-[20px] border px-4 py-3 text-sm',
+            saveState.status === 'error'
+              ? 'border-rose-200 bg-rose-50 text-rose-900'
+              : 'border-emerald-200 bg-emerald-50 text-emerald-900',
+          )}
+        >
+          {saveState.message}
+        </div>
+      ) : null}
+    </section>
+  )
+}
+
+export function QuotationStatesBoard({
+  initialStateConfigRows,
+}: {
+  initialStateConfigRows: WorkflowStateConfigRow[]
+}) {
+  const initialEditableRows = useMemo(
+    () => normalizeEditableRows(initialStateConfigRows),
+    [initialStateConfigRows],
+  )
+  const [stateConfigRows, setStateConfigRows] = useState<WorkflowStateConfigRow[]>([
+    ...initialEditableRows.quotation_board,
+    ...initialEditableRows.incoming_queries,
+  ])
+  const [draftConfigRows, setDraftConfigRows] = useState(initialEditableRows)
+  const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
   const [view, setView] = useState<BoardView>('board')
   const [composerOpen, setComposerOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [draftTitle, setDraftTitle] = useState('')
+  const [saveState, setSaveState] = useState<Record<WorkflowStateScope, ScopeSaveState>>({
+    quotation_board: { status: 'idle', message: null },
+    incoming_queries: { status: 'idle', message: null },
+  })
   const hasMountedRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Load browser-local lanes after mount to keep the first render deterministic.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLanes(loadStoredQuotationLanes())
+    setCustomLanes(loadStoredCustomQuotationLanes())
     hasMountedRef.current = true
   }, [])
 
@@ -221,12 +516,12 @@ export function QuotationStatesBoard() {
     try {
       window.localStorage.setItem(
         QUOTATION_BOARD_STORAGE_KEY,
-        JSON.stringify(lanes.map(stripQuotationLaneAccent)),
+        JSON.stringify(customLanes.map(stripQuotationLaneAccent)),
       )
     } catch {
-      // Best-effort local persistence for the visual iteration.
+      // Best-effort local persistence for custom visual lanes.
     }
-  }, [lanes])
+  }, [customLanes])
 
   useEffect(() => {
     if (composerOpen) {
@@ -234,6 +529,10 @@ export function QuotationStatesBoard() {
     }
   }, [composerOpen])
 
+  const lanes = useMemo(
+    () => [...defaultQuotationLanes(stateConfigRows), ...customLanes],
+    [customLanes, stateConfigRows],
+  )
   const metrics = useMemo(() => {
     const cards = lanes.reduce((total, lane) => total + lane.cards.length, 0)
     return { cards, lanes: lanes.length }
@@ -247,7 +546,7 @@ export function QuotationStatesBoard() {
 
     const nextLane = makeCustomQuotationLane(title, lanes.length)
     startTransition(() => {
-      setLanes((current) => [...current, nextLane])
+      setCustomLanes((current) => [...current, nextLane])
       setView('board')
     })
     setDraftTitle('')
@@ -255,7 +554,7 @@ export function QuotationStatesBoard() {
   }
 
   function handleDeleteLane(laneId: string) {
-    const lane = lanes.find((currentLane) => currentLane.id === laneId)
+    const lane = customLanes.find((currentLane) => currentLane.id === laneId)
     if (!lane || !canDeleteQuotationLane(lane)) return
 
     const confirmed = window.confirm(
@@ -264,8 +563,110 @@ export function QuotationStatesBoard() {
     if (!confirmed) return
 
     startTransition(() => {
-      setLanes((current) => current.filter((currentLane) => currentLane.id !== laneId))
+      setCustomLanes((current) => current.filter((currentLane) => currentLane.id !== laneId))
     })
+  }
+
+  function handleChangeDraftRow(
+    scope: WorkflowStateScope,
+    stateCode: string,
+    patch: Partial<WorkflowStateConfigRow>,
+  ) {
+    setDraftConfigRows((current) => ({
+      ...current,
+      [scope]: current[scope].map((row) =>
+        row.state_code === stateCode
+          ? {
+              ...row,
+              ...patch,
+            }
+          : row,
+      ),
+    }))
+
+    setSaveState((current) => ({
+      ...current,
+      [scope]: { status: 'idle', message: null },
+    }))
+  }
+
+  function handleResetScope(scope: WorkflowStateScope) {
+    const nextRows = resolveWorkflowStateRows(scope, stateConfigRows).map(stripResolvedStateMeta)
+    setDraftConfigRows((current) => ({
+      ...current,
+      [scope]: nextRows,
+    }))
+    setSaveState((current) => ({
+      ...current,
+      [scope]: { status: 'idle', message: null },
+    }))
+  }
+
+  async function handleSaveScope(scope: WorkflowStateScope) {
+    const rows = draftConfigRows[scope]
+
+    setSaveState((current) => ({
+      ...current,
+      [scope]: { status: 'saving', message: null },
+    }))
+
+    try {
+      const response = await fetch('/api/workflow/state-config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          scope,
+          states: rows.map((row) => ({
+            stateCode: row.state_code,
+            label: row.label,
+            shortLabel: row.short_label,
+            description: row.description,
+            colorToken: row.color_token,
+            sortOrder: row.sort_order,
+          })),
+        }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; rows?: WorkflowStateConfigRow[] }
+        | null
+
+      if (!response.ok || !payload?.rows) {
+        throw new Error(
+          payload?.error || 'No se pudo guardar la configuración de estados.',
+        )
+      }
+
+      const savedRows = (payload.rows ?? []).map(stripResolvedStateMeta)
+
+      setStateConfigRows((current) =>
+        replaceWorkflowStateRowsForScope(current, scope, savedRows),
+      )
+      setDraftConfigRows((current) => ({
+        ...current,
+        [scope]: savedRows,
+      }))
+      setSaveState((current) => ({
+        ...current,
+        [scope]: {
+          status: 'success',
+          message: 'Configuración guardada correctamente en Supabase.',
+        },
+      }))
+    } catch (error) {
+      setSaveState((current) => ({
+        ...current,
+        [scope]: {
+          status: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Se produjo un error inesperado al guardar los estados.',
+        },
+      }))
+    }
   }
 
   return (
@@ -287,7 +688,9 @@ export function QuotationStatesBoard() {
                   Board navigation for quotations
                 </h2>
                 <p className="max-w-3xl text-sm leading-6 text-slate-600">
-                  The board is the primary surface. Use the list view when you want a compact operational scan.
+                  El board sigue usando códigos técnicos estables y ahora separa esa
+                  identidad de los nombres visibles, colores y orden que puedes ajustar
+                  desde la propia app.
                 </p>
               </div>
             </div>
@@ -309,10 +712,19 @@ export function QuotationStatesBoard() {
                 type="button"
                 variant="outline"
                 className="h-11 rounded-[18px] border-sky-200 bg-white px-4 text-sky-800 shadow-sm hover:bg-sky-50"
+                onClick={() => setSettingsOpen((current) => !current)}
+              >
+                <Settings2 className="mr-2 h-4 w-4" />
+                {settingsOpen ? 'Cerrar configuración' : 'Configurar estados'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-[18px] border-sky-200 bg-white px-4 text-sky-800 shadow-sm hover:bg-sky-50"
                 onClick={() => setComposerOpen((current) => !current)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {composerOpen ? 'Close state editor' : 'New state'}
+                {composerOpen ? 'Cerrar editor local' : 'Nuevo estado local'}
               </Button>
             </div>
           </div>
@@ -337,6 +749,40 @@ export function QuotationStatesBoard() {
             })}
           </TabsList>
         </div>
+
+        {settingsOpen ? (
+          <div className="border-b border-sky-100 bg-white/85 px-5 py-5">
+            <div className="mb-4 rounded-[24px] border border-sky-200 bg-sky-50/70 px-4 py-4 text-sm text-slate-700">
+              <p className="font-semibold text-slate-950">
+                Editor pro de estados
+              </p>
+              <p className="mt-1 leading-6">
+                Puedes cambiar nombre visible, etiqueta corta, color y orden desde la app.
+                El código técnico del estado queda bloqueado para no romper filtros,
+                transiciones ni integraciones con Supabase.
+              </p>
+            </div>
+
+            <div className="grid gap-5 xl:grid-cols-2">
+              <ScopeEditor
+                scope={WORKFLOW_STATE_SCOPES.QUOTATION_BOARD}
+                rows={draftConfigRows.quotation_board}
+                saveState={saveState.quotation_board}
+                onChangeRow={handleChangeDraftRow}
+                onReset={handleResetScope}
+                onSave={handleSaveScope}
+              />
+              <ScopeEditor
+                scope={WORKFLOW_STATE_SCOPES.INCOMING_QUERIES}
+                rows={draftConfigRows.incoming_queries}
+                saveState={saveState.incoming_queries}
+                onChangeRow={handleChangeDraftRow}
+                onReset={handleResetScope}
+                onSave={handleSaveScope}
+              />
+            </div>
+          </div>
+        ) : null}
 
         {composerOpen ? (
           <form
@@ -426,4 +872,3 @@ export function QuotationStatesBoard() {
     </Tabs>
   )
 }
-

@@ -1,8 +1,13 @@
 import {
   QUOTATION_BOARD_STATES,
-  getQuotationBoardStatusMeta,
   type QuotationBoardState,
 } from '@/lib/workflow-states'
+import {
+  getResolvedQuotationBoardStatusMeta,
+  resolveWorkflowStateRows,
+  WORKFLOW_STATE_SCOPES,
+} from '@/lib/workflow-state-config'
+import type { WorkflowStateConfigRow } from '@/types/database'
 
 export type QuotationCard = {
   id: string
@@ -41,7 +46,7 @@ export type QuotationLane = {
 
 type StoredQuotationLane = Omit<QuotationLane, 'accent'>
 
-export const QUOTATION_BOARD_STORAGE_KEY = 'doa-quotations-board-lanes-v3'
+export const QUOTATION_BOARD_STORAGE_KEY = 'doa-quotations-board-custom-lanes-v4'
 
 const ACCENTS: QuotationLaneAccent[] = [
   {
@@ -369,9 +374,8 @@ function makeCard(state: QuotationBoardState, index: number): QuotationCard {
   }
 }
 
-function makeLaneFromState(state: QuotationBoardState, index: number): QuotationLane {
-  const meta = getQuotationBoardStatusMeta(state)
-  const accent = ACCENTS[index % ACCENTS.length]
+function makeLaneFromState(state: QuotationBoardState, rows: WorkflowStateConfigRow[]): QuotationLane {
+  const meta = getResolvedQuotationBoardStatusMeta(state, rows)
   const templates = MOCK_CARDS[state]
 
   return {
@@ -380,7 +384,7 @@ function makeLaneFromState(state: QuotationBoardState, index: number): Quotation
     title: meta.label,
     description: meta.description,
     isCustom: false,
-    accent,
+    accent: meta.accent,
     cards: templates.map((_, cardIndex) => makeCard(state, cardIndex)),
   }
 }
@@ -421,8 +425,12 @@ export function makeCustomQuotationLane(title: string, index: number): Quotation
   }
 }
 
-export function defaultQuotationLanes() {
-  return Object.values(QUOTATION_BOARD_STATES).map((state, index) => makeLaneFromState(state, index))
+export function defaultQuotationLanes(rows: WorkflowStateConfigRow[] = []) {
+  const resolvedRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD, rows)
+
+  return resolvedRows.map((row) =>
+    makeLaneFromState(row.state_code as QuotationBoardState, rows),
+  )
 }
 
 function normalizeStoredLane(value: unknown, index: number): QuotationLane | null {
@@ -474,23 +482,23 @@ function normalizeStoredLane(value: unknown, index: number): QuotationLane | nul
   }
 }
 
-export function loadStoredQuotationLanes() {
-  if (typeof window === 'undefined') return defaultQuotationLanes()
+export function loadStoredCustomQuotationLanes() {
+  if (typeof window === 'undefined') return []
 
   try {
     const raw = window.localStorage.getItem(QUOTATION_BOARD_STORAGE_KEY)
-    if (!raw) return defaultQuotationLanes()
+    if (!raw) return []
 
     const parsed = JSON.parse(raw) as unknown
-    if (!Array.isArray(parsed) || parsed.length === 0) return defaultQuotationLanes()
+    if (!Array.isArray(parsed) || parsed.length === 0) return []
 
     const lanes = parsed
       .map((lane, index) => normalizeStoredLane(lane, index))
-      .filter((lane): lane is QuotationLane => lane !== null)
+      .filter((lane): lane is QuotationLane => lane !== null && lane.isCustom)
 
-    return lanes.length > 0 ? lanes : defaultQuotationLanes()
+    return lanes
   } catch {
-    return defaultQuotationLanes()
+    return []
   }
 }
 

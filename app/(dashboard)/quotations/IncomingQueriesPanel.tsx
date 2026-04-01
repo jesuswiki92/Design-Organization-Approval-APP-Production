@@ -4,13 +4,20 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 import { Inbox, Mail, Sparkles } from 'lucide-react'
 
+import { getResolvedIncomingQueryStatusMeta } from '@/lib/workflow-state-config'
 import { cn } from '@/lib/utils'
-import { getConsultaStatusMeta } from '@/lib/workflow-states'
+import type { WorkflowStateConfigRow } from '@/types/database'
 
 import type { IncomingQuery, IncomingQueryStatus } from './incoming-queries'
 
-function IncomingStatusBadge({ status }: { status: IncomingQueryStatus }) {
-  const meta = getConsultaStatusMeta(status)
+function IncomingStatusBadge({
+  status,
+  stateConfigRows,
+}: {
+  status: IncomingQueryStatus
+  stateConfigRows?: WorkflowStateConfigRow[]
+}) {
+  const meta = getResolvedIncomingQueryStatusMeta(status, stateConfigRows)
 
   return (
     <span
@@ -24,7 +31,13 @@ function IncomingStatusBadge({ status }: { status: IncomingQueryStatus }) {
   )
 }
 
-export function IncomingQueriesPanel({ queries }: { queries: IncomingQuery[] }) {
+export function IncomingQueriesPanel({
+  queries,
+  stateConfigRows = [],
+}: {
+  queries: IncomingQuery[]
+  stateConfigRows?: WorkflowStateConfigRow[]
+}) {
   const incoming = useMemo(
     () => queries.filter((query) => query.estado === 'nuevo'),
     [queries],
@@ -94,7 +107,7 @@ export function IncomingQueriesPanel({ queries }: { queries: IncomingQuery[] }) 
                     <p className="font-mono text-[11px] text-slate-500">{query.codigo}</p>
                     <h3 className="text-sm font-semibold text-slate-950">{query.asunto}</h3>
                   </div>
-                  <IncomingStatusBadge status={query.estado} />
+                  <IncomingStatusBadge status={query.estado} stateConfigRows={stateConfigRows} />
                 </div>
 
                 <div className="mt-4 space-y-3 text-sm text-slate-600">

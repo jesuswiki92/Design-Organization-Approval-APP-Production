@@ -32,6 +32,13 @@ El tablero de `Quotations` usa siete estados base:
 
 Los estados creados desde la UI se guardan localmente en `localStorage`. Tambien se pueden borrar desde la propia UI, pero los estados base quedan bloqueados.
 
+Los estados base ya tienen una capa de configuracion editable:
+
+- Los codigos tecnicos siguen fijos en codigo y workflow
+- El nombre visible, la descripcion, el color y el orden se pueden editar desde la UI
+- La persistencia compartida se apoya en `doa_workflow_state_config`
+- Si la tabla falla o no existe, la app vuelve a los defaults definidos en codigo
+
 ### Detalle de quotation
 
 Cada card del tablero y la lista incluyen un boton `Mas detalle` que abre `/quotations/[id]`.
@@ -75,22 +82,20 @@ La vista es intencionalmente mock para evaluar composicion visual y navegacion, 
 
 El flujo de consultas entrantes sigue estando operativo y documentado como base del proceso comercial:
 
-- `Nuevo`
-- `Esperando formulario`
-- `Formulario recibido`
+- `Nueva entrada`
+- `Formulario enviado`
+- `Formulario recibido. Revisar`
 
 La seccion de consultas entrantes sigue conectada al concepto de `Quotations`, pero ahora la experiencia de quotations tiene un tablero propio mas completo y una pagina de detalle separada.
 
 ## Estado operativo y limites
 
 - La parte visual de `Quotations` prioriza ahora navegacion, lectura rapida y detalle progresivo.
-- La gestion de estados de quotations sigue siendo local para la iteracion actual.
+- La configuracion visual de estados ya puede persistirse en Supabase sin tocar los identificadores tecnicos.
 - La pagina de detalle de quotation ya existe, pero aun no esta conectada a un modelo de datos real de backend.
 - `Proyectos` es por ahora una superficie mock para validacion estetica.
 
 ## Siguientes pasos recomendados
 
-- Persistir los estados de quotations en Supabase si deben compartirse entre sesiones o usuarios.
 - Conectar `/quotations/[id]` a datos reales cuando exista el modelo final.
 - Reemplazar los datos mock de `Proyectos` por datos persistidos cuando el flujo de engineering se cierre.
-

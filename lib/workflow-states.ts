@@ -129,19 +129,19 @@ export type EstadoConsulta = typeof CONSULTA_ESTADOS[keyof typeof CONSULTA_ESTAD
 
 export const CONSULTA_STATE_CONFIG: Record<EstadoConsulta, { label: string; color: string; description: string }> = {
   nuevo: {
-    label: 'Nuevo',
+    label: 'Nueva entrada',
     color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    description: 'Consulta recibida, pendiente de revisión por ingeniero',
+    description: 'Nueva consulta recibida, pendiente de revisión por ingeniero',
   },
   esperando_formulario: {
-    label: 'Esperando formulario',
+    label: 'Formulario enviado',
     color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    description: 'Email enviado al cliente con enlace al formulario',
+    description: 'Formulario enviado al cliente, pendiente de respuesta',
   },
   formulario_recibido: {
-    label: 'Formulario recibido',
+    label: 'Formulario recibido. Revisar',
     color: 'bg-green-500/20 text-green-400 border-green-500/30',
-    description: 'Cliente completó el formulario, listo para siguiente fase',
+    description: 'Formulario recibido del cliente, pendiente de revisión interna',
   },
 }
 

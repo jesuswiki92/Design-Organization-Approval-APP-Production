@@ -58,6 +58,22 @@ export default function TuPaginaClient({ datos }: Props) {
 4. Definir las transiciones (desde qué estados se puede llegar, a qué estados puede ir)
 5. Si necesitas lógica especial, actualizar el archivo de queries correspondiente
 
+### Si solo quieres cambiar el nombre visible, color u orden
+
+No cambies el valor técnico del estado.
+
+- ✅ Sí: editar `label`, `short_label`, `description`, `color_token`, `sort_order`
+- ❌ No: renombrar `state_code` como `nuevo`, `esperando_formulario`, `formulario_recibido`, etc.
+
+La configuración visual se resuelve ahora así:
+
+- **Defaults en código**: `lib/workflow-states.ts`
+- **Overrides persistidos**: `public.doa_workflow_state_config`
+- **Resolvedor común**: `lib/workflow-state-config.ts`
+- **API segura de guardado**: `app/api/workflow/state-config/route.ts`
+
+Regla clave: el workflow y Supabase siguen trabajando con el `state_code`; la app muestra el `label`.
+
 ---
 
 ## Reconectar una base de datos

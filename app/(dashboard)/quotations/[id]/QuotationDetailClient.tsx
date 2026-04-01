@@ -15,11 +15,12 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import type { WorkflowStateConfigRow } from '@/types/database'
 
 import {
   defaultQuotationLanes,
   findQuotationCardById,
-  loadStoredQuotationLanes,
+  loadStoredCustomQuotationLanes,
   type QuotationLane,
 } from '../quotation-board-data'
 
@@ -55,15 +56,25 @@ function DetailBlock({
   )
 }
 
-export function QuotationDetailClient({ id }: { id: string }) {
-  const [lanes, setLanes] = useState<QuotationLane[]>(defaultQuotationLanes)
+export function QuotationDetailClient({
+  id,
+  initialStateConfigRows,
+}: {
+  id: string
+  initialStateConfigRows: WorkflowStateConfigRow[]
+}) {
+  const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
 
   useEffect(() => {
-    // Load browser-local lanes after mount to keep the first render deterministic.
+    // Load browser-local custom lanes after mount to keep the first render deterministic.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLanes(loadStoredQuotationLanes())
+    setCustomLanes(loadStoredCustomQuotationLanes())
   }, [])
 
+  const lanes = useMemo(
+    () => [...defaultQuotationLanes(initialStateConfigRows), ...customLanes],
+    [customLanes, initialStateConfigRows],
+  )
   const detail = useMemo(() => findQuotationCardById(lanes, id), [id, lanes])
 
   if (!detail) {

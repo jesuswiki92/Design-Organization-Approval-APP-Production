@@ -147,16 +147,16 @@ export async function POST(
     if (metadataUpdate.error) {
       if (isMissingSchemaError(metadataUpdate.error)) {
         warning =
-          'La consulta paso a esperando_formulario, pero faltan columnas de persistencia en public.doa_consultas_entrantes. Aplica la migracion de Supabase pendiente para guardar los metadatos del envio.'
+          'La consulta avanzó de estado, pero faltan columnas de persistencia en public.doa_consultas_entrantes. Aplica la migración de Supabase pendiente para guardar los metadatos del envío.'
       } else {
-        warning = `La consulta paso a esperando_formulario, pero no se pudieron guardar los metadatos del envio: ${metadataUpdate.error.message}`
+        warning = `La consulta avanzó de estado, pero no se pudieron guardar los metadatos del envío: ${metadataUpdate.error.message}`
       }
     }
 
     return Response.json({
       ok: true,
       message: statePersisted
-        ? 'Mensaje enviado correctamente al cliente. La consulta paso a Esperando formulario.'
+        ? 'Mensaje enviado correctamente al cliente. La consulta avanzó al siguiente estado del workflow.'
         : 'Mensaje enviado correctamente al cliente.',
       statePersisted,
       warning,
