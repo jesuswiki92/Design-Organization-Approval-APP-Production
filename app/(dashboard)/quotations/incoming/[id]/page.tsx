@@ -11,6 +11,7 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
+import { ConsultaFormPreview } from './ConsultaFormPreview'
 import { ClientReplyComposer } from './ClientReplyComposer'
 
 function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
@@ -181,6 +182,7 @@ export default async function IncomingQuotationDetailPage({
                   codigo: query.codigo,
                   asunto: query.asunto,
                   remitente: query.remitente,
+                  urlFormulario: query.urlFormulario,
                   clasificacion: query.clasificacion,
                   cuerpoOriginal: query.cuerpoOriginal,
                   respuestaIa: query.respuestaIa,
@@ -203,7 +205,7 @@ export default async function IncomingQuotationDetailPage({
             </div>
           </section>
 
-          <div className="min-h-0">
+          <div className="grid min-h-0 gap-5">
             {matchedClient ? (
               <ClientDetailPanel client={matchedClient} />
             ) : (
@@ -215,6 +217,18 @@ export default async function IncomingQuotationDetailPage({
                 }
               />
             )}
+
+            <ConsultaFormPreview
+              consultaId={query.id}
+              consultaCode={query.codigo}
+              senderEmail={
+                query.clientIdentity.kind === 'unknown'
+                  ? query.clientIdentity.senderEmail
+                  : query.clientIdentity.email
+              }
+              publicFormUrl={query.urlFormulario}
+              matchedClient={matchedClient}
+            />
           </div>
         </div>
       </div>

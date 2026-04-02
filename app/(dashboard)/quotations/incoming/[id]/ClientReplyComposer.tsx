@@ -14,6 +14,7 @@ type ClientReplyComposerProps = {
     codigo: string
     asunto: string
     remitente: string
+    urlFormulario: string | null
     clasificacion: string | null
     cuerpoOriginal: string
     respuestaIa: string | null
@@ -76,6 +77,7 @@ export function ClientReplyComposer({
             codigo: query.codigo,
             asunto: query.asunto,
             remitente: query.remitente,
+            urlFormulario: query.urlFormulario,
             clasificacion: query.clasificacion,
             cuerpoOriginal: query.cuerpoOriginal,
             respuestaIa: query.respuestaIa,

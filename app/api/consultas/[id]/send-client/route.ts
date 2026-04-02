@@ -1,15 +1,20 @@
 import { NextRequest } from 'next/server'
 
+import { createClient } from '@/lib/supabase/server'
+
 export const runtime = 'nodejs'
 
 type IncomingQueryPayload = {
   codigo?: string | null
   asunto?: string | null
   remitente?: string | null
+  urlFormulario?: string | null
   clasificacion?: string | null
   cuerpoOriginal?: string | null
   respuestaIa?: string | null
 }
+
+const FORM_INTAKE_PLACEHOLDER = '(Form intake here)'
 
 function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
@@ -21,6 +26,16 @@ function required(value: unknown, label: string) {
     throw new Error(`Missing required field: ${label}`)
   }
   return text
+}
+
+function injectFormUrl(message: string, formUrl: string) {
+  if (!message.includes(FORM_INTAKE_PLACEHOLDER)) {
+    throw new Error(
+      `El borrador no incluye el placeholder obligatorio ${FORM_INTAKE_PLACEHOLDER}.`,
+    )
+  }
+
+  return message.replace(FORM_INTAKE_PLACEHOLDER, formUrl)
 }
 
 export async function POST(
@@ -51,7 +66,34 @@ export async function POST(
       )
     }
 
+    const supabase = await createClient()
+    const persistedUrl =
+      typeof query.urlFormulario === 'string' ? query.urlFormulario.trim() : ''
+    const formUrl =
+      persistedUrl ||
+      (await (async () => {
+        const consultaResult = await supabase
+          .from('doa_consultas_entrantes')
+          .select('url_formulario')
+          .eq('id', id)
+          .maybeSingle()
+
+        if (consultaResult.error) {
+          throw consultaResult.error
+        }
+
+        return consultaResult.data?.url_formulario?.trim() ?? ''
+      })())
+
+    if (!formUrl) {
+      return jsonResponse(
+        409,
+        'La consulta todavía no tiene url_formulario. Genera primero la URL en n8n y vuelve a intentarlo.',
+      )
+    }
+
     const now = new Date().toISOString()
+    const finalMessage = injectFormUrl(message, formUrl)
     const webhookPayload = {
       event: 'doa.consulta.reviewed_send_client',
       sentAt: now,
@@ -65,10 +107,13 @@ export async function POST(
       email: query.remitente ?? null,
       to,
       clasificacion: query.clasificacion ?? null,
-      body: message,
-      mensaje: message,
-      message,
-      clientMessage: message,
+      formToken: null,
+      formUrl,
+      formVariant: null,
+      body: finalMessage,
+      mensaje: finalMessage,
+      message: finalMessage,
+      clientMessage: finalMessage,
       respuestaIa: query.respuestaIa ?? null,
       aiDraft: query.respuestaIa ?? null,
       cuerpoOriginal: query.cuerpoOriginal ?? null,
@@ -79,6 +124,9 @@ export async function POST(
         asunto: query.asunto ?? null,
         remitente: query.remitente ?? null,
         clasificacion: query.clasificacion ?? null,
+        formToken: null,
+        formUrl,
+        formVariant: null,
       },
     }
 
@@ -111,6 +159,12 @@ export async function POST(
     return Response.json({
       ok: true,
       message: 'Mensaje enviado correctamente al webhook del cliente.',
+      formLink: {
+        id: null,
+        token: null,
+        url: formUrl,
+        variant: null,
+      },
       webhookPayload,
       webhookResponse: responsePayload,
     })

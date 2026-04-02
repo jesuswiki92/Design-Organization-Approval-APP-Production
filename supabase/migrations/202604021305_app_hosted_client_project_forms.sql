@@ -1,0 +1,70 @@
+create table if not exists public.doa_consultas_form_links (
+  id uuid primary key,
+  consulta_id uuid not null references public.doa_consultas_entrantes(id) on delete cascade,
+  token text not null unique,
+  token_hash text not null unique,
+  variant text not null check (variant in ('known_client', 'unknown_client')),
+  form_name text not null,
+  client_id uuid null references public.doa_clientes_datos_generales(id) on delete set null,
+  contact_id uuid null references public.doa_clientes_contactos(id) on delete set null,
+  sender_email text null,
+  status text not null default 'draft' check (status in ('draft', 'sent', 'opened', 'submitted')),
+  sent_at timestamptz null,
+  last_sent_at timestamptz null,
+  opened_at timestamptz null,
+  expires_at timestamptz null,
+  submitted_at timestamptz null,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now()),
+  unique (consulta_id)
+);
+
+create index if not exists doa_consultas_form_links_status_idx
+  on public.doa_consultas_form_links(status, created_at desc);
+
+create table if not exists public.doa_consultas_form_responses (
+  id uuid primary key default gen_random_uuid(),
+  form_link_id uuid not null unique references public.doa_consultas_form_links(id) on delete cascade,
+  consulta_id uuid not null references public.doa_consultas_entrantes(id) on delete cascade,
+  variant text not null check (variant in ('known_client', 'unknown_client')),
+  submitted_at timestamptz not null default timezone('utc', now()),
+  empresa text null,
+  cif_vat text null,
+  pais text null,
+  ciudad text null,
+  direccion text null,
+  telefono text null,
+  web text null,
+  dominio_email text null,
+  tipo_cliente text null,
+  notas text null,
+  nombre_contacto text null,
+  apellidos_contacto text null,
+  email_contacto text null,
+  telefono_contacto text null,
+  cargo_contacto text null,
+  descripcion_necesidad text null,
+  objetivo_operativo text null,
+  tipo_trabajo text null,
+  referencia_interna_proyecto text null,
+  fabricante_modelo text null,
+  variante text null,
+  tcds_number text null,
+  numero_aeronaves_afectadas integer null,
+  msn_serial text null,
+  base_tecnica_drawings text null,
+  modificacion_previa_similar text null,
+  documentacion_fabricante_proveedor text null,
+  datos_flammability_ensayos text null,
+  fecha_objetivo date null,
+  es_aog_urgente boolean not null default false,
+  ubicacion_aeronave text null,
+  ventana_parada_disponible text null,
+  hitos_importantes text null,
+  payload_json jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
+);
+
+create index if not exists doa_consultas_form_responses_consulta_idx
+  on public.doa_consultas_form_responses(consulta_id, submitted_at desc);

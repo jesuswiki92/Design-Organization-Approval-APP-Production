@@ -225,6 +225,79 @@ function IncomingQueryStateControl({
   )
 }
 
+function IncomingQueryDeleteControl({
+  card,
+  compact = false,
+}: {
+  card: QuotationCard
+  compact?: boolean
+}) {
+  const router = useRouter()
+  const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
+  const [message, setMessage] = useState<string | null>(null)
+
+  if (card.kind !== 'incoming_query') {
+    return null
+  }
+
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `¿Seguro que quieres borrar la consulta "${card.title}"? Esta acción eliminará la card del tablero.`,
+    )
+    if (!confirmed) return
+
+    setStatus('deleting')
+    setMessage(null)
+
+    try {
+      const response = await fetch(`/api/consultas/${card.id}`, {
+        method: 'DELETE',
+      })
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo borrar la consulta.')
+      }
+
+      setStatus('idle')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setStatus('error')
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Se produjo un error borrando la consulta.',
+      )
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={() => void handleDelete()}
+        disabled={status === 'deleting'}
+        className={cn(
+          'inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 text-xs font-semibold uppercase tracking-[0.16em] text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-wait disabled:opacity-70',
+          compact ? 'h-9 px-3' : 'h-10 px-3',
+        )}
+        aria-label={`Borrar consulta ${card.title}`}
+        title="Borrar card"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+        Papelera
+      </button>
+      {status === 'deleting' ? (
+        <p className="text-[11px] text-slate-500">Borrando consulta...</p>
+      ) : null}
+      {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
+    </div>
+  )
+}
+
 function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
   if (card.kind !== 'incoming_query' || !card.clientIdentity) {
     return null
@@ -300,6 +373,7 @@ function BoardCard({
           Más detalle
           </Link>
           <IncomingQueryStateControl card={card} options={stateOptions} />
+          <IncomingQueryDeleteControl card={card} />
         </div>
       </div>
     </article>
@@ -449,6 +523,7 @@ function ListRow({
           {leadCard ? (
             <IncomingQueryStateControl card={leadCard} options={stateOptions} />
           ) : null}
+          {leadCard ? <IncomingQueryDeleteControl card={leadCard} compact /> : null}
           {canDeleteQuotationLane(lane) ? (
             <button
               type="button"

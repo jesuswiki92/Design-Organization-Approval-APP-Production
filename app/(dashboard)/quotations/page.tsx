@@ -1,4 +1,7 @@
 // ? Quotations board/list surface
+import Link from 'next/link'
+import { FileText } from 'lucide-react'
+
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
 import { getWorkflowStateConfigRows } from '@/lib/workflow-state-config.server'
@@ -63,6 +66,15 @@ export default async function QuotationsPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
       <TopBar title="Quotations" subtitle="Seguimiento comercial previo al proyecto" />
+      <div className="px-5 pb-0 pt-5">
+        <Link
+          href="/quotations/forms"
+          className="inline-flex items-center rounded-xl border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm transition-colors hover:bg-sky-50"
+        >
+          <FileText className="mr-2 h-4 w-4" />
+          Formularios
+        </Link>
+      </div>
       <QuotationsClient
         initialIncomingQueries={incomingQueries}
         initialStateConfigRows={stateConfigRows}

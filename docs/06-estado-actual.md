@@ -86,13 +86,16 @@ Todavia no esta conectado a un backend final de quotations.
 El flujo de consultas entrantes sigue siendo una pieza activa del dominio comercial:
 
 - `doa_consultas_entrantes` esta conectada
+- n8n crea la fila inicial y rellena `url_formulario`
 - El detalle `/quotations/incoming/[id]` existe
-- `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n y persiste avance de estado
+- `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n usando `url_formulario` ya existente
+- La respuesta del formulario ya no la aloja la app: n8n sirve el HTML y guarda en `doa_respuestas_formularios`
 
 Limite actual:
 
 - El panel de consultas entrantes no es hoy la superficie principal de `/quotations`
 - El flujo principal de board y lista esta priorizado sobre ese panel
+- La preview del formulario en `Mas detalle` depende de que las plantillas locales de `Formularios` sigan alineadas con el HTML real que sirve n8n
 
 ---
 
@@ -125,9 +128,11 @@ Conclusiones practicas:
 
 Esto la convierte en una de las areas menos mock del repo actual y en buen candidato para mejoras incrementales seguras.
 
-Limite actual:
+Estado real hoy:
 
-- La tabla `doa_clientes_contactos` sigue marcada como desconectada en la documentacion operativa
+- `doa_clientes_contactos` ya esta conectado en la app
+- `Quotations` resuelve cliente conocido/desconocido por email del remitente
+- El detalle de consulta reutiliza el panel de cliente en la vista `Mas detalle`
 
 ---
 
@@ -149,6 +154,7 @@ La arquitectura que hoy manda en el repo es esta:
 - `store/` mantiene estado UI minimo con Zustand
 - `supabase/migrations/` refleja cambios de esquema y limpieza reciente
 - `docs/` ya es la fuente principal para entender el estado del producto
+- `n8n-workflows/` describe ya el flujo real comercial para consultas y formularios
 
 ---
 
@@ -166,8 +172,8 @@ La arquitectura que hoy manda en el repo es esta:
 
 ### Hotspot 3: detalle de quotation
 - La pantalla existe y la composicion esta avanzada
-- Falta el modelo final y la conexion real de datos
-- Conviene evitar acoplarla a contratos temporales si el backend aun no esta cerrado
+- Ya esta alineada con el flujo real de n8n para `url_formulario`
+- Conviene evitar volver a introducir logica de formularios alojados en app
 
 ### Hotspot 4: documentacion vs codigo
 - El repo ya tiene buena documentacion
@@ -179,4 +185,5 @@ La arquitectura que hoy manda en el repo es esta:
 
 - Asentar la migracion de `doa_workflow_state_config` para quitar la ambiguedad de persistencia
 - Elegir si el siguiente frente incremental va por `Clientes`, `Quotations` o `Proyectos`
+- Mantener sincronizadas `Formularios/` y el HTML real servido por n8n para que la preview siga siendo fiel
 - Cuando una superficie pase de mock a real, actualizar `docs/02-bases-de-datos.md` y este documento en el mismo lote

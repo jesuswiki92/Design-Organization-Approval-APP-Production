@@ -21,6 +21,7 @@ export type IncomingQuery = {
   codigo: string
   asunto: string
   remitente: string
+  urlFormulario: string | null
   resumen: string
   cuerpoOriginal: string
   clasificacion: string | null
@@ -310,6 +311,7 @@ export function toIncomingQuery(
     codigo: buildIncomingCode(query),
     asunto: query.asunto?.trim() || 'Sin asunto',
     remitente: query.remitente?.trim() || 'Remitente no disponible',
+    urlFormulario: query.url_formulario?.trim() || null,
     resumen: buildSummary(query.cuerpo_original, query.asunto),
     cuerpoOriginal: query.cuerpo_original?.trim() || 'Sin cuerpo original disponible',
     clasificacion: query.clasificacion?.trim() || null,
