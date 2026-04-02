@@ -2,26 +2,50 @@
 
 ## Resumen
 
-La aplicacion DOA Operations Hub sigue siendo un workspace interno para consultas, quotations y proyectos, pero la superficie visible actual ya esta enfocada en dos areas principales:
+La aplicacion DOA Operations Hub ya tiene una base estable para seguir iterando por lotes pequenos. La superficie visible esta concentrada en:
 
-- `Quotations`, con tablero real, vista de lista y detalle de quotation.
-- `Proyectos`, con tablero y lista mock para validar estetica y navegacion.
+- `Quotations`, con board real, vista de lista, detalle de quotation y capa editable de estados
+- `Proyectos`, con superficie visual y portfolio aun desacoplado de datos reales
+- `Clientes`, ya conectado a `doa_clientes_datos_generales`
+- `Asistente DOA`, activo via OpenRouter
+
+La app no esta en fase de bootstrap. Esta en fase de consolidacion y reconexion selectiva de datos.
+
+---
+
+## Verificacion local realizada
+
+Validacion hecha sobre el repo actual el `2026-04-02`:
+
+- `npm run lint` -> OK
+- `npm run smoke` -> OK
+- `npm run build` -> OK
+
+Resultado practico:
+
+- La navegacion protegida responde como se espera en smoke
+- `api/workflow/transition` sigue devolviendo `503` a proposito
+- `api/tools/chat` queda fuera del smoke por defecto salvo activacion explicita
+- El build de produccion pasa con Next.js 16.2.1, React 19.2.4 y TypeScript
+
+---
 
 ## Quotations
 
 ### Vista principal
 
-La pagina `/quotations` ya no es una vista estatica. Ahora funciona como un workspace con selector de vistas:
+La pagina `/quotations` funciona como workspace comercial con selector de vistas:
 
-- `Tablero` es la vista principal.
-- `Lista` muestra los mismos datos en formato tabla ligera.
-- El board tiene scroll horizontal real porque las columnas tienen ancho fijo.
-- La pagina conserva scroll vertical real porque la shell principal usa contenedores con `overflow-y-auto`.
-- Las columnas base ya no cargan cards mock; quedan vacias hasta que entren casos reales.
+- `Tablero` como vista principal
+- `Lista` como lectura alternativa de los mismos estados
+- Scroll horizontal real en columnas
+- Scroll vertical real en la shell
+
+No es una portada mock. Es una superficie real de trabajo visual, aunque hoy no consuma aun un modelo completo de quotations persistidas.
 
 ### Estados del board
 
-El tablero de `Quotations` usa siete estados base:
+El board de `Quotations` usa siete estados base:
 
 - `Entrada recibida`
 - `Triage`
@@ -31,72 +55,128 @@ El tablero de `Quotations` usa siete estados base:
 - `Pendiente de envio`
 - `Seguimiento / cierre`
 
-Los estados creados desde la UI se guardan localmente en `localStorage`. Tambien se pueden borrar desde la propia UI, pero los estados base quedan bloqueados.
+La arquitectura actual de estados esta separada por capas:
 
-Los estados base ya tienen una capa de configuracion editable:
+- Definicion tecnica en `lib/workflow-states.ts`
+- Resolucion de labels, colores y orden en `lib/workflow-state-config.ts`
+- Lectura server-side en `lib/workflow-state-config.server.ts`
+- Persistencia via `app/api/workflow/state-config/route.ts`
 
-- Los codigos tecnicos siguen fijos en codigo y workflow
-- El nombre visible, la descripcion, el color y el orden se pueden editar desde la UI
-- La persistencia compartida se apoya en `doa_workflow_state_config`
-- Si la tabla falla o no existe, la app vuelve a los defaults definidos en codigo
+Estado real hoy:
+
+- Los labels visibles, colores y orden se pueden editar
+- Los `state_code` siguen siendo fijos
+- Si `doa_workflow_state_config` no existe o falla, la app vuelve a defaults definidos en codigo
+- Los estados custom del board siguen siendo locales en `localStorage`
 
 ### Detalle de quotation
 
-El detalle de quotation sigue preparado en `/quotations/[id]`, pero ahora la vista principal de quotations ya no fabrica cards ficticias para llegar a él.
-
-La pagina de detalle ya tiene bloques preparados para crecer:
+`/quotations/[id]` existe y ya tiene base visual para crecer:
 
 - Resumen ejecutivo
 - Alcance tecnico y supuestos
-- Pricing, esfuerzo y estrategia comercial
+- Pricing y estrategia comercial
 - Snapshot operativo
 - Historial y siguientes pasos
 
-De momento estos bloques son base visual para futuras iteraciones.
+Todavia no esta conectado a un backend final de quotations.
+
+### Consultas entrantes
+
+El flujo de consultas entrantes sigue siendo una pieza activa del dominio comercial:
+
+- `doa_consultas_entrantes` esta conectada
+- El detalle `/quotations/incoming/[id]` existe
+- `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n y persiste avance de estado
+
+Limite actual:
+
+- El panel de consultas entrantes no es hoy la superficie principal de `/quotations`
+- El flujo principal de board y lista esta priorizado sobre ese panel
+
+---
 
 ## Proyectos
 
 ### Naming visible
 
-La seccion visible que antes se presentaba como `Engineering` ahora se muestra al usuario como `Proyectos`.
+La seccion tecnica `Engineering` se presenta al usuario como `Proyectos`.
 
-### Vista principal
+### Estado funcional
 
-La pagina principal de `Proyectos` ahora funciona como una superficie estetica con dos modos:
+Hay dos superficies distintas que no conviene mezclar:
 
-- `Tablero`, con siete columnas mock y cards de ejemplo.
-- `Lista`, con los mismos datos mock en formato tabla compacta.
+- `app/(dashboard)/engineering/page.tsx` -> superficie visual principal con board y lista mock
+- `app/(dashboard)/engineering/portfolio/page.tsx` -> portfolio preparado, hoy sin datos reales porque `projects` arranca vacio
 
-Los estados mock inventados para esta vista son:
+Ademas existe workspace de detalle en `/engineering/projects/[id]`, pero depende de datos de proyecto, documentos y tareas que no estan hoy reconectados como flujo completo.
 
-- `Intake`
-- `Discovery`
-- `Architecture`
-- `Build`
-- `Verification`
-- `Release`
-- `Observability`
+Conclusiones practicas:
 
-La vista es intencionalmente mock para evaluar composicion visual y navegacion, no persistencia.
+- `Proyectos` esta preparado para seguir creciendo
+- No es aun un workflow operativo tan maduro como `Quotations`
+- Cualquier trabajo aqui debe asumir reconexion progresiva de datos
 
-## Flujo de consultas entrantes
+---
 
-El flujo de consultas entrantes sigue estando operativo y documentado como base del proceso comercial:
+## Clientes
 
-- `Nueva entrada`
-- `Formulario enviado`
-- `Formulario recibido. Revisar`
+`/clients` ya carga datos reales desde `doa_clientes_datos_generales`.
 
-La seccion de consultas entrantes sigue conectada al concepto de `Quotations`, pero ahora la experiencia de quotations tiene un tablero propio mas completo y una pagina de detalle separada.
+Esto la convierte en una de las areas menos mock del repo actual y en buen candidato para mejoras incrementales seguras.
 
-## Estado operativo y limites
+Limite actual:
 
-- La parte visual de `Quotations` prioriza ahora navegacion, lectura rapida y detalle progresivo.
-- La configuracion visual de estados ya puede persistirse en Supabase sin tocar los identificadores tecnicos.
-- La pagina de detalle de quotation ya existe, pero aun no esta conectada a un modelo de datos real de backend.
-- `Proyectos` es por ahora una superficie mock para validacion estetica.
+- La tabla `doa_clientes_contactos` sigue marcada como desconectada en la documentacion operativa
+
+---
+
+## Databases y herramientas
+
+- `/databases` sigue funcionando como navegador de catalogo, no como panel de operacion real de cada tabla
+- `/tools/experto` usa `app/api/tools/chat/route.ts` con OpenRouter
+- El chat no declara acceso a documentos internos ni RAG real
+
+---
+
+## Mapa tecnico corto
+
+La arquitectura que hoy manda en el repo es esta:
+
+- `app/` define rutas y entrypoints
+- `components/` contiene layout, UI base y piezas de feature
+- `lib/` concentra workflow, config compartida y conexiones
+- `store/` mantiene estado UI minimo con Zustand
+- `supabase/migrations/` refleja cambios de esquema y limpieza reciente
+- `docs/` ya es la fuente principal para entender el estado del producto
+
+---
+
+## Riesgos y hotspots para iterar
+
+### Hotspot 1: workflow state config
+- La app ya esta preparada para persistir labels, colores y orden
+- La tabla `doa_workflow_state_config` sigue pendiente de migracion en este repo
+- Cualquier cambio de estados debe respetar esa realidad
+
+### Hotspot 2: dominio de Proyectos
+- La UI existe
+- El flujo de datos aun no esta consolidado
+- Es facil meter logica visual nueva sobre una base todavia mock
+
+### Hotspot 3: detalle de quotation
+- La pantalla existe y la composicion esta avanzada
+- Falta el modelo final y la conexion real de datos
+- Conviene evitar acoplarla a contratos temporales si el backend aun no esta cerrado
+
+### Hotspot 4: documentacion vs codigo
+- El repo ya tiene buena documentacion
+- Hay que mantenerla sincronizada porque varias zonas estan en reconexion parcial y es facil asumir mas madurez de la real
+
+---
 
 ## Siguientes pasos recomendados
 
-- Conectar `/quotations/[id]` a datos reales cuando exista el modelo final.
-- Reemplazar los datos mock de `Proyectos` por datos persistidos cuando el flujo de engineering se cierre.
+- Asentar la migracion de `doa_workflow_state_config` para quitar la ambiguedad de persistencia
+- Elegir si el siguiente frente incremental va por `Clientes`, `Quotations` o `Proyectos`
+- Cuando una superficie pase de mock a real, actualizar `docs/02-bases-de-datos.md` y este documento en el mismo lote

@@ -180,6 +180,7 @@ export interface ConsultaEntrante {
   clasificacion: string | null
   respuesta_ia: string | null
   estado: string
+  numero_entrada?: string | null
   correo_cliente_enviado_at?: string | null
   correo_cliente_enviado_by?: string | null
   ultimo_borrador_cliente?: string | null

@@ -1,27 +1,13 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { TopBar } from '@/components/layout/TopBar'
-import {
-  Search,
-  X,
-  Building2,
-  Globe,
-  Phone,
-  MapPin,
-  Hash,
-  BadgeCheck,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { Cliente } from '@/types/database'
+import { Search } from 'lucide-react'
 
-const TIPO_LABEL: Record<string, string> = {
-  aerolinea: 'Aerolínea',
-  mro: 'MRO',
-  privado: 'Privado',
-  fabricante: 'Fabricante',
-  otro: 'Otro',
-}
+import { TopBar } from '@/components/layout/TopBar'
+import { cn } from '@/lib/utils'
+import type { ClienteWithContactos } from '@/types/database'
+
+import { ClientDetailPanel, EmptyClientDetail } from './ClientDetailPanel'
 
 function getInitials(name: string): string {
   return name
@@ -32,137 +18,13 @@ function getInitials(name: string): string {
     .toUpperCase()
 }
 
-function formatAddress(client: Cliente) {
+function formatAddress(client: ClienteWithContactos) {
   return [client.direccion, client.ciudad, client.pais].filter(Boolean).join(', ')
 }
 
-function ClientDetailPanel({
-  client,
-  onClose,
-}: {
-  client: Cliente
-  onClose: () => void
-}) {
-  const address = formatAddress(client)
-
-  return (
-    <div className="flex h-full min-h-0 flex-col overflow-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="flex items-center justify-between border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-4">
-        <div>
-          <h2 className="text-base font-semibold text-slate-950">{client.nombre}</h2>
-          {client.cif_vat && (
-            <p className="mt-0.5 font-mono text-xs text-slate-500">{client.cif_vat}</p>
-          )}
-        </div>
-        <button
-          onClick={onClose}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-950"
-        >
-          <X size={15} />
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-5 px-5 py-4">
-        <div className="flex flex-col gap-2.5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Ficha completa
-          </h3>
-          <div className="grid gap-3">
-            {[
-              { icon: <Building2 size={13} />, label: 'Nombre', value: client.nombre },
-              address
-                ? {
-                    icon: <MapPin size={13} />,
-                    label: 'Dirección / ubicación',
-                    value: address,
-                  }
-                : null,
-              client.telefono
-                ? { icon: <Phone size={13} />, label: 'Teléfono', value: client.telefono }
-                : null,
-              client.cif_vat
-                ? { icon: <Hash size={13} />, label: 'NIF / VAT', value: client.cif_vat }
-                : null,
-              client.web
-                ? { icon: <Globe size={13} />, label: 'Web', value: client.web }
-                : null,
-              client.dominio_email
-                ? {
-                    icon: <Globe size={13} />,
-                    label: 'Dominio email',
-                    value: client.dominio_email,
-                  }
-                : null,
-              client.tipo_cliente
-                ? {
-                    icon: <Building2 size={13} />,
-                    label: 'Tipo de cliente',
-                    value: TIPO_LABEL[client.tipo_cliente] ?? client.tipo_cliente,
-                  }
-                : null,
-              {
-                icon: <BadgeCheck size={13} />,
-                label: 'Estado',
-                value: client.activo ? 'Activo' : 'Inactivo',
-              },
-              client.created_at
-                ? {
-                    icon: <Hash size={13} />,
-                    label: 'Creado',
-                    value: new Date(client.created_at).toLocaleDateString('es-ES'),
-                  }
-                : null,
-            ]
-              .filter(Boolean)
-              .map((item) => (
-                <div key={item!.label} className="rounded-[18px] border border-slate-200 bg-slate-50 p-3">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 shrink-0 text-slate-400">{item!.icon}</span>
-                    <div>
-                      <span className="text-xs text-slate-500">{item!.label}</span>
-                      <p className="text-sm text-slate-950">{item!.value}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {client.notas && (
-          <div className="flex flex-col gap-2.5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Notas
-            </h3>
-            <p className="whitespace-pre-wrap text-sm text-slate-600">{client.notas}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function EmptyClientDetail() {
-  return (
-    <div className="flex h-full min-h-0 flex-col rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-4">
-        <h2 className="text-base font-semibold text-slate-950">Detalle del cliente</h2>
-      </div>
-      <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full rounded-[26px] border border-dashed border-sky-200 bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_100%)] p-6 text-center">
-          <p className="text-sm font-semibold text-slate-950">Selecciona un cliente</p>
-          <p className="mt-2 text-sm leading-6 text-slate-500">
-            La zona izquierda muestra nombre, dirección y teléfono. Al pulsar una fila, aquí verás
-            el resto de la información disponible del cliente.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function ClientsPageClient({ clients }: { clients: Cliente[] }) {
+export default function ClientsPageClient({ clients }: { clients: ClienteWithContactos[] }) {
   const [search, setSearch] = useState('')
-  const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
+  const [selectedClient, setSelectedClient] = useState<ClienteWithContactos | null>(null)
 
   const filtered = useMemo(() => {
     return clients.filter((client) => {
@@ -248,9 +110,9 @@ export default function ClientsPageClient({ clients }: { clients: Cliente[] }) {
                           </div>
                           <div>
                             <p className="font-medium text-slate-950">{client.nombre}</p>
-                            {client.cif_vat && (
+                            {client.cif_vat ? (
                               <p className="font-mono text-xs text-slate-500">{client.cif_vat}</p>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </td>
@@ -274,7 +136,7 @@ export default function ClientsPageClient({ clients }: { clients: Cliente[] }) {
                   )
                 })}
 
-                {filtered.length === 0 && (
+                {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-400">
                       {search
@@ -282,7 +144,7 @@ export default function ClientsPageClient({ clients }: { clients: Cliente[] }) {
                         : 'No hay clientes registrados.'}
                     </td>
                   </tr>
-                )}
+                ) : null}
               </tbody>
             </table>
           </div>

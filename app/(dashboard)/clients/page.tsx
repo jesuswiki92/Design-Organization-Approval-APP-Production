@@ -1,19 +1,46 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Cliente } from '@/types/database'
+import type { Cliente, ClienteContacto, ClienteWithContactos } from '@/types/database'
 import ClientsPageClient from './ClientsPageClient'
 
 export default async function ClientsPage() {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('doa_clientes_datos_generales')
-    .select('*')
-    .order('nombre', { ascending: true })
+  const [{ data: clientRows, error: clientError }, { data: contactRows, error: contactError }] =
+    await Promise.all([
+      supabase
+        .from('doa_clientes_datos_generales')
+        .select('*')
+        .order('nombre', { ascending: true }),
+      supabase
+        .from('doa_clientes_contactos')
+        .select('*')
+        .order('es_principal', { ascending: false })
+        .order('activo', { ascending: false })
+        .order('created_at', { ascending: true }),
+    ])
 
-  if (error) {
-    console.error('Error cargando clientes desde doa_clientes_datos_generales:', error)
+  if (clientError) {
+    console.error('Error cargando clientes desde doa_clientes_datos_generales:', clientError)
   }
 
-  const clients: Cliente[] = data ?? []
+  if (contactError) {
+    console.error('Error cargando contactos desde doa_clientes_contactos:', contactError)
+  }
 
-  return <ClientsPageClient clients={clients} />
+  const clients: Cliente[] = clientRows ?? []
+  const contacts: ClienteContacto[] = contactRows ?? []
+  const contactsByClientId = contacts.reduce<Record<string, ClienteContacto[]>>((acc, contact) => {
+    if (!acc[contact.cliente_id]) {
+      acc[contact.cliente_id] = []
+    }
+
+    acc[contact.cliente_id].push(contact)
+    return acc
+  }, {})
+
+  const clientsWithContacts: ClienteWithContactos[] = clients.map((client) => ({
+    ...client,
+    contactos: contactsByClientId[client.id] ?? [],
+  }))
+
+  return <ClientsPageClient clients={clientsWithContacts} />
 }

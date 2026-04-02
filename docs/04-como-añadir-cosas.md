@@ -68,11 +68,13 @@ No cambies el valor técnico del estado.
 La configuración visual se resuelve ahora así:
 
 - **Defaults en código**: `lib/workflow-states.ts`
-- **Overrides persistidos**: `public.doa_workflow_state_config`
+- **Overrides persistidos**: `public.doa_workflow_state_config` cuando la tabla existe en Supabase
 - **Resolvedor común**: `lib/workflow-state-config.ts`
 - **API segura de guardado**: `app/api/workflow/state-config/route.ts`
 
 Regla clave: el workflow y Supabase siguen trabajando con el `state_code`; la app muestra el `label`.
+
+Si la tabla `public.doa_workflow_state_config` no existe todavia, la capa de configuracion vuelve a defaults en codigo.
 
 ---
 

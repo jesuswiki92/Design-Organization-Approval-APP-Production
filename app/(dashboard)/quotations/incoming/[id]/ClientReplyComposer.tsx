@@ -6,6 +6,7 @@ import { CheckCircle2, LoaderCircle, Mail, Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 type ClientReplyComposerProps = {
   query: {
@@ -17,6 +18,7 @@ type ClientReplyComposerProps = {
     cuerpoOriginal: string
     respuestaIa: string | null
   }
+  compact?: boolean
 }
 
 function buildInitialMessage(query: ClientReplyComposerProps["query"]) {
@@ -39,7 +41,10 @@ function buildInitialMessage(query: ClientReplyComposerProps["query"]) {
   ].join("\n")
 }
 
-export function ClientReplyComposer({ query }: ClientReplyComposerProps) {
+export function ClientReplyComposer({
+  query,
+  compact = false,
+}: ClientReplyComposerProps) {
   const router = useRouter()
   const [message, setMessage] = useState(() => buildInitialMessage(query))
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">(
@@ -79,20 +84,11 @@ export function ClientReplyComposer({ query }: ClientReplyComposerProps) {
       })
 
       const payload = (await response.json().catch(() => null)) as
-        | { error?: string; message?: string; warning?: string | null; statePersisted?: boolean }
+        | { error?: string; message?: string; warning?: string | null }
         | null
 
       if (!response.ok) {
         throw new Error(payload?.error || "No se pudo enviar el mensaje al cliente.")
-      }
-
-      if (payload?.statePersisted === false) {
-        setStatus("error")
-        setFeedback(
-          payload.warning ||
-            "El correo se envio, pero el estado no pudo persistirse en la consulta.",
-        )
-        return
       }
 
       setStatus("success")
@@ -113,23 +109,28 @@ export function ClientReplyComposer({ query }: ClientReplyComposerProps) {
   }
 
   return (
-    <section className="rounded-[28px] border border-emerald-200 bg-white p-6 shadow-[0_18px_40px_rgba(16,185,129,0.10)]">
+    <section className={compact ? "space-y-4" : "rounded-[28px] border border-emerald-200 bg-white p-6 shadow-[0_18px_40px_rgba(16,185,129,0.10)]"}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
             Respuesta al cliente
           </p>
-          <h2 className="text-lg font-semibold text-slate-950">
+          <h2 className={cn("font-semibold text-slate-950", compact ? "text-base" : "text-lg")}>
             Revisado. Enviar a cliente
           </h2>
-          <p className="text-sm leading-7 text-slate-600">
+          <p className={cn("text-slate-600", compact ? "text-sm leading-6" : "text-sm leading-7")}>
             Puedes modificar libremente el contenido antes de enviarlo al cliente.
             El mensaje se mandará al webhook comercial y no se guardará todavía como
             acción persistente dentro de la app.
           </p>
         </div>
 
-        <div className="min-w-[220px] rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm shadow-sm">
+        <div
+          className={cn(
+            "rounded-2xl border border-emerald-100 bg-emerald-50/70 text-sm shadow-sm",
+            compact ? "min-w-[200px] px-3 py-2.5" : "min-w-[220px] px-4 py-3",
+          )}
+        >
           <div className="flex items-start gap-3">
             <Mail className="mt-0.5 h-4 w-4 text-emerald-700" />
             <div>
@@ -154,13 +155,16 @@ export function ClientReplyComposer({ query }: ClientReplyComposerProps) {
               setFeedback(null)
             }
           }}
-          className="min-h-[240px] resize-y rounded-2xl border-slate-200 bg-slate-50/40 px-4 py-3 leading-7 text-slate-800"
+          className={cn(
+            "resize-y rounded-2xl border-slate-200 bg-slate-50/40 px-4 py-3 text-slate-800",
+            compact ? "min-h-[180px] leading-6" : "min-h-[240px] leading-7",
+          )}
           placeholder="Escribe aquí el mensaje final para el cliente..."
         />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-slate-500">
+        <p className={cn("text-slate-500", compact ? "text-[11px]" : "text-xs")}>
           El payload incluirá la consulta, la clasificación, el mensaje final y el
           borrador IA si existe.
         </p>

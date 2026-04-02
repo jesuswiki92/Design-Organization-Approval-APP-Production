@@ -2,7 +2,7 @@
 
 ## Estado actual
 
-Este documento es el inventario de TODAS las tablas de la base de datos (Supabase) que usa la aplicacion. Durante la reestructuracion del proyecto, las conexiones a estas tablas se han "desconectado" temporalmente. Se iran reconectando una por una segun se necesiten.
+Este documento resume las tablas de Supabase que la app usa hoy o tiene preparadas en su estructura actual. No mezcla el catalogo visible en la UI con el estado real de las migraciones, para evitar afirmar que algo esta eliminado o activo sin confirmarlo primero.
 
 **Que significa cada estado:**
 - ⏸️ **Desconectada** — La tabla existe en Supabase con sus datos, pero el codigo de la app todavia no la esta usando (o se desconecto durante la reestructuracion).
@@ -53,26 +53,49 @@ Estas tablas existen en la base de datos y se muestran en la sección `/database
 | `documents` | Metadatos de documentos vectorizados del sistema RAG. | /databases | ⏸️ Desconectada |
 | `doa_chunks` | Fragmentos indexados del corpus DOA para recuperación semántica. | /databases | ⏸️ Desconectada |
 
+### Configuracion de workflow
+
+| Tabla | Para que sirve | Usada en | Estado |
+|-------|----------------|----------|--------|
+| `doa_workflow_state_config` | Overrides persistidos para el label visible, el color y el orden de los estados del workflow. | /quotations, `app/api/workflow/state-config/route.ts` | ⚠️ Pendiente de migracion en este repo |
+
 ---
 
 ## Tablas legacy (doa_new_*)
 
 Las tablas legacy `doa_new_*` ya fueron eliminadas de Supabase y no forman parte del esquema activo. Si vuelven a aparecer en algun entorno, deben tratarse como deriva de esquema y no como parte soportada por la app.
 
+## Tablas de soporte del workflow
+
+Estas tablas siguen apareciendo en las migraciones del repositorio y no deben tratarse como eliminadas del esquema mientras ese estado se mantenga:
+
+- `doa_proyectos_estado_historial`
+- `doa_ofertas_estado_historial`
+- `doa_workflow_state_config` (pendiente de migracion en este repo)
+
 ## Tablas eliminadas del esquema público
 
-Estas tablas aparecían en documentación o en catálogos antiguos del proyecto, pero ya no forman parte del esquema público actual:
+Estas tablas aparecian en documentación o en catálogos antiguos del proyecto, pero ya no forman parte del esquema público actual:
 
 - `doa_proyectos_documentos`
 - `doa_proyectos_tareas`
 - `doa_proyectos_hitos`
-- `doa_proyectos_estado_historial`
 - `doa_ofertas`
-- `doa_ofertas_estado_historial`
 - `doa_aeronaves_modelos`
 - `doa_aeronaves_registro`
 - `doa_aeronaves_tcds`
 - `doa_solicitudes`
+
+## Nota sobre migraciones del repositorio
+
+Las migraciones actuales del repo son estas:
+
+- `001_initial_schema.sql`
+- `202603281710_project_and_quotation_states.sql`
+- `202603291840_consultas_entrantes_estado.sql`
+- `202604010800_drop_legacy_doa_new_tables.sql`
+
+No existe todavia una migracion que cree `public.doa_workflow_state_config`.
 
 ---
 

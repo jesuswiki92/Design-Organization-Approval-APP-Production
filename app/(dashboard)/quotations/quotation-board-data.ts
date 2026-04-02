@@ -3,11 +3,18 @@ import {
   type QuotationBoardState,
 } from '@/lib/workflow-states'
 import {
+  getResolvedIncomingQueryStatusMeta,
   getResolvedQuotationBoardStatusMeta,
   resolveWorkflowStateRows,
   WORKFLOW_STATE_SCOPES,
 } from '@/lib/workflow-state-config'
 import type { WorkflowStateConfigRow } from '@/types/database'
+import {
+  getIncomingQueryLaneId,
+  type IncomingClientIdentity,
+  type IncomingQuery,
+  type IncomingQueryStatus,
+} from './incoming-queries'
 
 export type QuotationCard = {
   id: string
@@ -24,6 +31,12 @@ export type QuotationCard = {
   channel: string
   priority: string
   nextStep: string
+  href?: string
+  kind?: 'incoming_query'
+  statusLabel?: string
+  statusMetaLabel?: string
+  stateCode?: IncomingQueryStatus
+  clientIdentity?: IncomingClientIdentity
 }
 
 export type QuotationLaneAccent = {
@@ -36,7 +49,7 @@ export type QuotationLaneAccent = {
 
 export type QuotationLane = {
   id: string
-  state: QuotationBoardState | string
+  state: QuotationBoardState | IncomingQueryStatus | string
   title: string
   description: string
   isCustom: boolean
@@ -100,7 +113,7 @@ const ACCENTS: QuotationLaneAccent[] = [
   },
 ]
 
-const EMPTY_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
+const EMPTY_QUOTATION_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
   entrada_recibida: [],
   triage: [],
   alcance_definido: [],
@@ -118,7 +131,60 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
-function makeLaneFromState(state: QuotationBoardState, rows: WorkflowStateConfigRow[]): QuotationLane {
+function toIncomingQuotationCard(
+  query: IncomingQuery,
+  rows: WorkflowStateConfigRow[],
+): QuotationCard {
+  const statusMeta = getResolvedIncomingQueryStatusMeta(query.estado, rows)
+
+  return {
+    id: query.id,
+    code: query.codigo,
+    title: query.asunto,
+    note: query.resumen,
+    owner: query.remitente,
+    due: query.recibidoEn,
+    tag: statusMeta.shortLabel,
+    customer: query.remitente,
+    aircraft: 'Consulta entrante',
+    amount: 'Sin importe',
+    requestDate: query.recibidoEn,
+    channel: query.clasificacion ?? 'Email',
+    priority: statusMeta.label,
+    nextStep: 'Abrir detalle',
+    href: `/quotations/incoming/${query.id}`,
+    kind: 'incoming_query',
+    statusLabel: query.estadoBackend,
+    statusMetaLabel: statusMeta.label,
+    stateCode: query.estado,
+    clientIdentity: query.clientIdentity,
+  }
+}
+
+function makeIncomingLaneFromState(
+  state: IncomingQueryStatus,
+  rows: WorkflowStateConfigRow[],
+  cards: QuotationCard[],
+): QuotationLane {
+  const meta = getResolvedIncomingQueryStatusMeta(state, rows)
+
+  return {
+    id: state,
+    state,
+    title: meta.label,
+    description: meta.description,
+    isCustom: false,
+    accent: resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows).find(
+      (row) => row.state_code === state,
+    )?.boardAccent ?? getResolvedQuotationBoardStatusMeta(state, rows).accent,
+    cards,
+  }
+}
+
+function makeQuotationLaneFromState(
+  state: QuotationBoardState,
+  rows: WorkflowStateConfigRow[],
+): QuotationLane {
   const meta = getResolvedQuotationBoardStatusMeta(state, rows)
   return {
     id: state,
@@ -127,7 +193,7 @@ function makeLaneFromState(state: QuotationBoardState, rows: WorkflowStateConfig
     description: meta.description,
     isCustom: false,
     accent: meta.accent,
-    cards: EMPTY_CARDS[state],
+    cards: EMPTY_QUOTATION_CARDS[state],
   }
 }
 
@@ -150,12 +216,39 @@ export function makeCustomQuotationLane(title: string, index: number): Quotation
   }
 }
 
-export function defaultQuotationLanes(rows: WorkflowStateConfigRow[] = []) {
-  const resolvedRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD, rows)
+export function defaultQuotationLanes(
+  rows: WorkflowStateConfigRow[] = [],
+  incomingQueries: IncomingQuery[] = [],
+) {
+  const incomingRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows)
+  const quotationRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD, rows)
+  const incomingCards = incomingQueries.map((query) => toIncomingQuotationCard(query, rows))
+  const cardsByLane = new Map<string, QuotationCard[]>()
 
-  return resolvedRows.map((row) =>
-    makeLaneFromState(row.state_code as QuotationBoardState, rows),
+  for (const card of incomingCards) {
+    const laneId = card.stateCode ? getIncomingQueryLaneId(card.stateCode) : null
+    if (!laneId) continue
+
+    const existing = cardsByLane.get(laneId)
+    if (existing) {
+      existing.push(card)
+    } else {
+      cardsByLane.set(laneId, [card])
+    }
+  }
+
+  const incomingLanes = incomingRows.map((row) =>
+    makeIncomingLaneFromState(
+      row.state_code as IncomingQueryStatus,
+      rows,
+      cardsByLane.get(row.state_code) ?? [],
+    ),
   )
+  const quotationLanes = quotationRows.map((row) =>
+    makeQuotationLaneFromState(row.state_code as QuotationBoardState, rows),
+  )
+
+  return [...incomingLanes, ...quotationLanes]
 }
 
 function normalizeStoredLane(value: unknown, index: number): QuotationLane | null {

@@ -23,7 +23,7 @@ const activeAreas = [
   },
   {
     title: 'Proyectos',
-    description: 'Workflow operativo de proyectos con estados OP-00..OP-13 y separación de dominio.',
+    description: 'Workflow operativo de proyectos con estados OP-00..OP-13 y separacion de dominio.',
     href: '/engineering/portfolio',
     icon: FolderKanban,
     accent: '#0F766E',

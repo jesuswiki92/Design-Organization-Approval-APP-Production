@@ -1,13 +1,54 @@
-// ✅ doa_consultas_entrantes RECONECTADA
 import Link from 'next/link'
-import { ArrowLeft, ScanSearch } from 'lucide-react'
+import { ArrowLeft, Mail, ScanSearch, UserRoundX } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
-import type { ConsultaEntrante } from '@/types/database'
+import type { Cliente, ClienteContacto, ConsultaEntrante } from '@/types/database'
 
-import { toIncomingQuery } from '../../incoming-queries'
+import { ClientDetailPanel } from '../../../clients/ClientDetailPanel'
+import {
+  buildIncomingClientLookup,
+  resolveIncomingClientRecord,
+  toIncomingQuery,
+} from '../../incoming-queries'
 import { ClientReplyComposer } from './ClientReplyComposer'
+
+function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
+  return (
+    <section className="flex h-full min-h-0 flex-col rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-4">
+        <h2 className="text-base font-semibold text-slate-950">Detalle del cliente</h2>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-4 px-5 py-4">
+        <div className="rounded-[20px] border border-dashed border-amber-200 bg-[linear-gradient(180deg,#fffaf0_0%,#fff7ed_100%)] px-4 py-5">
+          <div className="flex items-start gap-3">
+            <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            <div>
+              <p className="text-sm font-semibold text-slate-950">Cliente desconocido</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Esta consulta todavía no se ha podido vincular con un cliente registrado
+                en la base de datos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Email remitente
+          </p>
+          <div className="mt-3 flex items-start gap-3">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+            <p className="break-all text-sm text-slate-900">
+              {senderEmail ?? 'No disponible'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 export default async function IncomingQuotationDetailPage({
   params,
@@ -53,7 +94,33 @@ export default async function IncomingQuotationDetailPage({
     )
   }
 
-  const query = toIncomingQuery(data as ConsultaEntrante)
+  const [{ data: clientRows, error: clientError }, { data: contactRows, error: contactError }] =
+    await Promise.all([
+      supabase
+        .from('doa_clientes_datos_generales')
+        .select('*')
+        .order('nombre', { ascending: true }),
+      supabase
+        .from('doa_clientes_contactos')
+        .select('*')
+        .order('es_principal', { ascending: false })
+        .order('activo', { ascending: false })
+        .order('created_at', { ascending: true }),
+    ])
+
+  if (clientError) {
+    console.error('Error cargando clientes para la consulta entrante:', clientError)
+  }
+
+  if (contactError) {
+    console.error('Error cargando contactos para la consulta entrante:', contactError)
+  }
+
+  const clients: Cliente[] = clientRows ?? []
+  const contacts: ClienteContacto[] = contactRows ?? []
+  const clientLookup = buildIncomingClientLookup(clients, contacts)
+  const query = toIncomingQuery(data as ConsultaEntrante, clientLookup)
+  const matchedClient = resolveIncomingClientRecord(query.remitente, clients, contacts)
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)]">
@@ -85,38 +152,70 @@ export default async function IncomingQuotationDetailPage({
               {query.asunto}
             </h1>
             <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              Vista de detalle limpia para revisar la consulta, preparar la respuesta al
-              cliente y consultar el correo original sin ruido visual.
+              Vista preparada para revisar la consulta, trabajar la comunicación con el
+              cliente y seguir incorporando contexto operativo a medida que el workflow avance.
             </p>
           </div>
         </section>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
-          <ClientReplyComposer
-            query={{
-              id: query.id,
-              codigo: query.codigo,
-              asunto: query.asunto,
-              remitente: query.remitente,
-              clasificacion: query.clasificacion,
-              cuerpoOriginal: query.cuerpoOriginal,
-              respuestaIa: query.respuestaIa,
-            }}
-          />
-
           <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Correo original
-            </p>
-            <h2 className="mt-2 text-lg font-semibold text-slate-950">
-              Mensaje recibido
-            </h2>
-            <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <p className="whitespace-pre-wrap text-sm leading-8 text-slate-700">
-                {query.cuerpoOriginal}
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Comunicación
+              </p>
+              <h2 className="text-lg font-semibold text-slate-950">
+                Respuesta y correo original
+              </h2>
+              <p className="text-sm leading-6 text-slate-600">
+                Este bloque concentra la redacción actual y el mensaje de origen para
+                dejar hueco a futuras secciones del proceso.
               </p>
             </div>
+
+            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
+              <ClientReplyComposer
+                compact
+                query={{
+                  id: query.id,
+                  codigo: query.codigo,
+                  asunto: query.asunto,
+                  remitente: query.remitente,
+                  clasificacion: query.clasificacion,
+                  cuerpoOriginal: query.cuerpoOriginal,
+                  respuestaIa: query.respuestaIa,
+                }}
+              />
+
+              <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Correo original
+                </p>
+                <h3 className="mt-2 text-base font-semibold text-slate-950">
+                  Mensaje recibido
+                </h3>
+                <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-4">
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                    {query.cuerpoOriginal}
+                  </p>
+                </div>
+              </section>
+            </div>
           </section>
+
+          <div className="min-h-0">
+            {matchedClient ? (
+              <ClientDetailPanel client={matchedClient} />
+            ) : (
+              <UnknownClientPanel
+                senderEmail={
+                  query.clientIdentity.kind === 'unknown'
+                    ? query.clientIdentity.senderEmail
+                    : query.clientIdentity.email
+                }
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

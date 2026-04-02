@@ -7,8 +7,8 @@ Este documento explica como funciona el flujo principal de la aplicacion: desde 
 
 ### 1. Nueva entrada
 - **Que significa**: Ha llegado una consulta de un cliente por email
-- **Como llega**: n8n (nuestra herramienta de automatizacion) procesa el email y crea un registro en la app
-- **Que ve el ingeniero**: La consulta aparece en /quotations como "Nueva entrada"
+- **Como llega**: n8n procesa el email y crea un registro en la app
+- **Que ve el ingeniero**: La consulta aparece en `/quotations` como "Nueva entrada"
 - **Que tiene que hacer**: Revisar la consulta y enviar una respuesta al cliente
 
 ### 2. Formulario enviado
@@ -19,27 +19,20 @@ Este documento explica como funciona el flujo principal de la aplicacion: desde 
 
 ### 3. Formulario recibido. Revisar
 - **Que significa**: El cliente ha completado y enviado el formulario
-- **Como llega**: (Futuro) Un webhook recibira la respuesta del formulario y actualizara el estado
+- **Como llega**: Un webhook recibira la respuesta del formulario y actualizara el estado cuando esa fase se cierre
 - **Que pasa despues**: Aqui entraran futuras fases de recoleccion de datos y automatizacion
 
 ## Diagrama del flujo
 
 ```
 Cliente envia email
-       ?
-  n8n procesa el email
-       ?
-  Se crea registro en la app ? Estado: NUEVA ENTRADA
-       ?
-  Ingeniero revisa y envia respuesta con formulario
-       ?
-  n8n envia el email ? Estado: FORMULARIO_ENVIADO
-       ?
-  Cliente rellena el formulario
-       ?
-  Webhook recibe respuesta ? Estado: FORMULARIO_RECIBIDO_REVISAR
-       ?
-  (Futuras fases de automatizacion)
+  -> n8n procesa el email
+  -> Se crea registro en la app -> Estado: NUEVA ENTRADA
+  -> Ingeniero revisa y envia respuesta con formulario
+  -> n8n envia el email -> Estado: FORMULARIO_ENVIADO
+  -> Cliente rellena el formulario
+  -> Webhook recibe respuesta -> Estado: FORMULARIO_RECIBIDO_REVISAR
+  -> Futuras fases de automatizacion
 ```
 
 ## Donde esta el codigo
@@ -50,11 +43,11 @@ Cliente envia email
 | Cabecera, tabs y tablero | `app/(dashboard)/quotations/QuotationStatesBoard.tsx` | Selector de vistas, columnas reales, editor de estados y superficie limpia sin cards mock |
 | Datos compartidos de quotations | `app/(dashboard)/quotations/quotation-board-data.ts` | Helpers de persistencia local y normalizacion de estados sin datos ficticios |
 | Detalle de quotation | `app/(dashboard)/quotations/[id]/page.tsx` | Pagina de detalle con bloques preparados para crecer |
-| Panel de consultas nuevas | `app/(dashboard)/quotations/IncomingQueriesPanel.tsx` | Panel que muestra las consultas pendientes |
+| Panel de consultas nuevas | `app/(dashboard)/quotations/IncomingQueriesPanel.tsx` | Panel preparado para mostrar las consultas pendientes; todavia no esta montado en la pantalla principal actual |
 | Detalle de consulta | `app/(dashboard)/quotations/incoming/[id]/page.tsx` | Vista detallada de una consulta |
 | Enviar al cliente | `app/api/consultas/[id]/send-client/route.ts` | API que envia el email via n8n |
 | Estados | `lib/workflow-states.ts` | Definicion de los estados visuales del board y de las consultas entrantes |
-| Configuracion editable de estados | `lib/workflow-state-config.ts` + `app/api/workflow/state-config/route.ts` | Capa que separa codigo tecnico y label visible, con persistencia en Supabase |
+| Configuracion editable de estados | `lib/workflow-state-config.ts` + `app/api/workflow/state-config/route.ts` | Capa que separa codigo tecnico y label visible, con persistencia preparada en Supabase cuando existe la tabla de configuracion |
 | Tipos de datos | `types/database.ts` -> `ConsultaEntrante` | Estructura de datos de una consulta |
 | Logica de estados | `app/(dashboard)/quotations/incoming-queries.ts` | Funciones para filtrar y normalizar estados |
 

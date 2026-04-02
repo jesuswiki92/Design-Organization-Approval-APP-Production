@@ -126,7 +126,7 @@ Esta carpeta contiene codigo que NO es visual, sino logica de negocio y conexion
 
 Las APIs son "puertas traseras" de la aplicacion. No las ve el usuario directamente, pero las paginas las usan para hacer operaciones:
 
-- **`/api/workflow/transition`** — Cambia el estado de una oferta o proyecto. Cuando el usuario hace clic en "Enviar oferta", la pagina llama a esta API, que valida la transicion y la guarda en la base de datos.
+- **`/api/workflow/transition`** — Endpoint reservado para la transicion de estado de ofertas o proyectos. En el estado actual devuelve `503`, asi que no debe considerarse operativo todavia.
 - **`/api/tools/chat`** — Gestiona el chat con la IA. Envia tu pregunta a OpenRouter y devuelve la respuesta.
 - **`/api/consultas/[id]/send-client`** — Envia un email de respuesta al cliente. Llama al webhook de n8n que se encarga de enviar el email real.
 

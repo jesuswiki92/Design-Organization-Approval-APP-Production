@@ -1,8 +1,4 @@
-// ✅ doa_consultas_entrantes RECONECTADA
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
-import { isMissingSchemaError } from '@/lib/supabase/errors'
 
 export const runtime = 'nodejs'
 
@@ -19,6 +15,14 @@ function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
 }
 
+function required(value: unknown, label: string) {
+  const text = typeof value === 'string' ? value.trim() : ''
+  if (!text) {
+    throw new Error(`Missing required field: ${label}`)
+  }
+  return text
+}
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -30,16 +34,14 @@ export async function POST(
       query?: IncomingQueryPayload | null
     }
 
-    const message =
-      typeof body.message === 'string' ? body.message.trim() : ''
-
     if (!id) {
       return jsonResponse(400, 'Consulta no válida.')
     }
 
-    if (!message) {
-      return jsonResponse(400, 'El mensaje al cliente es obligatorio.')
-    }
+    const query = body.query ?? {}
+    const to = required(query.remitente, 'to')
+    const subject = required(query.asunto, 'subject')
+    const message = required(body.message, 'body')
 
     const webhookUrl = process.env.DOA_SEND_CLIENT_WEBHOOK_URL?.trim()
     if (!webhookUrl) {
@@ -49,20 +51,19 @@ export async function POST(
       )
     }
 
-    const query = body.query ?? {}
-
+    const now = new Date().toISOString()
     const webhookPayload = {
       event: 'doa.consulta.reviewed_send_client',
-      sentAt: new Date().toISOString(),
+      sentAt: now,
       source: 'doa-ops-hub',
       id,
       consultaId: id,
       codigo: query.codigo ?? null,
       asunto: query.asunto ?? null,
-      subject: query.asunto ?? null,
+      subject,
       remitente: query.remitente ?? null,
       email: query.remitente ?? null,
-      to: query.remitente ?? null,
+      to,
       clasificacion: query.clasificacion ?? null,
       body: message,
       mensaje: message,
@@ -107,59 +108,9 @@ export async function POST(
       responsePayload = rawText || null
     }
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    const now = new Date().toISOString()
-    const stateUpdate = await supabase
-      .from('doa_consultas_entrantes')
-      .update({ estado: CONSULTA_ESTADOS.ESPERANDO_FORMULARIO })
-      .eq('id', id)
-
-    if (stateUpdate.error) {
-      if (isMissingSchemaError(stateUpdate.error)) {
-        return jsonResponse(
-          409,
-          'La tabla public.doa_consultas_entrantes no coincide con el esquema esperado. Aplica la migracion de Supabase pendiente y reintenta el envio.',
-        )
-      }
-
-      return jsonResponse(
-        500,
-        `No se pudo actualizar el estado de la consulta: ${stateUpdate.error.message}`,
-      )
-    }
-
-    const metadataUpdate = await supabase
-      .from('doa_consultas_entrantes')
-      .update({
-        correo_cliente_enviado_at: now,
-        correo_cliente_enviado_by: user?.id ?? null,
-        ultimo_borrador_cliente: message,
-      })
-      .eq('id', id)
-
-    const statePersisted = true
-    let warning: string | null = null
-
-    if (metadataUpdate.error) {
-      if (isMissingSchemaError(metadataUpdate.error)) {
-        warning =
-          'La consulta avanzó de estado, pero faltan columnas de persistencia en public.doa_consultas_entrantes. Aplica la migración de Supabase pendiente para guardar los metadatos del envío.'
-      } else {
-        warning = `La consulta avanzó de estado, pero no se pudieron guardar los metadatos del envío: ${metadataUpdate.error.message}`
-      }
-    }
-
     return Response.json({
       ok: true,
-      message: statePersisted
-        ? 'Mensaje enviado correctamente al cliente. La consulta avanzó al siguiente estado del workflow.'
-        : 'Mensaje enviado correctamente al cliente.',
-      statePersisted,
-      warning,
+      message: 'Mensaje enviado correctamente al webhook del cliente.',
       webhookPayload,
       webhookResponse: responsePayload,
     })

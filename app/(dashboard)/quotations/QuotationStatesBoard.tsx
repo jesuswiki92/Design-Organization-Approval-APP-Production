@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   startTransition,
   useEffect,
@@ -33,6 +34,10 @@ import type {
   WorkflowStateConfigRow,
   WorkflowStateScope,
 } from '@/types/database'
+import {
+  getIncomingQueryStateOptions,
+  type IncomingQuery,
+} from './incoming-queries'
 import type { QuotationLane } from './quotation-board-data'
 import {
   canDeleteQuotationLane,
@@ -49,6 +54,13 @@ type BoardView = 'board' | 'list'
 type ScopeSaveState = {
   status: 'idle' | 'saving' | 'success' | 'error'
   message: string | null
+}
+
+type IncomingQueryStateOption = {
+  value: string
+  label: string
+  shortLabel: string
+  description: string
 }
 
 const VIEW_OPTIONS: Array<{
@@ -125,7 +137,132 @@ function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
   }
 }
 
-function BoardCard({ card }: { card: QuotationCard }) {
+function IncomingQueryStateControl({
+  card,
+  options,
+}: {
+  card: QuotationCard
+  options: IncomingQueryStateOption[]
+}) {
+  const router = useRouter()
+  const [selectedState, setSelectedState] = useState(card.stateCode ?? '')
+  const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
+  const [message, setMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    setSelectedState(card.stateCode ?? '')
+    setStatus('idle')
+    setMessage(null)
+  }, [card.stateCode])
+
+  if (card.kind !== 'incoming_query' || !card.stateCode) {
+    return null
+  }
+
+  async function handleChange(nextState: string) {
+    if (!nextState || nextState === card.stateCode) {
+      setSelectedState(card.stateCode ?? '')
+      return
+    }
+
+    setSelectedState(nextState)
+    setStatus('saving')
+    setMessage(null)
+
+    try {
+      const response = await fetch(`/api/consultas/${card.id}/state`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: nextState }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo actualizar el estado.')
+      }
+
+      setStatus('idle')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setSelectedState(card.stateCode ?? '')
+      setStatus('error')
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Se produjo un error actualizando el estado.',
+      )
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <label className="sr-only" htmlFor={`incoming-state-${card.id}`}>
+        Cambiar estado de la consulta
+      </label>
+      <select
+        id={`incoming-state-${card.id}`}
+        value={selectedState}
+        disabled={status === 'saving'}
+        onChange={(event) => void handleChange(event.target.value)}
+        className="h-10 min-w-[170px] rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {status === 'saving' ? (
+        <p className="text-[11px] text-slate-500">Guardando estado...</p>
+      ) : null}
+      {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
+    </div>
+  )
+}
+
+function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
+  if (card.kind !== 'incoming_query' || !card.clientIdentity) {
+    return null
+  }
+
+  if (card.clientIdentity.kind === 'known') {
+    return (
+      <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-3 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+          Cliente conocido
+        </p>
+        <p className="mt-1 text-sm font-semibold text-slate-950">
+          {card.clientIdentity.companyName}
+        </p>
+        <p className="mt-1 text-sm text-slate-700">
+          {card.clientIdentity.contactName}
+        </p>
+        <p className="text-sm text-slate-500">{card.clientIdentity.email}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/80 px-3 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+        {card.clientIdentity.displayLabel}
+      </p>
+    </div>
+  )
+}
+
+function BoardCard({
+  card,
+  stateOptions,
+}: {
+  card: QuotationCard
+  stateOptions: IncomingQueryStateOption[]
+}) {
   return (
     <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-sky-300">
       <div className="flex items-start justify-between gap-3">
@@ -139,19 +276,31 @@ function BoardCard({ card }: { card: QuotationCard }) {
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">{card.note}</p>
+      <IncomingClientIdentityBlock card={card} />
 
       <div className="mt-4 border-t border-slate-100 pt-3">
         <div className="flex items-center justify-between gap-3 text-[11px] text-slate-500">
           <span>{card.owner}</span>
           <span>{card.due}</span>
         </div>
+        {card.statusLabel ? (
+          <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
+            Estado real:{' '}
+            <span className="font-mono normal-case tracking-normal text-slate-700">
+              {card.statusLabel}
+            </span>
+          </p>
+        ) : null}
 
-        <Link
-          href={`/quotations/${card.id}`}
-          className="mt-3 inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
+        <div className="mt-3 flex flex-wrap items-start gap-2">
+          <Link
+          href={card.href ?? `/quotations/${card.id}`}
+          className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
         >
           Más detalle
-        </Link>
+          </Link>
+          <IncomingQueryStateControl card={card} options={stateOptions} />
+        </div>
       </div>
     </article>
   )
@@ -159,9 +308,11 @@ function BoardCard({ card }: { card: QuotationCard }) {
 
 function BoardLane({
   lane,
+  stateOptions,
   onDeleteLane,
 }: {
   lane: QuotationLane
+  stateOptions: IncomingQueryStateOption[]
   onDeleteLane: (laneId: string) => void
 }) {
   return (
@@ -206,7 +357,7 @@ function BoardLane({
 
       <div className="mt-4 flex-1 space-y-3">
         {lane.cards.map((card) => (
-          <BoardCard key={card.id} card={card} />
+          <BoardCard key={card.id} card={card} stateOptions={stateOptions} />
         ))}
 
         {lane.cards.length === 0 ? (
@@ -224,9 +375,11 @@ function BoardLane({
 
 function ListRow({
   lane,
+  stateOptions,
   onDeleteLane,
 }: {
   lane: QuotationLane
+  stateOptions: IncomingQueryStateOption[]
   onDeleteLane: (laneId: string) => void
 }) {
   const leadCard = lane.cards[0]
@@ -253,22 +406,48 @@ function ListRow({
           </p>
         </div>
       </td>
-      <td className="px-4 py-3 align-top text-sm text-slate-600">{leadCard?.owner ?? '-'}</td>
+      <td className="px-4 py-3 align-top text-sm text-slate-600">
+        <div className="space-y-1">
+          <p>{leadCard?.owner ?? '-'}</p>
+          {leadCard?.kind === 'incoming_query' && leadCard.clientIdentity ? (
+            leadCard.clientIdentity.kind === 'known' ? (
+              <div className="text-xs leading-5 text-slate-500">
+                <p className="font-semibold text-slate-900">
+                  {leadCard.clientIdentity.companyName}
+                </p>
+                <p>
+                  {leadCard.clientIdentity.contactName} · {leadCard.clientIdentity.email}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+                {leadCard.clientIdentity.displayLabel}
+              </p>
+            )
+          ) : null}
+        </div>
+      </td>
       <td className="px-4 py-3 align-top text-sm text-slate-600">{leadCard?.due ?? '-'}</td>
       <td className="px-4 py-3 align-top">
         <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
           {leadCard?.tag ?? 'Empty'}
         </span>
+        {leadCard?.statusLabel ? (
+          <p className="mt-2 font-mono text-[11px] text-slate-500">{leadCard.statusLabel}</p>
+        ) : null}
       </td>
       <td className="px-4 py-3 align-top">
         <div className="flex flex-wrap items-center gap-2">
           {leadCard ? (
             <Link
-              href={`/quotations/${leadCard.id}`}
+              href={leadCard.href ?? `/quotations/${leadCard.id}`}
               className="inline-flex h-9 items-center rounded-full border border-sky-200 bg-sky-50 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 transition-colors hover:bg-sky-100"
             >
               Más detalle
             </Link>
+          ) : null}
+          {leadCard ? (
+            <IncomingQueryStateControl card={leadCard} options={stateOptions} />
           ) : null}
           {canDeleteQuotationLane(lane) ? (
             <button
@@ -479,8 +658,10 @@ function ScopeEditor({
 }
 
 export function QuotationStatesBoard({
+  initialIncomingQueries,
   initialStateConfigRows,
 }: {
+  initialIncomingQueries: IncomingQuery[]
   initialStateConfigRows: WorkflowStateConfigRow[]
 }) {
   const initialEditableRows = useMemo(
@@ -529,8 +710,12 @@ export function QuotationStatesBoard({
   }, [composerOpen])
 
   const lanes = useMemo(
-    () => [...defaultQuotationLanes(stateConfigRows), ...customLanes],
-    [customLanes, stateConfigRows],
+    () => [...defaultQuotationLanes(stateConfigRows, initialIncomingQueries), ...customLanes],
+    [customLanes, initialIncomingQueries, stateConfigRows],
+  )
+  const incomingStateOptions = useMemo(
+    () => getIncomingQueryStateOptions(stateConfigRows),
+    [stateConfigRows],
   )
   const metrics = useMemo(() => {
     const cards = lanes.reduce((total, lane) => total + lane.cards.length, 0)
@@ -828,7 +1013,12 @@ export function QuotationStatesBoard({
             <div className="overflow-x-auto pb-4">
               <div className="flex min-w-max gap-4 pr-2">
                 {lanes.map((lane) => (
-                  <BoardLane key={lane.id} lane={lane} onDeleteLane={handleDeleteLane} />
+                  <BoardLane
+                    key={lane.id}
+                    lane={lane}
+                    stateOptions={incomingStateOptions}
+                    onDeleteLane={handleDeleteLane}
+                  />
                 ))}
               </div>
             </div>
@@ -860,7 +1050,12 @@ export function QuotationStatesBoard({
                 </thead>
                 <tbody>
                   {lanes.map((lane) => (
-                    <ListRow key={lane.id} lane={lane} onDeleteLane={handleDeleteLane} />
+                    <ListRow
+                      key={lane.id}
+                      lane={lane}
+                      stateOptions={incomingStateOptions}
+                      onDeleteLane={handleDeleteLane}
+                    />
                   ))}
                 </tbody>
               </table>
