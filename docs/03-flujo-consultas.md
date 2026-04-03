@@ -36,6 +36,50 @@ Cliente envia email
   -> Futuras fases de automatizacion
 ```
 
+## Campo `url_formulario`
+
+La tabla `doa_consultas_entrantes` contiene el campo `url_formulario`. Almacena la URL publica del formulario que se envia al cliente. n8n la genera durante el alta de la consulta y la persiste directamente en la fila. La app la lee para componer el email de respuesta al cliente.
+
+## Arquitectura de envio de formularios
+
+### Plantillas HTML
+
+Los formularios son HTML puro servido por n8n. Las plantillas se almacenan como archivos `.txt` en Google Drive y n8n las inyecta dinamicamente al servir la pagina.
+
+Existen dos variantes:
+
+| Variante | Cuando se usa | Secciones |
+|----------|---------------|-----------|
+| `cliente_desconocido` | Cliente nuevo, sin datos previos | Empresa + Contacto + Aeronave |
+| `cliente_conocido` | Cliente ya registrado en el sistema | Solo Aeronave |
+
+### Webhook unico: `doa-form-submit`
+
+Ambas variantes envian sus datos al mismo webhook `doa-form-submit`. Cada POST incluye un campo oculto `section` que indica el tipo de datos enviados:
+
+- `section=client` -> datos de empresa y contacto
+- `section=aircraft` -> datos de aeronave y TCDS
+
+### Branching en n8n
+
+El workflow ramifica segun el valor de `section`:
+
+```
+POST doa-form-submit
+  |
+  +-- section=client  --> Crear Cliente + Crear Contacto --> Respond
+  |
+  +-- section=aircraft --> Actualizar Consulta (doa_consultas_entrantes) --> Respond
+```
+
+### Tecnica de envio: iframe oculto
+
+Las paginas servidas por n8n tienen `origin: null`, lo que impide usar `fetch` o `XMLHttpRequest` por restricciones CORS. Para evitarlo, el formulario hace POST a traves de un `<iframe>` oculto (`target="hidden_iframe"`). El iframe recibe la respuesta de n8n sin provocar errores de CORS ni redirigir la pagina principal.
+
+### Subida de TCDS PDF
+
+El archivo PDF del TCDS se sube directamente a Supabase Storage desde el formulario del cliente (antes del submit). La URL resultante se almacena como `tcds_pdf_url` en `doa_consultas_entrantes` y viaja junto con el resto de datos del formulario en el POST de `section=aircraft`.
+
 ## Donde esta el codigo
 
 | Parte del flujo | Archivo | Que hace |

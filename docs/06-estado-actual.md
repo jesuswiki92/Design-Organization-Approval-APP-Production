@@ -4,9 +4,10 @@
 
 La aplicacion DOA Operations Hub ya tiene una base estable para seguir iterando por lotes pequenos. La superficie visible esta concentrada en:
 
-- `Quotations`, con board real, vista de lista, detalle de quotation y capa editable de estados
+- `Quotations`, con board real, vista de lista, detalle de quotation, capa editable de estados y detalle de consultas entrantes con Aircraft Data, Project History y TCDS
+- `Proyectos Historico`, con lista buscable y ficha de detalle en solo lectura
 - `Proyectos`, con superficie visual y portfolio aun desacoplado de datos reales
-- `Clientes`, ya conectado a `doa_clientes_datos_generales`
+- `Clientes`, ya conectado a `doa_clientes_datos_generales` y `doa_clientes_contactos`
 - `Asistente DOA`, activo via OpenRouter
 
 La app no esta en fase de bootstrap. Esta en fase de consolidacion y reconexion selectiva de datos.
@@ -86,16 +87,43 @@ Todavia no esta conectado a un backend final de quotations.
 El flujo de consultas entrantes sigue siendo una pieza activa del dominio comercial:
 
 - `doa_consultas_entrantes` esta conectada
+- `doa_clientes_contactos` esta conectada y se usa en el detalle de consulta para matching de cliente por email del remitente
 - n8n crea la fila inicial y rellena `url_formulario`
-- El detalle `/quotations/incoming/[id]` existe
+- El detalle `/quotations/incoming/[id]` existe e incluye:
+  - Seccion colapsable **Aircraft Data** con datos de aeronave, upload y visualizacion de TCDS en PDF
+  - Seccion colapsable **Project History** que muestra proyectos previos del cliente cuando se identifica un cliente conocido
+  - Boton "+" en Project History que enlaza a `/proyectos-historico` para consultar el historico completo
 - `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n usando `url_formulario` ya existente
 - La respuesta del formulario ya no la aloja la app: n8n sirve el HTML y guarda en `doa_respuestas_formularios`
+- El envio de formularios al cliente usa un unico webhook n8n (`doa-form-submit`) con campo `section` que determina el branching (client/aircraft)
 
 Limite actual:
 
 - El panel de consultas entrantes no es hoy la superficie principal de `/quotations`
 - El flujo principal de board y lista esta priorizado sobre ese panel
 - La preview del formulario en `Mas detalle` depende de que las plantillas locales de `Formularios` sigan alineadas con el HTML real que sirve n8n
+
+---
+
+## Proyectos Historico
+
+Superficie nueva para consulta de proyectos pasados, accesible desde el detalle de consultas entrantes.
+
+### Vista de lista
+
+- `/proyectos-historico` muestra una tabla con busqueda de todos los proyectos historicos
+- Tabla con filtrado y busqueda por texto libre
+
+### Vista de detalle
+
+- `/proyectos-historico/[id]` presenta una ficha de proyecto en modo solo lectura
+- Secciones: datos basicos, origen, descripcion, documentacion DOA, metadata
+- No es editable; sirve como referencia para el equipo comercial durante el triage de consultas
+
+### Acceso
+
+- Desde el detalle de consulta entrante (`/quotations/incoming/[id]`), el boton "+" en la seccion Project History enlaza a esta superficie
+- Tambien accesible directamente por URL
 
 ---
 
@@ -155,6 +183,7 @@ La arquitectura que hoy manda en el repo es esta:
 - `supabase/migrations/` refleja cambios de esquema y limpieza reciente
 - `docs/` ya es la fuente principal para entender el estado del producto
 - `n8n-workflows/` describe ya el flujo real comercial para consultas y formularios
+- n8n usa un unico webhook `doa-form-submit` con campo `section` para branching entre flujos de cliente y aeronave
 
 ---
 

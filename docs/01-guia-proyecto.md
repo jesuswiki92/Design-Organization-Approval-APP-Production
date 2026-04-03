@@ -199,3 +199,27 @@ Estas se configuran en el archivo `.env.local` en la raiz del proyecto. **Son se
 1. Copia el archivo `.env.example` (si existe) o crea un archivo nuevo llamado `.env.local`
 2. Rellena cada variable con los valores reales
 3. Reinicia la aplicacion (`npm run dev`) para que tome los cambios
+
+---
+
+## Indice de documentacion
+
+| Documento | Contenido |
+|-----------|-----------|
+| `docs/01-guia-proyecto.md` | Mapa completo del proyecto (este archivo) |
+| `docs/02-bases-de-datos.md` | Inventario de tablas y plan de reconexion |
+| `docs/03-flujo-consultas.md` | Flujo de consultas entrantes y estado actual de Quotations |
+| `docs/04-como-añadir-cosas.md` | Recetas para cambios comunes |
+| `docs/05-buenas-practicas.md` | Reglas de codigo |
+| `docs/06-estado-actual.md` | Estado funcional actual de la app |
+
+---
+
+## Documentacion estrategica (referencia)
+
+La carpeta `estrategia_base_datos_proyecto/` contiene la vision a largo plazo para integrar busqueda de precedentes tecnicos en quotations:
+- Roadmap de 7 fases de implementacion
+- Ejemplo de estructura de proyecto historico (B30_058)
+- Filosofia de testing y criterios de exito
+
+> **Nota:** Estos documentos describen planes FUTUROS, no estado actual. Consultar `docs/06-estado-actual.md` para el estado funcional real.

@@ -20,14 +20,13 @@ interface ProyectoHistoricoRow {
 
 interface ProyectoHistoricoDocumentoRow {
   id: string
-  familia_documento: string
-  titulo: string
-  codigo_documento: string | null
-  edicion: string | null
-  carpeta_documental: string | null
-  ruta_relativa_pdf: string | null
-  ruta_relativa_editable: string | null
-  es_obsoleto: boolean
+  familia_documental: string
+  carpeta_origen: string
+  ruta_origen: string
+  archivo_referencia: string | null
+  total_archivos: number
+  formatos_disponibles: string[]
+  orden_documental: number | null
 }
 
 export default async function ProyectosHistoricoEntryPage({
@@ -43,24 +42,17 @@ export default async function ProyectosHistoricoEntryPage({
     .eq('id', id)
     .maybeSingle()
 
-  const { data: documentos, error: documentosError } = await supabase
+  const { data: documentos } = await supabase
     .from('doa_proyectos_historico_documentos')
     .select(
-      'id, familia_documento, titulo, codigo_documento, edicion, carpeta_documental, ruta_relativa_pdf, ruta_relativa_editable, es_obsoleto',
+      'id, familia_documental, carpeta_origen, ruta_origen, archivo_referencia, total_archivos, formatos_disponibles, orden_documental',
     )
     .eq('proyecto_historico_id', id)
-    .order('familia_documento', { ascending: true })
-    .order('titulo', { ascending: true })
+    .order('orden_documental', { ascending: true })
+    .order('familia_documental', { ascending: true })
 
   if (error) {
     console.error('Error cargando proyecto historico desde doa_proyectos_historico:', error)
-  }
-
-  if (documentosError) {
-    console.error(
-      'Error cargando documentacion DOA desde doa_proyectos_historico_documentos:',
-      documentosError,
-    )
   }
 
   if (!project) {

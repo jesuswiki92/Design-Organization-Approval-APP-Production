@@ -27,12 +27,14 @@ Estas son las tablas públicas que siguen presentes y visibles en el proyecto tr
 | Tabla | Para que sirve | Usada en | Estado |
 |-------|----------------|----------|--------|
 | `doa_proyectos_generales` | Los proyectos de ingenieria: numero de proyecto, titulo, estado actual, presupuesto asignado y horas estimadas. Es la tabla central de cada proyecto. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
+| `doa_proyectos_historico` | Registro historico de proyectos completados. Cada registro tiene: numero de proyecto (unico), titulo, descripcion, nombre del cliente, client_id (FK a `doa_clientes_datos_generales`), estado, anio, ruta de origen en disco, nombre de la carpeta de origen, y timestamps. Se usa para consultar el portfolio historico. | /engineering/portfolio (historico) | ✅ Conectada |
+| `doa_proyectos_historico_documentos` | Inventario documental de cada proyecto historico. Cada registro vincula un proyecto historico con una carpeta documental: orden documental, familia documental, carpeta de origen, ruta de origen, archivo de referencia, total de archivos, formatos disponibles (text[]), y timestamps. Se elimina en cascada al borrar el proyecto. | /engineering/portfolio (historico) | ✅ Conectada |
 
 ### Cotizaciones / Ofertas
 
 | Tabla | Para que sirve | Usada en | Estado |
 |-------|----------------|----------|--------|
-| `doa_consultas_entrantes` | Las consultas que llegan de clientes por email. Cada registro tiene: asunto del email, remitente, contenido, clasificacion automatica (hecha por IA), y la respuesta sugerida por la IA. Es el punto de entrada del flujo principal. | /quotations, /quotations/incoming/[id] | ✅ Conectada |
+| `doa_consultas_entrantes` | Las consultas que llegan de clientes por email. Cada registro tiene: asunto del email, remitente, contenido, clasificacion automatica (hecha por IA), respuesta sugerida por la IA, estado del workflow, borrador de respuesta al cliente, y timestamps de envio de correo. Tambien incluye `url_formulario` (enlace al formulario de recopilacion de datos del cliente) y columnas de aeronave: `tcds_number`, `aircraft_manufacturer`, `aircraft_model`, `aircraft_count`, `aircraft_msn`, `tcds_pdf_url`. Es el punto de entrada del flujo principal. | /quotations, /quotations/incoming/[id] | ✅ Conectada |
 
 ### Usuarios
 
@@ -72,6 +74,7 @@ Estas tablas siguen apareciendo en las migraciones del repositorio y no deben tr
 - `doa_proyectos_estado_historial`
 - `doa_ofertas_estado_historial`
 - `doa_workflow_state_config` (pendiente de migracion en este repo)
+- `doa_respuestas_formularios` — Respuestas de formularios de clientes, con FK cascade a `doa_consultas_entrantes`
 
 ## Tablas eliminadas del esquema público
 
