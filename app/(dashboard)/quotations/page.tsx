@@ -6,6 +6,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
 import { getWorkflowStateConfigRows } from '@/lib/workflow-state-config.server'
 import { WORKFLOW_STATE_SCOPES } from '@/lib/workflow-state-config'
+import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
 import type {
   Cliente,
   ClienteContacto,
@@ -28,6 +29,7 @@ export default async function QuotationsPage() {
       supabase
         .from('doa_consultas_entrantes')
         .select('*')
+        .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
         .order('created_at', { ascending: false }),
       supabase
         .from('doa_clientes_datos_generales')

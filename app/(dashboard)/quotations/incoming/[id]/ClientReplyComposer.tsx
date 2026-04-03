@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { CheckCircle2, LoaderCircle, Mail, Send } from "lucide-react"
+import { CheckCircle2, ExternalLink, LoaderCircle, Mail, Send } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -22,22 +22,30 @@ type ClientReplyComposerProps = {
   compact?: boolean
 }
 
+const FORM_INTAKE_PLACEHOLDER = '(Form intake here)'
+const FORM_LINK_MARKER = '[Acceder al formulario del proyecto]'
+
 function buildInitialMessage(query: ClientReplyComposerProps["query"]) {
   const aiDraft = query.respuestaIa?.trim()
 
   if (aiDraft) {
+    if (aiDraft.includes(FORM_INTAKE_PLACEHOLDER)) {
+      return aiDraft.replace(FORM_INTAKE_PLACEHOLDER, FORM_LINK_MARKER)
+    }
     return aiDraft
   }
 
+  const formMarker = query.urlFormulario ? FORM_LINK_MARKER : ''
   return [
-    "Hola,",
+    "Hello,",
     "",
-    `Hemos revisado tu consulta sobre "${query.asunto}".`,
-    "Gracias por compartir la información inicial.",
+    `Thank you for your inquiry regarding "${query.asunto}".`,
     "",
-    "En una siguiente interacción te contactaremos con los datos necesarios para avanzar con el análisis comercial y técnico.",
+    `To proceed, please complete our project intake form: ${formMarker}`,
     "",
-    "Un saludo,",
+    "Once submitted, our team will review the information and get back to you with the next steps.",
+    "",
+    "Kind regards,",
     "DOA Operations Hub",
   ].join("\n")
 }
@@ -165,11 +173,19 @@ export function ClientReplyComposer({
         />
       </div>
 
+      {query.urlFormulario ? (
+        <a
+          href={query.urlFormulario}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-semibold text-sky-700 transition-colors hover:border-sky-300 hover:bg-sky-100"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          Ver formulario antes de enviar
+        </a>
+      ) : null}
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className={cn("text-slate-500", compact ? "text-[11px]" : "text-xs")}>
-          El payload incluirá la consulta, la clasificación, el mensaje final y el
-          borrador IA si existe.
-        </p>
 
         <Button onClick={handleSubmit} disabled={status === "submitting" || !trimmedMessage}>
           {status === "submitting" ? (

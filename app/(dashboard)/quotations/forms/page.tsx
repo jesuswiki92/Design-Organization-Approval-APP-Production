@@ -3,6 +3,7 @@ import { ArrowLeft, ExternalLink, FileText } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
+import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
 import type { Cliente, ClienteContacto, ConsultaEntrante } from '@/types/database'
 import {
   buildIncomingClientLookup,
@@ -29,6 +30,7 @@ export default async function QuotationsFormsCatalogPage() {
     supabase
       .from('doa_consultas_entrantes')
       .select('*')
+      .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
       .not('url_formulario', 'is', null)
       .order('created_at', { ascending: false }),
     supabase

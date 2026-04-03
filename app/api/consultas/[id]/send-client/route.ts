@@ -15,6 +15,7 @@ type IncomingQueryPayload = {
 }
 
 const FORM_INTAKE_PLACEHOLDER = '(Form intake here)'
+const FORM_LINK_MARKER = '[Acceder al formulario del proyecto]'
 
 function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
@@ -28,14 +29,28 @@ function required(value: unknown, label: string) {
   return text
 }
 
-function injectFormUrl(message: string, formUrl: string) {
-  if (!message.includes(FORM_INTAKE_PLACEHOLDER)) {
-    throw new Error(
-      `El borrador no incluye el placeholder obligatorio ${FORM_INTAKE_PLACEHOLDER}.`,
-    )
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function toHtmlEmail(message: string, formUrl: string) {
+  const linkHtml = `<a href="${escapeHtml(formUrl)}" style="color:#0284c7;font-weight:600;text-decoration:underline;">Acceder al formulario del proyecto</a>`
+
+  let html = escapeHtml(message)
+
+  if (html.includes(escapeHtml(FORM_LINK_MARKER))) {
+    html = html.replace(escapeHtml(FORM_LINK_MARKER), linkHtml)
+  } else if (html.includes(escapeHtml(FORM_INTAKE_PLACEHOLDER))) {
+    html = html.replace(escapeHtml(FORM_INTAKE_PLACEHOLDER), linkHtml)
   }
 
-  return message.replace(FORM_INTAKE_PLACEHOLDER, formUrl)
+  html = html.replace(/\n/g, '<br>')
+
+  return `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#1e293b;">${html}</div>`
 }
 
 export async function POST(
@@ -93,7 +108,7 @@ export async function POST(
     }
 
     const now = new Date().toISOString()
-    const finalMessage = injectFormUrl(message, formUrl)
+    const finalMessage = toHtmlEmail(message, formUrl)
     const webhookPayload = {
       event: 'doa.consulta.reviewed_send_client',
       sentAt: now,

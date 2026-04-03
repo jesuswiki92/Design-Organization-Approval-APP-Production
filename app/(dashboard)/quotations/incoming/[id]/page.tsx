@@ -11,7 +11,6 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
-import { ConsultaFormPreview } from './ConsultaFormPreview'
 import { ClientReplyComposer } from './ClientReplyComposer'
 
 function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
@@ -160,50 +159,35 @@ export default async function IncomingQuotationDetailPage({
         </section>
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
-          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]">
-            <div className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Comunicación
+          <div className="grid grid-cols-2 gap-4">
+            <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Correo original
               </p>
-              <h2 className="text-lg font-semibold text-slate-950">
-                Respuesta y correo original
-              </h2>
-              <p className="text-sm leading-6 text-slate-600">
-                Este bloque concentra la redacción actual y el mensaje de origen para
-                dejar hueco a futuras secciones del proceso.
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
-              <ClientReplyComposer
-                compact
-                query={{
-                  id: query.id,
-                  codigo: query.codigo,
-                  asunto: query.asunto,
-                  remitente: query.remitente,
-                  urlFormulario: query.urlFormulario,
-                  clasificacion: query.clasificacion,
-                  cuerpoOriginal: query.cuerpoOriginal,
-                  respuestaIa: query.respuestaIa,
-                }}
-              />
-
-              <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Correo original
+              <h3 className="mt-1.5 text-sm font-semibold text-slate-950">
+                Mensaje recibido
+              </h3>
+              <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                  {query.cuerpoOriginal}
                 </p>
-                <h3 className="mt-2 text-base font-semibold text-slate-950">
-                  Mensaje recibido
-                </h3>
-                <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-4">
-                  <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                    {query.cuerpoOriginal}
-                  </p>
-                </div>
-              </section>
-            </div>
-          </section>
+              </div>
+            </section>
+
+            <ClientReplyComposer
+              compact
+              query={{
+                id: query.id,
+                codigo: query.codigo,
+                asunto: query.asunto,
+                remitente: query.remitente,
+                urlFormulario: query.urlFormulario,
+                clasificacion: query.clasificacion,
+                cuerpoOriginal: query.cuerpoOriginal,
+                respuestaIa: query.respuestaIa,
+              }}
+            />
+          </div>
 
           <div className="grid min-h-0 gap-5">
             {matchedClient ? (
@@ -218,17 +202,57 @@ export default async function IncomingQuotationDetailPage({
               />
             )}
 
-            <ConsultaFormPreview
-              consultaId={query.id}
-              consultaCode={query.codigo}
-              senderEmail={
-                query.clientIdentity.kind === 'unknown'
-                  ? query.clientIdentity.senderEmail
-                  : query.clientIdentity.email
-              }
-              publicFormUrl={query.urlFormulario}
-              matchedClient={matchedClient}
-            />
+            <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                <h2 className="text-sm font-semibold text-slate-950">Aircraft Data</h2>
+              </div>
+              <details className="group">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                  <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  Ver datos de aeronave
+                </summary>
+                <div className="space-y-3 px-5 pb-4">
+                  {data.tcds_number ? (
+                    <>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">TCDS Number</p>
+                        <p className="mt-0.5 text-sm font-medium text-slate-900">{data.tcds_number}</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Manufacturer</p>
+                        <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_manufacturer ?? '—'}</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Model</p>
+                        <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_model ?? '—'}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Aircraft count</p>
+                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_count ?? '—'}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">MSN</p>
+                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_msn ?? '—'}</p>
+                        </div>
+                      </div>
+                      {data.tcds_pdf_url ? (
+                        <a
+                          href={data.tcds_pdf_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-semibold text-sky-700 transition-colors hover:bg-sky-100"
+                        >
+                          Download TCDS PDF
+                        </a>
+                      ) : null}
+                    </>
+                  ) : (
+                    <p className="text-xs italic text-slate-400">No aircraft data submitted yet.</p>
+                  )}
+                </div>
+              </details>
+            </section>
           </div>
         </div>
       </div>

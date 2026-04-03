@@ -16,6 +16,10 @@ import {
   type IncomingQueryStatus,
 } from './incoming-queries'
 
+function isArchivedIncomingState(state: string | null | undefined) {
+  return state?.trim().toLowerCase() === 'archivado'
+}
+
 export type QuotationCard = {
   id: string
   code: string
@@ -220,9 +224,13 @@ export function defaultQuotationLanes(
   rows: WorkflowStateConfigRow[] = [],
   incomingQueries: IncomingQuery[] = [],
 ) {
-  const incomingRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows)
+  const incomingRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows).filter(
+    (row) => !isArchivedIncomingState(row.state_code),
+  )
   const quotationRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD, rows)
-  const incomingCards = incomingQueries.map((query) => toIncomingQuotationCard(query, rows))
+  const incomingCards = incomingQueries
+    .filter((query) => !isArchivedIncomingState(query.estado))
+    .map((query) => toIncomingQuotationCard(query, rows))
   const cardsByLane = new Map<string, QuotationCard[]>()
 
   for (const card of incomingCards) {

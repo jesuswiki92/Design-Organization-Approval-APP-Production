@@ -123,6 +123,7 @@ export const CONSULTA_ESTADOS = {
   NUEVO: 'nuevo',
   ESPERANDO_FORMULARIO: 'esperando_formulario',
   FORMULARIO_RECIBIDO: 'formulario_recibido',
+  ARCHIVADO: 'archivado',
 } as const
 
 export type EstadoConsulta = typeof CONSULTA_ESTADOS[keyof typeof CONSULTA_ESTADOS]
@@ -143,6 +144,12 @@ export const CONSULTA_STATE_CONFIG: Record<EstadoConsulta, { label: string; colo
     color: 'bg-green-500/20 text-green-400 border-green-500/30',
     description: 'Formulario recibido del cliente, pendiente de revisión interna',
   },
+  archivado: {
+    label: 'Archivado',
+    color: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+    description:
+      'Consulta archivada. Se conserva en Supabase pero no aparece en la UI operativa',
+  },
 }
 
 export function getConsultaStatusMeta(estado: string) {
@@ -152,9 +159,10 @@ export function getConsultaStatusMeta(estado: string) {
 }
 
 export const CONSULTA_TRANSITIONS: Record<EstadoConsulta, EstadoConsulta[]> = {
-  nuevo: ['esperando_formulario'],
-  esperando_formulario: ['formulario_recibido'],
-  formulario_recibido: [],
+  nuevo: ['esperando_formulario', 'archivado'],
+  esperando_formulario: ['formulario_recibido', 'archivado'],
+  formulario_recibido: ['archivado'],
+  archivado: [],
 }
 
 export function getAllowedConsultaTransitions(current: string): EstadoConsulta[] {

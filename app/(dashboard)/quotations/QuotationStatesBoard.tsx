@@ -11,6 +11,7 @@ import {
   type FormEvent,
 } from 'react'
 import {
+  Archive,
   LayoutGrid,
   List,
   Plus,
@@ -34,6 +35,7 @@ import type {
   WorkflowStateConfigRow,
   WorkflowStateScope,
 } from '@/types/database'
+import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
 import {
   getIncomingQueryStateOptions,
   type IncomingQuery,
@@ -209,7 +211,7 @@ function IncomingQueryStateControl({
         value={selectedState}
         disabled={status === 'saving'}
         onChange={(event) => void handleChange(event.target.value)}
-        className="h-10 min-w-[170px] rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
+        className="h-8 min-w-[140px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -288,10 +290,86 @@ function IncomingQueryDeleteControl({
         title="Borrar card"
       >
         <Trash2 className="h-3.5 w-3.5" />
-        Papelera
       </button>
       {status === 'deleting' ? (
         <p className="text-[11px] text-slate-500">Borrando consulta...</p>
+      ) : null}
+      {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
+    </div>
+  )
+}
+
+function IncomingQueryArchiveControl({
+  card,
+  compact = false,
+}: {
+  card: QuotationCard
+  compact?: boolean
+}) {
+  const router = useRouter()
+  const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
+  const [message, setMessage] = useState<string | null>(null)
+
+  if (card.kind !== 'incoming_query' || card.stateCode === CONSULTA_ESTADOS.ARCHIVADO) {
+    return null
+  }
+
+  async function handleArchive() {
+    const confirmed = window.confirm(
+      `¿Archivar la consulta "${card.title}"? Desaparecerá de Quotations pero seguirá guardada en Supabase.`,
+    )
+    if (!confirmed) return
+
+    setStatus('saving')
+    setMessage(null)
+
+    try {
+      const response = await fetch(`/api/consultas/${card.id}/state`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: CONSULTA_ESTADOS.ARCHIVADO }),
+      })
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo archivar la consulta.')
+      }
+
+      setStatus('idle')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setStatus('error')
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Se produjo un error archivando la consulta.',
+      )
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={() => void handleArchive()}
+        disabled={status === 'saving'}
+        className={cn(
+          'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-wait disabled:opacity-70',
+          compact ? 'h-9 px-3' : 'h-10 px-3',
+        )}
+        aria-label={`Archivar consulta ${card.title}`}
+        title="Archivar card"
+      >
+        <Archive className="h-3.5 w-3.5" />
+        {!compact ? 'Archivar' : null}
+      </button>
+      {status === 'saving' ? (
+        <p className="text-[11px] text-slate-500">Archivando consulta...</p>
       ) : null}
       {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
     </div>
@@ -338,42 +416,32 @@ function BoardCard({
 }) {
   return (
     <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-sky-300">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="font-mono text-[10px] tracking-[0.2em] text-slate-500">{card.code}</p>
-          <h4 className="text-sm font-semibold leading-5 text-slate-950">{card.title}</h4>
-        </div>
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-          {card.tag}
-        </span>
+      <div className="space-y-1">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-slate-500">{card.code}</p>
+        <h4 className="text-sm font-semibold leading-5 text-slate-950">{card.title}</h4>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-slate-600">{card.note}</p>
+      {card.note ? (
+        <p className="mt-2 text-xs italic text-slate-400 line-clamp-1">{card.note}</p>
+      ) : null}
+
       <IncomingClientIdentityBlock card={card} />
 
-      <div className="mt-4 border-t border-slate-100 pt-3">
-        <div className="flex items-center justify-between gap-3 text-[11px] text-slate-500">
-          <span>{card.owner}</span>
-          <span>{card.due}</span>
-        </div>
-        {card.statusLabel ? (
-          <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500">
-            Estado real:{' '}
-            <span className="font-mono normal-case tracking-normal text-slate-700">
-              {card.statusLabel}
-            </span>
-          </p>
-        ) : null}
+      {card.due ? (
+        <p className="mt-2 text-right text-[11px] text-slate-400">{card.due}</p>
+      ) : null}
 
-        <div className="mt-3 flex flex-wrap items-start gap-2">
+      <div className="mt-3 space-y-2">
+        <IncomingQueryStateControl card={card} options={stateOptions} />
+        <div className="flex items-center justify-between gap-2">
           <Link
-          href={card.href ?? `/quotations/${card.id}`}
-          className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-700 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800"
-        >
-          Más detalle
+            href={card.href ?? `/quotations/${card.id}`}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700"
+            title="Ver detalle"
+          >
+            <Plus className="h-4 w-4" />
           </Link>
-          <IncomingQueryStateControl card={card} options={stateOptions} />
-          <IncomingQueryDeleteControl card={card} />
+          <IncomingQueryDeleteControl card={card} compact />
         </div>
       </div>
     </article>
@@ -396,14 +464,13 @@ function BoardLane({
         lane.accent.border,
       )}
     >
-      <div className={cn('rounded-[22px] border px-4 py-4', lane.accent.bg, lane.accent.border)}>
+      <div className={cn('rounded-[22px] border px-4 py-4', lane.accent.bg, lane.accent.border)} title={lane.description}>
         <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
+          <div>
             <div className="flex items-center gap-2">
               <span className={cn('h-2.5 w-2.5 rounded-full', lane.accent.dot)} />
               <h3 className={cn('text-sm font-semibold', lane.accent.text)}>{lane.title}</h3>
             </div>
-            <p className="max-w-[220px] text-xs leading-5 text-slate-600">{lane.description}</p>
           </div>
           <div className="flex items-start gap-2">
             <span
@@ -523,6 +590,7 @@ function ListRow({
           {leadCard ? (
             <IncomingQueryStateControl card={leadCard} options={stateOptions} />
           ) : null}
+          {leadCard ? <IncomingQueryArchiveControl card={leadCard} compact /> : null}
           {leadCard ? <IncomingQueryDeleteControl card={leadCard} compact /> : null}
           {canDeleteQuotationLane(lane) ? (
             <button

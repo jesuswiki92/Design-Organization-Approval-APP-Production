@@ -3,128 +3,277 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Project Form</title>
+  <title>DOA Hub - Client Registration</title>
   <style>
-    :root{--bg:#f6f8fc;--card:#ffffffee;--line:#dbe4f0;--text:#0f172a;--muted:#5b6b80;--soft:#8b9ab0;--sky:#0ea5e9;--sky2:#2563eb;--rad:24px;--shadow:0 24px 60px rgba(15,23,42,.12)}
-    *{box-sizing:border-box}body{margin:0;padding:36px 18px;font-family:"Segoe UI","Helvetica Neue",sans-serif;background:radial-gradient(circle at top left,rgba(14,165,233,.16),transparent 28%),linear-gradient(180deg,#fbfdff 0%,#f6f8fc 100%);color:var(--text)}
-    .page{max-width:1080px;margin:0 auto}.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--shadow);backdrop-filter:blur(12px)}
-    .hero-card{padding:28px;background:linear-gradient(135deg,#fff 0%,#eef6ff 100%)}.eyebrow{display:inline-flex;padding:8px 12px;border-radius:999px;background:rgba(14,165,233,.12);color:#0284c7;font:700 12px/1 "Segoe UI";letter-spacing:.16em;text-transform:uppercase}
-    h1{margin:18px 0 10px;font-size:clamp(30px,4vw,44px);line-height:1.03;letter-spacing:-.04em}.copy{margin:0;color:var(--muted);font-size:15px;line-height:1.72}
-    .notice{padding:22px}.kicker{margin:0;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--soft)}.notice-title{margin:12px 0 8px;font-size:24px;font-weight:700;letter-spacing:-.04em}.notice-copy{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
-    .email-box{margin-top:16px;border:1px dashed #c7d5e7;border-radius:18px;padding:14px 16px;background:#f8fbff}.email-box span{display:block;margin-bottom:5px;color:var(--soft);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}.email-box strong{font-size:15px}
-    form{display:grid;gap:20px;margin-top:26px}.section{padding:24px}.title{margin:10px 0 6px;font-size:26px;font-weight:700;letter-spacing:-.04em}.hintcopy{margin:0;color:var(--muted);font-size:14px;line-height:1.62}
-    .grid{display:grid;gap:16px}.cols2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols3{grid-template-columns:repeat(3,minmax(0,1fr))}.field{display:grid;gap:8px}.field label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-    .hint{margin-top:-3px;color:var(--soft);font-size:12px;line-height:1.5}input,select,textarea{width:100%;padding:14px 15px;border:1px solid var(--line);border-radius:14px;background:#fff;font:inherit;color:var(--text)}
-    textarea{min-height:124px;resize:vertical}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 5px rgba(14,165,233,.12)}
-    .submit{padding:24px;display:flex;justify-content:space-between;gap:18px;align-items:center}.submit p{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.65}
-    .btn{border:0;border-radius:999px;padding:15px 22px;background:linear-gradient(135deg,var(--sky) 0%,var(--sky2) 100%);color:#fff;font-size:14px;font-weight:700;letter-spacing:.04em;cursor:pointer;box-shadow:0 16px 30px rgba(37,99,235,.22)}
-    .hidden{display:none}@media (max-width:880px){.hero,.cols2,.cols3{grid-template-columns:1fr}}@media (max-width:720px){body{padding:20px 12px}.hero-card,.notice,.section,.submit{padding:22px}}
+    :root{--bg:#f6f8fc;--card:#ffffffee;--line:#dbe4f0;--text:#0f172a;--muted:#64748b;--soft:#94a3b8;--sky:#0ea5e9;--sky2:#2563eb;--emerald:#10b981;--rad:20px;--shadow:0 20px 50px rgba(15,23,42,.08)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;background:radial-gradient(circle at top left,rgba(14,165,233,.10),transparent 40%),linear-gradient(180deg,#fbfdff 0%,#f1f5f9 100%);color:var(--text);padding:40px 20px;min-height:100vh}
+    .page{max-width:720px;margin:0 auto}
+    .hero{text-align:center;margin-bottom:32px}
+    .eyebrow{display:inline-flex;padding:6px 14px;border-radius:999px;background:rgba(14,165,233,.10);color:#0284c7;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+    h1{margin:16px 0 8px;font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+    .hero .copy{color:var(--muted);font-size:15px;line-height:1.7;max-width:520px;margin:0 auto}
+    .notice{margin-bottom:28px;padding:18px 22px;border-radius:var(--rad);border:1px dashed #cbd5e1;background:linear-gradient(135deg,#fffbeb 0%,#fef9c3 100%);display:flex;align-items:center;gap:16px}
+    .notice-icon{width:40px;height:40px;border-radius:12px;background:#fbbf24;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+    .notice-text{flex:1}
+    .notice-title{font-size:14px;font-weight:700;color:#92400e;margin-bottom:2px}
+    .notice-sub{font-size:13px;color:#a16207;line-height:1.5}
+    .notice-email{margin-top:6px;font-size:13px;font-weight:600;color:var(--text)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--shadow);backdrop-filter:blur(12px)}
+    form{display:grid;gap:24px}
+    .section{padding:28px}
+    .section-header{margin-bottom:20px}
+    .kicker{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
+    .section-title{margin-top:6px;font-size:20px;font-weight:700;letter-spacing:-.02em}
+    .section-desc{margin-top:4px;color:var(--muted);font-size:13px;line-height:1.6}
+    .grid{display:grid;gap:18px}
+    .cols2{grid-template-columns:repeat(2,1fr)}
+    .cols3{grid-template-columns:repeat(3,1fr)}
+    .divider{height:1px;background:var(--line);margin:24px 0}
+    .divider-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin-bottom:16px}
+    .field{display:grid;gap:6px}
+    .field label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .field .hint{color:var(--soft);font-size:11px;line-height:1.4;margin-top:-2px}
+    input,select{width:100%;height:44px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:14px;color:var(--text);transition:border-color .15s,box-shadow .15s}
+    select{padding-right:32px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+    input:focus,select:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 4px rgba(14,165,233,.10)}
+    input::placeholder{color:var(--soft)}
+    .submit{padding:24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+    .submit-text{font-size:13px;color:var(--muted);line-height:1.6;max-width:380px}
+    .btn{border:0;border-radius:999px;padding:14px 28px;background:linear-gradient(135deg,var(--sky) 0%,var(--sky2) 100%);color:#fff;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;box-shadow:0 12px 28px rgba(37,99,235,.20);transition:transform .15s,box-shadow .15s;white-space:nowrap}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 16px 36px rgba(37,99,235,.28)}
+    .btn:active{transform:translateY(0)}
+    .req{color:#ef4444;margin-left:2px}
+    @media(max-width:640px){.cols2,.cols3{grid-template-columns:1fr}.section{padding:20px}h1{font-size:26px}.submit{flex-direction:column;text-align:center}}
   </style>
 </head>
 <body>
   <div class="page">
     <div class="hero">
-      <section class="card hero-card">
-        <div class="eyebrow">DOA Hub</div>
-        <h1>Project Form</h1>
-        <p class="copy">Fill in the client details and the technical questions so we can define the scope, assess the proposal, and continue with the quotation process.</p>
-      </section>
-      <aside class="card notice">
-        <p class="kicker">Unidentified client</p>
-        <div class="notice-title">We will create a new client record</div>
-        <p class="notice-copy">We could not find a clear match in the database, so we need the client details first.</p>
-        <div class="email-box"><span>Detected email</span><strong>{{SENDER_EMAIL}}</strong></div>
-      </aside>
+      <div class="eyebrow">DOA Hub</div>
+      <h1>Client Registration</h1>
+      <p class="copy">We need a few details about your company and the main point of contact before we can proceed with the project evaluation.</p>
     </div>
 
-    <form action="{{FORM_POST_URL}}" method="POST">
-      <input type="hidden" name="form_token" value="{{FORM_TOKEN}}" />
-      <input type="hidden" name="form_link_id" value="{{FORM_LINK_ID}}" />
+    <div class="notice">
+      <div class="notice-icon">!</div>
+      <div class="notice-text">
+        <div class="notice-title">New client detected</div>
+        <div class="notice-sub">We could not match your email to an existing record. Please fill in your company details below.</div>
+        <div class="notice-email">{{SENDER_EMAIL}}</div>
+      </div>
+    </div>
+
+    <form enctype="multipart/form-data">
       <input type="hidden" name="consulta_id" value="{{CONSULTA_ID}}" />
-      <input type="hidden" name="variant" value="{{FORM_VARIANT_UNKNOWN}}" />
+      <input type="hidden" name="variant" value="unknown" />
 
       <section class="card section">
-        <p class="kicker">Client details</p>
-        <div class="title">Client details</div>
-        <p class="hintcopy">Complete the basic company and main contact information so we can identify the request correctly.</p>
+        <div class="section-header">
+          <p class="kicker">Company information</p>
+          <div class="section-title">Client details</div>
+          <p class="section-desc">The company that is requesting the engineering service.</p>
+        </div>
+
+        <div class="grid cols2">
+          <div class="field">
+            <label for="company_name">Company / Empresa <span class="req">*</span></label>
+            <input id="company_name" name="company_name" type="text" placeholder="e.g. AeroServ Mediterranean S.L." required />
+          </div>
+          <div class="field">
+            <label for="vat_number">CIF / VAT</label>
+            <input id="vat_number" name="vat_number" type="text" placeholder="e.g. B-12345678" />
+          </div>
+          <div class="field">
+            <label for="country">Country / Pais <span class="req">*</span></label>
+            <input id="country" name="country" type="text" placeholder="e.g. Spain" required />
+          </div>
+          <div class="field">
+            <label for="city">City / Ciudad</label>
+            <input id="city" name="city" type="text" placeholder="e.g. Valencia" />
+          </div>
+          <div class="field">
+            <label for="address">Address / Direccion</label>
+            <input id="address" name="address" type="text" placeholder="e.g. Av. del Puerto 214" />
+          </div>
+          <div class="field">
+            <label for="company_phone">Phone / Telefono</label>
+            <input id="company_phone" name="company_phone" type="tel" placeholder="e.g. +34 960 000 000" />
+          </div>
+          <div class="field">
+            <label for="website">Website</label>
+            <input id="website" name="website" type="url" placeholder="https://www.example.com" />
+          </div>
+          <div class="field">
+            <label for="customer_type">Customer type <span class="req">*</span></label>
+            <select id="customer_type" name="customer_type" required>
+              <option value="">Select an option</option>
+              <option value="aerolinea">Airline</option>
+              <option value="operador_privado">Private operator</option>
+              <option value="camo">CAMO</option>
+              <option value="mro">MRO</option>
+              <option value="lessor">Lessor</option>
+              <option value="fabricante_proveedor">Manufacturer / Supplier</option>
+              <option value="ambulancia_aerea">Air ambulance</option>
+              <option value="gobierno_militar">Government / Military</option>
+              <option value="otro">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="divider-label">Main point of contact</p>
+
+        <div class="grid cols3">
+          <div class="field">
+            <label for="contact_first_name">First name / Nombre <span class="req">*</span></label>
+            <input id="contact_first_name" name="contact_first_name" type="text" required />
+          </div>
+          <div class="field">
+            <label for="contact_last_name">Last name / Apellidos <span class="req">*</span></label>
+            <input id="contact_last_name" name="contact_last_name" type="text" required />
+          </div>
+          <div class="field">
+            <label for="contact_email">Email <span class="req">*</span></label>
+            <input id="contact_email" name="contact_email" type="email" value="{{SENDER_EMAIL}}" required />
+          </div>
+        </div>
         <div class="grid cols2" style="margin-top:18px">
-          <div class="field"><label for="company_name">Company</label><input id="company_name" name="company_name" type="text" required /></div>
-          <div class="field"><label for="vat_number">CIF/VAT</label><input id="vat_number" name="vat_number" type="text" /></div>
-          <div class="field"><label for="country">Country</label><input id="country" name="country" type="text" required /></div>
-          <div class="field"><label for="city">City</label><input id="city" name="city" type="text" required /></div>
-          <div class="field"><label for="address">Address</label><input id="address" name="address" type="text" /></div>
-          <div class="field"><label for="company_phone">Phone</label><input id="company_phone" name="company_phone" type="tel" /></div>
-          <div class="field"><label for="website">Website</label><input id="website" name="website" type="url" placeholder="https://www.example.com" /></div>
-          <div class="field"><label for="customer_type">Customer type</label><select id="customer_type" name="customer_type" required><option value="">Select an option</option><option value="aerolinea">Airline</option><option value="operador_privado">Private operator</option><option value="camo">CAMO</option><option value="mro">MRO</option><option value="lessor">Lessor</option><option value="fabricante_proveedor">Manufacturer / Supplier</option><option value="ambulancia_aerea">Air ambulance</option><option value="gobierno_militar">Government / Military</option><option value="otro">Other</option></select></div>
-        </div>
-        <div class="field" style="margin-top:16px"><label for="client_notes">Notes</label><textarea id="client_notes" name="client_notes"></textarea></div>
-        <div class="grid cols3" style="margin-top:16px">
-          <div class="field"><label for="contact_first_name">Contact first name</label><input id="contact_first_name" name="contact_first_name" type="text" required /></div>
-          <div class="field"><label for="contact_last_name">Contact last name</label><input id="contact_last_name" name="contact_last_name" type="text" required /></div>
-          <div class="field"><label for="contact_email">Email</label><input id="contact_email" name="contact_email" type="email" value="{{SENDER_EMAIL}}" required /></div>
-          <div class="field"><label for="contact_phone">Contact phone</label><input id="contact_phone" name="contact_phone" type="tel" /></div>
-          <div class="field"><label for="contact_role">Role</label><input id="contact_role" name="contact_role" type="text" /></div>
-          <div class="field"><label for="derived_email_domain">Email domain</label><input id="derived_email_domain" name="derived_email_domain" type="text" value="{{DERIVED_EMAIL_DOMAIN}}" readonly /><p class="hint">Not requested; derived from the email address.</p></div>
-        </div>
-      </section>
-
-      <section class="card section">
-        <p class="kicker">Project identification</p>
-        <div class="title">Project identification</div>
-        <div class="grid" style="margin-top:18px">
-          <div class="field"><label for="project_summary">Short description of the modification or request</label><textarea id="project_summary" name="project_summary" required></textarea></div>
-          <div class="field"><label for="operational_goal">Operational objective</label><textarea id="operational_goal" name="operational_goal" required></textarea></div>
-          <div class="grid cols2">
-            <div class="field"><label for="work_type">Type of work</label><select id="work_type" name="work_type" required><option value="">Select an option</option><option value="modificacion_nueva">New modification</option><option value="modificacion_existente">Modification to an existing project</option></select></div>
-            <div class="field hidden" id="project_reference_wrap"><label for="project_reference">Internal project reference</label><input id="project_reference" name="project_reference" type="text" /><p class="hint">Only if you selected "Modification to an existing project".</p></div>
+          <div class="field">
+            <label for="contact_phone">Phone / Telefono</label>
+            <input id="contact_phone" name="contact_phone" type="tel" placeholder="e.g. +34 612 345 678" />
+          </div>
+          <div class="field">
+            <label for="contact_role">Role / Cargo</label>
+            <input id="contact_role" name="contact_role" type="text" placeholder="e.g. Fleet Technical Manager" />
           </div>
         </div>
       </section>
 
       <section class="card section">
-        <p class="kicker">Aircraft affected</p>
-        <div class="title">Aircraft affected</div>
-        <div class="grid cols2" style="margin-top:18px">
-          <div class="field"><label for="aircraft_make_model">Manufacturer and model</label><input id="aircraft_make_model" name="aircraft_make_model" type="text" required /><p class="hint">Add the model according to the TCDS.</p></div>
-          <div class="field"><label for="aircraft_variant">Variant</label><input id="aircraft_variant" name="aircraft_variant" type="text" required /></div>
-          <div class="field"><label for="tcds_number">TCDS number</label><input id="tcds_number" name="tcds_number" type="text" required /><p class="hint">Example: NO. EASA.A.089</p></div>
-          <div class="field"><label for="affected_aircraft_count">Number of aircraft affected</label><input id="affected_aircraft_count" name="affected_aircraft_count" type="number" min="1" step="1" required /></div>
+        <div class="section-header">
+          <p class="kicker">Aircraft data</p>
+          <div class="section-title">Aircraft affected</div>
+          <p class="section-desc">Provide the aircraft details as they appear on the EASA Type Certificate Data Sheet (TCDS).</p>
         </div>
-        <div class="field" style="margin-top:16px"><label for="aircraft_serials">MSN/serial</label><textarea id="aircraft_serials" name="aircraft_serials" required></textarea><p class="hint">Include all separated by ;</p></div>
-      </section>
 
-      <section class="card section">
-        <p class="kicker">Available technical basis</p>
-        <div class="title">Available technical basis</div>
-        <div class="grid" style="margin-top:18px">
-          <div class="field"><label for="technical_docs">Drawings, manuals, SB, ICA, photos, sketches</label><textarea id="technical_docs" name="technical_docs"></textarea></div>
-          <div class="field"><label for="similar_modification">Similar previous modification</label><textarea id="similar_modification" name="similar_modification"></textarea></div>
-          <div class="field"><label for="manufacturer_docs">Manufacturer or supplier documentation</label><textarea id="manufacturer_docs" name="manufacturer_docs"></textarea></div>
-          <div class="field"><label for="flammability_data">Any flammability data or tests already available</label><textarea id="flammability_data" name="flammability_data"></textarea></div>
+        <div class="grid cols2">
+          <div class="field">
+            <label for="tcds_number">TCDS Number <span class="req">*</span></label>
+            <input id="tcds_number" name="tcds_number" type="text" placeholder="e.g. EASA.A.089" required />
+          </div>
+          <div class="field">
+            <label for="aircraft_manufacturer">Manufacturer (as per TCDS) <span class="req">*</span></label>
+            <input id="aircraft_manufacturer" name="aircraft_manufacturer" type="text" placeholder="e.g. Textron Aviation Inc." required />
+          </div>
+          <div class="field">
+            <label for="aircraft_model">Model (as per TCDS) <span class="req">*</span></label>
+            <input id="aircraft_model" name="aircraft_model" type="text" placeholder="e.g. 208B" required />
+          </div>
+          <div class="field">
+            <label for="aircraft_count">Number of aircraft <span class="req">*</span></label>
+            <input id="aircraft_count" name="aircraft_count" type="number" min="1" step="1" placeholder="e.g. 2" required />
+          </div>
         </div>
-      </section>
-
-      <section class="card section">
-        <p class="kicker">Operations and planning</p>
-        <div class="title">Operations and planning</div>
-        <div class="grid cols2" style="margin-top:18px">
-          <div class="field"><label for="target_date">Target date</label><input id="target_date" name="target_date" type="date" /></div>
-          <div class="field"><label for="is_aog">Is it AOG / urgent?</label><select id="is_aog" name="is_aog" required><option value="">Select an option</option><option value="no">No</option><option value="si">Yes</option></select></div>
-          <div class="field"><label for="aircraft_location">Where will the aircraft be?</label><input id="aircraft_location" name="aircraft_location" type="text" /></div>
-          <div class="field"><label for="downtime_window">Available downtime window</label><input id="downtime_window" name="downtime_window" type="text" /></div>
+        <div class="field" style="margin-top:18px">
+          <label for="aircraft_msn">MSN / Serial numbers <span class="req">*</span></label>
+          <input id="aircraft_msn" name="aircraft_msn" type="text" placeholder="e.g. 208B-1234; 208B-5678" required />
+          <p class="hint" style="color:var(--soft);font-size:11px;margin-top:4px">Separate multiple serials with ;</p>
         </div>
-        <div class="field" style="margin-top:16px"><label for="important_milestones">Important milestones</label><textarea id="important_milestones" name="important_milestones"></textarea></div>
+        <div class="field" style="margin-top:18px">
+          <label>TCDS PDF (optional)</label>
+          <input type="hidden" name="tcds_pdf_url" id="tcds_pdf_url" />
+          <div id="drop-zone" style="border:2px dashed var(--line);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:#fafbfd">
+            <div id="drop-text">
+              <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px">Drag & drop your TCDS PDF here</p>
+              <p style="font-size:12px;color:var(--soft)">or click to browse - PDF only, max 10 MB</p>
+            </div>
+            <div id="drop-success" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#16a34a" id="drop-filename">Uploaded file</p>
+              <p style="font-size:12px;color:var(--soft);margin-top:4px">Stored successfully. You can replace it by dropping another file.</p>
+            </div>
+            <div id="drop-loading" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:var(--sky)">Uploading...</p>
+            </div>
+            <div id="drop-error" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#dc2626" id="drop-error-msg">Error</p>
+            </div>
+          </div>
+          <input type="file" id="tcds_file_input" accept=".pdf" style="display:none" />
+          <p class="hint" style="color:var(--soft);font-size:11px;margin-top:4px">Upload the EASA Type Certificate Data Sheet if available.</p>
+        </div>
       </section>
 
       <section class="card submit">
-        <div><p class="kicker">Next step</p><p>Complete the client details and technical questions so we can prepare the quotation and continue with the project review.</p></div>
+        <p class="submit-text">Once submitted, your company will be registered and we will continue with the project evaluation process.</p>
         <button type="submit" class="btn">Submit form</button>
       </section>
     </form>
   </div>
 
   <script>
-    (function(){var workType=document.getElementById('work_type');var wrap=document.getElementById('project_reference_wrap');var input=document.getElementById('project_reference');function sync(){var on=workType.value==='modificacion_existente';wrap.classList.toggle('hidden',!on);input.required=on;if(!on)input.value=''}workType.addEventListener('change',sync);sync();})();
+  (function(){
+    var SB_URL='https://gterzsoapepzozgqbljk.supabase.co';
+    var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXJ6c29hcGVwem96Z3FibGprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTQzODMsImV4cCI6MjA4NTc3MDM4M30.ImK5L8stHYwolDcYaPG1-RoWs4jJSviLs_0vgXDAGjc';
+    var BUCKET='tcds-documents';
+
+    var zone=document.getElementById('drop-zone');
+    var fileInput=document.getElementById('tcds_file_input');
+    var hiddenUrl=document.getElementById('tcds_pdf_url');
+    var textEl=document.getElementById('drop-text');
+    var successEl=document.getElementById('drop-success');
+    var loadingEl=document.getElementById('drop-loading');
+    var errorEl=document.getElementById('drop-error');
+    var filenameEl=document.getElementById('drop-filename');
+    var errorMsg=document.getElementById('drop-error-msg');
+
+    function showState(s,msg){
+      textEl.style.display=s==='idle'?'':'none';
+      loadingEl.style.display=s==='loading'?'':'none';
+      successEl.style.display=s==='success'?'':'none';
+      errorEl.style.display=s==='error'?'':'none';
+      if(s==='success')filenameEl.textContent='Uploaded: '+msg;
+      if(s==='error')errorMsg.textContent=msg;
+    }
+
+    async function uploadFile(file){
+      if(!file||file.type!=='application/pdf'){showState('error','Only PDF files are accepted.');return;}
+      if(file.size>10*1024*1024){showState('error','File too large (max 10 MB).');return;}
+
+      showState('loading');
+      var ts=Date.now();
+      var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      var path='tcds/'+ts+'_'+safeName;
+
+      try{
+        var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
+          method:'POST',
+          headers:{'Authorization':'Bearer '+SB_KEY,'apikey':SB_KEY,'Content-Type':file.type,'x-upsert':'true'},
+          body:file
+        });
+        if(!r.ok){var e=await r.text();throw new Error(e);}
+        var publicUrl=SB_URL+'/storage/v1/object/public/'+BUCKET+'/'+path;
+        hiddenUrl.value=publicUrl;
+        showState('success',file.name);
+        zone.style.borderColor='#16a34a';
+        zone.style.background='#f0fdf4';
+      }catch(err){
+        showState('error','Upload failed: '+err.message);
+        zone.style.borderColor='#dc2626';
+      }
+    }
+
+    zone.addEventListener('click',function(){fileInput.click();});
+    fileInput.addEventListener('change',function(){if(fileInput.files[0])uploadFile(fileInput.files[0]);});
+
+    zone.addEventListener('dragover',function(e){e.preventDefault();zone.style.borderColor='var(--sky)';zone.style.background='#eff6ff';});
+    zone.addEventListener('dragleave',function(){zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';});
+    zone.addEventListener('drop',function(e){
+      e.preventDefault();
+      zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';
+      if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0]);
+    });
+  })();
   </script>
 </body>
 </html>

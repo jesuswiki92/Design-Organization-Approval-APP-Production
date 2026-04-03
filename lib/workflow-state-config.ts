@@ -303,6 +303,17 @@ const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
     is_system: true,
     is_active: true,
   },
+  {
+    scope: WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
+    state_code: CONSULTA_ESTADOS.ARCHIVADO,
+    label: CONSULTA_STATE_CONFIG.archivado.label,
+    short_label: 'Archivado',
+    description: CONSULTA_STATE_CONFIG.archivado.description,
+    color_token: 'slate',
+    sort_order: 90,
+    is_system: true,
+    is_active: true,
+  },
 ]
 
 const DEFAULT_ROWS_BY_SCOPE: Record<WorkflowStateScope, WorkflowStateConfigRow[]> = {

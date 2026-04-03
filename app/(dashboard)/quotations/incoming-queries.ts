@@ -15,6 +15,7 @@ export type IncomingQueryStatus =
   | 'nuevo'
   | 'esperando_formulario'
   | 'formulario_recibido'
+  | 'archivado'
 
 export type IncomingQuery = {
   id: string
@@ -71,6 +72,10 @@ export function normalizeIncomingStatus(
     return CONSULTA_ESTADOS.FORMULARIO_RECIBIDO as IncomingQueryStatus
   }
 
+  if (normalized === 'archivado' || normalized === 'archived') {
+    return CONSULTA_ESTADOS.ARCHIVADO as IncomingQueryStatus
+  }
+
   return CONSULTA_ESTADOS.NUEVO as IncomingQueryStatus
 }
 
@@ -84,12 +89,14 @@ export function getIncomingQueryStateOptions(
   return resolveWorkflowStateRows(
     WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
     rows,
-  ).map((row) => ({
+  )
+    .filter((row) => row.state_code !== CONSULTA_ESTADOS.ARCHIVADO)
+    .map((row) => ({
     value: row.state_code as IncomingQueryStatus,
     label: row.label,
     shortLabel: row.short_label,
     description: row.description ?? '',
-  }))
+    }))
 }
 
 export function isIncomingQueryPending(q: IncomingQuery) {

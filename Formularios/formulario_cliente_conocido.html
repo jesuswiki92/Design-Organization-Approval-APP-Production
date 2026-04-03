@@ -40,7 +40,7 @@
       </aside>
     </div>
 
-    <form action="{{FORM_POST_URL}}" method="POST">
+    <form action="{{FORM_POST_URL}}" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="form_token" value="{{FORM_TOKEN}}" />
       <input type="hidden" name="form_link_id" value="{{FORM_LINK_ID}}" />
       <input type="hidden" name="consulta_id" value="{{CONSULTA_ID}}" />
@@ -49,64 +49,110 @@
       <input type="hidden" name="client_contact_id" value="{{CLIENT_CONTACT_ID}}" />
 
       <section class="card section">
-        <p class="kicker">Project identification</p>
-        <div class="title">Project identification</div>
-        <p class="hintcopy">Tell us what you want to do and what the operational objective is so we can assess the scope correctly.</p>
-        <div class="grid" style="margin-top:18px">
-          <div class="field"><label for="project_summary">Short description of the modification or request</label><textarea id="project_summary" name="project_summary" required></textarea></div>
-          <div class="field"><label for="operational_goal">Operational objective</label><textarea id="operational_goal" name="operational_goal" required></textarea></div>
-          <div class="grid cols2">
-            <div class="field"><label for="work_type">Type of work</label><select id="work_type" name="work_type" required><option value="">Select an option</option><option value="modificacion_nueva">New modification</option><option value="modificacion_existente">Modification to an existing project</option></select></div>
-            <div class="field hidden" id="project_reference_wrap"><label for="project_reference">Internal project reference</label><input id="project_reference" name="project_reference" type="text" /><p class="hint">Only if you selected "Modification to an existing project".</p></div>
+        <p class="kicker">Aircraft data</p>
+        <div class="title">Aircraft information</div>
+        <p class="hintcopy">Provide the aircraft details as they appear on the EASA Type Certificate Data Sheet (TCDS).</p>
+        <div class="grid cols2" style="margin-top:18px">
+          <div class="field"><label for="tcds_number">TCDS Number</label><input id="tcds_number" name="tcds_number" type="text" required placeholder="e.g. EASA.A.089" /><p class="hint">As per the EASA TCDS.</p></div>
+          <div class="field"><label for="aircraft_manufacturer">Manufacturer (as per TCDS)</label><input id="aircraft_manufacturer" name="aircraft_manufacturer" type="text" required placeholder="e.g. Textron Aviation Inc." /></div>
+          <div class="field"><label for="aircraft_model">Model (as per TCDS)</label><input id="aircraft_model" name="aircraft_model" type="text" required placeholder="e.g. 208B" /></div>
+          <div class="field"><label for="aircraft_count">Number of aircraft</label><input id="aircraft_count" name="aircraft_count" type="number" min="1" step="1" required placeholder="e.g. 2" /></div>
+        </div>
+        <div class="field" style="margin-top:16px"><label for="aircraft_msn">MSN / Serial numbers</label><input id="aircraft_msn" name="aircraft_msn" type="text" required placeholder="e.g. 208B-1234; 208B-5678" /><p class="hint">Separate multiple serials with ;</p></div>
+        <div class="field" style="margin-top:16px">
+          <label>TCDS PDF (optional)</label>
+          <input type="hidden" name="tcds_pdf_url" id="tcds_pdf_url" />
+          <div id="drop-zone" style="border:2px dashed var(--line);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:#fafbfd">
+            <div id="drop-text">
+              <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px">Drag & drop your TCDS PDF here</p>
+              <p style="font-size:12px;color:var(--soft)">or click to browse — PDF only, max 10 MB</p>
+            </div>
+            <div id="drop-success" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#16a34a" id="drop-filename">✓ File uploaded</p>
+              <p style="font-size:12px;color:var(--soft);margin-top:4px">Stored in Supabase. You can replace it by dropping another file.</p>
+            </div>
+            <div id="drop-loading" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:var(--sky)">Uploading...</p>
+            </div>
+            <div id="drop-error" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#dc2626" id="drop-error-msg">Error</p>
+            </div>
           </div>
+          <input type="file" id="tcds_file_input" accept=".pdf" style="display:none" />
+          <p class="hint">Upload the EASA Type Certificate Data Sheet if available.</p>
         </div>
-      </section>
-
-      <section class="card section">
-        <p class="kicker">Aircraft affected</p>
-        <div class="title">Aircraft affected</div>
-        <p class="hintcopy">Provide the aircraft details so we can align the technical review and the reference documentation.</p>
-        <div class="grid cols2" style="margin-top:18px">
-          <div class="field"><label for="aircraft_make_model">Manufacturer and model</label><input id="aircraft_make_model" name="aircraft_make_model" type="text" required /><p class="hint">Add the model according to the TCDS.</p></div>
-          <div class="field"><label for="aircraft_variant">Variant</label><input id="aircraft_variant" name="aircraft_variant" type="text" required /></div>
-          <div class="field"><label for="tcds_number">TCDS number</label><input id="tcds_number" name="tcds_number" type="text" required /><p class="hint">Example: NO. EASA.A.089</p></div>
-          <div class="field"><label for="affected_aircraft_count">Number of aircraft affected</label><input id="affected_aircraft_count" name="affected_aircraft_count" type="number" min="1" step="1" required /></div>
-        </div>
-        <div class="field" style="margin-top:16px"><label for="aircraft_serials">MSN/serial</label><textarea id="aircraft_serials" name="aircraft_serials" required></textarea><p class="hint">Include all separated by ;</p></div>
-      </section>
-
-      <section class="card section">
-        <p class="kicker">Available technical basis</p>
-        <div class="title">Available technical basis</div>
-        <div class="grid" style="margin-top:18px">
-          <div class="field"><label for="technical_docs">Drawings, manuals, SB, ICA, photos, sketches</label><textarea id="technical_docs" name="technical_docs"></textarea></div>
-          <div class="field"><label for="similar_modification">Similar previous modification</label><textarea id="similar_modification" name="similar_modification"></textarea></div>
-          <div class="field"><label for="manufacturer_docs">Manufacturer or supplier documentation</label><textarea id="manufacturer_docs" name="manufacturer_docs"></textarea></div>
-          <div class="field"><label for="flammability_data">Any flammability data or tests already available</label><textarea id="flammability_data" name="flammability_data"></textarea></div>
-        </div>
-      </section>
-
-      <section class="card section">
-        <p class="kicker">Operations and planning</p>
-        <div class="title">Operations and planning</div>
-        <div class="grid cols2" style="margin-top:18px">
-          <div class="field"><label for="target_date">Target date</label><input id="target_date" name="target_date" type="date" /></div>
-          <div class="field"><label for="is_aog">Is it AOG / urgent?</label><select id="is_aog" name="is_aog" required><option value="">Select an option</option><option value="no">No</option><option value="si">Yes</option></select></div>
-          <div class="field"><label for="aircraft_location">Where will the aircraft be?</label><input id="aircraft_location" name="aircraft_location" type="text" /></div>
-          <div class="field"><label for="downtime_window">Available downtime window</label><input id="downtime_window" name="downtime_window" type="text" /></div>
-        </div>
-        <div class="field" style="margin-top:16px"><label for="important_milestones">Important milestones</label><textarea id="important_milestones" name="important_milestones"></textarea></div>
       </section>
 
       <section class="card submit">
-        <div><p class="kicker">Next step</p><p>Complete the client details and technical questions so we can prepare the quotation and continue with the project review.</p></div>
+        <div><p class="kicker">Next step</p><p>Submit the aircraft details so we can proceed with the project evaluation.</p></div>
         <button type="submit" class="btn">Submit form</button>
       </section>
     </form>
   </div>
 
   <script>
-    (function(){var workType=document.getElementById('work_type');var wrap=document.getElementById('project_reference_wrap');var input=document.getElementById('project_reference');function sync(){var on=workType.value==='modificacion_existente';wrap.classList.toggle('hidden',!on);input.required=on;if(!on)input.value=''}workType.addEventListener('change',sync);sync();})();
+  (function(){
+    var SB_URL='https://gterzsoapepzozgqbljk.supabase.co';
+    var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXJ6c29hcGVwem96Z3FibGprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTQzODMsImV4cCI6MjA4NTc3MDM4M30.ImK5L8stHYwolDcYaPG1-RoWs4jJSviLs_0vgXDAGjc';
+    var BUCKET='tcds-documents';
+
+    var zone=document.getElementById('drop-zone');
+    var fileInput=document.getElementById('tcds_file_input');
+    var hiddenUrl=document.getElementById('tcds_pdf_url');
+    var textEl=document.getElementById('drop-text');
+    var successEl=document.getElementById('drop-success');
+    var loadingEl=document.getElementById('drop-loading');
+    var errorEl=document.getElementById('drop-error');
+    var filenameEl=document.getElementById('drop-filename');
+    var errorMsg=document.getElementById('drop-error-msg');
+
+    function showState(s,msg){
+      textEl.style.display=s==='idle'?'':'none';
+      loadingEl.style.display=s==='loading'?'':'none';
+      successEl.style.display=s==='success'?'':'none';
+      errorEl.style.display=s==='error'?'':'none';
+      if(s==='success')filenameEl.textContent='✓ '+msg;
+      if(s==='error')errorMsg.textContent=msg;
+    }
+
+    async function uploadFile(file){
+      if(!file||file.type!=='application/pdf'){showState('error','Only PDF files are accepted.');return;}
+      if(file.size>10*1024*1024){showState('error','File too large (max 10 MB).');return;}
+
+      showState('loading');
+      var ts=Date.now();
+      var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      var path='tcds/'+ts+'_'+safeName;
+
+      try{
+        var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
+          method:'POST',
+          headers:{'Authorization':'Bearer '+SB_KEY,'apikey':SB_KEY,'Content-Type':file.type,'x-upsert':'true'},
+          body:file
+        });
+        if(!r.ok){var e=await r.text();throw new Error(e);}
+        var publicUrl=SB_URL+'/storage/v1/object/public/'+BUCKET+'/'+path;
+        hiddenUrl.value=publicUrl;
+        showState('success',file.name);
+        zone.style.borderColor='#16a34a';
+        zone.style.background='#f0fdf4';
+      }catch(err){
+        showState('error','Upload failed: '+err.message);
+        zone.style.borderColor='#dc2626';
+      }
+    }
+
+    zone.addEventListener('click',function(){fileInput.click();});
+    fileInput.addEventListener('change',function(){if(fileInput.files[0])uploadFile(fileInput.files[0]);});
+
+    zone.addEventListener('dragover',function(e){e.preventDefault();zone.style.borderColor='var(--sky)';zone.style.background='#eff6ff';});
+    zone.addEventListener('dragleave',function(){zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';});
+    zone.addEventListener('drop',function(e){
+      e.preventDefault();
+      zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';
+      if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0]);
+    });
+  })();
   </script>
 </body>
 </html>
