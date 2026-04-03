@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, Mail, ScanSearch, UserRoundX } from 'lucide-react'
+import { ArrowLeft, Mail, Plus, ScanSearch, UserRoundX } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
@@ -121,6 +121,21 @@ export default async function IncomingQuotationDetailPage({
   const clientLookup = buildIncomingClientLookup(clients, contacts)
   const query = toIncomingQuery(data as ConsultaEntrante, clientLookup)
   const matchedClient = resolveIncomingClientRecord(query.remitente, clients, contacts)
+
+  let projectHistory: { id: string; numero_proyecto: string | null; titulo: string | null; descripcion: string | null; estado: string | null; created_at: string | null }[] = []
+  if (matchedClient) {
+    const { data: historyRows, error: historyError } = await supabase
+      .from('doa_proyectos_historico')
+      .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
+      .eq('client_id', matchedClient.id)
+      .order('created_at', { ascending: false })
+
+    if (historyError) {
+      console.error('Error cargando historial de proyectos del cliente:', historyError)
+    } else {
+      projectHistory = historyRows ?? []
+    }
+  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)]">
@@ -253,6 +268,60 @@ export default async function IncomingQuotationDetailPage({
                 </div>
               </details>
             </section>
+
+            {matchedClient && (
+              <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold text-slate-950">Project History</h2>
+                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                      {projectHistory.length} {projectHistory.length === 1 ? 'project' : 'projects'}
+                    </span>
+                  </div>
+                </div>
+                <details className="group">
+                  <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                    <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    Ver historial de proyectos
+                  </summary>
+                  <div className="space-y-3 px-5 pb-4">
+                    {projectHistory.length > 0 ? (
+                      projectHistory.map((project) => (
+                        <div key={project.id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              {project.numero_proyecto && (
+                                <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                  {project.numero_proyecto}
+                                </span>
+                              )}
+                              <p className="mt-1 text-sm font-medium text-slate-900">{project.titulo ?? '—'}</p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              {project.estado && (
+                                <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                  {project.estado}
+                                </span>
+                              )}
+                              <Link
+                                href={`/proyectos-historico/${project.id}`}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                                title="Abrir ficha"
+                                aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs italic text-slate-400">No previous projects found for this client.</p>
+                    )}
+                  </div>
+                </details>
+              </section>
+            )}
           </div>
         </div>
       </div>

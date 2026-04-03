@@ -8,6 +8,9 @@ interface ProyectoHistoricoRow {
   titulo: string
   descripcion: string | null
   cliente_nombre: string | null
+  anio: number | null
+  ruta_origen: string | null
+  nombre_carpeta_origen: string | null
   created_at: string
   updated_at: string
 }
