@@ -3,48 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DOA Hub — Client Registration</title>
+  <title>DOA Hub - Client Registration</title>
   <style>
     :root{--bg:#f6f8fc;--card:#ffffffee;--line:#dbe4f0;--text:#0f172a;--muted:#64748b;--soft:#94a3b8;--sky:#0ea5e9;--sky2:#2563eb;--emerald:#10b981;--rad:20px;--shadow:0 20px 50px rgba(15,23,42,.08)}
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;background:radial-gradient(circle at top left,rgba(14,165,233,.10),transparent 40%),linear-gradient(180deg,#fbfdff 0%,#f1f5f9 100%);color:var(--text);padding:40px 20px;min-height:100vh}
     .page{max-width:720px;margin:0 auto}
-
-    /* Hero */
     .hero{text-align:center;margin-bottom:32px}
     .eyebrow{display:inline-flex;padding:6px 14px;border-radius:999px;background:rgba(14,165,233,.10);color:#0284c7;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
     h1{margin:16px 0 8px;font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
     .hero .copy{color:var(--muted);font-size:15px;line-height:1.7;max-width:520px;margin:0 auto}
-
-    /* Notice */
     .notice{margin-bottom:28px;padding:18px 22px;border-radius:var(--rad);border:1px dashed #cbd5e1;background:linear-gradient(135deg,#fffbeb 0%,#fef9c3 100%);display:flex;align-items:center;gap:16px}
     .notice-icon{width:40px;height:40px;border-radius:12px;background:#fbbf24;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
     .notice-text{flex:1}
     .notice-title{font-size:14px;font-weight:700;color:#92400e;margin-bottom:2px}
     .notice-sub{font-size:13px;color:#a16207;line-height:1.5}
     .notice-email{margin-top:6px;font-size:13px;font-weight:600;color:var(--text)}
-
-    /* Card */
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--shadow);backdrop-filter:blur(12px)}
-
-    /* Form */
-    form{display:grid;gap:24px}
+    .sections{display:grid;gap:24px}
     .section{padding:28px}
     .section-header{margin-bottom:20px}
     .kicker{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
     .section-title{margin-top:6px;font-size:20px;font-weight:700;letter-spacing:-.02em}
     .section-desc{margin-top:4px;color:var(--muted);font-size:13px;line-height:1.6}
-
-    /* Grid */
     .grid{display:grid;gap:18px}
     .cols2{grid-template-columns:repeat(2,1fr)}
     .cols3{grid-template-columns:repeat(3,1fr)}
-
-    /* Divider */
     .divider{height:1px;background:var(--line);margin:24px 0}
     .divider-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin-bottom:16px}
-
-    /* Fields */
     .field{display:grid;gap:6px}
     .field label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
     .field .hint{color:var(--soft);font-size:11px;line-height:1.4;margin-top:-2px}
@@ -52,23 +38,22 @@
     select{padding-right:32px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
     input:focus,select:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 4px rgba(14,165,233,.10)}
     input::placeholder{color:var(--soft)}
-
-    /* Submit */
+    .req{color:#ef4444;margin-left:2px}
     .submit{padding:24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
     .submit-text{font-size:13px;color:var(--muted);line-height:1.6;max-width:380px}
-    .btn{border:0;border-radius:999px;padding:14px 28px;background:linear-gradient(135deg,var(--sky) 0%,var(--sky2) 100%);color:#fff;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;box-shadow:0 12px 28px rgba(37,99,235,.20);transition:transform .15s,box-shadow .15s;white-space:nowrap}
+    .btn{border:0;border-radius:999px;padding:14px 28px;background:linear-gradient(135deg,var(--sky) 0%,var(--sky2) 100%);color:#fff;font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;box-shadow:0 12px 28px rgba(37,99,235,.20);transition:transform .15s,box-shadow .15s,opacity .2s;white-space:nowrap}
     .btn:hover{transform:translateY(-1px);box-shadow:0 16px 36px rgba(37,99,235,.28)}
     .btn:active{transform:translateY(0)}
-
-    /* Required marker */
-    .req{color:#ef4444;margin-left:2px}
-
+    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .error-msg{margin-top:12px;padding:10px 14px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:13px;display:none}
+    .confirmation{padding:32px;text-align:center;border-color:#16a34a;background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)}
+    .confirmation h2{font-size:24px;color:#16a34a;margin:12px 0 8px}
+    .confirmation p{color:var(--muted);font-size:15px}
     @media(max-width:640px){.cols2,.cols3{grid-template-columns:1fr}.section{padding:20px}h1{font-size:26px}.submit{flex-direction:column;text-align:center}}
   </style>
 </head>
 <body>
   <div class="page">
-
     <div class="hero">
       <div class="eyebrow">DOA Hub</div>
       <h1>Client Registration</h1>
@@ -84,14 +69,15 @@
       </div>
     </div>
 
-    <form enctype="multipart/form-data">
-      <input type="hidden" name="consulta_id" value="{{CONSULTA_ID}}" />
-      <input type="hidden" name="variant" value="unknown" />
+    <input type="hidden" id="consulta_id" value="{{CONSULTA_ID}}" />
+    <input type="hidden" id="variant" value="unknown" />
+
+    <div class="sections" id="sections-container">
 
       <section class="card section">
         <div class="section-header">
           <p class="kicker">Company information</p>
-          <div class="section-title">Datos de la empresa</div>
+          <div class="section-title">Client details</div>
           <p class="section-desc">The company that is requesting the engineering service.</p>
         </div>
 
@@ -105,7 +91,7 @@
             <input id="vat_number" name="vat_number" type="text" placeholder="e.g. B-12345678" />
           </div>
           <div class="field">
-            <label for="country">Country / Pa&iacute;s <span class="req">*</span></label>
+            <label for="country">Country / Pais <span class="req">*</span></label>
             <input id="country" name="country" type="text" placeholder="e.g. Spain" required />
           </div>
           <div class="field">
@@ -113,11 +99,11 @@
             <input id="city" name="city" type="text" placeholder="e.g. Valencia" />
           </div>
           <div class="field">
-            <label for="address">Address / Direcci&oacute;n</label>
+            <label for="address">Address / Direccion</label>
             <input id="address" name="address" type="text" placeholder="e.g. Av. del Puerto 214" />
           </div>
           <div class="field">
-            <label for="company_phone">Phone / Tel&eacute;fono</label>
+            <label for="company_phone">Phone / Telefono</label>
             <input id="company_phone" name="company_phone" type="tel" placeholder="e.g. +34 960 000 000" />
           </div>
           <div class="field">
@@ -160,7 +146,7 @@
         </div>
         <div class="grid cols2" style="margin-top:18px">
           <div class="field">
-            <label for="contact_phone">Phone / Tel&eacute;fono</label>
+            <label for="contact_phone">Phone / Telefono</label>
             <input id="contact_phone" name="contact_phone" type="tel" placeholder="e.g. +34 612 345 678" />
           </div>
           <div class="field">
@@ -173,7 +159,7 @@
       <section class="card section">
         <div class="section-header">
           <p class="kicker">Aircraft data</p>
-          <div class="section-title">Aircraft information</div>
+          <div class="section-title">Aircraft affected</div>
           <p class="section-desc">Provide the aircraft details as they appear on the EASA Type Certificate Data Sheet (TCDS).</p>
         </div>
 
@@ -206,10 +192,10 @@
           <div id="drop-zone" style="border:2px dashed var(--line);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:#fafbfd">
             <div id="drop-text">
               <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px">Drag & drop your TCDS PDF here</p>
-              <p style="font-size:12px;color:var(--soft)">or click to browse — PDF only, max 10 MB</p>
+              <p style="font-size:12px;color:var(--soft)">or click to browse - PDF only, max 10 MB</p>
             </div>
             <div id="drop-success" style="display:none">
-              <p style="font-size:14px;font-weight:600;color:#16a34a" id="drop-filename">✓ File uploaded</p>
+              <p style="font-size:14px;font-weight:600;color:#16a34a" id="drop-filename">Uploaded file</p>
               <p style="font-size:12px;color:var(--soft);margin-top:4px">Stored successfully. You can replace it by dropping another file.</p>
             </div>
             <div id="drop-loading" style="display:none">
@@ -226,9 +212,16 @@
 
       <section class="card submit">
         <p class="submit-text">Once submitted, your company will be registered and we will continue with the project evaluation process.</p>
-        <button type="submit" class="btn">Submit form</button>
+        <button type="button" class="btn" id="btn-submit" onclick="submitAll()">Submit form</button>
       </section>
-    </form>
+      <div class="error-msg" id="error-global"></div>
+    </div>
+
+    <section class="card confirmation" id="confirmation" style="display:none;margin-top:28px">
+      <div style="font-size:48px">&#10003;</div>
+      <h2>Formulario enviado correctamente</h2>
+      <p>Hemos registrado su empresa y los datos de la aeronave. Continuaremos con la evaluacion del proyecto.</p>
+    </section>
   </div>
 
   <script>
@@ -236,7 +229,9 @@
     var SB_URL='https://gterzsoapepzozgqbljk.supabase.co';
     var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXJ6c29hcGVwem96Z3FibGprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTQzODMsImV4cCI6MjA4NTc3MDM4M30.ImK5L8stHYwolDcYaPG1-RoWs4jJSviLs_0vgXDAGjc';
     var BUCKET='tcds-documents';
+    var SUBMIT_URL='https://sswebhook.testn8n.com/webhook/doa-form-submit';
 
+    /* --- TCDS PDF Upload --- */
     var zone=document.getElementById('drop-zone');
     var fileInput=document.getElementById('tcds_file_input');
     var hiddenUrl=document.getElementById('tcds_pdf_url');
@@ -245,26 +240,24 @@
     var loadingEl=document.getElementById('drop-loading');
     var errorEl=document.getElementById('drop-error');
     var filenameEl=document.getElementById('drop-filename');
-    var errorMsg=document.getElementById('drop-error-msg');
+    var errorMsgEl=document.getElementById('drop-error-msg');
 
     function showState(s,msg){
       textEl.style.display=s==='idle'?'':'none';
       loadingEl.style.display=s==='loading'?'':'none';
       successEl.style.display=s==='success'?'':'none';
       errorEl.style.display=s==='error'?'':'none';
-      if(s==='success')filenameEl.textContent='✓ '+msg;
-      if(s==='error')errorMsg.textContent=msg;
+      if(s==='success')filenameEl.textContent='Uploaded: '+msg;
+      if(s==='error')errorMsgEl.textContent=msg;
     }
 
     async function uploadFile(file){
       if(!file||file.type!=='application/pdf'){showState('error','Only PDF files are accepted.');return;}
       if(file.size>10*1024*1024){showState('error','File too large (max 10 MB).');return;}
-
       showState('loading');
       var ts=Date.now();
       var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
       var path='tcds/'+ts+'_'+safeName;
-
       try{
         var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
           method:'POST',
@@ -275,8 +268,7 @@
         var publicUrl=SB_URL+'/storage/v1/object/public/'+BUCKET+'/'+path;
         hiddenUrl.value=publicUrl;
         showState('success',file.name);
-        zone.style.borderColor='#16a34a';
-        zone.style.background='#f0fdf4';
+        zone.style.borderColor='#16a34a';zone.style.background='#f0fdf4';
       }catch(err){
         showState('error','Upload failed: '+err.message);
         zone.style.borderColor='#dc2626';
@@ -285,14 +277,99 @@
 
     zone.addEventListener('click',function(){fileInput.click();});
     fileInput.addEventListener('change',function(){if(fileInput.files[0])uploadFile(fileInput.files[0]);});
-
     zone.addEventListener('dragover',function(e){e.preventDefault();zone.style.borderColor='var(--sky)';zone.style.background='#eff6ff';});
     zone.addEventListener('dragleave',function(){zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';});
     zone.addEventListener('drop',function(e){
-      e.preventDefault();
-      zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';
+      e.preventDefault();zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';
       if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0]);
     });
+
+    /* --- Hidden iframe form submit (no CORS issues) --- */
+    function postViaIframe(url,data){
+      return new Promise(function(resolve){
+        var id='_f'+Date.now()+Math.random().toString(36).slice(2,6);
+        var iframe=document.createElement('iframe');
+        iframe.name=id;iframe.style.display='none';
+        document.body.appendChild(iframe);
+        var form=document.createElement('form');
+        form.method='POST';form.action=url;form.target=id;
+        for(var k in data){
+          if(data[k]===null||data[k]===undefined)continue;
+          var inp=document.createElement('input');
+          inp.type='hidden';inp.name=k;inp.value=data[k];
+          form.appendChild(inp);
+        }
+        document.body.appendChild(form);
+        /* Wait for initial about:blank load, then set real handler and submit */
+        setTimeout(function(){
+          iframe.onload=function(){
+            setTimeout(function(){try{document.body.removeChild(iframe);document.body.removeChild(form);}catch(e){}},500);
+            resolve();
+          };
+          form.submit();
+        },100);
+      });
+    }
+
+    window.submitAll=async function(){
+      var btn=document.getElementById('btn-submit');
+      var errEl=document.getElementById('error-global');
+      errEl.style.display='none';
+
+      var requiredClient=['company_name','country','customer_type','contact_first_name','contact_last_name','contact_email'];
+      var requiredAircraft=['tcds_number','aircraft_manufacturer','aircraft_model','aircraft_count','aircraft_msn'];
+      var allRequired=requiredClient.concat(requiredAircraft);
+
+      for(var i=0;i<allRequired.length;i++){
+        var el=document.getElementById(allRequired[i]);
+        if(!el.value.trim()){el.focus();errEl.textContent='Please fill in all required fields.';errEl.style.display='block';return;}
+      }
+
+      var consulta_id=document.getElementById('consulta_id').value;
+
+      var clientData={
+        section:'client',
+        consulta_id:consulta_id,
+        company_name:document.getElementById('company_name').value.trim(),
+        vat_number:document.getElementById('vat_number').value.trim(),
+        country:document.getElementById('country').value.trim(),
+        city:document.getElementById('city').value.trim(),
+        address:document.getElementById('address').value.trim(),
+        company_phone:document.getElementById('company_phone').value.trim(),
+        website:document.getElementById('website').value.trim(),
+        customer_type:document.getElementById('customer_type').value,
+        contact_first_name:document.getElementById('contact_first_name').value.trim(),
+        contact_last_name:document.getElementById('contact_last_name').value.trim(),
+        contact_email:document.getElementById('contact_email').value.trim(),
+        contact_phone:document.getElementById('contact_phone').value.trim(),
+        contact_role:document.getElementById('contact_role').value.trim()
+      };
+
+      var aircraftData={
+        section:'aircraft',
+        consulta_id:consulta_id,
+        tcds_number:document.getElementById('tcds_number').value.trim(),
+        aircraft_manufacturer:document.getElementById('aircraft_manufacturer').value.trim(),
+        aircraft_model:document.getElementById('aircraft_model').value.trim(),
+        aircraft_count:document.getElementById('aircraft_count').value,
+        aircraft_msn:document.getElementById('aircraft_msn').value.trim(),
+        tcds_pdf_url:document.getElementById('tcds_pdf_url').value||''
+      };
+
+      btn.disabled=true;btn.textContent='Sending...';
+
+      try{
+        await postViaIframe(SUBMIT_URL,clientData);
+        await new Promise(function(r){setTimeout(r,2000);});
+        await postViaIframe(SUBMIT_URL,aircraftData);
+        await new Promise(function(r){setTimeout(r,1000);});
+        document.getElementById('sections-container').style.display='none';
+        document.getElementById('confirmation').style.display='block';
+      }catch(err){
+        errEl.textContent='Error: '+err.message;errEl.style.display='block';
+        btn.disabled=false;btn.textContent='Submit form';
+      }
+    };
   })();
   </script>
 </body>

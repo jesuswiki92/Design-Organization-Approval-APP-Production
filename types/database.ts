@@ -185,6 +185,12 @@ export interface ConsultaEntrante {
   correo_cliente_enviado_at?: string | null
   correo_cliente_enviado_by?: string | null
   ultimo_borrador_cliente?: string | null
+  tcds_number?: string | null
+  aircraft_manufacturer?: string | null
+  aircraft_model?: string | null
+  aircraft_count?: number | null
+  aircraft_msn?: string | null
+  tcds_pdf_url?: string | null
 }
 
 export type WorkflowStateScope = 'incoming_queries' | 'quotation_board'
