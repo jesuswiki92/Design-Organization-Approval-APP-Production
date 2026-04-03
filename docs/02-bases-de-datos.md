@@ -88,17 +88,30 @@ Estas tablas aparecian en documentación o en catálogos antiguos del proyecto, 
 - `doa_aeronaves_registro`
 - `doa_aeronaves_tcds`
 - `doa_solicitudes`
+- `doa_consultas_form_links` — Eliminada en migracion `202604021950` (reemplazada por flujo externo)
+- `doa_consultas_form_responses` — Eliminada en migracion `202604021950` (reemplazada por flujo externo)
 
 ## Nota sobre migraciones del repositorio
 
 Las migraciones actuales del repo son estas:
 
-- `001_initial_schema.sql`
-- `202603281710_project_and_quotation_states.sql`
-- `202603291840_consultas_entrantes_estado.sql`
-- `202604010800_drop_legacy_doa_new_tables.sql`
+- `001_initial_schema.sql` — Esquema inicial (tablas `doa_new_*`, ya eliminadas)
+- `202603281710_project_and_quotation_states.sql` — Columnas de estado en proyectos y ofertas, tablas de historial de estados
+- `202603291840_consultas_entrantes_estado.sql` — Columna `estado` y campos de correo en `doa_consultas_entrantes`
+- `202604010800_drop_legacy_doa_new_tables.sql` — Eliminacion de tablas legacy `doa_new_*`
+- `202604021305_app_hosted_client_project_forms.sql` — Tablas `doa_consultas_form_links` y `doa_consultas_form_responses` (luego eliminadas)
+- `202604021833_add_url_formulario_to_consultas_entrantes.sql` — Columna `url_formulario` en `doa_consultas_entrantes`
+- `202604021950_drop_app_hosted_forms_tables.sql` — Eliminacion de `doa_consultas_form_links` y `doa_consultas_form_responses`
+- `202604031630_cascade_delete_form_responses_on_consulta.sql` — FK cascade en `doa_respuestas_formularios` hacia `doa_consultas_entrantes`
+- `202604031700_doa_proyectos_historico.sql` — Creacion de tabla `doa_proyectos_historico`
+- `202604031810_add_client_id_to_doa_proyectos_historico.sql` — Columna `client_id` (FK a `doa_clientes_datos_generales`) en `doa_proyectos_historico`
+- `202604031820_add_origin_metadata_to_doa_proyectos_historico.sql` — Columnas `anio`, `ruta_origen`, `nombre_carpeta_origen` en `doa_proyectos_historico`
+- `202604031830_add_doa_document_inventory_to_historico.sql` — Creacion de tabla `doa_proyectos_historico_documentos` (inventario documental)
+- `202604031830_add_doa_documentos_to_proyectos_historico.sql` — Variante alternativa de la tabla de documentos del historico
 
 No existe todavia una migracion que cree `public.doa_workflow_state_config`.
+
+Las columnas de aeronave en `doa_consultas_entrantes` (`tcds_number`, `aircraft_manufacturer`, `aircraft_model`, `aircraft_count`, `aircraft_msn`, `tcds_pdf_url`) existen en el esquema de Supabase y en los tipos TypeScript pero no tienen migracion en este repositorio.
 
 ---
 
