@@ -1,15 +1,52 @@
+/**
+ * ============================================================================
+ * PANEL DE CONSULTAS ENTRANTES (NUEVAS ENTRADAS)
+ * ============================================================================
+ *
+ * Este componente muestra las consultas comerciales que han llegado
+ * recientemente y todavia estan en estado "nuevo" (pendientes de triage).
+ * Se usa dentro de la pagina de Quotations como un panel tipo "bandeja
+ * de entrada" con tarjetas individuales para cada consulta.
+ *
+ * QUE MUESTRA:
+ *   - Una cabecera con titulo, descripcion y contadores (pendientes / fuente)
+ *   - Tarjetas tipo "card" para cada consulta nueva, mostrando:
+ *     * Codigo y asunto de la consulta
+ *     * Email del remitente
+ *     * Resumen del contenido
+ *     * Clasificacion (tipo de consulta)
+ *     * Fecha de recepcion
+ *     * Enlace "Mas detalle" para ir a la pagina de detalle
+ *   - Si no hay consultas nuevas, muestra un mensaje informativo
+ *
+ * NOTA TECNICA: Solo muestra consultas con estado "nuevo". Las consultas
+ * en otros estados se ven en el tablero principal (QuotationStatesBoard).
+ * ============================================================================
+ */
+
 'use client'
 
+// Link: para navegar a la pagina de detalle de cada consulta
 import Link from 'next/link'
+// useMemo: optimizacion para no recalcular el filtro en cada render
 import { useMemo } from 'react'
+// Iconos decorativos para la interfaz
 import { Inbox, Mail, Sparkles } from 'lucide-react'
 
+// Funcion que resuelve los metadatos visuales (color, etiqueta) de cada estado
 import { getResolvedIncomingQueryStatusMeta } from '@/lib/workflow-state-config'
+// Utilidad para combinar clases CSS condicionalmente
 import { cn } from '@/lib/utils'
+// Tipo de datos para la configuracion de estados del workflow
 import type { WorkflowStateConfigRow } from '@/types/database'
 
+// Tipos de datos para las consultas entrantes y sus estados
 import type { IncomingQuery, IncomingQueryStatus } from './incoming-queries'
 
+/**
+ * Insignia visual que muestra el estado de una consulta con color y texto.
+ * Por ejemplo: "Nuevo" en azul, "En proceso" en amarillo, etc.
+ */
 function IncomingStatusBadge({
   status,
   stateConfigRows,
@@ -31,6 +68,10 @@ function IncomingStatusBadge({
   )
 }
 
+/**
+ * Componente principal del panel de consultas entrantes.
+ * Recibe todas las consultas y filtra solo las que estan en estado "nuevo".
+ */
 export function IncomingQueriesPanel({
   queries,
   stateConfigRows = [],
@@ -38,6 +79,7 @@ export function IncomingQueriesPanel({
   queries: IncomingQuery[]
   stateConfigRows?: WorkflowStateConfigRow[]
 }) {
+  // Filtrar solo las consultas en estado "nuevo" (pendientes de revision)
   const incoming = useMemo(
     () => queries.filter((query) => query.estado === 'nuevo'),
     [queries],

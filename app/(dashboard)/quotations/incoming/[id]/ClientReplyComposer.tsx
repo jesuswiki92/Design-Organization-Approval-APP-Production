@@ -1,33 +1,78 @@
+/**
+ * ============================================================================
+ * COMPOSITOR DE RESPUESTAS AL CLIENTE
+ * ============================================================================
+ *
+ * Este componente permite al equipo comercial redactar y enviar una respuesta
+ * a un cliente que ha enviado una consulta. Es como un editor de mensajes
+ * de correo electronico integrado en la aplicacion.
+ *
+ * QUE HACE:
+ *   - Muestra un campo de texto con un borrador de respuesta pre-generado
+ *     (puede venir de la IA o se genera uno por defecto)
+ *   - El usuario puede modificar el texto libremente antes de enviarlo
+ *   - Muestra a quien se enviara el mensaje (email del destinatario)
+ *   - Si hay formulario asociado, muestra un enlace para revisarlo
+ *   - Al pulsar "Enviar", envia el mensaje al webhook comercial via API
+ *   - Muestra estados: enviando, enviado con exito, o error
+ *
+ * FLUJO:
+ *   1. Se genera un mensaje inicial (de la IA o plantilla por defecto)
+ *   2. El usuario lo revisa y edita si quiere
+ *   3. Pulsa "Revisado. Enviar a cliente"
+ *   4. La app envia los datos a la API (/api/consultas/[id]/send-client)
+ *   5. Si todo va bien, redirige a la lista de quotations
+ *
+ * NOTA TECNICA: 'use client' porque necesita interactividad del navegador
+ * (formulario, estados, llamada a API desde el navegador).
+ * ============================================================================
+ */
+
 "use client"
 
+// Funciones de React para manejar estados e interactividad
 import { useMemo, useState } from "react"
+// Funcion de Next.js para navegar entre paginas y refrescar datos
 import { useRouter } from "next/navigation"
+// Iconos decorativos para los botones y mensajes de estado
 import { CheckCircle2, ExternalLink, LoaderCircle, Mail, Send } from "lucide-react"
 
+// Componentes visuales reutilizables de la libreria shadcn/ui
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+// Utilidad para combinar clases CSS condicionalmente
 import { cn } from "@/lib/utils"
 
+/** Propiedades que recibe este componente */
 type ClientReplyComposerProps = {
   query: {
-    id: string
-    codigo: string
-    asunto: string
-    remitente: string
-    urlFormulario: string | null
-    clasificacion: string | null
-    cuerpoOriginal: string
-    respuestaIa: string | null
+    id: string                    // ID de la consulta en la base de datos
+    codigo: string                // Codigo visible de la consulta
+    asunto: string                // Asunto del mensaje original
+    remitente: string             // Email del remitente/cliente
+    urlFormulario: string | null  // URL del formulario del proyecto (si existe)
+    clasificacion: string | null  // Tipo de consulta (puede estar vacia)
+    cuerpoOriginal: string        // Texto original que envio el cliente
+    respuestaIa: string | null    // Borrador de respuesta generado por IA (puede estar vacio)
   }
-  compact?: boolean
+  compact?: boolean               // Si es true, usa un diseno mas compacto
 }
 
+/** Texto que la IA pone donde iria el enlace al formulario */
 const FORM_INTAKE_PLACEHOLDER = '(Form intake here)'
+/** Marcador que reemplaza al placeholder con texto legible para el cliente */
 const FORM_LINK_MARKER = '[Acceder al formulario del proyecto]'
 
+/**
+ * Genera el mensaje inicial que se muestra en el campo de texto.
+ * Si la IA ya genero un borrador (respuestaIa), lo usa como base.
+ * Si no hay borrador de IA, genera una plantilla generica en ingles.
+ * En ambos casos, reemplaza el placeholder del formulario por un enlace legible.
+ */
 function buildInitialMessage(query: ClientReplyComposerProps["query"]) {
   const aiDraft = query.respuestaIa?.trim()
 
+  // Si hay borrador de IA, usarlo (reemplazando el placeholder si existe)
   if (aiDraft) {
     if (aiDraft.includes(FORM_INTAKE_PLACEHOLDER)) {
       return aiDraft.replace(FORM_INTAKE_PLACEHOLDER, FORM_LINK_MARKER)
@@ -35,6 +80,15 @@ function buildInitialMessage(query: ClientReplyComposerProps["query"]) {
     return aiDraft
   }
 
+  // Si el correo no pudo ser catalogado por la IA ("Clasificacion pendiente"),
+  // devolvemos una caja vacía para que el usuario escriba libremente,
+  // ya que no procede enviarles el formulario de avión por defecto.
+  if (query.clasificacion === 'Clasificacion pendiente') {
+    return ""
+  }
+
+  // Si no hay borrador de IA pero SÍ es una solicitud de proyecto, 
+  // generamos una plantilla por defecto pidiendo el formulario.
   const formMarker = query.urlFormulario ? FORM_LINK_MARKER : ''
   return [
     "Hello,",
@@ -50,19 +104,32 @@ function buildInitialMessage(query: ClientReplyComposerProps["query"]) {
   ].join("\n")
 }
 
+/**
+ * Componente principal del compositor de respuestas al cliente.
+ * Muestra el editor de texto, el boton de envio y los mensajes de estado.
+ */
 export function ClientReplyComposer({
   query,
   compact = false,
 }: ClientReplyComposerProps) {
+  // Navegador de Next.js para redirigir y refrescar datos
   const router = useRouter()
+  // Estado del mensaje: se inicializa con el borrador generado
   const [message, setMessage] = useState(() => buildInitialMessage(query))
+  // Estado del envio: "idle" (en reposo), "submitting" (enviando), "success" o "error"
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">(
     "idle",
   )
+  // Mensaje de retroalimentacion que se muestra al usuario (exito o error)
   const [feedback, setFeedback] = useState<string | null>(null)
 
+  // Mensaje limpio sin espacios extra al inicio y al final
   const trimmedMessage = useMemo(() => message.trim(), [message])
 
+  /**
+   * Funcion que se ejecuta al pulsar el boton "Enviar".
+   * Envia el mensaje al webhook comercial a traves de la API de la app.
+   */
   async function handleSubmit() {
     if (!trimmedMessage) {
       setStatus("error")

@@ -1,17 +1,56 @@
+/**
+ * ============================================================================
+ * PAGINA DEL CATALOGO DE FORMULARIOS DE QUOTATIONS
+ * ============================================================================
+ *
+ * Esta pagina muestra un listado de todas las consultas que ya tienen un
+ * formulario generado por n8n (automatizacion). Permite al equipo comercial
+ * ver y acceder a las URLs publicas de los formularios que se envian a
+ * los clientes como parte del proceso de intake.
+ *
+ * QUE CARGA:
+ *   1. Consultas entrantes que tienen URL de formulario (no archivadas)
+ *   2. Lista de clientes para emparejar con las consultas
+ *   3. Contactos de los clientes
+ *
+ * QUE MUESTRA:
+ *   - Boton "Volver a quotations" para regresar
+ *   - Cabecera con titulo y descripcion
+ *   - Tabla con columnas: Consulta, Cliente, Estado, Creado, URL, Accion
+ *   - En cada fila, un boton "Abrir" que abre la URL del formulario
+ *
+ * NOTA TECNICA: Es un Server Component que carga datos en paralelo
+ * desde Supabase. Solo muestra consultas que tienen url_formulario
+ * (no es null) y no estan archivadas.
+ * ============================================================================
+ */
+
+// Navegacion y iconos
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, FileText } from 'lucide-react'
 
+// Barra superior de la pagina
 import { TopBar } from '@/components/layout/TopBar'
+// Conexion a Supabase desde el servidor
 import { createClient } from '@/lib/supabase/server'
+// Constantes de estados (para excluir archivados)
 import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
+// Tipos de datos
 import type { Cliente, ClienteContacto, ConsultaEntrante } from '@/types/database'
+// Funciones para emparejar consultas con clientes
 import {
   buildIncomingClientLookup,
   resolveIncomingClientIdentity,
 } from '../incoming-queries'
 
+// Forzar regeneracion en cada visita (sin cache)
 export const dynamic = 'force-dynamic'
 
+/**
+ * Funcion auxiliar para formatear fechas en formato espanol corto.
+ * Ejemplo: "03/04/2026 14:30"
+ * Si la fecha es invalida o no existe, devuelve "-".
+ */
 function formatDate(value: string | null | undefined) {
   if (!value) return '-'
 
@@ -24,19 +63,28 @@ function formatDate(value: string | null | undefined) {
   }).format(date)
 }
 
+/**
+ * Funcion principal de la pagina del catalogo de formularios.
+ * Se ejecuta en el servidor cuando alguien visita /quotations/forms.
+ */
 export default async function QuotationsFormsCatalogPage() {
   const supabase = await createClient()
+
+  // Cargar datos en paralelo: consultas con formulario, clientes y contactos
   const [consultasResult, clientsResult, contactsResult] = await Promise.all([
+    // Solo consultas no archivadas que tienen URL de formulario
     supabase
       .from('doa_consultas_entrantes')
       .select('*')
       .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
       .not('url_formulario', 'is', null)
       .order('created_at', { ascending: false }),
+    // Todos los clientes ordenados alfabeticamente
     supabase
       .from('doa_clientes_datos_generales')
       .select('*')
       .order('nombre', { ascending: true }),
+    // Contactos de clientes
     supabase
       .from('doa_clientes_contactos')
       .select('*')
@@ -45,9 +93,11 @@ export default async function QuotationsFormsCatalogPage() {
       .order('created_at', { ascending: true }),
   ])
 
+  // Preparar datos con tipos correctos
   const consultas = (consultasResult.data ?? []) as ConsultaEntrante[]
   const clients = (clientsResult.data ?? []) as Cliente[]
   const contacts = (contactsResult.data ?? []) as ClienteContacto[]
+  // Mapa de busqueda para emparejar consultas con clientes por email
   const clientLookup = buildIncomingClientLookup(clients, contacts)
 
   return (

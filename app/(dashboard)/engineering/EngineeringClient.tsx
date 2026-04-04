@@ -1,35 +1,70 @@
+/**
+ * ============================================================================
+ * COMPONENTE VISUAL DEL TABLERO DE PROYECTOS (ENGINEERING)
+ * ============================================================================
+ *
+ * Este componente muestra el tablero operativo de proyectos con dos vistas:
+ *   - TABLERO (Board): columnas tipo Kanban con tarjetas de trabajo
+ *   - LISTA: tabla compacta con todos los elementos en filas
+ *
+ * COLUMNAS DEL TABLERO (7 estados del flujo de trabajo):
+ *   1. Intake: solicitudes entrantes pendientes de asignar
+ *   2. Discovery: analisis del problema y restricciones
+ *   3. Architecture: decisiones de diseno tecnico
+ *   4. Build: implementacion activa (codigo en progreso)
+ *   5. Verification: tests y revision antes de entregar
+ *   6. Release: elementos listos para entrega
+ *   7. Observability: monitorizacion post-entrega
+ *
+ * NOTA IMPORTANTE: Todos los datos son MOCK (simulados). El tablero
+ * esta preparado visualmente pero todavia no se conecta a la base
+ * de datos real. Cuando se conecte, los datos vendran de Supabase.
+ *
+ * NOTA TECNICA: 'use client' porque necesita manejar el cambio
+ * entre vistas (tablero/lista) con useState.
+ * ============================================================================
+ */
+
 'use client'
 
+// Hooks de React y tipos
 import { useState, type ReactNode } from 'react'
+// Iconos para las opciones de vista y placeholders
 import { LayoutGrid, List, Sparkles } from 'lucide-react'
 
+// Componentes de pestanas (tabs) de shadcn/ui
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+// Utilidad para combinar clases CSS
 import { cn } from '@/lib/utils'
 
+/** Vista activa: tablero o lista */
 type EngineeringView = 'board' | 'list'
 
+/** Estructura de un elemento de trabajo (tarjeta) */
 type EngineeringWorkItem = {
-  id: string
-  title: string
-  summary: string
-  owner: string
-  due: string
-  tag: string
+  id: string       // Identificador unico
+  title: string    // Titulo del elemento
+  summary: string  // Resumen corto
+  owner: string    // Responsable asignado
+  due: string      // Fecha limite
+  tag: string      // Etiqueta de categoria
 }
 
+/** Estructura de una columna del tablero */
 type EngineeringColumn = {
   id: string
   title: string
   description: string
-  accent: {
+  accent: {          // Colores de la columna
     bg: string
     border: string
     dot: string
     chip: string
   }
-  cards: EngineeringWorkItem[]
+  cards: EngineeringWorkItem[]  // Tarjetas dentro de esta columna
 }
 
+/** Opciones de vista disponibles */
 const VIEW_OPTIONS: Array<{
   value: EngineeringView
   label: string
@@ -39,6 +74,7 @@ const VIEW_OPTIONS: Array<{
   { value: 'list', label: 'Lista', icon: List },
 ]
 
+/** Datos MOCK de las columnas del tablero con sus tarjetas simuladas */
 const BOARD_COLUMNS: EngineeringColumn[] = [
   {
     id: 'intake',
@@ -253,8 +289,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
   },
 ]
 
+/** Lista plana de todos los elementos para la vista de lista */
 const BOARD_ITEMS = BOARD_COLUMNS.flatMap((column) => column.cards.map((card) => ({ column, card })))
 
+/** Tarjeta individual de un elemento de trabajo */
 function EngineeringCard({ card }: { card: EngineeringWorkItem }) {
   return (
     <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] transition-transform hover:-translate-y-0.5 hover:border-cyan-300">
@@ -278,6 +316,7 @@ function EngineeringCard({ card }: { card: EngineeringWorkItem }) {
   )
 }
 
+/** Columna completa del tablero con su cabecera y tarjetas */
 function EngineeringColumnCard({ column }: { column: EngineeringColumn }) {
   return (
     <section
@@ -326,6 +365,7 @@ function EngineeringColumnCard({ column }: { column: EngineeringColumn }) {
   )
 }
 
+/** Fila de la vista lista con los datos de un elemento de trabajo */
 function EngineeringListRow({
   column,
   card,
@@ -357,6 +397,7 @@ function EngineeringListRow({
   )
 }
 
+/** Insignia decorativa que muestra el modo actual del tablero */
 function ModeBadge({ children }: { children: ReactNode }) {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-700">
@@ -366,7 +407,9 @@ function ModeBadge({ children }: { children: ReactNode }) {
   )
 }
 
+/** Componente principal del tablero de proyectos con vistas tablero y lista */
 export function EngineeringClient() {
+  // Estado para la vista activa: "board" (tablero) o "list" (lista)
   const [view, setView] = useState<EngineeringView>('board')
 
   return (

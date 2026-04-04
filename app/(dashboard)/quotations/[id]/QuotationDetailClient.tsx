@@ -1,29 +1,69 @@
+/**
+ * ============================================================================
+ * COMPONENTE VISUAL DE DETALLE DE UNA QUOTATION
+ * ============================================================================
+ *
+ * Este componente muestra la ficha completa de una quotation (oferta
+ * comercial) con toda su informacion operativa. Es la vista a la que
+ * llega el usuario cuando pulsa "Ver detalle" en el tablero.
+ *
+ * QUE MUESTRA:
+ *   - Boton "Volver a Quotations" para regresar al listado
+ *   - Insignia con el estado actual de la quotation (ej: "En revision")
+ *   - Cabecera con codigo, titulo, nota y etiquetas de metadata
+ *   - Metricas clave: Owner, Due date, Amount, Requested date
+ *   - Bloque 01: Resumen ejecutivo (contexto, objetivo, restricciones)
+ *   - Bloque 02: Alcance tecnico (scope, assumptions, inputs pendientes)
+ *   - Bloque 03: Pricing y estrategia comercial (precio, horas, hitos)
+ *   - Snapshot: Estado operativo actual (estado, canal, siguiente paso)
+ *   - Bloque 04: Historial y coordinacion (timeline, checklist)
+ *
+ * NOTA: Actualmente la ficha busca la quotation en los "lanes" (columnas)
+ * del tablero visual. Cuando se conecte el backend real, se cargara
+ * directamente desde Supabase.
+ *
+ * NOTA TECNICA: 'use client' porque necesita cargar datos del localStorage
+ * (columnas personalizadas) y recalcular la vista al cambiar datos.
+ * ============================================================================
+ */
+
 'use client'
 
+// Link: navegacion entre paginas sin recargar
 import Link from 'next/link'
+// Hooks de React para manejar estados, efectos y calculos optimizados
 import { useEffect, useMemo, useState } from 'react'
+// Iconos decorativos para las metricas y secciones
 import {
-  ArrowLeft,
-  Blocks,
-  BriefcaseBusiness,
-  CircleGauge,
-  Clock3,
-  FileSpreadsheet,
-  Layers3,
-  NotebookTabs,
-  Radar,
+  ArrowLeft,        // Flecha de "volver atras"
+  Blocks,           // Icono de bloques (campo cliente/customer)
+  BriefcaseBusiness, // Maletin (campo owner)
+  CircleGauge,      // Medidor circular (campo amount/importe)
+  Clock3,           // Reloj (campo due date)
+  FileSpreadsheet,  // Hoja de calculo (campo fecha de solicitud)
+  Layers3,          // Capas (campo estado)
+  NotebookTabs,     // Libreta (campo canal)
+  Radar,            // Radar (campo siguiente paso)
 } from 'lucide-react'
 
+// Utilidad para combinar clases CSS condicionalmente
 import { cn } from '@/lib/utils'
+// Tipo de datos para la configuracion de estados del workflow
 import type { WorkflowStateConfigRow } from '@/types/database'
 
+// Funciones para trabajar con los datos del tablero de quotations
 import {
-  defaultQuotationLanes,
-  findQuotationCardById,
-  loadStoredCustomQuotationLanes,
-  type QuotationLane,
+  defaultQuotationLanes,             // Genera las columnas por defecto del tablero
+  findQuotationCardById,             // Busca una tarjeta por ID en todas las columnas
+  loadStoredCustomQuotationLanes,    // Carga columnas personalizadas del localStorage
+  type QuotationLane,                // Tipo de datos de una columna del tablero
 } from '../quotation-board-data'
 
+/**
+ * Bloque reutilizable para mostrar una seccion de informacion.
+ * Cada bloque tiene: etiqueta superior (eyebrow), titulo, texto descriptivo
+ * y una lista de items. Se usa para los bloques 01, 02, 03 y 04 de la ficha.
+ */
 function DetailBlock({
   eyebrow,
   title,
@@ -56,6 +96,12 @@ function DetailBlock({
   )
 }
 
+/**
+ * Componente principal de la ficha de detalle de una quotation.
+ * Recibe el ID de la quotation y la configuracion de estados.
+ * Busca la tarjeta correspondiente en las columnas del tablero y muestra
+ * toda su informacion organizada en bloques.
+ */
 export function QuotationDetailClient({
   id,
   initialStateConfigRows,
@@ -63,18 +109,22 @@ export function QuotationDetailClient({
   id: string
   initialStateConfigRows: WorkflowStateConfigRow[]
 }) {
+  // Estado para las columnas personalizadas creadas por el usuario
   const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
 
+  // Cargar las columnas personalizadas del navegador al montar el componente
   useEffect(() => {
     // Load browser-local custom lanes after mount to keep the first render deterministic.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCustomLanes(loadStoredCustomQuotationLanes())
   }, [])
 
+  // Combinar columnas por defecto con las personalizadas
   const lanes = useMemo(
     () => [...defaultQuotationLanes(initialStateConfigRows), ...customLanes],
     [customLanes, initialStateConfigRows],
   )
+  // Buscar la tarjeta de la quotation por su ID en todas las columnas
   const detail = useMemo(() => findQuotationCardById(lanes, id), [id, lanes])
 
   if (!detail) {

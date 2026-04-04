@@ -1,70 +1,127 @@
+/**
+ * ============================================================================
+ * TABLERO DE ESTADOS DE QUOTATIONS (COMPONENTE PRINCIPAL)
+ * ============================================================================
+ *
+ * Este es el componente mas complejo de la seccion de Quotations. Funciona
+ * como un "centro de control" que ofrece multiples vistas y herramientas:
+ *
+ * VISTAS DISPONIBLES:
+ *   1. TABLERO (Board): columnas tipo Kanban con tarjetas de quotations
+ *   2. LISTA: tabla con filas para cada estado y su tarjeta principal
+ *   3. CONFIGURACION: editor para personalizar estados (nombres, colores, orden)
+ *
+ * QUE PERMITE AL USUARIO:
+ *   - Ver todas las quotations organizadas por estado
+ *   - Cambiar el estado de una consulta entrante (selector desplegable)
+ *   - Archivar consultas (moverlas a estado "archivado")
+ *   - Borrar consultas (eliminarlas del tablero)
+ *   - Crear nuevas columnas personalizadas
+ *   - Personalizar nombres, colores y orden de los estados
+ *   - Guardar la configuracion de estados en Supabase
+ *
+ * COMPONENTES INTERNOS:
+ *   - IncomingQueryStateControl: selector para cambiar el estado de una consulta
+ *   - IncomingQueryDeleteControl: boton para borrar una consulta
+ *   - IncomingQueryArchiveControl: boton para archivar una consulta
+ *   - IncomingClientIdentityBlock: muestra si el cliente es conocido o desconocido
+ *   - BoardCard: tarjeta individual en la vista de tablero
+ *   - BoardLane: columna completa del tablero (con sus tarjetas)
+ *   - ListRow: fila de la vista lista
+ *   - ScopeEditor: editor de configuracion de estados
+ *   - QuotationStatesBoard: componente principal que orquesta todo
+ *
+ * NOTA TECNICA: Las columnas personalizadas se guardan en localStorage
+ * del navegador. La configuracion de estados se guarda en Supabase.
+ * ============================================================================
+ */
+
 'use client'
 
+// --- IMPORTACIONES ---
+
+// Navegacion entre paginas
 import Link from 'next/link'
+// Hook para refrescar datos de la pagina
 import { useRouter } from 'next/navigation'
+// Hooks de React para manejar estados, efectos y optimizaciones
 import {
-  startTransition,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent,
+  startTransition,   // Marca actualizaciones como no urgentes
+  useEffect,         // Ejecutar codigo al montar/cambiar el componente
+  useMemo,           // Memorizar calculos costosos
+  useRef,            // Referencia a elementos del DOM
+  useState,          // Manejar estados del componente
+  type FormEvent,    // Tipo para eventos de formulario
 } from 'react'
+// Iconos decorativos para botones y acciones
 import {
-  Archive,
-  LayoutGrid,
-  List,
-  Plus,
-  RotateCcw,
-  Save,
-  Settings2,
-  Trash2,
+  Archive,           // Archivar
+  LayoutGrid,        // Vista tablero
+  List,              // Vista lista
+  Plus,              // Anadir / ver detalle
+  RotateCcw,         // Restaurar configuracion
+  Save,              // Guardar
+  Settings2,         // Configuracion
+  Trash2,            // Borrar
 } from 'lucide-react'
 
+// Componentes visuales reutilizables (shadcn/ui)
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+// Funciones para manejar la configuracion de estados del workflow
 import {
-  getWorkflowStateColorOptions,
-  replaceWorkflowStateRowsForScope,
-  resolveWorkflowStateRows,
-  WORKFLOW_STATE_SCOPES,
+  getWorkflowStateColorOptions,         // Opciones de colores disponibles
+  replaceWorkflowStateRowsForScope,     // Reemplazar filas de un scope
+  resolveWorkflowStateRows,             // Resolver filas con valores por defecto
+  WORKFLOW_STATE_SCOPES,                // Constantes de scopes del workflow
 } from '@/lib/workflow-state-config'
+// Utilidad para combinar clases CSS
 import { cn } from '@/lib/utils'
+// Tipos de datos
 import type {
-  WorkflowStateConfigRow,
-  WorkflowStateScope,
+  WorkflowStateConfigRow,   // Fila de configuracion de estado
+  WorkflowStateScope,       // Scope: "quotation_board" o "incoming_queries"
 } from '@/types/database'
+// Constantes de estados de consultas (ej: ARCHIVADO)
 import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
+// Funciones y tipos para consultas entrantes
 import {
   getIncomingQueryStateOptions,
   type IncomingQuery,
 } from './incoming-queries'
+// Tipos y funciones para los datos del tablero
 import type { QuotationLane } from './quotation-board-data'
 import {
-  canDeleteQuotationLane,
-  defaultQuotationLanes,
-  loadStoredCustomQuotationLanes,
-  makeCustomQuotationLane,
-  stripQuotationLaneAccent,
-  type QuotationCard,
-  QUOTATION_BOARD_STORAGE_KEY,
+  canDeleteQuotationLane,               // Verifica si una columna se puede borrar
+  defaultQuotationLanes,                // Genera columnas por defecto
+  loadStoredCustomQuotationLanes,       // Carga columnas personalizadas del navegador
+  makeCustomQuotationLane,              // Crea una nueva columna personalizada
+  stripQuotationLaneAccent,             // Limpia datos de color para guardar
+  type QuotationCard,                   // Tipo de tarjeta
+  QUOTATION_BOARD_STORAGE_KEY,          // Clave de localStorage
 } from './quotation-board-data'
 
+// --- TIPOS INTERNOS ---
+
+/** Vista activa: "board" (tablero) o "list" (lista) */
 type BoardView = 'board' | 'list'
 
+/** Estado de guardado de la configuracion para cada scope */
 type ScopeSaveState = {
   status: 'idle' | 'saving' | 'success' | 'error'
   message: string | null
 }
 
+/** Opcion de estado para el selector de consultas entrantes */
 type IncomingQueryStateOption = {
-  value: string
-  label: string
-  shortLabel: string
-  description: string
+  value: string       // Codigo tecnico del estado
+  label: string       // Nombre visible completo
+  shortLabel: string  // Nombre corto para espacios reducidos
+  description: string // Descripcion del estado
 }
 
+/** Opciones de vista disponibles con sus iconos */
 const VIEW_OPTIONS: Array<{
   value: BoardView
   label: string
@@ -74,6 +131,7 @@ const VIEW_OPTIONS: Array<{
   { value: 'list', label: 'Lista', icon: List },
 ]
 
+/** Textos descriptivos para cada scope de configuracion de estados */
 const SCOPE_COPY: Record<
   WorkflowStateScope,
   { title: string; description: string; helper: string }
@@ -90,8 +148,13 @@ const SCOPE_COPY: Record<
   },
 }
 
+/** Opciones de colores disponibles para configurar estados */
 const COLOR_OPTIONS = getWorkflowStateColorOptions()
 
+/**
+ * Organiza las filas de configuracion por scope (quotation_board / incoming_queries).
+ * Resuelve valores por defecto para las filas que faltan.
+ */
 function normalizeEditableRows(
   rows: WorkflowStateConfigRow[],
 ): Record<WorkflowStateScope, WorkflowStateConfigRow[]> {
@@ -107,6 +170,7 @@ function normalizeEditableRows(
   }
 }
 
+/** Extrae solo los campos necesarios de una fila de configuracion de estado */
 function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
   const {
     id,
@@ -139,6 +203,11 @@ function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
   }
 }
 
+/**
+ * Selector desplegable para cambiar el estado de una consulta entrante.
+ * Cuando el usuario selecciona un nuevo estado, envia el cambio a la API
+ * y refresca la pagina para mostrar los datos actualizados.
+ */
 function IncomingQueryStateControl({
   card,
   options,
@@ -227,6 +296,11 @@ function IncomingQueryStateControl({
   )
 }
 
+/**
+ * Boton para borrar una consulta entrante del tablero.
+ * Pide confirmacion al usuario antes de eliminar.
+ * Llama a la API DELETE y refresca la pagina.
+ */
 function IncomingQueryDeleteControl({
   card,
   compact = false,
@@ -299,6 +373,11 @@ function IncomingQueryDeleteControl({
   )
 }
 
+/**
+ * Boton para archivar una consulta entrante.
+ * Archivar significa cambiar su estado a "archivado" en la base de datos.
+ * La consulta desaparece del tablero pero sigue guardada en Supabase.
+ */
 function IncomingQueryArchiveControl({
   card,
   compact = false,
@@ -376,6 +455,11 @@ function IncomingQueryArchiveControl({
   )
 }
 
+/**
+ * Bloque que muestra la identidad del cliente en la tarjeta.
+ * Si el cliente es conocido: muestra empresa, nombre y email en verde.
+ * Si el cliente es desconocido: muestra una etiqueta de alerta en amarillo.
+ */
 function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
   if (card.kind !== 'incoming_query' || !card.clientIdentity) {
     return null
@@ -407,6 +491,11 @@ function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
   )
 }
 
+/**
+ * Tarjeta individual de una quotation en la vista de tablero (Board).
+ * Muestra: codigo, titulo, nota, identidad del cliente, fecha de entrega,
+ * selector de estado, enlace al detalle y boton de borrar.
+ */
 function BoardCard({
   card,
   stateOptions,
@@ -448,6 +537,12 @@ function BoardCard({
   )
 }
 
+/**
+ * Columna completa del tablero (vista Board).
+ * Muestra la cabecera con nombre del estado, color, contador de tarjetas,
+ * y debajo todas las tarjetas que pertenecen a ese estado.
+ * Si la columna es personalizada, muestra boton para borrarla.
+ */
 function BoardLane({
   lane,
   stateOptions,
@@ -514,6 +609,11 @@ function BoardLane({
   )
 }
 
+/**
+ * Fila de la vista Lista.
+ * Muestra una fila por cada estado/columna del tablero, con la tarjeta
+ * principal (la primera) y sus controles de estado, archivar y borrar.
+ */
 function ListRow({
   lane,
   stateOptions,
@@ -613,6 +713,12 @@ function ListRow({
   )
 }
 
+/**
+ * Editor de configuracion de estados para un scope especifico.
+ * Permite modificar: nombre visible, etiqueta corta, color, descripcion
+ * y orden visual de cada estado. Los cambios se guardan en Supabase
+ * al pulsar "Guardar" o se revierten con "Restaurar".
+ */
 function ScopeEditor({
   scope,
   rows,
@@ -800,6 +906,25 @@ function ScopeEditor({
   )
 }
 
+/**
+ * ============================================================================
+ * COMPONENTE PRINCIPAL: TABLERO DE ESTADOS DE QUOTATIONS
+ * ============================================================================
+ *
+ * Este es el componente que orquesta todo: las vistas (tablero/lista),
+ * la configuracion de estados, la creacion de columnas personalizadas,
+ * y la conexion con la API para guardar cambios.
+ *
+ * ESTADOS INTERNOS:
+ *   - stateConfigRows: configuracion actual de estados (del servidor)
+ *   - draftConfigRows: copia de trabajo para editar en el panel de configuracion
+ *   - customLanes: columnas personalizadas creadas por el usuario (localStorage)
+ *   - view: vista activa ("board" o "list")
+ *   - composerOpen: si el formulario para crear nuevas columnas esta abierto
+ *   - settingsOpen: si el panel de configuracion de estados esta abierto
+ *   - saveState: estado de guardado para cada scope (idle/saving/success/error)
+ * ============================================================================
+ */
 export function QuotationStatesBoard({
   initialIncomingQueries,
   initialStateConfigRows,
@@ -807,32 +932,50 @@ export function QuotationStatesBoard({
   initialIncomingQueries: IncomingQuery[]
   initialStateConfigRows: WorkflowStateConfigRow[]
 }) {
+  // Organizar las filas de configuracion por scope al iniciar
   const initialEditableRows = useMemo(
     () => normalizeEditableRows(initialStateConfigRows),
     [initialStateConfigRows],
   )
+
+  // --- ESTADOS DEL COMPONENTE ---
+
+  // Configuracion actual de estados (fuente de verdad para el tablero)
   const [stateConfigRows, setStateConfigRows] = useState<WorkflowStateConfigRow[]>([
     ...initialEditableRows.quotation_board,
     ...initialEditableRows.incoming_queries,
   ])
+  // Copia de trabajo para el editor de configuracion (se modifica sin guardar)
   const [draftConfigRows, setDraftConfigRows] = useState(initialEditableRows)
+  // Columnas personalizadas creadas por el usuario (se guardan en localStorage)
   const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
+  // Vista activa: "board" (tablero tipo kanban) o "list" (tabla)
   const [view, setView] = useState<BoardView>('board')
+  // Si el formulario para crear nuevas columnas esta abierto
   const [composerOpen, setComposerOpen] = useState(false)
+  // Si el panel de configuracion de estados esta abierto
   const [settingsOpen, setSettingsOpen] = useState(false)
+  // Titulo de la nueva columna que se esta creando
   const [draftTitle, setDraftTitle] = useState('')
+  // Estado de guardado para cada scope de configuracion
   const [saveState, setSaveState] = useState<Record<WorkflowStateScope, ScopeSaveState>>({
     quotation_board: { status: 'idle', message: null },
     incoming_queries: { status: 'idle', message: null },
   })
+  // Referencia para saber si el componente ya se monto (evitar guardar en el primer render)
   const hasMountedRef = useRef(false)
+  // Referencia al campo de texto de nueva columna (para darle foco automatico)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // --- EFECTOS (codigo que se ejecuta al montar o cambiar datos) ---
+
+  // Al montar el componente: cargar columnas personalizadas del localStorage
   useEffect(() => {
     setCustomLanes(loadStoredCustomQuotationLanes())
     hasMountedRef.current = true
   }, [])
 
+  // Cada vez que cambian las columnas personalizadas: guardarlas en localStorage
   useEffect(() => {
     if (!hasMountedRef.current) return
 
@@ -846,25 +989,34 @@ export function QuotationStatesBoard({
     }
   }, [customLanes])
 
+  // Cuando se abre el formulario de nueva columna: dar foco al campo de texto
   useEffect(() => {
     if (composerOpen) {
       inputRef.current?.focus()
     }
   }, [composerOpen])
 
+  // --- DATOS CALCULADOS ---
+
+  // Todas las columnas del tablero: las por defecto + las personalizadas
   const lanes = useMemo(
     () => [...defaultQuotationLanes(stateConfigRows, initialIncomingQueries), ...customLanes],
     [customLanes, initialIncomingQueries, stateConfigRows],
   )
+  // Opciones del selector de estado para consultas entrantes
   const incomingStateOptions = useMemo(
     () => getIncomingQueryStateOptions(stateConfigRows),
     [stateConfigRows],
   )
+  // Metricas: total de tarjetas y total de columnas
   const metrics = useMemo(() => {
     const cards = lanes.reduce((total, lane) => total + lane.cards.length, 0)
     return { cards, lanes: lanes.length }
   }, [lanes])
 
+  // --- FUNCIONES DE ACCION ---
+
+  /** Crear una nueva columna personalizada a partir del titulo introducido */
   function handleAddLane(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -880,6 +1032,7 @@ export function QuotationStatesBoard({
     setComposerOpen(false)
   }
 
+  /** Borrar una columna personalizada (pide confirmacion antes) */
   function handleDeleteLane(laneId: string) {
     const lane = customLanes.find((currentLane) => currentLane.id === laneId)
     if (!lane || !canDeleteQuotationLane(lane)) return
@@ -894,6 +1047,7 @@ export function QuotationStatesBoard({
     })
   }
 
+  /** Modificar un campo de una fila del editor de configuracion (sin guardar todavia) */
   function handleChangeDraftRow(
     scope: WorkflowStateScope,
     stateCode: string,
@@ -917,6 +1071,7 @@ export function QuotationStatesBoard({
     }))
   }
 
+  /** Restaurar la configuracion de un scope a los valores guardados (deshacer cambios) */
   function handleResetScope(scope: WorkflowStateScope) {
     const nextRows = resolveWorkflowStateRows(scope, stateConfigRows).map(stripResolvedStateMeta)
     setDraftConfigRows((current) => ({
@@ -929,6 +1084,7 @@ export function QuotationStatesBoard({
     }))
   }
 
+  /** Guardar la configuracion de un scope en Supabase via API */
   async function handleSaveScope(scope: WorkflowStateScope) {
     const rows = draftConfigRows[scope]
 

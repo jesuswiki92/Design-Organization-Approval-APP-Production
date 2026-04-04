@@ -1,35 +1,75 @@
+/**
+ * ============================================================================
+ * PAGINA DE INICIO DE SESION (LOGIN)
+ * ============================================================================
+ *
+ * Esta pagina es la puerta de entrada a la aplicacion. El usuario debe
+ * introducir su email y contrasena para acceder al DOA Operations Hub.
+ *
+ * QUE HACE:
+ *   1. Muestra un formulario con campos de email y contrasena
+ *   2. Cuando el usuario pulsa "Sign in", envia las credenciales a Supabase
+ *   3. Si las credenciales son correctas, redirige a la pagina de inicio (/home)
+ *   4. Si son incorrectas, muestra un mensaje de error en rojo
+ *
+ * FLUJO:
+ *   Email + Password -> Supabase Auth -> Si OK -> /home
+ *                                     -> Si Error -> Mensaje de error
+ *
+ * NOTA TECNICA: 'use client' porque necesita manejar el formulario,
+ * los estados de carga/error y la autenticacion desde el navegador.
+ * Usa createClient de @/lib/supabase/client (no server) porque esta
+ * en el lado del cliente.
+ * ============================================================================
+ */
+
 'use client'
 
+// Hook de React para manejar estados (email, password, error, carga)
 import { useState } from 'react'
+// Conexion a Supabase desde el NAVEGADOR (no servidor)
 import { createClient } from '@/lib/supabase/client'
+// Hook de Next.js para navegar entre paginas
 import { useRouter } from 'next/navigation'
 
+/** Componente principal de la pagina de login */
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const supabase = createClient()
+  // Estados del formulario: lo que el usuario escribe y el estado de la operacion
+  const [email, setEmail] = useState('')         // Email que escribe el usuario
+  const [password, setPassword] = useState('')   // Contrasena que escribe el usuario
+  const [error, setError] = useState<string | null>(null) // Mensaje de error (si hay)
+  const [loading, setLoading] = useState(false)  // Si se esta procesando el login
+  const router = useRouter()                     // Para redirigir despues del login
+  const supabase = createClient()                // Conexion a Supabase
 
+  /**
+   * Funcion que se ejecuta al enviar el formulario.
+   * Intenta iniciar sesion con email y contrasena via Supabase Auth.
+   */
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault()    // Evitar que el formulario recargue la pagina
+    setLoading(true)      // Mostrar estado "cargando"
+    setError(null)        // Limpiar errores anteriores
+
+    // Intentar autenticacion con Supabase
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+
     if (error) {
+      // Si hay error: mostrar mensaje y permitir reintentar
       setError(error.message)
       setLoading(false)
     } else {
+      // Si es exitoso: ir a la pagina de inicio
       router.push('/home')
       router.refresh()
     }
   }
 
   return (
+    /* Pantalla completa con fondo oscuro y formulario centrado */
     <div className="min-h-screen flex items-center justify-center bg-[#0F1117]">
       <div className="w-full max-w-md">
-        {/* Logo / Brand */}
+        {/* === LOGO Y NOMBRE DE LA APLICACION === */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#6366F1] mb-4">
             <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,11 +80,13 @@ export default function LoginPage() {
           <p className="text-sm text-[#6B7280] mt-1">Design Organization Approval</p>
         </div>
 
-        {/* Card */}
+        {/* === TARJETA DEL FORMULARIO DE LOGIN === */}
         <div className="bg-[#1A1D27] border border-[#2A2D3E] rounded-xl p-8">
           <h2 className="text-lg font-semibold text-[#E8E9F0] mb-6">Sign in to your account</h2>
 
+          {/* Formulario: al enviar ejecuta handleLogin */}
           <form onSubmit={handleLogin} className="space-y-4">
+            {/* Campo de email */}
             <div>
               <label className="block text-xs font-medium text-[#6B7280] uppercase tracking-wider mb-1.5">
                 Email
@@ -58,6 +100,7 @@ export default function LoginPage() {
                 placeholder="engineer@doa.aero"
               />
             </div>
+            {/* Campo de contrasena */}
             <div>
               <label className="block text-xs font-medium text-[#6B7280] uppercase tracking-wider mb-1.5">
                 Password
@@ -72,12 +115,14 @@ export default function LoginPage() {
               />
             </div>
 
+            {/* Mensaje de error: se muestra solo cuando hay un problema */}
             {error && (
               <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-lg px-3 py-2.5 text-sm text-[#EF4444]">
                 {error}
               </div>
             )}
 
+            {/* Boton de envio: se deshabilita mientras se procesa */}
             <button
               type="submit"
               disabled={loading}

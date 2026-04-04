@@ -1,14 +1,54 @@
+/**
+ * ============================================================================
+ * COMPONENTE VISUAL DE LA PAGINA DE CLIENTES
+ * ============================================================================
+ *
+ * Este componente muestra la interfaz completa de la seccion de Clientes
+ * con dos paneles principales:
+ *
+ *   PANEL IZQUIERDO (2/3 de la pantalla):
+ *     - Campo de busqueda para filtrar clientes
+ *     - Contadores (total de clientes y activos)
+ *     - Tabla con columnas: Nombre, Direccion, Telefono, Estado
+ *     - Al hacer clic en una fila, se selecciona el cliente
+ *
+ *   PANEL DERECHO (1/3 de la pantalla):
+ *     - Si hay un cliente seleccionado: muestra su ficha detallada
+ *       (datos generales, contactos, etc.)
+ *     - Si no hay seleccion: muestra un mensaje invitando a seleccionar
+ *
+ * FUNCIONALIDADES:
+ *   - Busqueda en tiempo real por nombre, direccion, telefono o CIF/VAT
+ *   - Seleccion/deseleccion de clientes al hacer clic
+ *   - Indicador visual de cliente activo/inactivo
+ *   - Iniciales del nombre en el avatar circular
+ *
+ * NOTA TECNICA: 'use client' porque necesita interactividad (busqueda,
+ * seleccion de cliente, estados locales).
+ * ============================================================================
+ */
+
 'use client'
 
+// Hooks de React para estados y calculos optimizados
 import { useMemo, useState } from 'react'
+// Icono de lupa para el campo de busqueda
 import { Search } from 'lucide-react'
 
+// Barra superior de la pagina
 import { TopBar } from '@/components/layout/TopBar'
+// Utilidad para combinar clases CSS condicionalmente
 import { cn } from '@/lib/utils'
+// Tipo de datos de un cliente con sus contactos
 import type { ClienteWithContactos } from '@/types/database'
 
+// Panel de detalle del cliente (derecha) y estado vacio
 import { ClientDetailPanel, EmptyClientDetail } from './ClientDetailPanel'
 
+/**
+ * Genera las iniciales de un nombre.
+ * Ejemplo: "Airbus Defence" -> "AD"
+ */
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -18,14 +58,28 @@ function getInitials(name: string): string {
     .toUpperCase()
 }
 
+/**
+ * Formatea la direccion completa de un cliente.
+ * Combina: direccion, ciudad y pais separados por comas.
+ */
 function formatAddress(client: ClienteWithContactos) {
   return [client.direccion, client.ciudad, client.pais].filter(Boolean).join(', ')
 }
 
+/**
+ * Componente principal de la pagina de Clientes.
+ * Recibe la lista completa de clientes con sus contactos.
+ */
 export default function ClientsPageClient({ clients }: { clients: ClienteWithContactos[] }) {
+  // Estado del texto de busqueda
   const [search, setSearch] = useState('')
+  // Cliente actualmente seleccionado (null si no hay ninguno)
   const [selectedClient, setSelectedClient] = useState<ClienteWithContactos | null>(null)
 
+  /**
+   * Lista filtrada de clientes segun el texto de busqueda.
+   * Busca en: nombre, direccion, telefono y CIF/VAT.
+   */
   const filtered = useMemo(() => {
     return clients.filter((client) => {
       if (search === '') return true

@@ -1,16 +1,73 @@
+/**
+ * ============================================================================
+ * PAGINA DE DETALLE DE UN PROYECTO HISTORICO
+ * ============================================================================
+ *
+ * Este archivo muestra la "ficha" completa de un proyecto historico de aviacion.
+ * Es una vista de SOLO LECTURA: el usuario puede consultar los datos del
+ * proyecto pero NO puede editarlos desde aqui.
+ *
+ * La pagina se divide en varias secciones:
+ *   - Cabecera con titulo, numero de proyecto y datos resumidos
+ *   - Botones de atajo para saltar rapidamente a cada seccion
+ *   - Bloque 01: Datos basicos (codigo, cliente, titulo, anio)
+ *   - Bloque 02: Origen (carpeta y ruta de donde se importo el proyecto)
+ *   - Bloque 03: Descripcion (texto libre del proyecto)
+ *   - Bloque 04: Compliance Documents (MDL colapsable + familias documentales)
+ *   - Metadata: Fechas de creacion y ultima actualizacion
+ *   - Siguiente paso: Lista de bloques que aun no estan implementados
+ *
+ * NOTA TECNICA: Este componente usa 'use client' porque necesita interactuar
+ * con el navegador (por ejemplo, hacer scroll suave al pulsar los atajos).
+ * ============================================================================
+ */
+
 'use client'
 
+// -- Importaciones de librerias externas --
+// Link: permite navegar entre paginas de la aplicacion sin recargar toda la web
 import Link from 'next/link'
+// Iconos decorativos que se muestran junto a las etiquetas de los campos
 import {
-  ArrowLeft,
-  CalendarDays,
-  FileText,
-  FolderOpen,
-  Hash,
-  NotebookTabs,
+  ArrowLeft,       // Flecha hacia la izquierda (boton "Volver")
+  CalendarDays,    // Icono de calendario (campo de anio)
+  Check,           // Icono de checkmark (feedback al copiar ruta)
+  ChevronDown,     // Icono de chevron hacia abajo (seccion expandida)
+  ChevronRight,    // Icono de chevron hacia la derecha (seccion colapsada)
+  Copy,            // Icono de copiar (boton copiar ruta)
+  FileText,        // Icono de documento (campos de titulo y ruta)
+  FolderOpen,      // Icono de carpeta abierta (campo de carpeta de origen)
+  Hash,            // Icono de almohadilla/numeral (campo de codigo)
+  NotebookTabs,    // Icono de libreta (campo de cliente)
 } from 'lucide-react'
-import { type ReactNode } from 'react'
+// ReactNode: tipo que representa cualquier contenido visual de React (texto, iconos, etc.)
+import { type ReactNode, useState } from 'react'
 
+// Tipos para el Master Document List (MDL) del proyecto
+import type { MdlContenido, MdlDocumento } from '@/types/database'
+
+// ============================================================================
+// DEFINICION DE LA ESTRUCTURA DE DATOS
+// ============================================================================
+// Estas "interfaces" describen la forma que tienen los datos que llegan desde
+// la base de datos. Es como una plantilla que dice "un proyecto historico
+// siempre tiene estos campos, con estos tipos de valor".
+
+/**
+ * Estructura de un proyecto historico.
+ * Cada campo corresponde a una columna de la tabla en la base de datos.
+ *
+ * - id: identificador unico interno (no se muestra al usuario)
+ * - numero_proyecto: codigo visible del proyecto (ej: "PRJ-2024-001")
+ * - titulo: nombre descriptivo del proyecto
+ * - descripcion: texto libre con detalles del proyecto (puede estar vacio)
+ * - cliente_nombre: nombre del cliente asociado (puede estar vacio)
+ * - anio: anio del proyecto (puede estar vacio)
+ * - ruta_origen: ruta completa de la carpeta original en el servidor
+ * - nombre_carpeta_origen: nombre corto de la carpeta de donde se importo
+ * - created_at: fecha en que se creo el registro en la base de datos
+ * - updated_at: fecha de la ultima modificacion del registro
+ */
 interface ProyectoHistoricoRow {
   id: string
   numero_proyecto: string
@@ -20,21 +77,49 @@ interface ProyectoHistoricoRow {
   anio: number | null
   ruta_origen: string | null
   nombre_carpeta_origen: string | null
+  mdl_contenido: MdlContenido | null
   created_at: string
   updated_at: string
 }
 
+/**
+ * Estructura de un documento/familia documental del proyecto historico.
+ * Cada registro representa una familia documental con sus archivos asociados.
+ */
 interface ProyectoHistoricoDocumentoRow {
   id: string
+  proyecto_historico_id: string
+  orden_documental: number | null
   familia_documental: string
   carpeta_origen: string
   ruta_origen: string
   archivo_referencia: string | null
   total_archivos: number
   formatos_disponibles: string[]
-  orden_documental: number | null
+  created_at: string
+  updated_at: string
 }
 
+// ============================================================================
+// COMPONENTES AUXILIARES (piezas reutilizables de la interfaz)
+// ============================================================================
+
+/**
+ * DataField - Tarjeta individual de dato
+ *
+ * Muestra un campo de informacion con su etiqueta, icono y valor.
+ * Se usa para presentar cada dato del proyecto (codigo, cliente, titulo, etc.)
+ * de forma visual y ordenada, como una "ficha" pequena.
+ *
+ * Si el campo no tiene valor, muestra un guion "-" en gris para indicar
+ * que el dato no esta disponible.
+ *
+ * Parametros que recibe:
+ *   - label: texto de la etiqueta (ej: "Codigo", "Cliente")
+ *   - icon: icono decorativo que acompana a la etiqueta
+ *   - value: el valor del dato a mostrar (puede estar vacio)
+ *   - wide: si es verdadero, la tarjeta ocupa el ancho de dos columnas
+ */
 function DataField({
   label,
   icon,
@@ -47,11 +132,15 @@ function DataField({
   wide?: boolean
 }) {
   return (
+    // Tarjeta con bordes redondeados y fondo gris claro
+    // Si "wide" es verdadero, ocupa dos columnas en pantallas medianas o mayores
     <div className={`rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 ${wide ? 'md:col-span-2' : ''}`}>
+      {/* Etiqueta superior: muestra el icono y el nombre del campo en mayusculas */}
       <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
         {icon}
         {label}
       </span>
+      {/* Valor del campo: si no hay dato, muestra un guion gris en cursiva */}
       <p className="mt-1.5 text-sm leading-6 text-slate-900">
         {value || <span className="italic text-slate-400">-</span>}
       </p>
@@ -59,10 +148,23 @@ function DataField({
   )
 }
 
+/**
+ * ShortcutButton - Boton de atajo de navegacion
+ *
+ * Es un boton pequeno y redondeado que, al pulsarlo, desplaza la pantalla
+ * suavemente hasta una seccion especifica de la pagina. Funciona como un
+ * "indice rapido" para que el usuario no tenga que hacer scroll manualmente.
+ *
+ * Parametros que recibe:
+ *   - label: texto que se muestra en el boton (ej: "Datos basicos")
+ *   - targetId: identificador de la seccion a la que debe saltar (ej: "datos-basicos")
+ */
 function ShortcutButton({ label, targetId }: { label: string; targetId: string }) {
   return (
     <button
       type="button"
+      // Al hacer clic, busca la seccion por su identificador y desplaza la pantalla
+      // suavemente hasta ella ("smooth" = desplazamiento animado, no brusco)
       onClick={() =>
         document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
@@ -73,6 +175,83 @@ function ShortcutButton({ label, targetId }: { label: string; targetId: string }
   )
 }
 
+/**
+ * MdlDocumentList - Lista compacta de documentos del MDL
+ *
+ * Renderiza las filas de documentos de una seccion del MDL (entregables o no
+ * entregables). Cada fila muestra referencia, titulo, edicion, fecha y estado.
+ * Los documentos Active aparecen primero; los Superseded van al final, atenuados.
+ */
+function MdlDocumentList({ docs }: { docs: MdlDocumento[] }) {
+  // Ordenar: Active primero, Superseded al final
+  const sorted = [...docs].sort((a, b) => {
+    if (a.estado === 'Active' && b.estado !== 'Active') return -1
+    if (a.estado !== 'Active' && b.estado === 'Active') return 1
+    return 0
+  })
+
+  return (
+    <div className="divide-y divide-slate-100">
+      {sorted.map((doc, idx) => {
+        const isSuperseded = doc.estado === 'Superseded'
+        return (
+          <div
+            key={`${doc.ref}-${idx}`}
+            className={`flex items-center gap-3 px-4 py-2 ${isSuperseded ? 'opacity-60' : ''}`}
+          >
+            {/* Badge de referencia */}
+            <span className="shrink-0 rounded bg-sky-50 px-2 py-0.5 font-mono text-[11px] font-medium text-sky-800">
+              {doc.ref}
+            </span>
+
+            {/* Titulo del documento */}
+            <span className={`min-w-0 flex-1 truncate text-sm text-slate-800 ${isSuperseded ? 'line-through' : ''}`}>
+              {doc.titulo}
+            </span>
+
+            {/* Badge de edicion */}
+            <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-block">
+              Ed {doc.edicion}
+            </span>
+
+            {/* Fecha */}
+            <span className="hidden shrink-0 text-[11px] text-slate-400 md:inline-block">
+              {doc.fecha}
+            </span>
+
+            {/* Pill de estado */}
+            <span
+              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                isSuperseded
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-emerald-100 text-emerald-700'
+              }`}
+            >
+              {doc.estado}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ============================================================================
+// COMPONENTE PRINCIPAL DE LA PAGINA
+// ============================================================================
+
+/**
+ * ProyectosHistoricoEntryClient - Componente principal de la ficha de proyecto
+ *
+ * Este es el componente que dibuja TODA la pagina de detalle de un proyecto
+ * historico. Recibe los datos del proyecto desde el servidor (a traves de
+ * page.tsx) y los presenta de forma visual y organizada. Los documentos de
+ * compliance se leen del campo JSONB mdl_contenido del propio registro.
+ *
+ * Parametros que recibe:
+ *   - project: todos los datos del proyecto (codigo, titulo, cliente, mdl_contenido, etc.)
+ *   - documentos: familias documentales del proyecto (tabla doa_proyectos_historico_documentos)
+ */
 export default function ProyectosHistoricoEntryClient({
   project,
   documentos,
@@ -80,7 +259,35 @@ export default function ProyectosHistoricoEntryClient({
   project: ProyectoHistoricoRow
   documentos: ProyectoHistoricoDocumentoRow[]
 }) {
+  // -- Estado para el feedback visual al copiar la ruta al portapapeles --
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
+  // -- Estado para controlar la seccion MDL (colapsada por defecto) --
+  const [mdlOpen, setMdlOpen] = useState(false)
+
+  // -- Estado para controlar que sub-secciones MDL estan expandidas --
+  // Por defecto: entregables abierto, no_entregables cerrado (cuando el MDL se abre)
+  const [entregablesOpen, setEntregablesOpen] = useState(true)
+  const [noEntregablesOpen, setNoEntregablesOpen] = useState(false)
+
+  /**
+   * Copia un texto al portapapeles y muestra feedback visual
+   * cambiando el icono a un checkmark durante 1.5 segundos.
+   */
+  const handleCopyRuta = (field: string, ruta: string) => {
+    navigator.clipboard.writeText(ruta)
+    setCopiedField(field)
+    setTimeout(() => setCopiedField(null), 1500)
+  }
+
+  // -- Preparacion de datos antes de mostrarlos --
+
+  // Convierte el anio (que es un numero) a texto para mostrarlo en pantalla.
+  // Si no hay anio registrado, queda como "null" (vacio).
   const anio = project.anio ? String(project.anio) : null
+
+  // Formatea la fecha de creacion en formato espanol legible (ej: "15 ene 2024").
+  // Si no hay fecha, queda como "null" (vacio).
   const fechaCreacion = project.created_at
     ? new Date(project.created_at).toLocaleDateString('es-ES', {
         day: '2-digit',
@@ -88,6 +295,8 @@ export default function ProyectosHistoricoEntryClient({
         year: 'numeric',
       })
     : null
+
+  // Formatea la fecha de ultima actualizacion en formato espanol legible.
   const fechaActualizacion = project.updated_at
     ? new Date(project.updated_at).toLocaleDateString('es-ES', {
         day: '2-digit',
@@ -96,19 +305,18 @@ export default function ProyectosHistoricoEntryClient({
       })
     : null
 
-  const documentosPorFamilia = documentos.reduce<Record<string, ProyectoHistoricoDocumentoRow[]>>(
-    (acc, documento) => {
-      const key = documento.familia_documental
-      acc[key] ??= []
-      acc[key].push(documento)
-      return acc
-    },
-    {},
-  )
-
+  // ==========================================================================
+  // INICIO DEL CONTENIDO VISUAL (lo que el usuario ve en pantalla)
+  // ==========================================================================
   return (
+    // Contenedor principal de toda la pagina, con scroll vertical si el contenido es largo
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
+
+      {/* ------------------------------------------------------------------ */}
+      {/* BARRA SUPERIOR: Boton de volver + Etiqueta "Ficha de proyecto"     */}
+      {/* ------------------------------------------------------------------ */}
       <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Boton azul para volver a la lista de proyectos historicos */}
         <Link
           href="/proyectos-historico"
           className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
@@ -117,27 +325,43 @@ export default function ProyectosHistoricoEntryClient({
           Volver a Proyectos Historico
         </Link>
 
+        {/* Etiqueta decorativa que indica que esta pagina es una ficha de proyecto */}
         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
           Ficha de proyecto
         </div>
       </div>
 
+      {/* ------------------------------------------------------------------ */}
+      {/* CABECERA DEL PROYECTO                                              */}
+      {/* Tarjeta grande con fondo degradado azul claro que muestra:         */}
+      {/*   - Numero de proyecto (codigo)                                    */}
+      {/*   - Titulo principal del proyecto                                  */}
+      {/*   - Texto explicativo                                              */}
+      {/*   - Etiquetas resumen: cliente, anio y carpeta de origen           */}
+      {/* ------------------------------------------------------------------ */}
       <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        {/* Codigo del proyecto mostrado en estilo "monoespaciado" (como texto tecnico) */}
         <span className="inline-block rounded-lg border border-slate-200 bg-white/90 px-3 py-1 font-mono text-xs font-medium text-slate-500">
           {project.numero_proyecto}
         </span>
+        {/* Titulo grande del proyecto */}
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">{project.titulo}</h1>
+        {/* Texto informativo que explica que esta es una ficha de solo consulta */}
         <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
           Ficha de consulta del proyecto historico. Toda la informacion mostrada proviene de la base de datos.
         </p>
 
+        {/* Etiquetas resumen: muestran el cliente, anio y carpeta de origen de un vistazo */}
         <div className="mt-4 flex flex-wrap items-center gap-2">
+          {/* Nombre del cliente (o "Sin cliente" si no hay dato) */}
           <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
             {project.cliente_nombre || 'Sin cliente'}
           </span>
+          {/* Anio del proyecto (o "Sin anio" si no hay dato) */}
           <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
             {anio || 'Sin anio'}
           </span>
+          {/* Nombre de la carpeta de origen (solo se muestra si existe) */}
           {project.nombre_carpeta_origen && (
             <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
               {project.nombre_carpeta_origen}
@@ -146,6 +370,11 @@ export default function ProyectosHistoricoEntryClient({
         </div>
       </section>
 
+      {/* ------------------------------------------------------------------ */}
+      {/* BARRA DE ATAJOS DE NAVEGACION                                      */}
+      {/* Fila de botones que permiten saltar directamente a cada seccion     */}
+      {/* de la pagina sin necesidad de hacer scroll manualmente.             */}
+      {/* ------------------------------------------------------------------ */}
       <section className="rounded-[28px] border border-slate-200 bg-white/90 p-4 shadow-[0_12px_28px_rgba(148,163,184,0.10)]">
         <div className="flex flex-wrap gap-2">
           <ShortcutButton label="Datos basicos" targetId="datos-basicos" />
@@ -157,8 +386,20 @@ export default function ProyectosHistoricoEntryClient({
         </div>
       </section>
 
+      {/* ================================================================== */}
+      {/* CONTENIDO PRINCIPAL - Distribucion en dos columnas                */}
+      {/* Columna izquierda (mas ancha): bloques de datos del proyecto     */}
+      {/* Columna derecha (mas estrecha): metadata y siguiente paso        */}
+      {/* En pantallas pequenas, todo se apila en una sola columna         */}
+      {/* ================================================================== */}
       <div className="grid min-h-0 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.8fr)]">
+        {/* ------ COLUMNA IZQUIERDA: Bloques principales de datos ------ */}
         <div className="space-y-5">
+
+          {/* ------------------------------------------------------------ */}
+          {/* BLOQUE 01: DATOS BASICOS DEL PROYECTO                        */}
+          {/* Muestra: codigo, cliente, titulo y anio en tarjetas           */}
+          {/* ------------------------------------------------------------ */}
           <section
             id="datos-basicos"
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
@@ -168,14 +409,21 @@ export default function ProyectosHistoricoEntryClient({
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Datos del proyecto</h2>
 
+            {/* Cuadricula de 2 columnas con los campos de datos basicos */}
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               <DataField label="Codigo" icon={<Hash className="h-3.5 w-3.5" />} value={project.numero_proyecto} />
               <DataField label="Cliente" icon={<NotebookTabs className="h-3.5 w-3.5" />} value={project.cliente_nombre} />
+              {/* El titulo ocupa dos columnas (wide) porque suele ser texto largo */}
               <DataField label="Titulo" icon={<FileText className="h-3.5 w-3.5" />} value={project.titulo} wide />
               <DataField label="Anio" icon={<CalendarDays className="h-3.5 w-3.5" />} value={anio} />
             </div>
           </section>
 
+          {/* ------------------------------------------------------------ */}
+          {/* BLOQUE 02: ORIGEN                                              */}
+          {/* Muestra de donde se importo el proyecto: la carpeta y la ruta   */}
+          {/* completa en el servidor original.                               */}
+          {/* ------------------------------------------------------------ */}
           <section
             id="origen"
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
@@ -186,19 +434,49 @@ export default function ProyectosHistoricoEntryClient({
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Origen</h2>
 
             <div className="mt-5 grid gap-3">
+              {/* Nombre corto de la carpeta de donde proviene el proyecto */}
               <DataField
                 label="Carpeta de origen"
                 icon={<FolderOpen className="h-3.5 w-3.5" />}
                 value={project.nombre_carpeta_origen}
               />
-              <DataField
-                label="Ruta de origen"
-                icon={<FileText className="h-3.5 w-3.5" />}
-                value={project.ruta_origen}
-              />
+              {/* Ruta completa en el servidor donde estaba almacenado el proyecto */}
+              {/* Se oculta la ruta larga y se muestra un boton azul para copiarla */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    <FileText className="h-3.5 w-3.5" />
+                    Ruta de origen
+                  </span>
+                  {/* Boton azul para copiar la ruta de origen al portapapeles */}
+                  {project.ruta_origen && (
+                    <button
+                      type="button"
+                      title="Copiar ruta"
+                      onClick={() => handleCopyRuta('ruta_origen', project.ruta_origen!)}
+                      className={`rounded-lg p-1.5 transition-colors ${
+                        copiedField === 'ruta_origen'
+                          ? 'bg-emerald-100 text-emerald-600'
+                          : 'bg-sky-100 text-sky-600 hover:bg-sky-200'
+                      }`}
+                    >
+                      {copiedField === 'ruta_origen' ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
 
+          {/* ------------------------------------------------------------ */}
+          {/* BLOQUE 03: DESCRIPCION                                         */}
+          {/* Muestra el texto descriptivo del proyecto. Si no hay            */}
+          {/* descripcion en la base de datos, muestra un aviso en gris.     */}
+          {/* ------------------------------------------------------------ */}
           <section
             id="descripcion"
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
@@ -209,12 +487,19 @@ export default function ProyectosHistoricoEntryClient({
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Descripcion</h2>
 
             <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+              {/* Texto de la descripcion. Si no hay descripcion guardada, muestra
+                  "Sin descripcion registrada." en gris y cursiva */}
               <p className="whitespace-pre-wrap text-sm leading-7 text-slate-900">
                 {project.descripcion || <span className="italic text-slate-400">Sin descripcion registrada.</span>}
               </p>
             </div>
           </section>
 
+          {/* ------------------------------------------------------------ */}
+          {/* BLOQUE 04: COMPLIANCE DOCUMENTS                                */}
+          {/* Seccion A: Master Document List (colapsable, cerrado por def.) */}
+          {/* Seccion B: Familias documentales (tarjetas, siempre visibles)  */}
+          {/* ------------------------------------------------------------ */}
           <section
             id="documentacion-doa"
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
@@ -222,61 +507,233 @@ export default function ProyectosHistoricoEntryClient({
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               Bloque 04
             </p>
-              <h2 className="mt-2 text-lg font-semibold text-slate-950">Documentacion DOA</h2>
-            <p className="mt-2 text-sm leading-7 text-slate-600">
-              Inventario resumido de familias documentales DOA del proyecto. Excluye planos, imagenes y diseno tecnico.
-            </p>
 
-            <div className="mt-5 space-y-4">
-              {Object.keys(documentosPorFamilia).length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm text-slate-500">
-                  No hay documentacion DOA registrada todavia.
+            {/* Titulo + contadores resumen */}
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold text-slate-950">Compliance Documents</h2>
+              <div className="flex items-center gap-2">
+                {project.mdl_contenido && (
+                  <>
+                    <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-medium text-sky-700">
+                      {project.mdl_contenido.entregables.length} Entregables
+                    </span>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+                      {project.mdl_contenido.no_entregables.length} No entregables
+                    </span>
+                  </>
+                )}
+                {documentos.length > 0 && (
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
+                    {documentos.length} Familias
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* ============================================================ */}
+            {/* SECCION A: Master Document List (colapsable, cerrado por def) */}
+            {/* ============================================================ */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setMdlOpen(prev => !prev)}
+                className="flex w-full items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50/60 px-5 py-3 text-left transition-colors hover:bg-sky-100/60"
+              >
+                {mdlOpen ? (
+                  <ChevronDown className="h-4 w-4 shrink-0 text-sky-500" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 shrink-0 text-sky-500" />
+                )}
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-sky-900">
+                  <FileText className="h-4 w-4 text-sky-600" />
+                  Master Document List
+                </span>
+              </button>
+
+              {/* Contenido del MDL (solo visible cuando esta expandido) */}
+              {mdlOpen && (
+                <div className="mt-3 space-y-3">
+                  {!project.mdl_contenido ? (
+                    // Sin MDL cargado: mensaje sutil
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm italic text-slate-400">
+                      No se ha cargado el Master Document List para este proyecto
+                    </div>
+                  ) : (
+                    <>
+                      {/* ── Seccion 4.1 - Documentos Entregables (default OPEN) ── */}
+                      <div className="rounded-xl border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setEntregablesOpen(prev => !prev)}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-slate-50/80"
+                        >
+                          {entregablesOpen ? (
+                            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-sky-500" />
+                          ) : (
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                          )}
+                          <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                            4.1 Documentos Entregables
+                          </span>
+                          <span className="ml-auto rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700">
+                            {project.mdl_contenido.entregables.length}
+                          </span>
+                        </button>
+
+                        {/* Filas de documentos entregables */}
+                        {entregablesOpen && (
+                          <div className="border-t border-slate-100">
+                            {project.mdl_contenido.entregables.length === 0 ? (
+                              <p className="px-4 py-3 text-xs italic text-slate-400">Sin documentos entregables.</p>
+                            ) : (
+                              <MdlDocumentList docs={project.mdl_contenido.entregables} />
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── Seccion 4.2 - Documentos No Entregables (default CLOSED) ── */}
+                      <div className="rounded-xl border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => setNoEntregablesOpen(prev => !prev)}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-slate-50/80"
+                        >
+                          {noEntregablesOpen ? (
+                            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-sky-500" />
+                          ) : (
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                          )}
+                          <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                            4.2 Documentos No Entregables
+                          </span>
+                          <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                            {project.mdl_contenido.no_entregables.length}
+                          </span>
+                        </button>
+
+                        {/* Filas de documentos no entregables */}
+                        {noEntregablesOpen && (
+                          <div className="border-t border-slate-100">
+                            {project.mdl_contenido.no_entregables.length === 0 ? (
+                              <p className="px-4 py-3 text-xs italic text-slate-400">Sin documentos no entregables.</p>
+                            ) : (
+                              <MdlDocumentList docs={project.mdl_contenido.no_entregables} />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ============================================================ */}
+            {/* SECCION B: Familias documentales (tarjetas, siempre visibles) */}
+            {/* ============================================================ */}
+            <div className="mt-6">
+              <div className="mb-3 flex items-center gap-3">
+                <div className="h-px flex-1 bg-slate-200" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  Familias Documentales
+                </span>
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              {documentos.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm italic text-slate-400">
+                  No se han registrado familias documentales para este proyecto
                 </div>
               ) : (
-                Object.entries(documentosPorFamilia).map(([familia, documentosFamilia]) => (
-                  <section key={familia} className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-slate-900">{familia}</h3>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-500">
-                          {documentosFamilia.length} familia(s)
+                <div className="space-y-3">
+                  {documentos.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 transition-colors hover:border-slate-300"
+                    >
+                      {/* Cabecera: nombre de familia + badge de orden */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <FolderOpen className="h-4 w-4 shrink-0 text-sky-500" />
+                          <span className="text-sm font-semibold text-slate-900">
+                            {doc.familia_documental}
+                          </span>
+                        </div>
+                        {doc.orden_documental != null && (
+                          <span className="shrink-0 rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-bold text-sky-700">
+                            Orden {doc.orden_documental}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Carpeta de origen */}
+                      <p className="mt-1.5 text-xs text-slate-500">
+                        <span className="font-medium text-slate-400">Carpeta:</span>{' '}
+                        {doc.carpeta_origen}
+                      </p>
+
+                      {/* Archivo de referencia (si existe) */}
+                      {doc.archivo_referencia && (
+                        <p className="mt-1 truncate text-xs text-slate-500">
+                          <span className="font-medium text-slate-400">Ref:</span>{' '}
+                          <span className="font-mono">{doc.archivo_referencia}</span>
+                        </p>
+                      )}
+
+                      {/* Fila inferior: conteo de archivos, formatos y boton copiar */}
+                      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                        {/* Conteo de archivos */}
+                        <span className="rounded-full bg-slate-200/80 px-2.5 py-0.5 text-[10px] font-medium text-slate-600">
+                          {doc.total_archivos} {doc.total_archivos === 1 ? 'archivo' : 'archivos'}
                         </span>
-                        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-500">
-                          {documentosFamilia[0]?.total_archivos ?? 0} archivo(s)
-                        </span>
+
+                        {/* Pills de formatos disponibles */}
+                        {doc.formatos_disponibles.map((fmt) => (
+                          <span
+                            key={fmt}
+                            className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500"
+                          >
+                            {fmt}
+                          </span>
+                        ))}
+
+                        {/* Boton azul para copiar ruta_origen al portapapeles */}
+                        <button
+                          type="button"
+                          title="Copiar ruta de origen"
+                          onClick={() => handleCopyRuta(`doc-${doc.id}`, doc.ruta_origen)}
+                          className={`ml-auto rounded-lg p-1.5 transition-colors ${
+                            copiedField === `doc-${doc.id}`
+                              ? 'bg-emerald-100 text-emerald-600'
+                              : 'bg-sky-100 text-sky-600 hover:bg-sky-200'
+                          }`}
+                        >
+                          {copiedField === `doc-${doc.id}` ? (
+                            <Check className="h-3.5 w-3.5" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                        </button>
                       </div>
                     </div>
-
-                    <ul className="mt-3 space-y-3">
-                      {documentosFamilia.map((documento) => (
-                        <li key={documento.id} className="rounded-2xl border border-white bg-white px-4 py-3 shadow-sm">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-medium text-slate-900">{documento.familia_documental}</p>
-                            {documento.orden_documental !== null && (
-                              <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-500">
-                                Orden {documento.orden_documental}
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-2 space-y-1 text-xs leading-6 text-slate-500">
-                            <p>Carpeta: {documento.carpeta_origen}</p>
-                            <p>Ruta: {documento.ruta_origen}</p>
-                            {documento.archivo_referencia && <p>Referencia: {documento.archivo_referencia}</p>}
-                            {documento.formatos_disponibles.length > 0 && (
-                              <p>Formatos: {documento.formatos_disponibles.join(', ')}</p>
-                            )}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </section>
         </div>
 
+        {/* ------ COLUMNA DERECHA: Metadata y Siguiente paso ------ */}
         <div className="space-y-5">
+
+          {/* ------------------------------------------------------------ */}
+          {/* METADATA: INFORMACION DEL REGISTRO                            */}
+          {/* Muestra las fechas automaticas del sistema:                    */}
+          {/*   - Cuando se creo el registro en la base de datos            */}
+          {/*   - Cuando fue la ultima vez que se modifico                   */}
+          {/* Estas fechas las genera el sistema, no las introduce el usuario*/}
+          {/* ------------------------------------------------------------ */}
           <section
             id="metadata"
             className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
@@ -286,12 +743,14 @@ export default function ProyectosHistoricoEntryClient({
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Informacion del registro</h2>
             <div className="mt-4 space-y-3">
+              {/* Fecha en que se creo el proyecto en el sistema */}
               <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                   Fecha de creacion
                 </span>
                 <p className="mt-1.5 text-sm text-slate-900">{fechaCreacion || '-'}</p>
               </div>
+              {/* Fecha de la ultima modificacion del proyecto */}
               <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                   Ultima actualizacion
@@ -301,6 +760,13 @@ export default function ProyectosHistoricoEntryClient({
             </div>
           </section>
 
+          {/* ------------------------------------------------------------ */}
+          {/* SIGUIENTE PASO: BLOQUES PENDIENTES                             */}
+          {/* Lista de funcionalidades que aun no estan implementadas en     */}
+          {/* esta ficha de proyecto. Sirve como recordatorio de lo que      */}
+          {/* falta por desarrollar en el futuro.                            */}
+          {/* Tiene un fondo degradado azul claro para destacar visualmente. */}
+          {/* ------------------------------------------------------------ */}
           <section
             id="siguiente-paso"
             className="rounded-[28px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_46%,#f8fafc_100%)] p-6 shadow-[0_18px_40px_rgba(14,165,233,0.08)]"
@@ -309,6 +775,7 @@ export default function ProyectosHistoricoEntryClient({
               Siguiente paso
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Bloques pendientes</h2>
+            {/* Lista de bloques que se anadiran en el futuro */}
             <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
               <li className="rounded-2xl border border-sky-100 bg-white/80 px-4 py-3">
                 Aeronave, familia y variante.
