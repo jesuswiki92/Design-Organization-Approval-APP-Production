@@ -1,13 +1,67 @@
-// ⏸️ BASE DE DATOS DESCONECTADA - ver BASES-DE-DATOS.md para reconectar
+/**
+ * ============================================================================
+ * PAGINA SERVIDOR DE DETALLE DE UN PROYECTO
+ * ============================================================================
+ *
+ * Carga el proyecto desde doa_proyectos y sus entradas de conteo de horas
+ * desde doa_conteo_horas_proyectos, y pasa ambos al componente visual
+ * ProjectDetailClient.
+ *
+ * Si el proyecto no existe, redirige a /proyectos.
+ * ============================================================================
+ */
+
 import { redirect } from 'next/navigation'
 
-export default async function ProjectWorkspacePage({
+import { TopBar } from '@/components/layout/TopBar'
+import { createClient } from '@/lib/supabase/server'
+import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
+
+import { ProjectDetailClient } from './ProjectDetailClient'
+
+export const dynamic = 'force-dynamic'
+
+export default async function ProjectDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  await params // consume the promise to avoid Next.js warnings
+  const { id } = await params
+  const supabase = await createClient()
 
-  // No hay datos - base de datos desconectada
-  redirect('/engineering/portfolio')
+  // Cargar proyecto y entradas de horas en paralelo
+  const [proyectoResult, horasResult] = await Promise.all([
+    supabase
+      .from('doa_proyectos')
+      .select('*')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('doa_conteo_horas_proyectos')
+      .select('*')
+      .eq('proyecto_id', id)
+      .order('inicio', { ascending: false }),
+  ])
+
+  if (proyectoResult.error || !proyectoResult.data) {
+    console.error('Proyecto no encontrado o error:', proyectoResult.error)
+    redirect('/proyectos')
+  }
+
+  if (horasResult.error) {
+    console.error('Error cargando horas del proyecto:', horasResult.error)
+  }
+
+  const project = proyectoResult.data as Proyecto
+  const timeEntries = (horasResult.data ?? []) as ConteoHorasProyecto[]
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+      <TopBar
+        title={project.numero_proyecto}
+        subtitle={project.titulo}
+      />
+      <ProjectDetailClient project={project} timeEntries={timeEntries} />
+    </div>
+  )
 }

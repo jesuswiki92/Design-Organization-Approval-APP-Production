@@ -10,7 +10,6 @@ import {
 } from '@/lib/workflow-state-config'
 import type { WorkflowStateConfigRow } from '@/types/database'
 import {
-  getIncomingQueryLaneId,
   type IncomingClientIdentity,
   type IncomingQuery,
   type IncomingQueryStatus,
@@ -18,6 +17,28 @@ import {
 
 function isArchivedIncomingState(state: string | null | undefined) {
   return state?.trim().toLowerCase() === 'archivado'
+}
+
+/**
+ * Mapea el estado de una consulta entrante a la columna del tablero de cotizaciones
+ * donde se debe mostrar. Esto permite mostrar un solo pipeline unificado en el tablero
+ * en lugar de dos scopes separados.
+ *
+ * Mapeo:
+ *   nuevo              → entrada_recibida     (consulta acaba de llegar)
+ *   esperando_formulario → triage              (formulario enviado, clasificando)
+ *   formulario_recibido  → alcance_definido    (formulario recibido, definiendo alcance)
+ */
+function mapIncomingStateToQuotationLane(state: IncomingQueryStatus): QuotationBoardState {
+  switch (state) {
+    case 'esperando_formulario':
+      return 'triage'
+    case 'formulario_recibido':
+      return 'alcance_definido'
+    case 'nuevo':
+    default:
+      return 'entrada_recibida'
+  }
 }
 
 export type QuotationCard = {
@@ -122,9 +143,6 @@ const EMPTY_QUOTATION_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
   triage: [],
   alcance_definido: [],
   oferta_en_redaccion: [],
-  revision_interna: [],
-  pendiente_envio: [],
-  seguimiento_cierre: [],
 }
 
 function createId(prefix: string) {
@@ -162,26 +180,6 @@ function toIncomingQuotationCard(
     statusMetaLabel: statusMeta.label,
     stateCode: query.estado,
     clientIdentity: query.clientIdentity,
-  }
-}
-
-function makeIncomingLaneFromState(
-  state: IncomingQueryStatus,
-  rows: WorkflowStateConfigRow[],
-  cards: QuotationCard[],
-): QuotationLane {
-  const meta = getResolvedIncomingQueryStatusMeta(state, rows)
-
-  return {
-    id: state,
-    state,
-    title: meta.label,
-    description: meta.description,
-    isCustom: false,
-    accent: resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows).find(
-      (row) => row.state_code === state,
-    )?.boardAccent ?? getResolvedQuotationBoardStatusMeta(state, rows).accent,
-    cards,
   }
 }
 
@@ -224,18 +222,18 @@ export function defaultQuotationLanes(
   rows: WorkflowStateConfigRow[] = [],
   incomingQueries: IncomingQuery[] = [],
 ) {
-  const incomingRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows).filter(
-    (row) => !isArchivedIncomingState(row.state_code),
-  )
   const quotationRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD, rows)
+
+  // Convertir consultas entrantes a tarjetas y mapearlas a columnas del tablero
   const incomingCards = incomingQueries
     .filter((query) => !isArchivedIncomingState(query.estado))
     .map((query) => toIncomingQuotationCard(query, rows))
   const cardsByLane = new Map<string, QuotationCard[]>()
 
   for (const card of incomingCards) {
-    const laneId = card.stateCode ? getIncomingQueryLaneId(card.stateCode) : null
-    if (!laneId) continue
+    const laneId = card.stateCode
+      ? mapIncomingStateToQuotationLane(card.stateCode)
+      : 'entrada_recibida'
 
     const existing = cardsByLane.get(laneId)
     if (existing) {
@@ -245,18 +243,15 @@ export function defaultQuotationLanes(
     }
   }
 
-  const incomingLanes = incomingRows.map((row) =>
-    makeIncomingLaneFromState(
-      row.state_code as IncomingQueryStatus,
-      rows,
-      cardsByLane.get(row.state_code) ?? [],
-    ),
-  )
-  const quotationLanes = quotationRows.map((row) =>
-    makeQuotationLaneFromState(row.state_code as QuotationBoardState, rows),
-  )
-
-  return [...incomingLanes, ...quotationLanes]
+  // Solo columnas del tablero de cotizaciones (pipeline unificado de 4 estados)
+  return quotationRows.map((row) => {
+    const lane = makeQuotationLaneFromState(row.state_code as QuotationBoardState, rows)
+    const mappedCards = cardsByLane.get(row.state_code) ?? []
+    return {
+      ...lane,
+      cards: [...lane.cards, ...mappedCards],
+    }
+  })
 }
 
 function normalizeStoredLane(value: unknown, index: number): QuotationLane | null {

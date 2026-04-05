@@ -43,9 +43,6 @@ export const QUOTATION_BOARD_STATES = {
   TRIAGE: 'triage',                             // Se clasifica la urgencia y el tipo de trabajo
   ALCANCE_DEFINIDO: 'alcance_definido',         // Ya se sabe exactamente que se va a cotizar
   OFERTA_EN_REDACCION: 'oferta_en_redaccion',   // Se esta escribiendo la propuesta/cotizacion
-  REVISION_INTERNA: 'revision_interna',         // Un compañero revisa la oferta antes de enviarla
-  PENDIENTE_ENVIO: 'pendiente_envio',           // La oferta esta lista para enviar al cliente
-  SEGUIMIENTO_CIERRE: 'seguimiento_cierre',     // Ya se envio, se hace seguimiento hasta cerrar
 } as const
 
 // Tipo que representa cualquier estado valido del tablero de cotizaciones
@@ -102,33 +99,6 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     bg: 'bg-amber-50',
     border: 'border-amber-200',
     dot: 'bg-amber-500',
-  },
-  revision_interna: {
-    label: 'Revision interna',
-    shortLabel: 'Revision',
-    description: 'La oferta pasa por validacion interna antes de salir',
-    color: 'text-violet-700',
-    bg: 'bg-violet-50',
-    border: 'border-violet-200',
-    dot: 'bg-violet-500',
-  },
-  pendiente_envio: {
-    label: 'Pendiente de envio',
-    shortLabel: 'Envio',
-    description: 'Lista para enviarse al cliente desde la app',
-    color: 'text-indigo-700',
-    bg: 'bg-indigo-50',
-    border: 'border-indigo-200',
-    dot: 'bg-indigo-500',
-  },
-  seguimiento_cierre: {
-    label: 'Seguimiento / cierre',
-    shortLabel: 'Cierre',
-    description: 'Cotizacion enviada, seguimiento activo o cierre final',
-    color: 'text-slate-700',
-    bg: 'bg-slate-50',
-    border: 'border-slate-200',
-    dot: 'bg-slate-500',
   },
 }
 

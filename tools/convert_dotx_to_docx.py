@@ -50,15 +50,39 @@ def convert_dotx(input_path: Path, output_path: Path) -> None:
     output_path.write_bytes(buf.getvalue())
 
 
+def replace_placeholder(docx_path: Path, placeholder: str, replacement: str) -> None:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(docx_path, 'r') as src, zipfile.ZipFile(buf, 'w') as dest:
+        for name in src.namelist():
+            data = src.read(name)
+            if name == 'word/document.xml':
+                text = data.decode('utf-8')
+                if placeholder in text:
+                    text = text.replace(placeholder, replacement)
+                    data = text.encode('utf-8')
+            dest.writestr(name, data)
+    docx_path.write_bytes(buf.getvalue())
+
+
+def insert_project_codes(root: Path, placeholder: str = '_project_code') -> None:
+    for docx in root.rglob('*.docx'):
+        project_dir = docx.parents[3].name
+        project_code = project_dir.split(' ', 1)[0]
+        replace_placeholder(docx, placeholder, project_code)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Convert .dotx templates into editable .docx.')
     parser.add_argument('root', type=Path, help='Root folder containing copied templates.')
     parser.add_argument('--dry-run', action='store_true', help='List the conversions without writing files.')
+    parser.add_argument('--insert-codes', action='store_true', help='Replace _project_code inside docx files.')
     args = parser.parse_args()
 
     dotx_files = list(args.root.rglob('*.dotx'))
     if not dotx_files:
         print('No .dotx files under', args.root)
+        if args.insert_codes:
+            insert_project_codes(args.root)
         return
 
     for dotx in dotx_files:
@@ -70,6 +94,9 @@ def main() -> None:
             continue
         convert_dotx(dotx, docx_path)
         print('converted', dotx, '->', docx_path)
+
+    if args.insert_codes:
+        insert_project_codes(args.root)
 
 
 if __name__ == '__main__':

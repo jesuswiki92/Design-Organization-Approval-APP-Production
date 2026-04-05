@@ -597,6 +597,30 @@ export interface ProyectoEstadoHistorial {
   changed_by: string | null
 }
 
+// ─── doa_conteo_horas_proyectos ─────────────────────────────────────────────
+
+/**
+ * CONTEO DE HORAS DE PROYECTO (PUNCH-CLOCK)
+ * Cada fila representa un evento de inicio o fin de trabajo en un proyecto.
+ * Sesion de trabajo en un proyecto. Una fila = un periodo inicio-fin.
+ * Al pulsar "Iniciar" se crea la fila con inicio. Al pulsar "Parar" se
+ * actualiza la misma fila con fin y duracion_minutos calculada.
+ * Corresponde a la tabla "doa_conteo_horas_proyectos" en la base de datos.
+ */
+export interface ConteoHorasProyecto {
+  id: string
+  proyecto_id: string
+  numero_proyecto: string
+  // Fecha y hora de inicio de la sesion de trabajo
+  inicio: string
+  // Fecha y hora de fin (null si la sesion sigue abierta)
+  fin: string | null
+  // Duracion en minutos (calculada al parar, null si aun abierta)
+  duracion_minutos: number | null
+  usuario: string | null
+  created_at: string
+}
+
 // ─── mdl_contenido (Master Document List - JSONB) ───────────────────────────
 
 /** Documento individual dentro del MDL (Master Document List) de un proyecto historico */

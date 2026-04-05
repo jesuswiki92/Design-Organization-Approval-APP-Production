@@ -45,9 +45,12 @@ import {
   LayoutGrid,
   List,
   Plane,
+  Plus,
   Search,
   User,
 } from 'lucide-react'
+
+import { ProjectTimerButton } from './ProjectTimerButton'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
@@ -306,6 +309,16 @@ function BoardCard({
         <PrioridadBadge prioridad={proyecto.prioridad} />
       </div>
 
+      {/* Temporizador de horas (solo para estados activos, no nuevo ni cerrado) */}
+      {proyecto.estado !== 'nuevo' && proyecto.estado !== 'cerrado' ? (
+        <div className="mt-2">
+          <ProjectTimerButton
+            proyectoId={proyecto.id}
+            numeroProyecto={proyecto.numero_proyecto}
+          />
+        </div>
+      ) : null}
+
       {/* Fecha inicio alineada a la derecha */}
       {proyecto.fecha_inicio ? (
         <p className="mt-2 text-right text-[11px] text-slate-400">
@@ -313,9 +326,18 @@ function BoardCard({
         </p>
       ) : null}
 
-      {/* Selector de estado (igual que en Quotations) */}
-      <div className="mt-3">
+      {/* Selector de estado + boton detalle */}
+      <div className="mt-3 space-y-2">
         <ProjectStateControl proyecto={proyecto} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} onEstadoRevert={onEstadoRevert} />
+        <div className="flex items-center justify-end">
+          <Link
+            href={`/engineering/projects/${proyecto.id}`}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700"
+            title="Ver detalle"
+          >
+            <Plus className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </article>
   )
@@ -484,6 +506,7 @@ function ListaView({
                   'Owner',
                   'Prioridad',
                   'Fecha inicio',
+                  'Horas',
                 ].map((label) => (
                   <th
                     key={label}
@@ -579,6 +602,18 @@ function ListaView({
                     {/* Fecha inicio */}
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
                       {proyecto.fecha_inicio ?? '-'}
+                    </td>
+
+                    {/* Horas (temporizador) */}
+                    <td className="px-4 py-3">
+                      {proyecto.estado !== 'nuevo' && proyecto.estado !== 'cerrado' ? (
+                        <ProjectTimerButton
+                          proyectoId={proyecto.id}
+                          numeroProyecto={proyecto.numero_proyecto}
+                        />
+                      ) : (
+                        <span className="text-sm text-slate-400">-</span>
+                      )}
                     </td>
                   </tr>
                 )
