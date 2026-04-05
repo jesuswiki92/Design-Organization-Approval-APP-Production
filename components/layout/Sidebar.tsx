@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Home, Plane, Wrench, Users, Database, ChevronLeft, ChevronRight, Shield, FileText, Clock3,
+  Home, Plane, PlaneTakeoff, Wrench, Users, Database, ChevronLeft, ChevronRight, Shield, FileText, Clock3,
   Settings,
 } from 'lucide-react'
 
@@ -18,6 +18,7 @@ const navItems = [
   { href: '/tools', icon: Wrench, label: 'Tools' },
   { href: '/clients', icon: Users, label: 'Clientes' },
   { href: '/databases', icon: Database, label: 'Bases de datos' },
+  { href: '/aeronaves', icon: PlaneTakeoff, label: 'Aeronaves' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ]
 

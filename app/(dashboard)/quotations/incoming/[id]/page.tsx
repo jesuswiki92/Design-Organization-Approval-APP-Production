@@ -42,8 +42,8 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
-// Componente interactivo (del lado del cliente) para redactar respuestas al cliente
-import { ClientReplyComposer } from './ClientReplyComposer'
+// Columna central colapsable: correo original + compositor de respuesta
+import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 // Banner que muestra el estado de verificacion del TCDS contra doa_aeronaves
 import { TcdsStatusBanner } from './TcdsStatusBanner'
 
@@ -261,19 +261,62 @@ export default async function IncomingQuotationDetailPage({
    * --- PASO 6b: Verificar si el TCDS existe en la base de datos de aeronaves ---
    *
    * Si la consulta tiene un numero de TCDS, se busca en la tabla 'doa_aeronaves'
-   * para saber si ya esta registrado en nuestra base de datos interna. Esto
-   * permite mostrar al usuario si el TCDS es conocido o si necesita ser
-   * ingresado al sistema.
+   * para saber si ya esta registrado en nuestra base de datos interna.
+   * Se obtienen TODAS las variantes (puede haber multiples modelos bajo un
+   * mismo TCDS, ej: PC-12, PC-12/45, PC-12/47, PC-12/47E, PC-12/47G
+   * comparten TCDS A.089).
+   *
+   * Si no hay TCDS pero si modelo o fabricante, se intenta busqueda por fallback.
    */
-  let aeronaveMatch: { id: string; tcds_code: string; tipo: string | null; modelo: string | null } | null = null
+  let aeronaveVariants: {
+    tcds_code: string
+    tcds_code_short: string
+    tcds_issue: string
+    tcds_date: string
+    fabricante: string
+    pais: string
+    tipo: string
+    modelo: string
+    motor: string
+    mtow_kg: number | null
+    mlw_kg: number | null
+    regulacion_base: string
+    categoria: string
+    msn_elegibles: string
+    notas: string
+  }[] = []
+  let tcdsFallbackUsed = false
+
   if (data.tcds_number) {
+    // Busqueda primaria: por codigo TCDS exacto
     const { data: aeronaveRows } = await supabase
       .from('doa_aeronaves')
-      .select('id, tcds_code, tipo, modelo')
+      .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, fabricante, pais, tipo, modelo, motor, mtow_kg, mlw_kg, regulacion_base, categoria, msn_elegibles, notas')
       .eq('tcds_code', data.tcds_number)
-      .limit(1)
 
-    aeronaveMatch = aeronaveRows && aeronaveRows.length > 0 ? aeronaveRows[0] : null
+    if (aeronaveRows && aeronaveRows.length > 0) {
+      aeronaveVariants = aeronaveRows
+    }
+  }
+
+  // Fallback: si no hay TCDS o no se encontro nada, buscar por modelo o fabricante
+  if (aeronaveVariants.length === 0 && (data.aircraft_model || data.aircraft_manufacturer)) {
+    tcdsFallbackUsed = true
+    let fallbackQuery = supabase
+      .from('doa_aeronaves')
+      .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, fabricante, pais, tipo, modelo, motor, mtow_kg, mlw_kg, regulacion_base, categoria, msn_elegibles, notas')
+
+    if (data.aircraft_model) {
+      fallbackQuery = fallbackQuery.ilike('modelo', `%${data.aircraft_model}%`)
+    } else if (data.aircraft_manufacturer) {
+      fallbackQuery = fallbackQuery.ilike('fabricante', `%${data.aircraft_manufacturer}%`)
+    }
+
+    const { data: fallbackRows } = await fallbackQuery
+
+    if (fallbackRows && fallbackRows.length > 0) {
+      aeronaveVariants = fallbackRows
+    }
   }
 
   /**
@@ -384,45 +427,30 @@ export default async function IncomingQuotationDetailPage({
           En pantallas pequenas (movil/tablet), las columnas se apilan verticalmente.
         */}
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
-          {/* --- COLUMNA IZQUIERDA: CORREO ORIGINAL Y RESPUESTA IA --- */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Seccion que muestra el texto completo del correo que envio el cliente */}
-            <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                Correo original
-              </p>
-              <h3 className="mt-1.5 text-sm font-semibold text-slate-950">
-                Mensaje recibido
-              </h3>
-              {/* Contenido del correo original, preservando saltos de linea */}
-              <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
-                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                  {query.cuerpoOriginal}
-                </p>
-              </div>
-            </section>
-
-            {/*
-              Componente interactivo para redactar la respuesta al cliente.
-              Este es un componente de CLIENTE (se ejecuta en el navegador) que permite
-              al equipo comercial editar y enviar la respuesta. Recibe los datos de la
-              consulta como parametros para poder pre-rellenar el borrador generado
-              por la IA (respuestaIa) y el contexto necesario.
-            */}
-            <ClientReplyComposer
-              compact
-              query={{
-                id: query.id,
-                codigo: query.codigo,
-                asunto: query.asunto,
-                remitente: query.remitente,
-                urlFormulario: query.urlFormulario,
-                clasificacion: query.clasificacion,
-                cuerpoOriginal: query.cuerpoOriginal,
-                respuestaIa: query.respuestaIa,
-              }}
-            />
-          </div>
+          {/* --- COLUMNA IZQUIERDA: CORREO ORIGINAL Y RESPUESTA (colapsable) --- */}
+          {/*
+            CenterColumnCollapsible organiza el correo original y el compositor
+            de respuesta en secciones colapsables para reducir el espacio vertical.
+            El correo original se muestra colapsado por defecto (con resumen),
+            y la respuesta al cliente se muestra expandida (es la accion principal).
+          */}
+          <CenterColumnCollapsible
+            query={{
+              id: query.id,
+              codigo: query.codigo,
+              asunto: query.asunto,
+              remitente: query.remitente,
+              urlFormulario: query.urlFormulario,
+              clasificacion: query.clasificacion,
+              cuerpoOriginal: query.cuerpoOriginal,
+              respuestaIa: query.respuestaIa,
+              // Campos de fecha para el hilo de comunicacion
+              creadoEn: data.created_at,
+              correoClienteEnviadoAt: data.correo_cliente_enviado_at ?? null,
+              correoClienteEnviadoBy: data.correo_cliente_enviado_by ?? null,
+              ultimoBorradorCliente: data.ultimo_borrador_cliente ?? null,
+            }}
+          />
 
           {/* --- COLUMNA DERECHA: CLIENTE, AERONAVE E HISTORIAL --- */}
           <div className="grid min-h-0 gap-5">
@@ -493,11 +521,12 @@ export default async function IncomingQuotationDetailPage({
                       </div>
                       {/* Banner de verificacion del TCDS contra doa_aeronaves */}
                       <TcdsStatusBanner
-                        found={!!aeronaveMatch}
+                        found={aeronaveVariants.length > 0}
                         tcdsNumber={data.tcds_number}
                         tcdsPdfUrl={data.tcds_pdf_url}
-                        matchedTipo={aeronaveMatch?.tipo}
-                        matchedModelo={aeronaveMatch?.modelo}
+                        variants={aeronaveVariants}
+                        fallbackUsed={tcdsFallbackUsed}
+                        aircraftModel={data.aircraft_model ?? null}
                       />
                       {/* Fabricante de la aeronave */}
                       <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
