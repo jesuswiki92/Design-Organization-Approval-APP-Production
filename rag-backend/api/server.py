@@ -654,25 +654,36 @@ async def ingest_save(request: Request, req: SaveChunksRequest):
 # ── Extracción de aeronaves desde TCDS ────────────────────────────
 
 # Prompt de extracción de datos estructurados de aeronaves desde TCDS
+# Prompt de extraccion de datos de aeronaves desde TCDS.
+# IMPORTANTE: El tcds_code y tcds_code_short son CRITICOS para la identificacion
+# de proyectos en la organizacion DOA. El codigo corto (ej: "A.089") se usa como
+# prefijo de proyecto, por eso se enfatiza tanto en el prompt.
 _AIRCRAFT_EXTRACTION_PROMPT = """You are an expert aviation data analyst specializing in EASA/FAA Type Certificate Data Sheets (TCDS).
 
 Your task: extract ALL aircraft model variants from the TCDS text below into structured JSON.
 
 CRITICAL INSTRUCTIONS:
-1. Extract EVERY model/variant listed in the TCDS (e.g., PC-12, PC-12/45, PC-12/47, PC-12/47E are SEPARATE variants).
-2. For each variant, fill in ALL fields. If a value is not found, use empty string "" for text fields and null for numeric fields.
-3. MTOW and MLW must be in kg. If the document lists values in lbs, convert using 1 lb = 0.453592 kg. Round to nearest integer.
-4. The certification basis (regulacion_base) is CRITICAL — extract it precisely (e.g., "CS-23 Amendment 5", "FAR 23", "CS-25", "14 CFR Part 23").
-5. Extract eligible serial numbers (MSN) per variant if listed.
-6. The "categoria" field should be one of: Normal, Commuter, Transport, Utility, Aerobatic, or as stated in the TCDS.
-7. If the TCDS covers multiple type designations (e.g., a family), list each model as a separate variant.
+1. **TCDS CODE IS THE MOST IMPORTANT FIELD** — You MUST extract:
+   - "tcds_code": The FULL EASA TCDS reference number (e.g., "EASA.A.089", "EASA.A.064", "EASA.IM.A.196").
+     Look for it on the cover page or header — it typically starts with "EASA." followed by a letter code and number.
+   - "tcds_code_short": The SHORT version WITHOUT the "EASA." prefix (e.g., "A.089", "A.064", "IM.A.196").
+     This is CRITICAL because it is used as the project identifier in the DOA organization.
+   If you cannot find the code, still fill in the field with your best guess from the document context. NEVER leave these empty.
+2. Extract EVERY model/variant listed in the TCDS (e.g., PC-12, PC-12/45, PC-12/47, PC-12/47E are SEPARATE variants).
+3. For each variant, fill in ALL fields. If a value is not found, use empty string "" for text fields and null for numeric fields.
+4. MTOW and MLW must be in kg. If the document lists values in lbs, convert using 1 lb = 0.453592 kg. Round to nearest integer.
+5. The certification basis (regulacion_base) is CRITICAL — extract it precisely (e.g., "CS-23 Amendment 5", "FAR 23", "CS-25", "14 CFR Part 23").
+6. Extract eligible serial numbers (MSN) per variant if listed.
+7. The "categoria" field should be one of: Normal, Commuter, Transport, Utility, Aerobatic, or as stated in the TCDS.
+8. If the TCDS covers multiple type designations (e.g., a family), list each model as a separate variant.
+9. ALL variants from the SAME TCDS document share the SAME tcds_code and tcds_code_short values.
 
 Return ONLY valid JSON with this exact structure (no markdown, no explanation):
 {
   "variants": [
     {
-      "tcds_code": "EASA.A.XXX (full TCDS reference code)",
-      "tcds_code_short": "A.XXX (short code without EASA prefix)",
+      "tcds_code": "EASA.A.XXX (MANDATORY — full TCDS reference code, e.g. EASA.A.089)",
+      "tcds_code_short": "A.XXX (MANDATORY — short code for project ID, e.g. A.089)",
       "tcds_issue": "Issue XX (issue/revision number)",
       "tcds_date": "DD Month YYYY (date of this TCDS issue)",
       "fabricante": "Manufacturer full legal name",

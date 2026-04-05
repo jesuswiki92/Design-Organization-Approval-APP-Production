@@ -1164,45 +1164,99 @@ function ExtractTab({
               )}
             </div>
 
-            {/* Informacion del TCDS y resumen */}
-            <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {documentCode && (
-                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+            {/* ================================================================
+               TARJETA PROMINENTE DE IDENTIFICACION TCDS
+               El codigo TCDS (especialmente el "short") es el identificador
+               clave para proyectos en la DOA. Se muestra grande y destacado
+               para que el usuario lo identifique de inmediato.
+               ================================================================ */}
+            <div className="mb-4 rounded-xl border-2 border-sky-200 bg-gradient-to-r from-sky-50 via-white to-sky-50 p-4">
+              <div className="flex flex-wrap items-center gap-6">
+                {/* Codigo TCDS completo — grande y en negrita */}
+                <div className="min-w-0">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    Codigo TCDS
+                    TCDS Code
                   </p>
-                  <p className="truncate text-sm font-medium text-slate-800">
-                    {documentCode}
+                  <p className="text-2xl font-bold tracking-tight text-slate-900">
+                    {(variants.length > 0 && variants[0].tcds_code) || documentCode || '--'}
                   </p>
                 </div>
-              )}
-              {variants.length > 0 && variants[0].tcds_issue && (
-                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    Issue
+
+                {/* Codigo TCDS corto — badge destacado, es el que se usa para codigos de proyecto */}
+                {variants.length > 0 && variants[0].tcds_code_short && (
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+                      Codigo Proyecto
+                    </p>
+                    <span className="mt-0.5 inline-flex items-center rounded-lg bg-sky-600 px-3 py-1 text-lg font-bold text-white shadow-md shadow-sky-200">
+                      {variants[0].tcds_code_short}
+                    </span>
+                  </div>
+                )}
+
+                {/* Separador vertical */}
+                <div className="hidden h-12 w-px bg-slate-200 sm:block" />
+
+                {/* Issue y Fecha */}
+                <div className="flex flex-wrap gap-4">
+                  {variants.length > 0 && variants[0].tcds_issue && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Issue
+                      </p>
+                      <p className="text-sm font-medium text-slate-800">
+                        {variants[0].tcds_issue}
+                      </p>
+                    </div>
+                  )}
+                  {variants.length > 0 && variants[0].tcds_date && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Fecha
+                      </p>
+                      <p className="text-sm font-medium text-slate-800">
+                        {variants[0].tcds_date}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Separador vertical */}
+                <div className="hidden h-12 w-px bg-slate-200 sm:block" />
+
+                {/* Fabricante y Tipo */}
+                <div className="flex flex-wrap gap-4">
+                  {variants.length > 0 && variants[0].fabricante && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Fabricante
+                      </p>
+                      <p className="text-sm font-medium text-slate-800">
+                        {variants[0].fabricante}
+                      </p>
+                    </div>
+                  )}
+                  {variants.length > 0 && variants[0].tipo && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        Tipo
+                      </p>
+                      <p className="text-sm font-medium text-slate-800">
+                        {variants[0].tipo}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Contador de variantes — a la derecha */}
+                <div className="ml-auto rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+                    Variantes
                   </p>
-                  <p className="truncate text-sm font-medium text-slate-800">
-                    {variants[0].tcds_issue}
+                  <p className="text-lg font-bold text-sky-700">
+                    {variants.length}
                   </p>
                 </div>
-              )}
-              {variants.length > 0 && variants[0].tcds_date && (
-                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    Fecha
-                  </p>
-                  <p className="truncate text-sm font-medium text-slate-800">
-                    {variants[0].tcds_date}
-                  </p>
-                </div>
-              )}
-              <div className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
-                  Variantes encontradas
-                </p>
-                <p className="text-sm font-bold text-sky-700">
-                  {variants.length}
-                </p>
               </div>
             </div>
 
@@ -1224,9 +1278,15 @@ function ExtractTab({
 
             {variants.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px] text-left text-sm">
+                {/* Tabla de variantes — TCDS CODE como primera columna
+                   porque es el identificador principal de proyecto en la DOA */}
+                <table className="w-full min-w-[1000px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-slate-200">
+                      {/* Primera columna: TCDS CODE — destacada porque identifica el proyecto */}
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-600 bg-sky-50 rounded-tl-lg">
+                        TCDS Code
+                      </th>
                       <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                         Modelo
                       </th>
@@ -1265,6 +1325,12 @@ function ExtractTab({
                         key={i}
                         className="border-b border-slate-100 transition-colors hover:bg-slate-50"
                       >
+                        {/* Codigo TCDS corto — badge destacado en cada fila para identificacion rapida */}
+                        <td className="px-3 py-2.5 bg-sky-50/50">
+                          <span className="inline-flex items-center rounded-md bg-sky-100 px-2 py-0.5 text-xs font-bold text-sky-800">
+                            {v.tcds_code_short || v.tcds_code || '--'}
+                          </span>
+                        </td>
                         <td className="px-3 py-2.5 font-medium text-slate-900">
                           {v.modelo || '--'}
                         </td>
