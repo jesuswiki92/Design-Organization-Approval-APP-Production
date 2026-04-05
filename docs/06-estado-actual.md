@@ -44,21 +44,28 @@ La pagina `/quotations` funciona como workspace comercial con selector de vistas
 
 No es una portada mock. Es una superficie real de trabajo visual, aunque hoy no consuma aun un modelo completo de quotations persistidas.
 
-### Estados del board
+### Estados del board (pipeline unificado de 10 columnas)
 
-El board de `Quotations` usa siete estados base:
+El board de `Quotations` es un pipeline unificado de 10 estados que cubre desde la recepcion de una consulta hasta el cierre de la oferta:
 
-- `Entrada recibida`
-- `Triage`
-- `Alcance definido`
-- `Oferta en redaccion`
-- `Revision interna`
-- `Pendiente de envio`
-- `Seguimiento / cierre`
+| # | Estado | Codigo tecnico | Color |
+|---|--------|---------------|-------|
+| 1 | Entrada recibida | `entrada_recibida` | sky |
+| 2 | Formulario enviado. Esperando respuesta | `formulario_enviado` | cyan |
+| 3 | Formulario recibido. Revisar | `formulario_recibido` | teal |
+| 4 | Definir alcance | `definir_alcance` | emerald |
+| 5 | Alcance definido. Preparar oferta | `alcance_definido` | green |
+| 6 | Oferta preparada. Revisar | `oferta_en_revision` | amber |
+| 7 | Oferta enviada a cliente | `oferta_enviada` | violet |
+| 8 | Oferta aceptada | `oferta_aceptada` | indigo |
+| 9 | Oferta rechazada | `oferta_rechazada` | rose |
+| 10 | Revision final. Abrir proyecto | `revision_final` | slate |
 
-La arquitectura actual de estados esta separada por capas:
+Ademas existe el estado `archivado` que oculta la consulta del tablero.
 
-- Definicion tecnica en `lib/workflow-states.ts`
+La arquitectura de estados esta separada por capas:
+
+- Definicion tecnica en `lib/workflow-states.ts` (`QUOTATION_BOARD_STATES` + `QUOTATION_BOARD_STATE_CONFIG`)
 - Resolucion de labels, colores y orden en `lib/workflow-state-config.ts`
 - Lectura server-side en `lib/workflow-state-config.server.ts`
 - Persistencia via `app/api/workflow/state-config/route.ts`
@@ -69,6 +76,47 @@ Estado real hoy:
 - Los `state_code` siguen siendo fijos
 - Si `doa_workflow_state_config` no existe o falla, la app vuelve a defaults definidos en codigo
 - Los estados custom del board siguen siendo locales en `localStorage`
+
+### Cambio de estado via n8n
+
+El cambio de estado en las tarjetas del tablero y en la pagina de detalle funciona con el mismo patron que proyectos:
+
+1. El usuario selecciona un nuevo estado en el dropdown (`QuotationStateSelector`)
+2. El componente llama al webhook de n8n `doa-quotation-cambio-estado`
+3. n8n actualiza el campo `estado` en `doa_consultas_entrantes` via nodo Supabase nativo
+4. La app refresca y lee el nuevo estado de Supabase
+
+Componentes involucrados:
+
+| Pieza | Archivo | Que hace |
+|-------|---------|----------|
+| Selector de estado | `app/(dashboard)/quotations/QuotationStateSelector.tsx` | Dropdown con los 10 estados, llama al webhook |
+| Webhook n8n | Workflow `DOA - Cambio Estado Quotation` (ID: `pU645EznWCSbSq2Y`) | Recibe el POST y actualiza Supabase |
+| API route (backup) | `app/api/consultas/[id]/state/route.ts` | PATCH directo a Supabase, acepta ambos scopes de estados |
+| Variable de entorno | `NEXT_PUBLIC_DOA_QUOTATION_STATE_WEBHOOK_URL` | URL del webhook en `.env.local` |
+
+Payload que envia el selector al webhook:
+```json
+{
+  "consulta_id": "uuid",
+  "consulta_codigo": "QRY-XXXXXXXX",
+  "estado_anterior": "entrada_recibida",
+  "estado_nuevo": "definir_alcance",
+  "fecha_hora": "2026-04-05T19:30:00.000Z"
+}
+```
+
+### Mapeo de estados legacy
+
+Las consultas entrantes originales usaban 3 estados (`nuevo`, `esperando_formulario`, `formulario_recibido`). La funcion `mapIncomingStateToQuotationLane()` en `quotation-board-data.ts` convierte estos estados legacy a columnas del pipeline unificado:
+
+- `nuevo` → `entrada_recibida`
+- `esperando_formulario` → `formulario_enviado`
+- `formulario_recibido` → `formulario_recibido`
+
+Si el estado ya es un codigo del pipeline (ej: `definir_alcance`), se usa tal cual sin conversion.
+
+**Importante**: el board usa `estadoBackend` (el valor crudo de Supabase) para colocar tarjetas en columnas, NO el valor normalizado de `normalizeIncomingStatus()` que solo reconoce los 3 estados legacy.
 
 ### Detalle de quotation
 
@@ -84,12 +132,13 @@ Todavia no esta conectado a un backend final de quotations.
 
 ### Consultas entrantes
 
-El flujo de consultas entrantes sigue siendo una pieza activa del dominio comercial:
+Las consultas entrantes son la fuente de datos principal del tablero de quotations. Cada consulta entrante se muestra como una tarjeta en el pipeline:
 
 - `doa_consultas_entrantes` esta conectada
 - `doa_clientes_contactos` esta conectada y se usa en el detalle de consulta para matching de cliente por email del remitente
 - n8n crea la fila inicial y rellena `url_formulario`
 - El detalle `/quotations/incoming/[id]` existe e incluye:
+  - **Dropdown de cambio de estado** en la cabecera (mismo `QuotationStateSelector` que el tablero)
   - Seccion colapsable **Aircraft Data** con datos de aeronave, upload y visualizacion de TCDS en PDF
   - Seccion colapsable **Project History** que muestra proyectos previos del cliente cuando se identifica un cliente conocido
   - Boton "+" en Project History que enlaza a `/proyectos-historico` para consultar el historico completo
@@ -99,9 +148,8 @@ El flujo de consultas entrantes sigue siendo una pieza activa del dominio comerc
 
 Limite actual:
 
-- El panel de consultas entrantes no es hoy la superficie principal de `/quotations`
-- El flujo principal de board y lista esta priorizado sobre ese panel
 - La preview del formulario en `Mas detalle` depende de que las plantillas locales de `Formularios` sigan alineadas con el HTML real que sirve n8n
+- El tablero no tiene Supabase Realtime — tras cambiar estado hay que esperar al `router.refresh()` para ver el movimiento (a diferencia de Proyectos que si tiene Realtime)
 
 ---
 
@@ -184,6 +232,7 @@ La arquitectura que hoy manda en el repo es esta:
 - `docs/` ya es la fuente principal para entender el estado del producto
 - `n8n-workflows/` describe ya el flujo real comercial para consultas y formularios
 - n8n usa un unico webhook `doa-form-submit` con campo `section` para branching entre flujos de cliente y aeronave
+- n8n tiene workflows dedicados para cambio de estado: `doa_Project_cambio_Estado` (proyectos) y `DOA - Cambio Estado Quotation` (quotations)
 
 ---
 
@@ -212,7 +261,23 @@ La arquitectura que hoy manda en el repo es esta:
 
 ## Siguientes pasos recomendados
 
+### Pendiente inmediato (proxima sesion)
+
+- Anadir Supabase Realtime al tablero de Quotations para que las tarjetas se muevan en tiempo real tras cambiar estado (mismo patron que ProyectosClient)
+- Limpiar el componente `IncomingQueryStateControl` en `QuotationStatesBoard.tsx` — ya no se usa (reemplazado por `QuotationStateSelector`) pero sigue en el archivo
+- Verificar que el n8n workflow `DOA - Cambio Estado Quotation` esta activado y funcionando correctamente en todos los estados
+
+### Mejoras de consolidacion
+
 - Asentar la migracion de `doa_workflow_state_config` para quitar la ambiguedad de persistencia
 - Elegir si el siguiente frente incremental va por `Clientes`, `Quotations` o `Proyectos`
 - Mantener sincronizadas `Formularios/` y el HTML real servido por n8n para que la preview siga siendo fiel
 - Cuando una superficie pase de mock a real, actualizar `docs/02-bases-de-datos.md` y este documento en el mismo lote
+
+### Auditoria de codigo
+
+Ver `docs/07-auditoria-codigo.md` para el listado completo de 58 hallazgos. Resumen:
+- 8 criticos (seguridad — para pre-produccion)
+- 12 altos (estabilidad y dead code)
+- 18 medios (rendimiento y UX)
+- 20 bajos (calidad de codigo)
