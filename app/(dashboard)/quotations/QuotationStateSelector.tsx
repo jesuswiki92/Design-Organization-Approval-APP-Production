@@ -6,12 +6,13 @@
  * ============================================================================
  *
  * Componente reutilizable que muestra un desplegable con todos los estados
- * del pipeline de cotizaciones (10 estados). Al cambiar el estado, envía
- * la petición al webhook de n8n para que gestione la actualización en Supabase.
+ * del pipeline de cotizaciones (10 estados). Al cambiar el estado, llama
+ * al webhook de n8n que actualiza Supabase. La app lee el estado desde
+ * Supabase (mismo patron que el cambio de estado de proyectos).
  *
  * Se usa en:
  * - Las tarjetas del tablero Kanban (QuotationStatesBoard)
- * - La página de detalle de consulta entrante (incoming/[id])
+ * - La pagina de detalle de consulta entrante (incoming/[id])
  * ============================================================================
  */
 
@@ -62,9 +63,12 @@ export function QuotationStateSelector({
     setMessage(null)
 
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_DOA_QUOTATION_STATE_WEBHOOK_URL
+      const webhookUrl =
+        process.env.NEXT_PUBLIC_DOA_QUOTATION_STATE_WEBHOOK_URL
       if (!webhookUrl) {
-        throw new Error('Webhook de cambio de estado de cotizaciones no configurado.')
+        throw new Error(
+          'Webhook de cambio de estado de cotizaciones no configurado.',
+        )
       }
 
       const response = await fetch(webhookUrl, {
@@ -80,7 +84,7 @@ export function QuotationStateSelector({
       })
 
       if (!response.ok) {
-        throw new Error('El webhook devolvió un error.')
+        throw new Error('El webhook devolvio un error.')
       }
 
       setStatus('idle')
@@ -97,7 +101,7 @@ export function QuotationStateSelector({
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-0.5">
       <label className="sr-only" htmlFor={`quotation-state-${consultaId}`}>
         Cambiar estado en el pipeline
       </label>
@@ -106,7 +110,7 @@ export function QuotationStateSelector({
         value={selectedState}
         disabled={status === 'saving'}
         onChange={(event) => void handleChange(event.target.value)}
-        className="h-8 min-w-[160px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
+        className="h-7 w-full truncate rounded-md border border-slate-200 bg-slate-50 px-1.5 text-[10px] font-medium uppercase tracking-wide text-slate-500 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-2 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
       >
         {BOARD_STATE_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -115,9 +119,11 @@ export function QuotationStateSelector({
         ))}
       </select>
       {status === 'saving' ? (
-        <p className="text-[11px] text-slate-500">Guardando estado...</p>
+        <p className="text-[10px] text-slate-400">Guardando...</p>
       ) : null}
-      {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
+      {message ? (
+        <p className="text-[10px] text-rose-500 line-clamp-1">{message}</p>
+      ) : null}
     </div>
   )
 }
