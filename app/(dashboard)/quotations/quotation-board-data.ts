@@ -20,16 +20,19 @@ function isArchivedIncomingState(state: string | null | undefined) {
 }
 
 /**
- * Mapea el estado de una consulta entrante a la columna del tablero de cotizaciones
- * donde se debe mostrar. Esto permite mostrar un solo pipeline unificado en el tablero
- * en lugar de dos scopes separados.
+ * Mapea el estado guardado en la consulta entrante a la columna del tablero.
  *
- * Mapeo:
- *   nuevo                → entrada_recibida     (consulta acaba de llegar)
- *   esperando_formulario → formulario_enviado    (formulario enviado, esperando respuesta)
- *   formulario_recibido  → formulario_recibido   (formulario recibido, revisar)
+ * Si el estado ya es un codigo de columna del tablero (ej: 'definir_alcance'),
+ * se devuelve tal cual. Si es un estado legacy de consulta entrante (ej: 'nuevo'),
+ * se convierte a su columna equivalente.
  */
-function mapIncomingStateToQuotationLane(state: IncomingQueryStatus): QuotationBoardState {
+function mapIncomingStateToQuotationLane(state: string): QuotationBoardState {
+  // Si ya es un estado del tablero, usarlo directamente
+  if (Object.values(QUOTATION_BOARD_STATES).includes(state as QuotationBoardState)) {
+    return state as QuotationBoardState
+  }
+
+  // Mapeo de estados legacy de consultas entrantes
   switch (state) {
     case 'esperando_formulario':
       return 'formulario_enviado'

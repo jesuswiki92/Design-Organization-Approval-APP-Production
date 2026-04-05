@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
 import { isMissingSchemaError } from '@/lib/supabase/errors'
-import { isIncomingQueryStateCode } from '@/lib/workflow-state-config'
+import { isIncomingQueryStateCode, isQuotationBoardStateCode } from '@/lib/workflow-state-config'
 
 export const runtime = 'nodejs'
 
@@ -23,8 +23,8 @@ export async function PATCH(
       return jsonResponse(400, 'Consulta no válida.')
     }
 
-    if (!estado || !isIncomingQueryStateCode(estado)) {
-      return jsonResponse(400, 'El estado solicitado no es válido para consultas entrantes.')
+    if (!estado || (!isIncomingQueryStateCode(estado) && !isQuotationBoardStateCode(estado))) {
+      return jsonResponse(400, 'El estado solicitado no es válido.')
     }
 
     const supabase = await createClient()

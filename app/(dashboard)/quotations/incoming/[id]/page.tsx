@@ -37,6 +37,7 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
+import { QuotationStateSelector } from '../../QuotationStateSelector'
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 import { TcdsStatusBanner } from './TcdsStatusBanner'
 
@@ -379,18 +380,27 @@ export default async function IncomingQuotationDetailPage({
 
         {/* --- CABECERA PRINCIPAL --- */}
         <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
-          <div className="space-y-2">
-            <p className="font-mono text-xs text-slate-500">{query.codigo}</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-              {query.asunto}
-            </h1>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600">
-              {data.estado === CONSULTA_ESTADOS.NUEVO
-                ? 'Consulta recien recibida. Revisa el email y prepara la respuesta al cliente.'
-                : data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO
-                  ? 'Formulario enviado al cliente. Esperando su respuesta.'
-                  : 'Formulario recibido. Revisa toda la informacion para tomar una decision.'}
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-2">
+              <p className="font-mono text-xs text-slate-500">{query.codigo}</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+                {query.asunto}
+              </h1>
+              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+                {data.estado === CONSULTA_ESTADOS.NUEVO
+                  ? 'Consulta recien recibida. Revisa el email y prepara la respuesta al cliente.'
+                  : data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO
+                    ? 'Formulario enviado al cliente. Esperando su respuesta.'
+                    : 'Formulario recibido. Revisa toda la informacion para tomar una decision.'}
+              </p>
+            </div>
+            <div className="shrink-0 pt-1">
+              <QuotationStateSelector
+                consultaId={query.id}
+                consultaCodigo={query.codigo}
+                currentEstado={data.estado ?? 'entrada_recibida'}
+              />
+            </div>
           </div>
         </section>
 

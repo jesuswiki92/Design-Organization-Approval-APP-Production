@@ -85,10 +85,13 @@ import type {
 } from '@/types/database'
 // Constantes de estados de consultas (ej: ARCHIVADO)
 import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
+// Selector de estado reutilizable (webhook n8n)
+import { QuotationStateSelector } from './QuotationStateSelector'
 // Funciones y tipos para consultas entrantes
 import {
-  getIncomingQueryStateOptions,
+  getQuotationBoardStateOptions,
   type IncomingQuery,
+  type QuotationBoardStateOption,
 } from './incoming-queries'
 // Tipos y funciones para los datos del tablero
 import type { QuotationLane } from './quotation-board-data'
@@ -113,13 +116,8 @@ type ScopeSaveState = {
   message: string | null
 }
 
-/** Opcion de estado para el selector de consultas entrantes */
-type IncomingQueryStateOption = {
-  value: string       // Codigo tecnico del estado
-  label: string       // Nombre visible completo
-  shortLabel: string  // Nombre corto para espacios reducidos
-  description: string // Descripcion del estado
-}
+/** Opcion de estado para el selector del pipeline de cotizaciones */
+type BoardStateOption = QuotationBoardStateOption
 
 /** Opciones de vista disponibles con sus iconos */
 const VIEW_OPTIONS: Array<{
@@ -222,7 +220,7 @@ function IncomingQueryStateControl({
   options,
 }: {
   card: QuotationCard
-  options: IncomingQueryStateOption[]
+  options: BoardStateOption[]
 }) {
   const router = useRouter()
   const [selectedState, setSelectedState] = useState(card.stateCode ?? '')
@@ -510,7 +508,7 @@ function BoardCard({
   stateOptions,
 }: {
   card: QuotationCard
-  stateOptions: IncomingQueryStateOption[]
+  stateOptions: BoardStateOption[]
 }) {
   return (
     <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-sky-300">
@@ -530,7 +528,11 @@ function BoardCard({
       ) : null}
 
       <div className="mt-3 space-y-2">
-        <IncomingQueryStateControl card={card} options={stateOptions} />
+        <QuotationStateSelector
+          consultaId={card.id}
+          consultaCodigo={card.code}
+          currentEstado={card.stateCode ?? 'entrada_recibida'}
+        />
         <div className="flex items-center justify-between gap-2">
           <Link
             href={card.href ?? `/quotations/${card.id}`}
@@ -558,7 +560,7 @@ function BoardLane({
   onDeleteLane,
 }: {
   lane: QuotationLane
-  stateOptions: IncomingQueryStateOption[]
+  stateOptions: BoardStateOption[]
   onDeleteLane: (laneId: string) => void
 }) {
   return (
@@ -629,7 +631,7 @@ function ListRow({
   onDeleteLane,
 }: {
   lane: QuotationLane
-  stateOptions: IncomingQueryStateOption[]
+  stateOptions: BoardStateOption[]
   onDeleteLane: (laneId: string) => void
 }) {
   const leadCard = lane.cards[0]
@@ -697,7 +699,11 @@ function ListRow({
             </Link>
           ) : null}
           {leadCard ? (
-            <IncomingQueryStateControl card={leadCard} options={stateOptions} />
+            <QuotationStateSelector
+              consultaId={leadCard.id}
+              consultaCodigo={leadCard.code}
+              currentEstado={leadCard.stateCode ?? 'entrada_recibida'}
+            />
           ) : null}
           {leadCard ? <IncomingQueryArchiveControl card={leadCard} compact /> : null}
           {leadCard ? <IncomingQueryDeleteControl card={leadCard} compact /> : null}
@@ -1016,7 +1022,7 @@ export function QuotationStatesBoard({
   )
   // Opciones del selector de estado para consultas entrantes
   const incomingStateOptions = useMemo(
-    () => getIncomingQueryStateOptions(stateConfigRows),
+    () => getQuotationBoardStateOptions(stateConfigRows),
     [stateConfigRows],
   )
   // Metricas: total de tarjetas y total de columnas

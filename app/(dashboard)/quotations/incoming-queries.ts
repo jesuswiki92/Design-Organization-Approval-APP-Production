@@ -98,6 +98,27 @@ export function getIncomingQueryStateOptions(
     }))
 }
 
+export type QuotationBoardStateOption = {
+  value: string
+  label: string
+  shortLabel: string
+  description: string
+}
+
+export function getQuotationBoardStateOptions(
+  rows: WorkflowStateConfigRow[] = [],
+): QuotationBoardStateOption[] {
+  return resolveWorkflowStateRows(
+    WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
+    rows,
+  ).map((row) => ({
+    value: row.state_code,
+    label: row.label,
+    shortLabel: row.short_label,
+    description: row.description ?? '',
+  }))
+}
+
 export function isIncomingQueryPending(q: IncomingQuery) {
   return q.estado === CONSULTA_ESTADOS.NUEVO || !q.estado
 }
