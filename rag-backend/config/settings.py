@@ -42,6 +42,7 @@ class Settings:
     # === SUPABASE ===
     SUPABASE_URL = os.getenv("SUPABASE_URL", "")
     SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+    SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     SUPABASE_TABLE = os.getenv("SUPABASE_TABLE", "doa_tcds_embeddings")
     SUPABASE_STORAGE_BUCKET = os.getenv("SUPABASE_STORAGE_BUCKET", "doa-tcds-storage")
 
@@ -98,6 +99,7 @@ class Settings:
             "Anthropic": bool(cls.ANTHROPIC_API_KEY),
             "OpenRouter": bool(cls.OPENROUTER_API_KEY),
             "Supabase": bool(cls.SUPABASE_URL and cls.SUPABASE_KEY),
+            "Supabase Service Role": bool(cls.SUPABASE_SERVICE_ROLE_KEY),
         }
 
     @classmethod

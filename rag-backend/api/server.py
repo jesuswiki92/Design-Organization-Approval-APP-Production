@@ -149,6 +149,15 @@ class ApplyModelRequest(BaseModel):
     system_prompt: Optional[str] = None
 
 
+class ExtractAircraftRequest(BaseModel):
+    chunks_text: str
+    document_code: str = ""
+
+
+class SaveAeronavesRequest(BaseModel):
+    variants: list
+
+
 # ── Security helpers ────────────────────────────────────────────────────────
 
 def _http_error(status_code: int, safe_msg: str, exc: Exception = None) -> HTTPException:
@@ -640,6 +649,191 @@ async def ingest_save(request: Request, req: SaveChunksRequest):
         }
     except Exception as e:
         raise _http_error(500, "Internal server error", e)
+
+
+# ── Extracción de aeronaves desde TCDS ────────────────────────────
+
+# Prompt de extracción de datos estructurados de aeronaves desde TCDS
+_AIRCRAFT_EXTRACTION_PROMPT = """You are an expert aviation data analyst specializing in EASA/FAA Type Certificate Data Sheets (TCDS).
+
+Your task: extract ALL aircraft model variants from the TCDS text below into structured JSON.
+
+CRITICAL INSTRUCTIONS:
+1. Extract EVERY model/variant listed in the TCDS (e.g., PC-12, PC-12/45, PC-12/47, PC-12/47E are SEPARATE variants).
+2. For each variant, fill in ALL fields. If a value is not found, use empty string "" for text fields and null for numeric fields.
+3. MTOW and MLW must be in kg. If the document lists values in lbs, convert using 1 lb = 0.453592 kg. Round to nearest integer.
+4. The certification basis (regulacion_base) is CRITICAL — extract it precisely (e.g., "CS-23 Amendment 5", "FAR 23", "CS-25", "14 CFR Part 23").
+5. Extract eligible serial numbers (MSN) per variant if listed.
+6. The "categoria" field should be one of: Normal, Commuter, Transport, Utility, Aerobatic, or as stated in the TCDS.
+7. If the TCDS covers multiple type designations (e.g., a family), list each model as a separate variant.
+
+Return ONLY valid JSON with this exact structure (no markdown, no explanation):
+{
+  "variants": [
+    {
+      "tcds_code": "EASA.A.XXX (full TCDS reference code)",
+      "tcds_code_short": "A.XXX (short code without EASA prefix)",
+      "tcds_issue": "Issue XX (issue/revision number)",
+      "tcds_date": "DD Month YYYY (date of this TCDS issue)",
+      "fabricante": "Manufacturer full legal name",
+      "pais": "Country of manufacturer",
+      "tipo": "Type designation (e.g., PC-12)",
+      "modelo": "Specific model/variant (e.g., PC-12/47E)",
+      "msn_elegibles": "Eligible serial numbers or range",
+      "motor": "Engine type designation",
+      "mtow_kg": 0,
+      "mlw_kg": 0,
+      "regulacion_base": "Certification basis (CS-23, FAR 23, etc.)",
+      "categoria": "Normal/Commuter/Transport/Utility/Aerobatic",
+      "notas": "Any important notes about this variant"
+    }
+  ]
+}
+
+TCDS TEXT:
+"""
+
+
+def _get_openai_client():
+    """
+    Devuelve un cliente OpenAI configurado.
+    Prioridad: OpenAI directo > OpenRouter.
+    """
+    from openai import OpenAI
+
+    if settings.OPENAI_API_KEY:
+        return OpenAI(api_key=settings.OPENAI_API_KEY), "gpt-4o"
+    elif settings.OPENROUTER_API_KEY:
+        return OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=settings.OPENROUTER_API_KEY,
+        ), "openai/gpt-4o"
+    else:
+        return None, None
+
+
+@app.post("/api/extract/aircraft")
+async def extract_aircraft(req: ExtractAircraftRequest):
+    """
+    Extrae datos estructurados de aeronaves desde el texto de un TCDS.
+    Envía el texto a un modelo AI y devuelve las variantes extraídas.
+    """
+    try:
+        if not req.chunks_text or len(req.chunks_text.strip()) < 50:
+            raise HTTPException(status_code=400, detail="El texto proporcionado es demasiado corto para extraer datos.")
+
+        client, model = _get_openai_client()
+        if client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="No hay API key configurada (OPENAI_API_KEY o OPENROUTER_API_KEY).",
+            )
+
+        # Limitar texto para no exceder el contexto del modelo (~120K chars ≈ 30K tokens)
+        max_chars = 120000
+        text_to_send = req.chunks_text[:max_chars]
+
+        prompt = _AIRCRAFT_EXTRACTION_PROMPT + text_to_send
+
+        # Si se proporcionó document_code, incluirlo como contexto adicional
+        if req.document_code:
+            prompt += f"\n\nNOTE: The TCDS document code is: {req.document_code}"
+
+        print(f"[EXTRACT] Enviando {len(text_to_send)} chars al modelo {model} para extracción de aeronaves...")
+
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a structured data extraction assistant. Return ONLY valid JSON, no markdown fences, no explanations.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+            max_tokens=4096,
+        )
+
+        raw_answer = response.choices[0].message.content.strip()
+
+        # Limpiar posibles markdown fences (```json ... ```)
+        if raw_answer.startswith("```"):
+            # Quitar primera línea (```json) y última (```)
+            lines = raw_answer.split("\n")
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip() == "```":
+                lines = lines[:-1]
+            raw_answer = "\n".join(lines)
+
+        # Parsear JSON
+        try:
+            extracted = json.loads(raw_answer)
+        except json.JSONDecodeError as je:
+            print(f"[EXTRACT][ERROR] JSON inválido del modelo: {raw_answer[:500]}")
+            raise HTTPException(
+                status_code=502,
+                detail=f"El modelo devolvió JSON inválido: {str(je)}",
+            )
+
+        variants = extracted.get("variants", [])
+        print(f"[EXTRACT] Extraídas {len(variants)} variantes de aeronaves")
+
+        # Tokens usados (si disponible)
+        tokens_used = 0
+        if hasattr(response, "usage") and response.usage:
+            tokens_used = response.usage.total_tokens or 0
+
+        return {
+            "success": True,
+            "variants": variants,
+            "variants_count": len(variants),
+            "model_used": model,
+            "tokens_used": tokens_used,
+            "text_length": len(text_to_send),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise _http_error(500, "Error extrayendo datos de aeronaves", e)
+
+
+@app.post("/api/extract/aircraft/save")
+async def save_aircraft_variants(req: SaveAeronavesRequest):
+    """
+    Guarda las variantes de aeronave aprobadas en la tabla doa_aeronaves de Supabase.
+    """
+    try:
+        if not req.variants:
+            raise HTTPException(status_code=400, detail="No se proporcionaron variantes para guardar.")
+
+        db = get_db()
+        result = db.insert_aeronaves(req.variants)
+
+        saved = result.get("saved", 0)
+        errors = result.get("errors", [])
+
+        if saved == 0 and errors:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message": "No se guardó ninguna variante",
+                    "errors": errors,
+                },
+            )
+
+        return {
+            "success": True,
+            "message": f"Guardadas {saved} variantes de aeronave correctamente",
+            "saved": saved,
+            "errors": errors,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise _http_error(500, "Error guardando variantes de aeronave", e)
 
 
 # ── Settings ───────────────────────────────────────────────────────

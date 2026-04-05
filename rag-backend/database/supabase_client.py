@@ -40,9 +40,13 @@ class SearchResult:
 # ────────────────────────────────────────────────────────────────
 
 def _supabase_headers(extra: dict = None) -> dict:
+    # Use service_role key for Authorization to bypass RLS policies.
+    # The apikey header uses the anon key for routing; Authorization is what
+    # Supabase evaluates for row-level security.
+    auth_key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_KEY
     h = {
         "apikey": settings.SUPABASE_KEY,
-        "Authorization": f"Bearer {settings.SUPABASE_KEY}",
+        "Authorization": f"Bearer {auth_key}",
         "Content-Type": "application/json",
     }
     if extra:
@@ -73,9 +77,10 @@ def _storage_upload(bucket: str, path_in_bucket: str, file_bytes: bytes, mime: s
     """Sube bytes a Supabase Storage y devuelve la URL pública."""
     base = settings.SUPABASE_URL.rstrip("/")
     url = f"{base}/storage/v1/object/{bucket}/{path_in_bucket}"
+    auth_key = settings.SUPABASE_SERVICE_ROLE_KEY or settings.SUPABASE_KEY
     headers = {
         "apikey": settings.SUPABASE_KEY,
-        "Authorization": f"Bearer {settings.SUPABASE_KEY}",
+        "Authorization": f"Bearer {auth_key}",
         "Content-Type": mime,
         "x-upsert": "true",
     }
@@ -500,6 +505,53 @@ class SupabaseClient:
         trank = float(row.get("text_rank", 0.0))
         result.similarity = sim * 0.7 + trank * 0.3
         return result
+
+    # ==================== AERONAVES ====================
+
+    def insert_aeronaves(self, variants: list) -> dict:
+        """
+        Inserta variantes de aeronave en la tabla doa_aeronaves.
+        Retorna {"saved": int, "errors": [str]}
+        """
+        saved = 0
+        errors = []
+        TABLE_AERONAVES = "doa_aeronaves"
+
+        for variant in variants:
+            try:
+                # Construir registro con solo las columnas válidas
+                record = {
+                    "tcds_code": variant.get("tcds_code", ""),
+                    "tcds_code_short": variant.get("tcds_code_short", ""),
+                    "tcds_issue": variant.get("tcds_issue", ""),
+                    "tcds_date": variant.get("tcds_date", ""),
+                    "tcds_pdf_url": variant.get("tcds_pdf_url", ""),
+                    "fabricante": variant.get("fabricante", ""),
+                    "pais": variant.get("pais", ""),
+                    "tipo": variant.get("tipo", ""),
+                    "modelo": variant.get("modelo", ""),
+                    "msn_elegibles": variant.get("msn_elegibles", ""),
+                    "motor": variant.get("motor", ""),
+                    "mtow_kg": variant.get("mtow_kg"),
+                    "mlw_kg": variant.get("mlw_kg"),
+                    "regulacion_base": variant.get("regulacion_base", ""),
+                    "categoria": variant.get("categoria", ""),
+                    "notas": variant.get("notas", ""),
+                }
+                # Eliminar claves con valor None para que Supabase use defaults
+                record = {k: v for k, v in record.items() if v is not None}
+
+                _rest("POST", f"/rest/v1/{TABLE_AERONAVES}", body=record,
+                      extra_headers={"Prefer": "return=minimal"})
+                saved += 1
+            except Exception as e:
+                modelo = variant.get("modelo", "desconocido")
+                errors.append(f"Error insertando variante '{modelo}': {e}")
+                print(f"[X] insert_aeronaves error ({modelo}): {e}")
+
+        return {"saved": saved, "errors": errors}
+
+    # ==================== INTERNOS ====================
 
     def _normalize_text(self, value: str) -> str:
         return re.sub(r"[^a-z0-9]+", "", str(value or "").lower())

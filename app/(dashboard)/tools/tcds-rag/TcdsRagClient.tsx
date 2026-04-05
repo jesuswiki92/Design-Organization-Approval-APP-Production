@@ -37,6 +37,9 @@ import {
   AlertCircle,
   RefreshCw,
   Save,
+  Plane,
+  X,
+  ClipboardPaste,
 } from 'lucide-react'
 import {
   ragHealth,
@@ -48,6 +51,8 @@ import {
   ragProcess,
   ragSave,
   ragChat,
+  ragExtractAircraft,
+  ragSaveAircraft,
   type RagHealthResponse,
   type RagDashboardStats,
   type RagSettings,
@@ -57,6 +62,8 @@ import {
   type IngestProcessResult,
   type RagProcessedChunk,
   type ChatResponse,
+  type AircraftVariant,
+  type ExtractionResult,
 } from '@/lib/rag-api'
 
 /* -------------------------------------------------------------------------- */
@@ -64,12 +71,13 @@ import {
 /* -------------------------------------------------------------------------- */
 
 /** Identificadores de las pestanas disponibles */
-type TabId = 'dashboard' | 'ingest' | 'documents'
+type TabId = 'dashboard' | 'ingest' | 'extract' | 'documents'
 
-/** Configuracion de cada pestana */
+/** Configuracion de cada pestana — orden: Dashboard | Ingest | Extraer | Documents */
 const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'ingest', label: 'Ingest', icon: Upload },
+  { id: 'extract', label: 'Extraer', icon: Plane },
   { id: 'documents', label: 'Documents', icon: FileStack },
 ]
 
@@ -90,6 +98,11 @@ export function TcdsRagClient() {
 
   /** Indica si el servidor esta conectado */
   const [isConnected, setIsConnected] = useState<boolean | null>(null)
+
+  /** Estado compartido: texto de chunks del ultimo documento procesado en Ingest */
+  const [lastProcessedChunksText, setLastProcessedChunksText] = useState<string>('')
+  /** Estado compartido: codigo del ultimo documento procesado en Ingest */
+  const [lastProcessedDocCode, setLastProcessedDocCode] = useState<string>('')
 
   /** Verificar conexion al montar */
   useEffect(() => {
@@ -145,7 +158,23 @@ export function TcdsRagClient() {
 
       {/* === CONTENIDO DE LA PESTANA ACTIVA === */}
       {activeTab === 'dashboard' && <DashboardTab token="" />}
-      {activeTab === 'ingest' && <IngestTab token="" />}
+      {activeTab === 'ingest' && (
+        <IngestTab
+          token=""
+          onProcessComplete={(chunksText, docCode) => {
+            setLastProcessedChunksText(chunksText)
+            setLastProcessedDocCode(docCode)
+          }}
+          onGoToExtract={() => setActiveTab('extract')}
+        />
+      )}
+      {activeTab === 'extract' && (
+        <ExtractTab
+          token=""
+          lastProcessedChunksText={lastProcessedChunksText}
+          lastProcessedDocCode={lastProcessedDocCode}
+        />
+      )}
       {activeTab === 'documents' && <DocumentsTab token="" />}
     </div>
   )
@@ -424,7 +453,17 @@ function DashboardTab({ token }: { token: string }) {
 /** Etapas del pipeline de ingesta */
 type IngestStage = 'idle' | 'analyzing' | 'analyzed' | 'processing' | 'processed' | 'saving' | 'saved'
 
-function IngestTab({ token }: { token: string }) {
+function IngestTab({
+  token,
+  onProcessComplete,
+  onGoToExtract,
+}: {
+  token: string
+  /** Callback para compartir el texto de chunks y codigo del documento procesado */
+  onProcessComplete: (chunksText: string, docCode: string) => void
+  /** Callback para navegar a la pestana Extraer */
+  onGoToExtract: () => void
+}) {
   /** Referencia al input de archivo oculto */
   const fileInputRef = useRef<HTMLInputElement>(null)
   /** Referencia al contenedor de logs para auto-scroll */
@@ -523,6 +562,10 @@ function IngestTab({ token }: { token: string }) {
       addLog(`>>> Procesamiento completo: ${result.chunks.length} chunks generados`)
       addLog(`   Codigo: ${result.semantic_info.official_code}`)
       addLog('   Revisa los chunks abajo. Pulsa "Guardar" para indexar.')
+
+      // Compartir texto de chunks y codigo con el componente padre para la pestana Extraer
+      const fullText = result.chunks.map((c) => c.content).join('\n\n---\n\n')
+      onProcessComplete(fullText, result.semantic_info.official_code)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error al procesar'
       setError(msg)
@@ -766,6 +809,25 @@ function IngestTab({ token }: { token: string }) {
             </div>
           )}
         </div>
+
+        {/* Sugerencia para extraer datos de aeronave despues de guardar */}
+        {isSaved && (
+          <div className="mt-4 flex items-center justify-between rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Plane className="h-4 w-4 text-sky-600" />
+              <span className="text-sm text-sky-800">
+                Documento procesado. ¿Extraer datos de aeronave?
+              </span>
+            </div>
+            <button
+              onClick={onGoToExtract}
+              className="flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-sky-700"
+            >
+              <Plane className="h-3 w-3" />
+              Ir a Extraer
+            </button>
+          </div>
+        )}
       </div>
 
       {/* --- Log de procesamiento (terminal) --- */}
@@ -842,7 +904,523 @@ function IngestTab({ token }: { token: string }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                      PESTANA 3: DOCUMENTS                                  */
+/*                 PESTANA 3: EXTRAER (Extraccion de datos de aeronaves)       */
+/* -------------------------------------------------------------------------- */
+
+/** Etapas del flujo de extraccion */
+type ExtractStage = 'select' | 'extracting' | 'review' | 'saving' | 'saved'
+
+function ExtractTab({
+  token,
+  lastProcessedChunksText,
+  lastProcessedDocCode,
+}: {
+  token: string
+  /** Texto de chunks del ultimo documento procesado en Ingest */
+  lastProcessedChunksText: string
+  /** Codigo del ultimo documento procesado en Ingest */
+  lastProcessedDocCode: string
+}) {
+  /** Etapa actual del flujo de extraccion */
+  const [stage, setStage] = useState<ExtractStage>('select')
+
+  /** Texto fuente para la extraccion (pegado o proveniente de Ingest) */
+  const [sourceText, setSourceText] = useState('')
+
+  /** Codigo del documento TCDS */
+  const [documentCode, setDocumentCode] = useState('')
+
+  /** Resultado de la extraccion por IA */
+  const [extractionResult, setExtractionResult] = useState<ExtractionResult | null>(null)
+
+  /** Variantes editables (el usuario puede eliminar filas antes de guardar) */
+  const [variants, setVariants] = useState<AircraftVariant[]>([])
+
+  /** Numero de variantes guardadas (para confirmacion) */
+  const [savedCount, setSavedCount] = useState(0)
+
+  /** Error actual */
+  const [error, setError] = useState<string | null>(null)
+
+  /** Usar datos del ultimo documento procesado en Ingest */
+  function handleUseLastProcessed() {
+    if (lastProcessedChunksText) {
+      setSourceText(lastProcessedChunksText)
+      setDocumentCode(lastProcessedDocCode)
+    }
+  }
+
+  /** Lanzar la extraccion por IA */
+  async function handleExtract() {
+    if (!sourceText.trim()) {
+      setError('No hay texto fuente para extraer. Pega texto o usa el ultimo documento procesado.')
+      return
+    }
+    setStage('extracting')
+    setError(null)
+
+    try {
+      const result = await ragExtractAircraft(sourceText, documentCode, token)
+      setExtractionResult(result)
+      setVariants(result.variants)
+      setStage('review')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error durante la extraccion'
+      setError(msg)
+      setStage('select')
+    }
+  }
+
+  /** Eliminar una variante de la lista antes de guardar */
+  function handleRemoveVariant(index: number) {
+    setVariants((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  /** Aprobar y guardar las variantes en la base de datos */
+  async function handleSave() {
+    if (variants.length === 0) {
+      setError('No hay variantes para guardar.')
+      return
+    }
+    setStage('saving')
+    setError(null)
+
+    try {
+      const result = await ragSaveAircraft(variants, token)
+      setSavedCount(result.saved)
+      setStage('saved')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al guardar'
+      setError(msg)
+      setStage('review')
+    }
+  }
+
+  /** Resetear todo para una nueva extraccion */
+  function handleReset() {
+    setStage('select')
+    setSourceText('')
+    setDocumentCode('')
+    setExtractionResult(null)
+    setVariants([])
+    setSavedCount(0)
+    setError(null)
+  }
+
+  /** Determinar estado para deshabilitar/habilitar botones */
+  const stageStr = stage as string
+  const isExtracting = stageStr === 'extracting'
+  const isReview = stageStr === 'review'
+  const isSaving = stageStr === 'saving'
+  const isSaved = stageStr === 'saved'
+
+  return (
+    <div className="space-y-6">
+      {/* === PASO 1: SELECCIONAR FUENTE === */}
+      {(stageStr === 'select' || stageStr === 'extracting') && (
+        <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+              <Plane className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-950">
+                Extraer datos de aeronave
+              </h3>
+              <p className="text-xs text-slate-500">
+                Usa IA para extraer datos estructurados de un TCDS
+              </p>
+            </div>
+          </div>
+
+          {/* Boton para usar el ultimo documento procesado */}
+          {lastProcessedChunksText && (
+            <div className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span className="text-sm text-emerald-800">
+                  Documento disponible: <strong>{lastProcessedDocCode || 'ultimo procesado'}</strong>
+                </span>
+              </div>
+              <button
+                onClick={handleUseLastProcessed}
+                disabled={isExtracting}
+                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+              >
+                <ClipboardPaste className="h-3 w-3" />
+                Usar este documento
+              </button>
+            </div>
+          )}
+
+          {/* Codigo del documento */}
+          <div className="mb-4">
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Codigo del documento TCDS
+            </label>
+            <input
+              type="text"
+              value={documentCode}
+              onChange={(e) => setDocumentCode(e.target.value)}
+              placeholder="Ej: EASA.A.064"
+              disabled={isExtracting}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-sky-300 focus:ring-1 focus:ring-sky-200 disabled:opacity-50"
+            />
+          </div>
+
+          {/* Area de texto para pegar contenido */}
+          <div className="mb-4">
+            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+              Texto fuente (contenido del TCDS)
+            </label>
+            <textarea
+              value={sourceText}
+              onChange={(e) => setSourceText(e.target.value)}
+              placeholder="Pega aqui el texto del TCDS o usa el boton de arriba para cargar el ultimo documento procesado..."
+              rows={8}
+              disabled={isExtracting}
+              className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs leading-relaxed text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-sky-300 focus:ring-1 focus:ring-sky-200 disabled:opacity-50"
+            />
+            {sourceText && (
+              <p className="mt-1 text-[10px] text-slate-400">
+                {sourceText.length.toLocaleString()} caracteres
+              </p>
+            )}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-600">
+              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          {/* Boton de extraccion */}
+          <button
+            onClick={handleExtract}
+            disabled={isExtracting || !sourceText.trim()}
+            className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-colors ${
+              sourceText.trim() && !isExtracting
+                ? 'bg-sky-600 text-white hover:bg-sky-700'
+                : 'cursor-not-allowed bg-slate-200 text-slate-400'
+            }`}
+          >
+            {isExtracting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Extrayendo datos con IA...
+              </>
+            ) : (
+              <>
+                <Plane className="h-4 w-4" />
+                Extraer datos de aeronave
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* === PASO 2: EXTRACCION EN PROGRESO (spinner) === */}
+      {isExtracting && (
+        <div className="rounded-[22px] border border-slate-200 bg-white p-10 text-center shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-sky-500" />
+          <p className="mt-4 text-sm font-medium text-slate-600">
+            Extrayendo datos con IA...
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            Analizando el contenido del TCDS para identificar variantes de aeronave
+          </p>
+        </div>
+      )}
+
+      {/* === PASO 3: REVISION DE DATOS EXTRAIDOS === */}
+      {(isReview || isSaving || isSaved) && extractionResult && (
+        <div className="space-y-5">
+          {/* Cabecera con informacion del TCDS */}
+          <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+                  <Plane className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-950">
+                    Datos extraidos del TCDS
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Revisa los datos antes de guardar en la base de datos
+                  </p>
+                </div>
+              </div>
+              {!isSaved && (
+                <button
+                  onClick={handleReset}
+                  className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Nueva extraccion
+                </button>
+              )}
+            </div>
+
+            {/* Informacion del TCDS y resumen */}
+            <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {documentCode && (
+                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Codigo TCDS
+                  </p>
+                  <p className="truncate text-sm font-medium text-slate-800">
+                    {documentCode}
+                  </p>
+                </div>
+              )}
+              {variants.length > 0 && variants[0].tcds_issue && (
+                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Issue
+                  </p>
+                  <p className="truncate text-sm font-medium text-slate-800">
+                    {variants[0].tcds_issue}
+                  </p>
+                </div>
+              )}
+              {variants.length > 0 && variants[0].tcds_date && (
+                <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Fecha
+                  </p>
+                  <p className="truncate text-sm font-medium text-slate-800">
+                    {variants[0].tcds_date}
+                  </p>
+                </div>
+              )}
+              <div className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+                  Variantes encontradas
+                </p>
+                <p className="text-sm font-bold text-sky-700">
+                  {variants.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Metadata de la extraccion */}
+            <div className="flex items-center gap-4 text-[10px] text-slate-400">
+              <span>Modelo IA: {extractionResult.model_used}</span>
+              <span>Tokens: {extractionResult.tokens_used.toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Tabla de variantes */}
+          <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <h3 className="mb-4 text-sm font-semibold text-slate-950">
+              Variantes de aeronave
+              <span className="ml-2 text-xs font-normal text-slate-400">
+                ({variants.length} {variants.length === 1 ? 'variante' : 'variantes'})
+              </span>
+            </h3>
+
+            {variants.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[900px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Modelo
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Fabricante
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Motor
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        MTOW (kg)
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        MLW (kg)
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-50 rounded-t-lg">
+                        Regulacion Base
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Categoria
+                      </th>
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        MSN Elegibles
+                      </th>
+                      {/* Columna de acciones solo si no se ha guardado todavia */}
+                      {!isSaved && (
+                        <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                          {/* Sin titulo, solo icono de eliminar */}
+                        </th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {variants.map((v, i) => (
+                      <tr
+                        key={i}
+                        className="border-b border-slate-100 transition-colors hover:bg-slate-50"
+                      >
+                        <td className="px-3 py-2.5 font-medium text-slate-900">
+                          {v.modelo || '--'}
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-600">
+                          {v.fabricante || '--'}
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-600">
+                          <span className="max-w-[180px] truncate block" title={v.motor}>
+                            {v.motor || '--'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-600 tabular-nums">
+                          {v.mtow_kg != null ? v.mtow_kg.toLocaleString() : '--'}
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-600 tabular-nums">
+                          {v.mlw_kg != null ? v.mlw_kg.toLocaleString() : '--'}
+                        </td>
+                        {/* Columna destacada: Regulacion Base */}
+                        <td className="px-3 py-2.5 bg-amber-50">
+                          <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                            {v.regulacion_base || '--'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-600">
+                          {v.categoria || '--'}
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-600">
+                          <span className="max-w-[140px] truncate block text-xs" title={v.msn_elegibles}>
+                            {v.msn_elegibles || '--'}
+                          </span>
+                        </td>
+                        {/* Boton de eliminar fila */}
+                        {!isSaved && (
+                          <td className="px-3 py-2.5">
+                            <button
+                              onClick={() => handleRemoveVariant(i)}
+                              disabled={isSaving}
+                              className="flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                              title="Eliminar variante"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10">
+                <Plane className="h-6 w-6 text-slate-300" />
+                <p className="text-sm text-slate-400">
+                  No hay variantes para mostrar. Se han eliminado todas las filas.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Notas de las variantes (si hay) */}
+          {variants.some((v) => v.notas) && (
+            <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <h3 className="mb-3 text-sm font-semibold text-slate-950">
+                Notas adicionales
+              </h3>
+              <div className="space-y-2">
+                {variants
+                  .filter((v) => v.notas)
+                  .map((v, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5"
+                    >
+                      <span className="text-xs font-semibold text-sky-600">
+                        {v.modelo}:
+                      </span>{' '}
+                      <span className="text-xs text-slate-600">{v.notas}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-600">
+              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          {/* === PASO 4: BOTONES DE ACCION === */}
+          {!isSaved && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSave}
+                disabled={isSaving || variants.length === 0}
+                className={`flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                  variants.length > 0 && !isSaving
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700'
+                    : 'cursor-not-allowed bg-slate-200 text-slate-400'
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Aprobar y guardar en Base de Datos
+                  </>
+                )}
+              </button>
+              <span className="text-xs text-slate-400">
+                {variants.length} {variants.length === 1 ? 'variante' : 'variantes'} para guardar
+              </span>
+            </div>
+          )}
+
+          {/* Confirmacion de guardado exitoso */}
+          {isSaved && (
+            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50 p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-100 text-emerald-700">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-emerald-800">
+                      {savedCount} {savedCount === 1 ? 'variante guardada' : 'variantes guardadas'} en doa_aeronaves
+                    </h3>
+                    <p className="text-xs text-emerald-600">
+                      Los datos han sido aprobados y almacenados correctamente
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="flex items-center gap-1 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Nueva extraccion
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*                      PESTANA 4: DOCUMENTS                                  */
 /* -------------------------------------------------------------------------- */
 
 function DocumentsTab({ token }: { token: string }) {

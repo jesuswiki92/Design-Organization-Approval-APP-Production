@@ -172,6 +172,38 @@ SOLUCION:
     - rag-backend/api/server.py
     - app/(dashboard)/tools/tcds-rag/TcdsRagClient.tsx
 
+--------------------------------------------------------------------------------
+FALLO #008 | 2026-04-05 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  Al guardar chunks, Supabase devolvia error 401 con RLS:
+  "new row violates row-level security policy for table doa_tcds_embeddings"
+  Despues de corregir la key, nuevo error 401:
+  "None of the keys was able to decode the JWT"
+
+CAUSA:
+  Dos problemas encadenados:
+  1. El backend usaba la anon key para insertar. La anon key no tiene
+     permisos de INSERT por las politicas RLS de la tabla.
+  2. La SUPABASE_SERVICE_ROLE_KEY en .env y .env.local era de una instancia
+     local de Supabase (iss: "supabase-local") en vez del proyecto de
+     produccion (iss: "supabase", ref: "gterzsoapepzozgqbljk"). PostgREST
+     no podia decodificar el JWT porque estaba firmado con otra clave.
+
+SOLUCION:
+  1. Se configuro supabase_client.py para usar SUPABASE_SERVICE_ROLE_KEY
+     en el header Authorization (bypasa RLS)
+  2. Se reemplazo la key local por la key real de produccion obtenida del
+     dashboard de Supabase (Settings > API > service_role)
+  3. Se actualizo tanto rag-backend/.env como .env.local
+
+  Archivos modificados:
+    - rag-backend/.env
+    - rag-backend/.env.example
+    - rag-backend/config/settings.py
+    - rag-backend/database/supabase_client.py
+    - .env.local
+
 ================================================================================
   FIN DEL REGISTRO
   Ultima actualizacion: 2026-04-05

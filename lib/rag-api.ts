@@ -448,3 +448,71 @@ export async function ragDeleteSession(
     token
   )
 }
+
+/* -------------------------------------------------------------------------- */
+/*                   EXTRACCION DE DATOS DE AERONAVES                         */
+/* -------------------------------------------------------------------------- */
+
+/** Variante de aeronave extraida de un TCDS */
+export interface AircraftVariant {
+  tcds_code: string
+  tcds_code_short: string
+  tcds_issue: string
+  tcds_date: string
+  fabricante: string
+  pais: string
+  tipo: string
+  modelo: string
+  msn_elegibles: string
+  motor: string
+  mtow_kg: number | null
+  mlw_kg: number | null
+  regulacion_base: string
+  categoria: string
+  notas: string
+}
+
+/** Resultado de la extraccion de datos de aeronaves por IA */
+export interface ExtractionResult {
+  variants: AircraftVariant[]
+  model_used: string
+  tokens_used: number
+}
+
+/**
+ * Extrae datos estructurados de aeronaves del texto del TCDS usando IA.
+ * Envia el texto completo de los chunks al backend, que utiliza un LLM
+ * para identificar y estructurar las variantes de aeronave.
+ */
+export async function ragExtractAircraft(
+  chunksText: string,
+  documentCode: string,
+  token: string
+): Promise<ExtractionResult> {
+  return ragFetch<ExtractionResult>(
+    '/api/extract/aircraft',
+    {
+      method: 'POST',
+      body: JSON.stringify({ chunks_text: chunksText, document_code: documentCode }),
+    },
+    token
+  )
+}
+
+/**
+ * Guarda las variantes de aeronave aprobadas en la tabla doa_aeronaves.
+ * Solo se llama despues de que el usuario revise y apruebe los datos extraidos.
+ */
+export async function ragSaveAircraft(
+  variants: AircraftVariant[],
+  token: string
+): Promise<{ saved: number }> {
+  return ragFetch<{ saved: number }>(
+    '/api/extract/aircraft/save',
+    {
+      method: 'POST',
+      body: JSON.stringify({ variants }),
+    },
+    token
+  )
+}
