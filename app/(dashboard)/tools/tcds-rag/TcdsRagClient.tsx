@@ -19,6 +19,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard,
   Upload,
@@ -93,8 +94,15 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
  */
 
 export function TcdsRagClient() {
-  /** Pestana activa */
-  const [activeTab, setActiveTab] = useState<TabId>('dashboard')
+  /** Leer parametro ?tab= de la URL para preseleccionar la pestana */
+  const searchParams = useSearchParams()
+
+  /** Pestana activa — se inicializa desde la URL si el valor es valido */
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const tabParam = searchParams.get('tab') as TabId | null
+    const validTabs: TabId[] = ['dashboard', 'ingest', 'extract', 'documents']
+    return tabParam && validTabs.includes(tabParam) ? tabParam : 'dashboard'
+  })
 
   /** Indica si el servidor esta conectado */
   const [isConnected, setIsConnected] = useState<boolean | null>(null)

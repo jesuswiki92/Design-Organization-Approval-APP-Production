@@ -25,6 +25,7 @@
  */
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle2, ChevronDown, Plane } from 'lucide-react'
 
 /** Tipo para cada variante de aeronave encontrada en doa_aeronaves */
@@ -181,6 +182,8 @@ export function TcdsStatusBanner({
   fallbackUsed,
   aircraftModel,
 }: TcdsStatusBannerProps) {
+  // Router para navegacion programatica
+  const router = useRouter()
   // Estado para controlar la expansion de la tabla completa de variantes
   const [allVariantsExpanded, setAllVariantsExpanded] = useState(false)
   // Estado para el modo sin coincidencia exacta (mostrar todas expandidas por defecto)
@@ -397,11 +400,10 @@ export function TcdsStatusBanner({
             </p>
           )}
 
-          {/* Boton placeholder para futura ingesta de TCDS */}
-          {/* TODO: Conectar con pipeline de ingesta de TCDS */}
+          {/* Boton que navega al TCDS RAG Engine con la pestana de ingesta preseleccionada */}
           <button
             type="button"
-            onClick={() => {}}
+            onClick={() => router.push('/tools/tcds-rag?tab=ingest')}
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-sky-700 active:bg-sky-800"
           >
             Ingestar y tramitar TCDS
