@@ -205,6 +205,99 @@ SOLUCION:
     - .env.local
 
 ================================================================================
+  LECCIONES APRENDIDAS Y PREVENCION PARA PRODUCCION
+  Extraidas de los 8 fallos encontrados durante el desarrollo
+================================================================================
+
+  Las siguientes reglas se deben aplicar ANTES de desplegar en produccion
+  para evitar que el cliente final experimente estos mismos problemas.
+
+--------------------------------------------------------------------------------
+LECCION #1: ENCODING WINDOWS (Fallo #001)
+--------------------------------------------------------------------------------
+REGLA: Nunca usar emojis ni caracteres Unicode especiales en print/log de Python
+PREVENCION:
+  - Usar solo ASCII en logs: [OK], [X], [WARN], [>], [*]
+  - Incluir siempre en el entry point:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+  - Testear SIEMPRE en Windows antes de entregar
+
+--------------------------------------------------------------------------------
+LECCION #2: CORS Y PRIVATE NETWORK (Fallo #002)
+--------------------------------------------------------------------------------
+REGLA: Configurar CORS con TODOS los origenes posibles desde el inicio
+PREVENCION:
+  - Incluir todos los puertos dev (3000, 3010, etc.) en ALLOWED_ORIGINS
+  - SIEMPRE activar allow_private_network=True en CORSMiddleware
+  - En produccion: usar el dominio real del frontend como unico origen
+  - Testear CORS con curl antes de integrar con el frontend:
+    curl -X OPTIONS -H "Origin: http://..." -H
+    "Access-Control-Request-Method: GET" http://backend/api/health -i
+
+--------------------------------------------------------------------------------
+LECCION #3: ERRORES SILENCIOSOS (Fallo #007)
+--------------------------------------------------------------------------------
+REGLA: Nunca devolver HTTP 200 si la operacion realmente fallo
+PREVENCION:
+  - El backend SIEMPRE debe devolver el codigo HTTP correcto (500 si falla)
+  - El frontend SIEMPRE debe verificar el contenido de la respuesta, no solo
+    el status code
+  - Incluir contadores en las respuestas: {"successful": N, "failed": M}
+  - El frontend debe comprobar successful > 0 antes de mostrar exito
+  - Regla de oro: si el usuario ve "guardado", los datos DEBEN estar en la DB
+
+--------------------------------------------------------------------------------
+LECCION #4: CREDENCIALES Y JWT (Fallo #008)
+--------------------------------------------------------------------------------
+REGLA: Verificar credenciales contra el entorno correcto antes de usar
+PREVENCION:
+  - La SUPABASE_SERVICE_ROLE_KEY debe ser del proyecto de PRODUCCION
+  - Nunca copiar keys de instancias locales de Supabase a produccion
+  - Verificar el JWT decodificando: debe tener iss="supabase" y el ref
+    correcto del proyecto
+  - Para operaciones de escritura (INSERT/UPDATE/DELETE), usar
+    service_role key, nunca anon key
+  - Documentar en .env.example cual es cada key y de donde sacarla
+
+--------------------------------------------------------------------------------
+LECCION #5: FORMATO DE DATOS PARA APIs (Fallo #007)
+--------------------------------------------------------------------------------
+REGLA: Verificar el formato esperado por la API antes de enviar datos
+PREVENCION:
+  - PostgREST requiere vectores como string "[0.1,0.2,...]", no como
+    array JSON nativo [0.1, 0.2, ...]
+  - Siempre leer la documentacion de la API destino
+  - Hacer una prueba unitaria con un INSERT de 1 solo registro antes
+    de implementar batch inserts
+  - Testear con curl directamente contra Supabase PostgREST
+
+--------------------------------------------------------------------------------
+LECCION #6: REINICIO DEL BACKEND (Fallos #001, #002, #008)
+--------------------------------------------------------------------------------
+REGLA: Despues de CUALQUIER cambio en el backend, REINICIAR el proceso
+PREVENCION:
+  - El backend Python (uvicorn) NO recarga .env automaticamente
+  - Despues de cambiar .env, settings.py o cualquier .py: REINICIAR
+  - Verificar que el proceso viejo esta muerto antes de iniciar uno nuevo
+    (netstat -ano | grep PUERTO)
+  - Nunca asumir que "ya esta aplicado" sin verificar
+
+--------------------------------------------------------------------------------
+CHECKLIST PRE-PRODUCCION
+--------------------------------------------------------------------------------
+  [ ] Todos los .env tienen credenciales de produccion (no locales)
+  [ ] CORS configurado con dominio(s) real(es) del frontend
+  [ ] allow_private_network=True si frontend y backend estan en la misma red
+  [ ] Sin emojis en logs de Python
+  [ ] Encoding UTF-8 forzado en entry point
+  [ ] Backend devuelve HTTP 500 cuando operaciones fallan
+  [ ] Frontend verifica datos de respuesta, no solo status code
+  [ ] service_role key para escrituras en Supabase
+  [ ] Testear INSERT de 1 registro antes de batch
+  [ ] Testear CORS con curl antes de integrar
+  [ ] Testear en Windows si el backend corre en Windows
+
+================================================================================
   FIN DEL REGISTRO
   Ultima actualizacion: 2026-04-05
 ================================================================================
