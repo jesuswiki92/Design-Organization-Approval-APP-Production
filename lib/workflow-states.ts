@@ -39,10 +39,16 @@ import type {
 // Codigos de los estados posibles en el tablero de cotizaciones.
 // Cada constante representa una columna del tablero Kanban.
 export const QUOTATION_BOARD_STATES = {
-  ENTRADA_RECIBIDA: 'entrada_recibida',       // Acaba de llegar una consulta comercial
-  TRIAGE: 'triage',                             // Se clasifica la urgencia y el tipo de trabajo
-  ALCANCE_DEFINIDO: 'alcance_definido',         // Ya se sabe exactamente que se va a cotizar
-  OFERTA_EN_REDACCION: 'oferta_en_redaccion',   // Se esta escribiendo la propuesta/cotizacion
+  ENTRADA_RECIBIDA: 'entrada_recibida',           // Acaba de llegar una consulta comercial
+  FORMULARIO_ENVIADO: 'formulario_enviado',       // Formulario enviado al cliente, esperando respuesta
+  FORMULARIO_RECIBIDO: 'formulario_recibido',     // Formulario recibido del cliente, pendiente de revision
+  DEFINIR_ALCANCE: 'definir_alcance',             // Se esta definiendo el alcance del trabajo
+  ALCANCE_DEFINIDO: 'alcance_definido',           // Alcance definido, preparar oferta comercial
+  OFERTA_EN_REVISION: 'oferta_en_revision',       // Oferta preparada, en revision interna
+  OFERTA_ENVIADA: 'oferta_enviada',               // Oferta enviada al cliente
+  OFERTA_ACEPTADA: 'oferta_aceptada',             // El cliente acepto la oferta
+  OFERTA_RECHAZADA: 'oferta_rechazada',           // El cliente rechazo la oferta
+  REVISION_FINAL: 'revision_final',               // Revision final antes de abrir proyecto
 } as const
 
 // Tipo que representa cualquier estado valido del tablero de cotizaciones
@@ -73,32 +79,86 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     border: 'border-sky-200',
     dot: 'bg-sky-500',
   },
-  triage: {
-    label: 'Triage',
-    shortLabel: 'Triage',
-    description: 'Revisión inicial para clasificar urgencia y contexto',
+  formulario_enviado: {
+    label: 'Formulario enviado. Esperando respuesta',
+    shortLabel: 'Enviado',
+    description: 'Se envió el formulario al cliente, pendiente de respuesta',
     color: 'text-cyan-700',
     bg: 'bg-cyan-50',
     border: 'border-cyan-200',
     dot: 'bg-cyan-500',
   },
-  alcance_definido: {
-    label: 'Alcance definido',
+  formulario_recibido: {
+    label: 'Formulario recibido. Revisar',
+    shortLabel: 'Revisar',
+    description: 'El cliente respondió el formulario, pendiente de revisión interna',
+    color: 'text-teal-700',
+    bg: 'bg-teal-50',
+    border: 'border-teal-200',
+    dot: 'bg-teal-500',
+  },
+  definir_alcance: {
+    label: 'Definir alcance',
     shortLabel: 'Alcance',
-    description: 'El alcance ya está clarificado y listo para estimar',
+    description: 'Se está definiendo el alcance técnico y comercial del trabajo',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  oferta_en_redaccion: {
-    label: 'Oferta en redaccion',
-    shortLabel: 'Redaccion',
-    description: 'Se está construyendo la cotización o propuesta comercial',
+  alcance_definido: {
+    label: 'Alcance definido. Preparar oferta',
+    shortLabel: 'Preparar',
+    description: 'Alcance clarificado, se procede a preparar la oferta comercial',
+    color: 'text-green-700',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    dot: 'bg-green-500',
+  },
+  oferta_en_revision: {
+    label: 'Oferta preparada. Revisar',
+    shortLabel: 'Revisión',
+    description: 'La oferta está redactada y pendiente de revisión interna',
     color: 'text-amber-700',
     bg: 'bg-amber-50',
     border: 'border-amber-200',
     dot: 'bg-amber-500',
+  },
+  oferta_enviada: {
+    label: 'Oferta enviada a cliente',
+    shortLabel: 'Enviada',
+    description: 'La oferta comercial fue enviada al cliente, esperando respuesta',
+    color: 'text-violet-700',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    dot: 'bg-violet-500',
+  },
+  oferta_aceptada: {
+    label: 'Oferta aceptada',
+    shortLabel: 'Aceptada',
+    description: 'El cliente aceptó la oferta comercial',
+    color: 'text-indigo-700',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    dot: 'bg-indigo-500',
+  },
+  oferta_rechazada: {
+    label: 'Oferta rechazada',
+    shortLabel: 'Rechazada',
+    description: 'El cliente rechazó la oferta comercial',
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    dot: 'bg-slate-500',
+  },
+  revision_final: {
+    label: 'Revisión final. Abrir Proyecto',
+    shortLabel: 'Final',
+    description: 'Revisión final antes de crear el proyecto de ingeniería',
+    color: 'text-rose-700',
+    bg: 'bg-rose-50',
+    border: 'border-rose-200',
+    dot: 'bg-rose-500',
   },
 }
 

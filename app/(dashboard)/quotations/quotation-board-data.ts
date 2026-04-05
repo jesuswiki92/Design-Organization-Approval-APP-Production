@@ -25,16 +25,16 @@ function isArchivedIncomingState(state: string | null | undefined) {
  * en lugar de dos scopes separados.
  *
  * Mapeo:
- *   nuevo              → entrada_recibida     (consulta acaba de llegar)
- *   esperando_formulario → triage              (formulario enviado, clasificando)
- *   formulario_recibido  → alcance_definido    (formulario recibido, definiendo alcance)
+ *   nuevo                → entrada_recibida     (consulta acaba de llegar)
+ *   esperando_formulario → formulario_enviado    (formulario enviado, esperando respuesta)
+ *   formulario_recibido  → formulario_recibido   (formulario recibido, revisar)
  */
 function mapIncomingStateToQuotationLane(state: IncomingQueryStatus): QuotationBoardState {
   switch (state) {
     case 'esperando_formulario':
-      return 'triage'
+      return 'formulario_enviado'
     case 'formulario_recibido':
-      return 'alcance_definido'
+      return 'formulario_recibido'
     case 'nuevo':
     default:
       return 'entrada_recibida'
@@ -140,9 +140,15 @@ const ACCENTS: QuotationLaneAccent[] = [
 
 const EMPTY_QUOTATION_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
   entrada_recibida: [],
-  triage: [],
+  formulario_enviado: [],
+  formulario_recibido: [],
+  definir_alcance: [],
   alcance_definido: [],
-  oferta_en_redaccion: [],
+  oferta_en_revision: [],
+  oferta_enviada: [],
+  oferta_aceptada: [],
+  oferta_rechazada: [],
+  revision_final: [],
 }
 
 function createId(prefix: string) {
