@@ -10,9 +10,9 @@
  * 2. CONSULTAS ENTRANTES (Incoming Queries): Los estados por los que pasa una
  *    consulta de un cliente desde que se recibe hasta que se archiva.
  *
- * 3. PROYECTOS DE INGENIERIA: Los estados operativos de un proyecto (desde OP-00
- *    hasta OP-13), mas los estados "legacy" (antiguos) que se conservan por
- *    compatibilidad con datos existentes.
+ * 3. PROYECTOS DE INGENIERIA: Los estados simplificados de un proyecto (nuevo,
+ *    en_progreso, revision, aprobacion, entregado, cerrado), mas los estados
+ *    "legacy" (antiguos) que se conservan por compatibilidad con datos existentes.
  *
  * Para cada tipo de estado se define:
  * - Los codigos posibles (por ejemplo: "entrada_recibida", "triage", etc.)
@@ -242,29 +242,20 @@ export function getAllowedConsultaTransitions(current: string): EstadoConsulta[]
 
 // ==========================================
 // ESTADOS DE PROYECTOS DE INGENIERIA
-// Estos son los estados operativos por los que pasa un proyecto de certificacion.
-// Van desde OP-00 (prepago) hasta OP-13 (facturado).
-// Tambien se conservan los estados "legacy" (del sistema antiguo) para
+// Flujo simplificado de estados de proyecto.
+// Los proyectos pasan por 6 fases generales desde su creacion hasta su cierre.
+// Se conservan los estados "legacy" (del sistema antiguo) para
 // compatibilidad con proyectos que aun tienen esos estados en la base de datos.
 // ==========================================
 
-// Lista ordenada de todos los estados operativos de un proyecto (flujo nuevo).
-// El prefijo "op_XX" indica la fase del proyecto en orden cronologico.
+// Lista ordenada de todos los estados de un proyecto (flujo simplificado).
 export const PROJECT_WORKFLOW_STATES = [
-  'op_00_prepay',               // OP-00: Pendiente de pago inicial
-  'op_01_data_collection',      // OP-01: Recopilando datos del cliente
-  'op_02_pending_info',         // OP-02: Esperando informacion adicional
-  'op_03_pending_tests',        // OP-03: Esperando resultados de ensayos/pruebas
-  'op_04_under_evaluation',     // OP-04: Evaluacion tecnica en curso
-  'op_05_in_work',              // OP-05: Trabajo de ingenieria en progreso
-  'op_06_customer_review',      // OP-06: El cliente esta revisando los entregables
-  'op_07_internal_review',      // OP-07: Revision interna del equipo DOA
-  'op_08_pending_signature',    // OP-08: Pendiente de firma del responsable
-  'op_09_pending_authority',    // OP-09: Pendiente de aprobacion de la autoridad (AESA/EASA)
-  'op_10_ready_for_delivery',   // OP-10: Listo para entregar al cliente
-  'op_11_delivered',            // OP-11: Entregado al cliente
-  'op_12_closed',               // OP-12: Proyecto cerrado
-  'op_13_invoiced',             // OP-13: Proyecto facturado (fin del ciclo)
+  'nuevo',          // Proyecto recien creado
+  'en_progreso',    // Trabajo de ingenieria en curso
+  'revision',       // En proceso de revision tecnica
+  'aprobacion',     // Pendiente de aprobacion
+  'entregado',      // Documentacion entregada al cliente
+  'cerrado',        // Proyecto completado y cerrado
 ] as const satisfies readonly EstadoProyectoWorkflow[]
 
 // Estados que se muestran en la vista de portafolio de proyectos
@@ -284,7 +275,6 @@ const PROJECT_LEGACY_BRIDGE_STATES = [
   'pendiente_aprobacion_easa',     // Pendiente de aprobacion EASA (antiguo)
   'en_pausa',                      // Proyecto pausado (antiguo)
   'cancelado',                     // Proyecto cancelado (antiguo)
-  'cerrado',                       // Proyecto cerrado (antiguo)
   'guardado_en_base_de_datos',     // Solo guardado como registro (antiguo)
 ] as const satisfies readonly EstadoProyectoLegacy[]
 
@@ -298,121 +288,57 @@ type WorkflowConfig = {
   dot: string          // Color del punto indicador
 }
 
-// Configuracion visual de cada estado operativo de proyecto (flujo nuevo).
+// Configuracion visual de cada estado de proyecto (flujo simplificado).
 // Define como se muestra cada estado en el tablero y las listas de la app.
 // Cada estado tiene un color diferente para identificarlo visualmente.
 export const PROJECT_STATE_CONFIG: Record<EstadoProyectoWorkflow, WorkflowConfig> = {
-  op_00_prepay: {
-    label: 'OP-00 Prepay',
-    shortLabel: 'OP-00',
-    color: 'text-slate-700',
-    bg: 'bg-slate-50',
-    border: 'border-slate-200',
-    dot: 'bg-slate-500',
+  nuevo: {
+    label: 'Nuevo',
+    shortLabel: 'Nuevo',
+    color: 'text-green-700',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    dot: 'bg-green-500',
   },
-  op_01_data_collection: {
-    label: 'OP-01 Data collection',
-    shortLabel: 'OP-01',
-    color: 'text-sky-700',
-    bg: 'bg-sky-50',
-    border: 'border-sky-200',
-    dot: 'bg-sky-500',
-  },
-  op_02_pending_info: {
-    label: 'OP-02 Pending info',
-    shortLabel: 'OP-02',
-    color: 'text-amber-700',
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    dot: 'bg-amber-500',
-  },
-  op_03_pending_tests: {
-    label: 'OP-03 Pending tests',
-    shortLabel: 'OP-03',
-    color: 'text-orange-700',
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    dot: 'bg-orange-500',
-  },
-  op_04_under_evaluation: {
-    label: 'OP-04 Under evaluation',
-    shortLabel: 'OP-04',
+  en_progreso: {
+    label: 'En Progreso',
+    shortLabel: 'Progreso',
     color: 'text-blue-700',
     bg: 'bg-blue-50',
     border: 'border-blue-200',
     dot: 'bg-blue-500',
   },
-  op_05_in_work: {
-    label: 'OP-05 In work',
-    shortLabel: 'OP-05',
-    color: 'text-cyan-700',
-    bg: 'bg-cyan-50',
-    border: 'border-cyan-200',
-    dot: 'bg-cyan-500',
+  revision: {
+    label: 'Revision',
+    shortLabel: 'Revision',
+    color: 'text-amber-700',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    dot: 'bg-amber-500',
   },
-  op_06_customer_review: {
-    label: 'OP-06 Customer review',
-    shortLabel: 'OP-06',
-    color: 'text-violet-700',
-    bg: 'bg-violet-50',
-    border: 'border-violet-200',
-    dot: 'bg-violet-500',
-  },
-  op_07_internal_review: {
-    label: 'OP-07 Internal review',
-    shortLabel: 'OP-07',
-    color: 'text-indigo-700',
-    bg: 'bg-indigo-50',
-    border: 'border-indigo-200',
-    dot: 'bg-indigo-500',
-  },
-  op_08_pending_signature: {
-    label: 'OP-08 Pending signature',
-    shortLabel: 'OP-08',
-    color: 'text-fuchsia-700',
-    bg: 'bg-fuchsia-50',
-    border: 'border-fuchsia-200',
-    dot: 'bg-fuchsia-500',
-  },
-  op_09_pending_authority: {
-    label: 'OP-09 Pending authority',
-    shortLabel: 'OP-09',
+  aprobacion: {
+    label: 'Aprobacion',
+    shortLabel: 'Aprobacion',
     color: 'text-purple-700',
     bg: 'bg-purple-50',
     border: 'border-purple-200',
     dot: 'bg-purple-500',
   },
-  op_10_ready_for_delivery: {
-    label: 'OP-10 Ready for delivery',
-    shortLabel: 'OP-10',
+  entregado: {
+    label: 'Entregado',
+    shortLabel: 'Entregado',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  op_11_delivered: {
-    label: 'OP-11 Delivered',
-    shortLabel: 'OP-11',
-    color: 'text-teal-700',
-    bg: 'bg-teal-50',
-    border: 'border-teal-200',
-    dot: 'bg-teal-500',
-  },
-  op_12_closed: {
-    label: 'OP-12 Closed',
-    shortLabel: 'OP-12',
+  cerrado: {
+    label: 'Cerrado',
+    shortLabel: 'Cerrado',
     color: 'text-slate-700',
     bg: 'bg-slate-100',
     border: 'border-slate-200',
     dot: 'bg-slate-500',
-  },
-  op_13_invoiced: {
-    label: 'OP-13 Invoiced',
-    shortLabel: 'OP-13',
-    color: 'text-emerald-800',
-    bg: 'bg-emerald-100',
-    border: 'border-emerald-300',
-    dot: 'bg-emerald-600',
   },
 }
 
@@ -420,7 +346,7 @@ export const PROJECT_STATE_CONFIG: Record<EstadoProyectoWorkflow, WorkflowConfig
 // Todos se muestran en gris (slate) para distinguirlos de los estados operativos nuevos.
 const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> = {
   oferta: {
-    label: 'Legacy · Oferta',
+    label: 'Legacy - Oferta',
     shortLabel: 'Legacy oferta',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -428,7 +354,7 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     dot: 'bg-slate-400',
   },
   activo: {
-    label: 'Legacy · Activo',
+    label: 'Legacy - Activo',
     shortLabel: 'Legacy activo',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -436,7 +362,7 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     dot: 'bg-slate-400',
   },
   en_revision: {
-    label: 'Legacy · En revision',
+    label: 'Legacy - En revision',
     shortLabel: 'Legacy revision',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -444,7 +370,7 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     dot: 'bg-slate-400',
   },
   pendiente_aprobacion_cve: {
-    label: 'Legacy · Pendiente CVE',
+    label: 'Legacy - Pendiente CVE',
     shortLabel: 'Legacy CVE',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -452,7 +378,7 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     dot: 'bg-slate-400',
   },
   pendiente_aprobacion_easa: {
-    label: 'Legacy · Pendiente authority',
+    label: 'Legacy - Pendiente authority',
     shortLabel: 'Legacy authority',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -460,7 +386,7 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     dot: 'bg-slate-400',
   },
   en_pausa: {
-    label: 'Legacy · En pausa',
+    label: 'Legacy - En pausa',
     shortLabel: 'Legacy pausa',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -468,23 +394,15 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     dot: 'bg-slate-400',
   },
   cancelado: {
-    label: 'Legacy · Cancelado',
+    label: 'Legacy - Cancelado',
     shortLabel: 'Legacy cancelado',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  cerrado: {
-    label: 'Legacy · Cerrado',
-    shortLabel: 'Legacy cerrado',
-    color: 'text-slate-600',
-    bg: 'bg-slate-100',
-    border: 'border-slate-300',
-    dot: 'bg-slate-400',
-  },
   guardado_en_base_de_datos: {
-    label: 'Legacy · Base de datos',
+    label: 'Legacy - Base de datos',
     shortLabel: 'Legacy base',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -493,72 +411,56 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
   },
 }
 
-// Transiciones permitidas entre estados de proyecto (flujo nuevo).
+// Transiciones permitidas entre estados de proyecto (flujo simplificado).
 // Define las reglas de negocio: desde cada estado, solo se puede avanzar
-// a ciertos estados especificos. Por ejemplo, desde OP-05 (en trabajo)
-// se puede ir a OP-02 (esperando info), OP-03 (esperando ensayos),
-// OP-06 (revision del cliente) o OP-07 (revision interna).
+// a ciertos estados especificos. El flujo es lineal con posibilidad de
+// retroceder en algunos casos.
 const PROJECT_TRANSITIONS: Record<EstadoProyecto, EstadoProyecto[]> = {
-  op_00_prepay: ['op_01_data_collection'],
-  op_01_data_collection: ['op_02_pending_info', 'op_03_pending_tests', 'op_04_under_evaluation'],
-  op_02_pending_info: ['op_01_data_collection', 'op_04_under_evaluation'],
-  op_03_pending_tests: ['op_04_under_evaluation'],
-  op_04_under_evaluation: ['op_02_pending_info', 'op_03_pending_tests', 'op_05_in_work'],
-  op_05_in_work: ['op_02_pending_info', 'op_03_pending_tests', 'op_06_customer_review', 'op_07_internal_review'],
-  op_06_customer_review: ['op_05_in_work', 'op_07_internal_review'],
-  op_07_internal_review: ['op_05_in_work', 'op_08_pending_signature'],
-  op_08_pending_signature: ['op_05_in_work', 'op_09_pending_authority', 'op_10_ready_for_delivery'],
-  op_09_pending_authority: ['op_05_in_work', 'op_10_ready_for_delivery'],
-  op_10_ready_for_delivery: ['op_11_delivered'],
-  op_11_delivered: ['op_12_closed'],
-  op_12_closed: ['op_13_invoiced'],
-  op_13_invoiced: [],
+  nuevo: ['en_progreso'],
+  en_progreso: ['revision', 'aprobacion'],
+  revision: ['en_progreso', 'aprobacion'],
+  aprobacion: ['revision', 'entregado'],
+  entregado: ['cerrado'],
+  cerrado: [],
 }
 
 // Transiciones desde estados legacy hacia estados del nuevo flujo de trabajo.
 // Esto permite "migrar" un proyecto del sistema antiguo al nuevo.
-// Por ejemplo, un proyecto en estado "activo" (legacy) puede moverse a OP-05 (en trabajo).
 const PROJECT_LEGACY_TRANSITIONS: Partial<Record<EstadoProyectoLegacy, EstadoProyecto[]>> = {
-  oferta: ['op_00_prepay'],
-  guardado_en_base_de_datos: ['op_01_data_collection'],
-  activo: ['op_05_in_work'],
-  en_revision: ['op_07_internal_review'],
-  pendiente_aprobacion_cve: ['op_08_pending_signature'],
-  pendiente_aprobacion_easa: ['op_09_pending_authority'],
-  en_pausa: ['op_02_pending_info', 'op_03_pending_tests', 'op_05_in_work'],
-  cerrado: ['op_12_closed'],
+  oferta: ['nuevo'],
+  guardado_en_base_de_datos: ['nuevo'],
+  activo: ['en_progreso'],
+  en_revision: ['revision'],
+  pendiente_aprobacion_cve: ['aprobacion'],
+  pendiente_aprobacion_easa: ['aprobacion'],
+  en_pausa: ['nuevo', 'en_progreso'],
   cancelado: [],
 }
 
 // Mapeo automatico de estados legacy a su equivalente en el nuevo flujo.
-// Se usa para saber "a que fase operativa corresponde" un proyecto antiguo.
-// Por ejemplo, un proyecto "activo" (legacy) equivale a OP-05 (en trabajo).
+// Se usa para saber "a que fase corresponde" un proyecto antiguo.
 const PROJECT_LEGACY_TO_WORKFLOW: Partial<Record<EstadoProyectoLegacy, EstadoProyecto>> = {
-  oferta: 'op_00_prepay',
-  guardado_en_base_de_datos: 'op_01_data_collection',
-  activo: 'op_05_in_work',
-  en_revision: 'op_07_internal_review',
-  pendiente_aprobacion_cve: 'op_08_pending_signature',
-  pendiente_aprobacion_easa: 'op_09_pending_authority',
-  en_pausa: 'op_02_pending_info',
-  cancelado: 'op_12_closed',
-  cerrado: 'op_12_closed',
+  oferta: 'nuevo',
+  guardado_en_base_de_datos: 'nuevo',
+  activo: 'en_progreso',
+  en_revision: 'revision',
+  pendiente_aprobacion_cve: 'aprobacion',
+  pendiente_aprobacion_easa: 'aprobacion',
+  en_pausa: 'en_progreso',
+  cancelado: 'cerrado',
 }
 
 // Estados que requieren que el usuario escriba una RAZON al cambiar a ellos.
-// Si un proyecto pasa a "esperando info" o "esperando ensayos", el ingeniero
-// debe explicar que informacion o ensayos faltan.
-const PROJECT_REASON_REQUIRED = new Set<EstadoProyecto>([
-  'op_02_pending_info',
-  'op_03_pending_tests',
-])
+// Por ahora no hay estados que lo requieran en el flujo simplificado,
+// pero se mantiene la estructura por si se necesita en el futuro.
+const PROJECT_REASON_REQUIRED = new Set<EstadoProyecto>([])
 
 /**
  * Obtiene la informacion visual de un estado de proyecto (nombre, colores, etc.).
  *
- * Funciona tanto con estados del nuevo flujo (op_00 a op_13) como con estados
- * legacy (oferta, activo, etc.). Si el estado no se reconoce, devuelve
- * una configuracion por defecto en gris.
+ * Funciona tanto con estados del flujo simplificado (nuevo, en_progreso, revision,
+ * aprobacion, entregado, cerrado) como con estados legacy (oferta, activo, etc.).
+ * Si el estado no se reconoce, devuelve una configuracion por defecto en gris.
  *
  * @param status - El codigo del estado del proyecto
  * @returns Objeto con el nombre, colores y estilo visual del estado
@@ -608,8 +510,8 @@ export function getAllowedProjectTransitions(status: string) {
  * Indica si cambiar a un determinado estado requiere que el usuario
  * escriba una razon o justificacion.
  *
- * Actualmente solo aplica a proyectos y a los estados OP-02 (esperando info)
- * y OP-03 (esperando ensayos).
+ * Actualmente no hay estados que lo requieran en el flujo simplificado,
+ * pero se mantiene la estructura por si se necesita en el futuro.
  *
  * @param entity - El tipo de entidad (por ahora solo "project")
  * @param state - El estado al que se quiere cambiar
@@ -620,8 +522,8 @@ export function requiresWorkflowReason(entity: 'project', state: string) {
 }
 
 /**
- * Verifica si un texto es un estado valido del nuevo flujo de trabajo de proyectos
- * (op_00 a op_13).
+ * Verifica si un texto es un estado valido del flujo simplificado de proyectos
+ * (nuevo, en_progreso, revision, aprobacion, entregado, cerrado).
  */
 export function isProjectWorkflowState(value: string): value is EstadoProyecto {
   return PROJECT_WORKFLOW_STATES.includes(value as EstadoProyecto)

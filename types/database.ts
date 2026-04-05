@@ -164,8 +164,10 @@ export interface UsuarioDoa {
  *   - 'pendiente_aprobacion_easa': esperando aprobacion de EASA (autoridad europea)
  *   - 'en_pausa': proyecto temporalmente detenido
  *   - 'cancelado': proyecto cancelado definitivamente
- *   - 'cerrado': proyecto completado y cerrado
  *   - 'guardado_en_base_de_datos': archivado en la base de datos
+ *
+ * NOTA: 'cerrado' fue eliminado de legacy porque ahora existe como estado
+ * del nuevo flujo simplificado.
  */
 export type EstadoProyectoLegacy =
   | 'oferta'
@@ -175,46 +177,28 @@ export type EstadoProyectoLegacy =
   | 'pendiente_aprobacion_easa'
   | 'en_pausa'
   | 'cancelado'
-  | 'cerrado'
   | 'guardado_en_base_de_datos'
 
 /**
- * ESTADOS DE PROYECTO (SISTEMA NUEVO - WORKFLOW)
- * Este es el flujo de trabajo actual que sigue un proyecto de ingenieria
- * desde que se recibe hasta que se factura. Cada estado tiene un numero
- * de orden (op_00, op_01, etc.) que indica su posicion en el proceso.
+ * ESTADOS DE PROYECTO (SISTEMA NUEVO - SIMPLIFICADO)
+ * Flujo simplificado de estados de proyecto. Cada proyecto pasa por
+ * estas fases generales desde su creacion hasta su cierre.
  *
- * El flujo completo es:
- *   op_00 - Prepago: esperando el pago inicial del cliente
- *   op_01 - Recopilacion de datos: reuniendo la documentacion necesaria
- *   op_02 - Pendiente de informacion: esperando datos del cliente
- *   op_03 - Pendiente de ensayos: esperando resultados de pruebas/tests
- *   op_04 - En evaluacion: analizando la viabilidad tecnica
- *   op_05 - En trabajo: realizando el trabajo de ingenieria
- *   op_06 - Revision del cliente: el cliente revisa nuestro trabajo
- *   op_07 - Revision interna: revision tecnica por nuestro equipo
- *   op_08 - Pendiente de firma: documentos listos, esperando firmas
- *   op_09 - Pendiente de autoridad: esperando aprobacion de EASA u otra autoridad
- *   op_10 - Listo para entrega: todo aprobado, preparando entrega al cliente
- *   op_11 - Entregado: documentacion entregada al cliente
- *   op_12 - Cerrado: proyecto completado y cerrado
- *   op_13 - Facturado: factura emitida y proceso totalmente finalizado
+ * Los estados son:
+ *   nuevo - Proyecto recien creado
+ *   en_progreso - Trabajo de ingenieria en curso
+ *   revision - En proceso de revision tecnica
+ *   aprobacion - Pendiente de aprobacion
+ *   entregado - Documentacion entregada al cliente
+ *   cerrado - Proyecto completado y cerrado
  */
 export type EstadoProyectoWorkflow =
-  | 'op_00_prepay'
-  | 'op_01_data_collection'
-  | 'op_02_pending_info'
-  | 'op_03_pending_tests'
-  | 'op_04_under_evaluation'
-  | 'op_05_in_work'
-  | 'op_06_customer_review'
-  | 'op_07_internal_review'
-  | 'op_08_pending_signature'
-  | 'op_09_pending_authority'
-  | 'op_10_ready_for_delivery'
-  | 'op_11_delivered'
-  | 'op_12_closed'
-  | 'op_13_invoiced'
+  | 'nuevo'
+  | 'en_progreso'
+  | 'revision'
+  | 'aprobacion'
+  | 'entregado'
+  | 'cerrado'
 
 /**
  * ESTADO DE PROYECTO (para uso en la app)
@@ -231,7 +215,7 @@ export type EstadoProyecto = EstadoProyectoWorkflow
  */
 export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLegacy
 
-// ─── doa_proyectos_generales ──────────────────────────────────────────────────
+// ─── doa_proyectos ───────────────────────────────────────────────────────────
 
 /**
  * PROYECTO DE INGENIERIA
@@ -242,7 +226,7 @@ export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLe
  * Cada proyecto pasa por las fases del workflow (ver EstadoProyectoWorkflow)
  * y tiene asignados responsables internos (owner, checker, approval, CVE).
  *
- * Corresponde a la tabla "doa_proyectos_generales" en la base de datos.
+ * Corresponde a la tabla "doa_proyectos" en la base de datos.
  */
 export interface Proyecto {
   // Identificador unico del proyecto
@@ -270,7 +254,7 @@ export interface Proyecto {
   clasificacion_cambio: 'menor' | 'mayor' | 'stc' | 'reparacion' | 'otro' | null
   // Base de certificacion aplicable (normas EASA CS que aplican) (puede estar vacia)
   base_certificacion: string | null
-  // Estado actual del proyecto dentro del flujo de trabajo (ver EstadoProyectoWorkflow)
+  // Estado actual del proyecto dentro del flujo simplificado (ver EstadoProyectoWorkflow)
   estado: EstadoProyectoPersistido
   // Fecha y hora del ultimo cambio de estado (puede estar vacia)
   estado_updated_at?: string | null

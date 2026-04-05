@@ -12,7 +12,7 @@ import { useUIStore } from '@/store/uiStore'
 
 const navItems = [
   { href: '/home', icon: Home, label: 'Inicio' },
-  { href: '/engineering/portfolio', icon: Plane, label: 'Proyectos' },
+  { href: '/proyectos', icon: Plane, label: 'Proyectos' },
   { href: '/proyectos-historico', icon: Clock3, label: 'Proyectos Historico' },
   { href: '/quotations', icon: FileText, label: 'Quotations' },
   { href: '/tools', icon: Wrench, label: 'Tools' },
