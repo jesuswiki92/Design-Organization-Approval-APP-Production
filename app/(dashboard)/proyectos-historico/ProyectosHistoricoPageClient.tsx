@@ -240,9 +240,6 @@ export default function ProyectosHistoricoPageClient({
                   <td className="px-4 py-3 text-slate-600">
                     <div className="space-y-1">
                       <p className="font-medium text-slate-950">{project.titulo}</p>
-                      <p className="text-xs text-slate-500">
-                        {project.nombre_carpeta_origen ?? 'Sin carpeta de origen'}
-                      </p>
                       {(project.aeronave || project.msn) ? (
                         <div className="flex flex-wrap gap-2 text-[11px] font-medium">
                           {project.aeronave ? (

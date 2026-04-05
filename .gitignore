@@ -47,3 +47,9 @@ next-env.d.ts
 .npm-cache/
 VPS_DEPLOYMENT_RUNBOOK_PRIVATE.txt
 VPS_DEPLOYMENT_RUNBOOK_CODEX_PRIVATE.txt
+rag-backend/venv/
+rag-backend/__pycache__/
+rag-backend/**/__pycache__/
+rag-backend/.env
+rag-backend/.tmp/
+rag-backend/temp/

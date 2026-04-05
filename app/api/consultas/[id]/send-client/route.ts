@@ -37,15 +37,22 @@ function escapeHtml(text: string) {
     .replace(/"/g, '&quot;')
 }
 
-function toHtmlEmail(message: string, formUrl: string) {
-  const linkHtml = `<a href="${escapeHtml(formUrl)}" style="color:#0284c7;font-weight:600;text-decoration:underline;">Acceder al formulario del proyecto</a>`
-
+function toHtmlEmail(message: string, formUrl: string | null) {
   let html = escapeHtml(message)
 
-  if (html.includes(escapeHtml(FORM_LINK_MARKER))) {
-    html = html.replace(escapeHtml(FORM_LINK_MARKER), linkHtml)
-  } else if (html.includes(escapeHtml(FORM_INTAKE_PLACEHOLDER))) {
-    html = html.replace(escapeHtml(FORM_INTAKE_PLACEHOLDER), linkHtml)
+  if (formUrl) {
+    // Si hay URL de formulario, reemplazar el marcador por un enlace clicable
+    const linkHtml = `<a href="${escapeHtml(formUrl)}" style="color:#0284c7;font-weight:600;text-decoration:underline;">Acceder al formulario del proyecto</a>`
+
+    if (html.includes(escapeHtml(FORM_LINK_MARKER))) {
+      html = html.replace(escapeHtml(FORM_LINK_MARKER), linkHtml)
+    } else if (html.includes(escapeHtml(FORM_INTAKE_PLACEHOLDER))) {
+      html = html.replace(escapeHtml(FORM_INTAKE_PLACEHOLDER), linkHtml)
+    }
+  } else {
+    // Sin URL de formulario: eliminar los marcadores si quedaron en el texto
+    html = html.replace(escapeHtml(FORM_LINK_MARKER), '')
+    html = html.replace(escapeHtml(FORM_INTAKE_PLACEHOLDER), '')
   }
 
   html = html.replace(/\n/g, '<br>')
@@ -100,15 +107,12 @@ export async function POST(
         return consultaResult.data?.url_formulario?.trim() ?? ''
       })())
 
-    if (!formUrl) {
-      return jsonResponse(
-        409,
-        'La consulta todavía no tiene url_formulario. Genera primero la URL en n8n y vuelve a intentarlo.',
-      )
-    }
-
+    // Si no hay formUrl, se envia el correo sin enlace al formulario
     const now = new Date().toISOString()
-    const finalMessage = toHtmlEmail(message, formUrl)
+    const finalMessage = toHtmlEmail(message, formUrl || null)
+    // formUrl normalizado: string si existe, null si no
+    const resolvedFormUrl = formUrl || null
+
     const webhookPayload = {
       event: 'doa.consulta.reviewed_send_client',
       sentAt: now,
@@ -123,7 +127,7 @@ export async function POST(
       to,
       clasificacion: query.clasificacion ?? null,
       formToken: null,
-      formUrl,
+      formUrl: resolvedFormUrl,
       formVariant: null,
       body: finalMessage,
       mensaje: finalMessage,
@@ -140,7 +144,7 @@ export async function POST(
         remitente: query.remitente ?? null,
         clasificacion: query.clasificacion ?? null,
         formToken: null,
-        formUrl,
+        formUrl: resolvedFormUrl,
         formVariant: null,
       },
     }
@@ -174,10 +178,14 @@ export async function POST(
     return Response.json({
       ok: true,
       message: 'Mensaje enviado correctamente al webhook del cliente.',
+      // Aviso cuando se envia sin formulario (para informar al usuario)
+      warning: resolvedFormUrl
+        ? null
+        : 'El correo se envió sin enlace al formulario porque la consulta no tiene url_formulario.',
       formLink: {
         id: null,
         token: null,
-        url: formUrl,
+        url: resolvedFormUrl,
         variant: null,
       },
       webhookPayload,

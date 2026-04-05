@@ -44,6 +44,8 @@ import {
 } from '../../incoming-queries'
 // Componente interactivo (del lado del cliente) para redactar respuestas al cliente
 import { ClientReplyComposer } from './ClientReplyComposer'
+// Banner que muestra el estado de verificacion del TCDS contra doa_aeronaves
+import { TcdsStatusBanner } from './TcdsStatusBanner'
 
 /**
  * ============================================================================
@@ -254,6 +256,25 @@ export default async function IncomingQuotationDetailPage({
   const clientLookup = buildIncomingClientLookup(clients, contacts)
   const query = toIncomingQuery(data as ConsultaEntrante, clientLookup)
   const matchedClient = resolveIncomingClientRecord(query.remitente, clients, contacts)
+
+  /**
+   * --- PASO 6b: Verificar si el TCDS existe en la base de datos de aeronaves ---
+   *
+   * Si la consulta tiene un numero de TCDS, se busca en la tabla 'doa_aeronaves'
+   * para saber si ya esta registrado en nuestra base de datos interna. Esto
+   * permite mostrar al usuario si el TCDS es conocido o si necesita ser
+   * ingresado al sistema.
+   */
+  let aeronaveMatch: { id: string; tcds_code: string; tipo: string | null; modelo: string | null } | null = null
+  if (data.tcds_number) {
+    const { data: aeronaveRows } = await supabase
+      .from('doa_aeronaves')
+      .select('id, tcds_code, tipo, modelo')
+      .eq('tcds_code', data.tcds_number)
+      .limit(1)
+
+    aeronaveMatch = aeronaveRows && aeronaveRows.length > 0 ? aeronaveRows[0] : null
+  }
 
   /**
    * --- PASO 7: Cargar el historial de proyectos del cliente (si se identifico) ---
@@ -470,6 +491,14 @@ export default async function IncomingQuotationDetailPage({
                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">TCDS Number</p>
                         <p className="mt-0.5 text-sm font-medium text-slate-900">{data.tcds_number}</p>
                       </div>
+                      {/* Banner de verificacion del TCDS contra doa_aeronaves */}
+                      <TcdsStatusBanner
+                        found={!!aeronaveMatch}
+                        tcdsNumber={data.tcds_number}
+                        tcdsPdfUrl={data.tcds_pdf_url}
+                        matchedTipo={aeronaveMatch?.tipo}
+                        matchedModelo={aeronaveMatch?.modelo}
+                      />
                       {/* Fabricante de la aeronave */}
                       <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Manufacturer</p>

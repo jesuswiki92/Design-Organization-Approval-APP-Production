@@ -90,7 +90,6 @@ export function getIncomingQueryStateOptions(
     WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
     rows,
   )
-    .filter((row) => row.state_code !== CONSULTA_ESTADOS.ARCHIVADO)
     .map((row) => ({
     value: row.state_code as IncomingQueryStatus,
     label: row.label,

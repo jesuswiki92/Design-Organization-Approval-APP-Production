@@ -1,0 +1,639 @@
+{
+  "updatedAt": "2026-04-02T17:07:43.029Z",
+  "createdAt": "2026-04-02T16:35:20.534Z",
+  "id": "GCLA8OK26yNr90cd",
+  "name": "DOA - Web Server Formularios Clientes (Dinámico)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "doa-form",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_srv",
+      "name": "Webhook Servidor GET",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "doa-form-server"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "doa_consultas_entrantes",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.query.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "buscar_consulta_srv",
+      "name": "Buscar Consulta",
+      "credentials": {
+        "supabaseApi": {
+          "id": "H1ZHvBDstWZ1K6KS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "doa_clientes_contactos",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $json.remitente.trim() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ],
+      "id": "buscar_contacto_srv",
+      "name": "Buscar Contacto",
+      "credentials": {
+        "supabaseApi": {
+          "id": "H1ZHvBDstWZ1K6KS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "doa_clientes_datos_generales",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.cliente_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        750,
+        300
+      ],
+      "id": "buscar_empresa_srv",
+      "name": "Buscar Empresa",
+      "credentials": {
+        "supabaseApi": {
+          "id": "H1ZHvBDstWZ1K6KS",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1Clb0bv9zeGTRcBdLEHKAoO6cBCelx-pS",
+          "mode": "list",
+          "cachedResultName": "formulario_cliente_conocido.txt",
+          "cachedResultUrl": "https://drive.google.com/file/d/1Clb0bv9zeGTRcBdLEHKAoO6cBCelx-pS/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1000,
+        300
+      ],
+      "id": "download_html_srv",
+      "name": "Descargar Plantilla HTML",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "q2a47wq7RmewYPQG",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1250,
+        300
+      ],
+      "id": "extract_srv",
+      "name": "Extraer Texto HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. HTML base desde el archivo\nlet html = $input.first().json.data;\n\n// 2. Datos de la empresa (desde Buscar Empresa)\nlet nombreEmpresa = '';\ntry { nombreEmpresa = $('Buscar Empresa').first().json.nombre || ''; } catch(e){}\n\n// 3. Datos del contacto (desde Buscar Contacto)\nlet nombreContacto = '';\nlet apellidosContacto = '';\nlet emailContacto = '';\ntry {\n  const c = $('Buscar Contacto').first().json;\n  nombreContacto = c.nombre || '';\n  apellidosContacto = c.apellidos || '';\n  emailContacto = c.email || '';\n} catch(e){}\n\nconst nombreCompleto = `${nombreContacto} ${apellidosContacto}`.trim();\n\n// 4. Reemplazar las etiquetas en el HTML\nhtml = html.replace('{{CLIENT_COMPANY_NAME}}', nombreEmpresa);\nhtml = html.replace('{{CLIENT_CONTACT_FULL_NAME}}', nombreCompleto);\nhtml = html.replace('{{CLIENT_CONTACT_EMAIL}}', emailContacto);\n\n// 5. Inyectar el ID oculto para el POST del formulario\nconst consulta_id = $('Webhook Servidor GET').first().json.query.id || '';\nhtml = html.replace('</form>', '<input type=\"hidden\" name=\"consulta_id\" value=\"' + consulta_id + '\"></form>');\n\nreturn { html_final: html };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        300
+      ],
+      "id": "inyectar_datos_srv",
+      "name": "Inyectar Datos en HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html_final }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1750,
+        300
+      ],
+      "id": "respond_srv",
+      "name": "Responder Navegador"
+    }
+  ],
+  "connections": {
+    "Webhook Servidor GET": {
+      "main": [
+        [
+          {
+            "node": "Buscar Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Consulta": {
+      "main": [
+        [
+          {
+            "node": "Buscar Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Contacto": {
+      "main": [
+        [
+          {
+            "node": "Buscar Empresa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Empresa": {
+      "main": [
+        [
+          {
+            "node": "Descargar Plantilla HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Plantilla HTML": {
+      "main": [
+        [
+          {
+            "node": "Extraer Texto HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Texto HTML": {
+      "main": [
+        [
+          {
+            "node": "Inyectar Datos en HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inyectar Datos en HTML": {
+      "main": [
+        [
+          {
+            "node": "Responder Navegador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "d04dfc0d-8910-4907-a046-0a03463ed130",
+  "activeVersionId": "d04dfc0d-8910-4907-a046-0a03463ed130",
+  "versionCounter": 13,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-02T16:35:20.534Z",
+      "createdAt": "2026-04-02T16:35:20.534Z",
+      "role": "workflow:owner",
+      "workflowId": "GCLA8OK26yNr90cd",
+      "projectId": "Xt0280WfIpw1lD6W",
+      "project": {
+        "updatedAt": "2025-03-27T09:22:13.302Z",
+        "createdAt": "2025-03-27T09:14:41.486Z",
+        "id": "Xt0280WfIpw1lD6W",
+        "name": "Jesus Andres Arevalo Torres <jesus.arevalotorres@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "1f2bf491-b33b-4a5b-986e-9b7841cecb8d",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-03-27T09:14:41.486Z",
+            "createdAt": "2025-03-27T09:14:41.486Z",
+            "userId": "1f2bf491-b33b-4a5b-986e-9b7841cecb8d",
+            "projectId": "Xt0280WfIpw1lD6W",
+            "user": {
+              "updatedAt": "2026-04-02T10:10:16.896Z",
+              "createdAt": "2025-03-27T09:14:40.894Z",
+              "id": "1f2bf491-b33b-4a5b-986e-9b7841cecb8d",
+              "email": "jesus.arevalotorres@gmail.com",
+              "firstName": "Jesus Andres",
+              "lastName": "Arevalo Torres",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-03-27T09:22:28.912Z",
+                "personalization_survey_n8n_version": "1.84.1",
+                "automationGoalDevops": [
+                  "reporting"
+                ],
+                "companyType": "education",
+                "role": "engineering"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "g7j5KfgJVN6xCZ4v",
+                "userActivatedAt": 1751604523816,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763884915866
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-04-02",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-02T17:10:53.445Z",
+    "createdAt": "2026-04-02T17:07:43.031Z",
+    "versionId": "d04dfc0d-8910-4907-a046-0a03463ed130",
+    "workflowId": "GCLA8OK26yNr90cd",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "GET",
+          "path": "doa-form",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook_srv",
+        "name": "Webhook Servidor GET",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          300
+        ],
+        "webhookId": "doa-form-server"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "doa_consultas_entrantes",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "id",
+                "keyValue": "={{ $json.query.id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          250,
+          300
+        ],
+        "id": "buscar_consulta_srv",
+        "name": "Buscar Consulta",
+        "credentials": {
+          "supabaseApi": {
+            "id": "H1ZHvBDstWZ1K6KS",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "doa_clientes_contactos",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "email",
+                "keyValue": "={{ $json.remitente.trim() }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          500,
+          300
+        ],
+        "id": "buscar_contacto_srv",
+        "name": "Buscar Contacto",
+        "credentials": {
+          "supabaseApi": {
+            "id": "H1ZHvBDstWZ1K6KS",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "tableId": "doa_clientes_datos_generales",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "id",
+                "keyValue": "={{ $json.cliente_id }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [
+          750,
+          300
+        ],
+        "id": "buscar_empresa_srv",
+        "name": "Buscar Empresa",
+        "credentials": {
+          "supabaseApi": {
+            "id": "H1ZHvBDstWZ1K6KS",
+            "name": "Supabase account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "1Clb0bv9zeGTRcBdLEHKAoO6cBCelx-pS",
+            "mode": "list",
+            "cachedResultName": "formulario_cliente_conocido.txt",
+            "cachedResultUrl": "https://drive.google.com/file/d/1Clb0bv9zeGTRcBdLEHKAoO6cBCelx-pS/view?usp=drivesdk"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1000,
+          300
+        ],
+        "id": "download_html_srv",
+        "name": "Descargar Plantilla HTML",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "q2a47wq7RmewYPQG",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "text",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1.1,
+        "position": [
+          1250,
+          300
+        ],
+        "id": "extract_srv",
+        "name": "Extraer Texto HTML"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. HTML base desde el archivo\nlet html = $input.first().json.data;\n\n// 2. Datos de la empresa (desde Buscar Empresa)\nlet nombreEmpresa = '';\ntry { nombreEmpresa = $('Buscar Empresa').first().json.nombre || ''; } catch(e){}\n\n// 3. Datos del contacto (desde Buscar Contacto)\nlet nombreContacto = '';\nlet apellidosContacto = '';\nlet emailContacto = '';\ntry {\n  const c = $('Buscar Contacto').first().json;\n  nombreContacto = c.nombre || '';\n  apellidosContacto = c.apellidos || '';\n  emailContacto = c.email || '';\n} catch(e){}\n\nconst nombreCompleto = `${nombreContacto} ${apellidosContacto}`.trim();\n\n// 4. Reemplazar las etiquetas en el HTML\nhtml = html.replace('{{CLIENT_COMPANY_NAME}}', nombreEmpresa);\nhtml = html.replace('{{CLIENT_CONTACT_FULL_NAME}}', nombreCompleto);\nhtml = html.replace('{{CLIENT_CONTACT_EMAIL}}', emailContacto);\n\n// 5. Inyectar el ID oculto para el POST del formulario\nconst consulta_id = $('Webhook Servidor GET').first().json.query.id || '';\nhtml = html.replace('</form>', '<input type=\"hidden\" name=\"consulta_id\" value=\"' + consulta_id + '\"></form>');\n\nreturn { html_final: html };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1500,
+          300
+        ],
+        "id": "inyectar_datos_srv",
+        "name": "Inyectar Datos en HTML"
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $json.html_final }}",
+          "options": {
+            "responseCode": 200,
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html; charset=utf-8"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1750,
+          300
+        ],
+        "id": "respond_srv",
+        "name": "Responder Navegador"
+      }
+    ],
+    "connections": {
+      "Webhook Servidor GET": {
+        "main": [
+          [
+            {
+              "node": "Buscar Consulta",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Consulta": {
+        "main": [
+          [
+            {
+              "node": "Buscar Contacto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Contacto": {
+        "main": [
+          [
+            {
+              "node": "Buscar Empresa",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Empresa": {
+        "main": [
+          [
+            {
+              "node": "Descargar Plantilla HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Descargar Plantilla HTML": {
+        "main": [
+          [
+            {
+              "node": "Extraer Texto HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extraer Texto HTML": {
+        "main": [
+          [
+            {
+              "node": "Inyectar Datos en HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Inyectar Datos en HTML": {
+        "main": [
+          [
+            {
+              "node": "Responder Navegador",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Jesus Andres Arevalo Torres",
+    "name": "Version d04dfc0d",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-02T17:10:53.444Z",
+        "id": 60,
+        "workflowId": "GCLA8OK26yNr90cd",
+        "versionId": "d04dfc0d-8910-4907-a046-0a03463ed130",
+        "event": "activated",
+        "userId": "1f2bf491-b33b-4a5b-986e-9b7841cecb8d"
+      },
+      {
+        "createdAt": "2026-04-02T17:14:29.488Z",
+        "id": 62,
+        "workflowId": "GCLA8OK26yNr90cd",
+        "versionId": "d04dfc0d-8910-4907-a046-0a03463ed130",
+        "event": "deactivated",
+        "userId": "1f2bf491-b33b-4a5b-986e-9b7841cecb8d"
+      },
+      {
+        "createdAt": "2026-04-02T17:14:29.963Z",
+        "id": 63,
+        "workflowId": "GCLA8OK26yNr90cd",
+        "versionId": "d04dfc0d-8910-4907-a046-0a03463ed130",
+        "event": "activated",
+        "userId": "1f2bf491-b33b-4a5b-986e-9b7841cecb8d"
+      }
+    ]
+  }
+}

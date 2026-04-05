@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home, Plane, Wrench, Users, Database, ChevronLeft, ChevronRight, Shield, FileText, Clock3,
+  Settings,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -17,6 +18,7 @@ const navItems = [
   { href: '/tools', icon: Wrench, label: 'Tools' },
   { href: '/clients', icon: Users, label: 'Clientes' },
   { href: '/databases', icon: Database, label: 'Bases de datos' },
+  { href: '/settings', icon: Settings, label: 'Settings' },
 ]
 
 export function Sidebar() {

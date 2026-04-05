@@ -1,0 +1,178 @@
+================================================================================
+  FALLOS DURANTE EL DESARROLLO - DOA Operations Hub
+  Registro de errores encontrados y sus soluciones
+================================================================================
+
+--------------------------------------------------------------------------------
+FALLO #001 | 2026-04-05 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  Al intentar guardar embeddings desde la pestaña Ingest del TCDS RAG Engine,
+  el backend Python lanza el error:
+  ERROR: 'charmap' codec can't encode character '\u274c' in position 0:
+  character maps to <undefined>
+
+CAUSA:
+  El codigo Python del backend RAG usaba caracteres emoji (❌, ✅, ✨, 📄, etc.)
+  en los print() y log statements. La consola de Windows usa encoding cp1252
+  que no soporta caracteres Unicode fuera del rango basico. El caracter \u274c
+  es el emoji de cruz roja (❌) usado en mensajes de error.
+
+SOLUCION:
+  1. Se reemplazaron ~50 emojis por equivalentes ASCII en 9 archivos Python:
+     - ❌ -> [X]
+     - ✅ -> [OK]
+     - ⚠️ -> [WARN]
+     - ✨ -> [*]
+     - 📄 -> [DOC]
+     - etc.
+  2. Se añadio safety net en start_web.py:
+     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
+  Archivos modificados:
+    - rag-backend/start_web.py
+    - rag-backend/api/server.py
+    - rag-backend/database/supabase_client.py
+    - rag-backend/core/ocr_processor.py
+    - rag-backend/core/document_analyzer.py
+    - rag-backend/core/classifier.py
+    - rag-backend/core/image_extractor.py
+    - rag-backend/utils/logger.py
+    - rag-backend/chat/agent.py
+
+--------------------------------------------------------------------------------
+FALLO #002 | 2026-04-05 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  El frontend del TCDS RAG Engine no conectaba con el backend en localhost:3002.
+  Mostraba "No se pudo conectar con el servidor RAG" y Python API: Offline.
+
+CAUSA:
+  Problema de CORS. La app Next.js corre en puerto 3010, pero el backend RAG
+  solo tenia configurados localhost:3000 y localhost:3002 como origenes
+  permitidos. Ademas, Chrome 104+ envia cabecera
+  Access-Control-Request-Private-Network: true en peticiones entre puertos
+  localhost, y Starlette rechazaba la peticion si allow_private_network no
+  estaba activado.
+
+SOLUCION:
+  1. Se añadio http://localhost:3010 a ALLOWED_ORIGINS en rag-backend/.env
+  2. Se añadio allow_private_network=True al CORSMiddleware en api/server.py
+
+  Archivos modificados:
+    - rag-backend/.env (ALLOWED_ORIGINS)
+    - rag-backend/api/server.py (CORSMiddleware config)
+
+--------------------------------------------------------------------------------
+FALLO #003 | 2026-04-04 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  Los emails clasificados como "no clasificable" no aparecian en la app
+  (seccion Quotations). Al revisar la base de datos, el campo estado tenia
+  el valor 'Archivado' en vez de 'nuevo'.
+
+CAUSA:
+  El workflow de n8n establecia un estado por defecto incorrecto para los
+  emails que no podian clasificarse automaticamente.
+
+SOLUCION:
+  Se ejecuto UPDATE en Supabase para corregir el estado:
+  UPDATE doa_consultas SET estado = 'nuevo' WHERE estado = 'Archivado'
+  AND clasificacion = 'no_clasificable';
+
+--------------------------------------------------------------------------------
+FALLO #004 | 2026-04-04 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  El compositor de respuestas de consultas devolvia error 409 cuando se
+  intentaba responder a un email que no tenia url_formulario (emails
+  sin formulario asociado).
+
+CAUSA:
+  La API route app/api/consultas/[id]/send-client/route.ts bloqueaba
+  con 409 si url_formulario era null, asumiendo que siempre habria un
+  formulario.
+
+SOLUCION:
+  1. Se elimino el check bloqueante de url_formulario
+  2. Se hizo el parametro formUrl opcional (string | null)
+  3. Se añadio logica para limpiar marcadores de formulario cuando
+     formUrl es null
+  4. Se devuelve warning en la respuesta cuando se envia sin formulario
+
+  Archivos modificados:
+    - app/api/consultas/[id]/send-client/route.ts
+
+--------------------------------------------------------------------------------
+FALLO #005 | 2026-04-04 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  La opcion "Archivado" no aparecia en el dropdown de estados de las
+  consultas en el tablero Kanban de Quotations.
+
+CAUSA:
+  El archivo incoming-queries.ts filtraba explicitamente las consultas
+  con estado 'archivado' usando .filter(), impidiendo que apareciese
+  como opcion.
+
+SOLUCION:
+  Se elimino la linea:
+  .filter((row) => row.state_code !== CONSULTA_ESTADOS.ARCHIVADO)
+
+  Archivos modificados:
+    - app/(dashboard)/quotations/incoming-queries.ts
+
+--------------------------------------------------------------------------------
+FALLO #006 | 2026-04-04 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  Error de sintaxis en Bash al intentar git add con rutas que contienen
+  parentesis: app/(dashboard)/...
+
+CAUSA:
+  Bash interpreta los parentesis () como parte de la sintaxis del shell
+  (subshell), causando error de parseo.
+
+SOLUCION:
+  Se usaron rutas de directorio generales en vez de archivos individuales:
+  git add "app/" "lib/" "types/" "supabase/"
+  en lugar de especificar cada archivo con parentesis en la ruta.
+
+--------------------------------------------------------------------------------
+FALLO #007 | 2026-04-05 | RESUELTO
+--------------------------------------------------------------------------------
+DESCRIPCION:
+  Al guardar chunks con embeddings en Supabase desde la pestaña Ingest del
+  TCDS RAG Engine, el frontend mostraba "guardado" pero la tabla
+  doa_tcds_embeddings quedaba con 0 filas. Los 37 chunks no se insertaban.
+
+CAUSA:
+  Dos problemas combinados:
+  1. FORMATO DE EMBEDDING: PostgREST (API REST de Supabase) no acepta arrays
+     JSON nativos [0.1, 0.2, ...] para columnas de tipo vector(3072). Necesita
+     el valor como string JSON "[0.1,0.2,...]" para que PostgreSQL lo parsee
+     con su funcion de entrada de vectores. Todos los inserts fallaban con
+     error de tipo.
+  2. ERROR SILENCIOSO: El metodo insert_documents_batch() atrapaba la excepcion
+     y devolvia {"successful": 0, "failed": 37}. El endpoint /api/ingest/save
+     devolvia HTTP 200 con ese resultado. El frontend no verificaba que
+     successful > 0 y mostraba "guardado" falsamente.
+
+SOLUCION:
+  1. Se añadio metodo _format_embedding() en supabase_client.py que convierte
+     arrays a string "[0.1,0.2,...]" antes de insertar
+  2. Se cambio header Prefer a return=representation para verificar inserts
+  3. El endpoint /api/ingest/save ahora devuelve HTTP 500 si successful == 0
+  4. El frontend (TcdsRagClient.tsx) ahora verifica successful > 0 antes de
+     mostrar exito, y muestra error si falla
+
+  Archivos modificados:
+    - rag-backend/database/supabase_client.py
+    - rag-backend/api/server.py
+    - app/(dashboard)/tools/tcds-rag/TcdsRagClient.tsx
+
+================================================================================
+  FIN DEL REGISTRO
+  Ultima actualizacion: 2026-04-05
+================================================================================
