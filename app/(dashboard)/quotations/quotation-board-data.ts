@@ -63,7 +63,7 @@ export type QuotationCard = {
   kind?: 'incoming_query'
   statusLabel?: string
   statusMetaLabel?: string
-  stateCode?: IncomingQueryStatus
+  stateCode?: string
   clientIdentity?: IncomingClientIdentity
 }
 
@@ -187,7 +187,7 @@ function toIncomingQuotationCard(
     kind: 'incoming_query',
     statusLabel: query.estadoBackend,
     statusMetaLabel: statusMeta.label,
-    stateCode: query.estado,
+    stateCode: query.estadoBackend,
     clientIdentity: query.clientIdentity,
   }
 }
