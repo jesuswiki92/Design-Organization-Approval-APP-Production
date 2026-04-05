@@ -35,7 +35,7 @@ import { useMemo, useState } from "react"
 // Funcion de Next.js para navegar entre paginas y refrescar datos
 import { useRouter } from "next/navigation"
 // Iconos decorativos para los botones y mensajes de estado
-import { CheckCircle2, ExternalLink, LoaderCircle, Mail, Send } from "lucide-react"
+import { CheckCircle2, ExternalLink, LoaderCircle, Mail, Send, Trash2, Undo2 } from "lucide-react"
 
 // Componentes visuales reutilizables de la libreria shadcn/ui
 import { Button } from "@/components/ui/button"
@@ -122,9 +122,41 @@ export function ClientReplyComposer({
   )
   // Mensaje de retroalimentacion que se muestra al usuario (exito o error)
   const [feedback, setFeedback] = useState<string | null>(null)
+  // Estado para controlar si el formulario ha sido eliminado del correo
+  const [formRemoved, setFormRemoved] = useState(false)
+  // Respaldo del mensaje antes de quitar el formulario (para deshacer)
+  const [messageBeforeRemoval, setMessageBeforeRemoval] = useState<string | null>(null)
 
   // Mensaje limpio sin espacios extra al inicio y al final
   const trimmedMessage = useMemo(() => message.trim(), [message])
+
+  /**
+   * Elimina el marcador del formulario del cuerpo del mensaje y oculta
+   * el boton "Ver formulario". Guarda una copia del mensaje original
+   * para poder deshacer la accion.
+   */
+  function handleRemoveForm() {
+    setMessageBeforeRemoval(message)
+    // Eliminar el marcador del formulario y limpiar lineas vacias sobrantes
+    const cleaned = message
+      .replace(FORM_LINK_MARKER, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+    setMessage(cleaned)
+    setFormRemoved(true)
+  }
+
+  /**
+   * Deshace la eliminacion del formulario restaurando el mensaje original
+   * y volviendo a mostrar el boton "Ver formulario".
+   */
+  function handleUndoRemoveForm() {
+    if (messageBeforeRemoval !== null) {
+      setMessage(messageBeforeRemoval)
+    }
+    setMessageBeforeRemoval(null)
+    setFormRemoved(false)
+  }
 
   /**
    * Funcion que se ejecuta al pulsar el boton "Enviar".
@@ -152,7 +184,8 @@ export function ClientReplyComposer({
             codigo: query.codigo,
             asunto: query.asunto,
             remitente: query.remitente,
-            urlFormulario: query.urlFormulario,
+            // Si el usuario quito el formulario, enviar null para que la API no lo incluya
+            urlFormulario: formRemoved ? null : query.urlFormulario,
             clasificacion: query.clasificacion,
             cuerpoOriginal: query.cuerpoOriginal,
             respuestaIa: query.respuestaIa,
@@ -240,16 +273,42 @@ export function ClientReplyComposer({
         />
       </div>
 
-      {query.urlFormulario ? (
-        <a
-          href={query.urlFormulario}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-semibold text-sky-700 transition-colors hover:border-sky-300 hover:bg-sky-100"
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-          Ver formulario antes de enviar
-        </a>
+      {/* Boton para ver el formulario + boton para eliminarlo del correo */}
+      {query.urlFormulario && !formRemoved ? (
+        <div className="mt-3 flex items-center gap-2">
+          <a
+            href={query.urlFormulario}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-semibold text-sky-700 transition-colors hover:border-sky-300 hover:bg-sky-100"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Ver formulario antes de enviar
+          </a>
+          <button
+            type="button"
+            onClick={handleRemoveForm}
+            title="Quitar formulario del correo"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition-colors hover:border-red-300 hover:bg-red-100"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ) : null}
+
+      {/* Aviso y opcion de deshacer tras quitar el formulario */}
+      {query.urlFormulario && formRemoved ? (
+        <div className="mt-3 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
+          <span className="font-medium">Formulario eliminado del correo.</span>
+          <button
+            type="button"
+            onClick={handleUndoRemoveForm}
+            className="ml-1 inline-flex items-center gap-1 font-semibold text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900"
+          >
+            <Undo2 className="h-3 w-3" />
+            Deshacer
+          </button>
+        </div>
       ) : null}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
