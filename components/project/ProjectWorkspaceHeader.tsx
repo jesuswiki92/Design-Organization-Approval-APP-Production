@@ -11,7 +11,6 @@ import {
   calcProjectProgress,
   daysRemaining,
   getAircraftLabel,
-  getClientLabel,
   getProjectStatusMeta,
   userName,
 } from './workspace-utils'
@@ -35,10 +34,7 @@ export function ProjectWorkspaceHeader({
 }) {
   const status = getProjectStatusMeta(project.estado)
   const projectProgress = calcProjectProgress(project)
-  const deliveryDays = daysRemaining(project.fecha_prevista)
-  const lastStateChange = project.estado_updated_at
-    ? new Date(project.estado_updated_at).toLocaleString('es-ES')
-    : null
+  const deliveryDays = daysRemaining(project.fecha_entrega_estimada)
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
@@ -58,9 +54,9 @@ export function ProjectWorkspaceHeader({
                 <span className={cn('h-2 w-2 rounded-full', status.dot)} />
                 {status.label}
               </span>
-              {project.clasificacion_cambio && (
+              {project.prioridad && project.prioridad !== 'normal' && (
                 <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs text-slate-700">
-                  {project.clasificacion_cambio}
+                  {project.prioridad}
                 </span>
               )}
             </div>
@@ -72,28 +68,16 @@ export function ProjectWorkspaceHeader({
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-2">
                   <Plane className="h-4 w-4 text-slate-400" />
-                  {getAircraftLabel(project.modelo)}
+                  {getAircraftLabel(project.aeronave)}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <User className="h-4 w-4 text-slate-400" />
-                  {getClientLabel(project.cliente)}
+                  {project.cliente_nombre ?? 'Sin cliente asociado'}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Shield className="h-4 w-4 text-slate-400" />
-                  {project.base_certificacion ?? 'Cert Basis pendiente'}
+                  {project.tcds_code ?? 'TCDS pendiente'}
                 </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                {lastStateChange && (
-                  <span className="text-xs text-slate-500">
-                    Ultimo cambio: {lastStateChange}
-                  </span>
-                )}
-                {project.estado_motivo && (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-700">
-                    Motivo: {project.estado_motivo}
-                  </span>
-                )}
               </div>
             </div>
           </div>
@@ -102,7 +86,7 @@ export function ProjectWorkspaceHeader({
             <ActionButton
               icon={<ClipboardPlus className="h-4 w-4" />}
               label="Crear tarea"
-              title="Convierte el siguiente paso sugerido en una acción trazable"
+              title="Convierte el siguiente paso sugerido en una accion trazable"
               onClick={onCreateTask}
             />
             <ActionButton
@@ -145,14 +129,14 @@ export function ProjectWorkspaceHeader({
             hint="Control operativo visible sin dominar la pantalla"
           />
           <MetricCard
-            label="Próximo hito"
-            value={project.fecha_prevista ?? 'Sin fecha'}
+            label="Proximo hito"
+            value={project.fecha_entrega_estimada ?? 'Sin fecha'}
             hint={
               deliveryDays === null
-                ? 'Planificación aún abierta'
+                ? 'Planificacion aun abierta'
                 : deliveryDays <= 0
-                  ? 'Hito vencido o en revisión de plazo'
-                  : `${deliveryDays} días restantes`
+                  ? 'Hito vencido o en revision de plazo'
+                  : `${deliveryDays} dias restantes`
             }
             tone={
               deliveryDays !== null && deliveryDays <= 7
@@ -179,16 +163,16 @@ export function ProjectWorkspaceHeader({
             <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
               <InfoPill label="Owner" value={userName(project.owner)} />
               <InfoPill
-                label="Aeronaves"
-                value={String(project.num_aeronaves_afectadas ?? 0)}
+                label="Aeronave"
+                value={project.aeronave ?? '-'}
               />
               <InfoPill
                 label="Alertas"
                 value={
                   deliveryDays !== null && deliveryDays <= 7
-                    ? 'Plazo crítico'
+                    ? 'Plazo critico'
                     : status.emphasis === 'high'
-                      ? 'Atención'
+                      ? 'Atencion'
                       : 'Controlado'
                 }
                 danger={deliveryDays !== null && deliveryDays <= 7}

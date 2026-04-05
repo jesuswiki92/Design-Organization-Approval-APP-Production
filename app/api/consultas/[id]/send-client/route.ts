@@ -168,6 +168,16 @@ export async function POST(
       )
     }
 
+    // Guardar la respuesta enviada en Supabase para mostrarla en el hilo de emails
+    const { error: replyError } = await supabase
+      .from('doa_consultas_entrantes')
+      .update({ reply_body: message, reply_sent_at: now })
+      .eq('id', id)
+
+    if (replyError) {
+      console.error('Error guardando reply_body en Supabase:', replyError)
+    }
+
     let responsePayload: unknown = null
     try {
       responsePayload = rawText ? JSON.parse(rawText) : null

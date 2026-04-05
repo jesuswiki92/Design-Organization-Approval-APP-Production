@@ -34,7 +34,7 @@ export function ProjectExpertPanel({
   const coverage = inferDocumentCoverage(docs)
   const includedSources = [
     `Proyecto ${project.numero_proyecto}`,
-    project.base_certificacion ? `Cert Basis: ${project.base_certificacion}` : null,
+    project.tcds_code ? `TCDS: ${project.tcds_code}` : null,
     selectedDoc ? `Documento activo: ${selectedDoc.nombre}` : 'Resumen documental del expediente',
     `${docs.length} documentos visibles en workspace`,
   ].filter(Boolean) as string[]

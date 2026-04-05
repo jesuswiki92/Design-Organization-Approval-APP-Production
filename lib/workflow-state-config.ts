@@ -25,6 +25,8 @@ import type {
 import {
   CONSULTA_ESTADOS,
   CONSULTA_STATE_CONFIG,
+  PROJECT_STATE_CONFIG,
+  PROJECT_WORKFLOW_STATES,
   QUOTATION_BOARD_STATE_CONFIG,
   QUOTATION_BOARD_STATES,
   type EstadoConsulta,
@@ -36,6 +38,7 @@ import {
 export const WORKFLOW_STATE_SCOPES = {
   INCOMING_QUERIES: 'incoming_queries',
   QUOTATION_BOARD: 'quotation_board',
+  PROJECT_BOARD: 'project_board',
 } as const satisfies Record<string, WorkflowStateScope>
 
 // Lista de colores disponibles para asignar a los estados.
@@ -358,11 +361,84 @@ const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
 ]
 
+// VALORES POR DEFECTO PARA LOS ESTADOS DEL TABLERO DE PROYECTOS
+// Estos son los estados que se usan si no hay configuracion personalizada
+// guardada en la base de datos para el tablero de proyectos de ingenieria.
+const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: PROJECT_WORKFLOW_STATES[0], // 'nuevo'
+    label: PROJECT_STATE_CONFIG.nuevo.label,
+    short_label: PROJECT_STATE_CONFIG.nuevo.shortLabel,
+    description: 'Proyecto recien creado, pendiente de asignar y arrancar',
+    color_token: 'green',
+    sort_order: 1,
+    is_system: true,
+    is_active: true,
+  },
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: PROJECT_WORKFLOW_STATES[1], // 'en_progreso'
+    label: PROJECT_STATE_CONFIG.en_progreso.label,
+    short_label: PROJECT_STATE_CONFIG.en_progreso.shortLabel,
+    description: 'Trabajo de ingenieria en curso',
+    color_token: 'blue',
+    sort_order: 2,
+    is_system: true,
+    is_active: true,
+  },
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: PROJECT_WORKFLOW_STATES[2], // 'revision'
+    label: PROJECT_STATE_CONFIG.revision.label,
+    short_label: PROJECT_STATE_CONFIG.revision.shortLabel,
+    description: 'En proceso de revision tecnica interna',
+    color_token: 'amber',
+    sort_order: 3,
+    is_system: true,
+    is_active: true,
+  },
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: PROJECT_WORKFLOW_STATES[3], // 'aprobacion'
+    label: PROJECT_STATE_CONFIG.aprobacion.label,
+    short_label: PROJECT_STATE_CONFIG.aprobacion.shortLabel,
+    description: 'Pendiente de aprobacion formal',
+    color_token: 'violet',
+    sort_order: 4,
+    is_system: true,
+    is_active: true,
+  },
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: PROJECT_WORKFLOW_STATES[4], // 'entregado'
+    label: PROJECT_STATE_CONFIG.entregado.label,
+    short_label: PROJECT_STATE_CONFIG.entregado.shortLabel,
+    description: 'Documentacion entregada al cliente',
+    color_token: 'emerald',
+    sort_order: 5,
+    is_system: true,
+    is_active: true,
+  },
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: PROJECT_WORKFLOW_STATES[5], // 'cerrado'
+    label: PROJECT_STATE_CONFIG.cerrado.label,
+    short_label: PROJECT_STATE_CONFIG.cerrado.shortLabel,
+    description: 'Proyecto completado y cerrado',
+    color_token: 'slate',
+    sort_order: 6,
+    is_system: true,
+    is_active: true,
+  },
+]
+
 // Agrupa los valores por defecto por ambito, para buscar rapidamente
-// los defaults de consultas o de cotizaciones segun se necesite
+// los defaults de consultas, cotizaciones o proyectos segun se necesite
 const DEFAULT_ROWS_BY_SCOPE: Record<WorkflowStateScope, WorkflowStateConfigRow[]> = {
   incoming_queries: INCOMING_QUERY_DEFAULT_ROWS,
   quotation_board: QUOTATION_BOARD_DEFAULT_ROWS,
+  project_board: PROJECT_BOARD_DEFAULT_ROWS,
 }
 
 /**
@@ -629,4 +705,56 @@ export function isIncomingQueryStateCode(value: string): value is EstadoConsulta
  */
 export function isQuotationBoardStateCode(value: string): value is QuotationBoardState {
   return getAllowedWorkflowStateCodes(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD).includes(value)
+}
+
+/**
+ * Obtiene la informacion visual de un estado del tablero de proyectos,
+ * teniendo en cuenta las personalizaciones del administrador.
+ *
+ * Similar a getResolvedQuotationBoardStatusMeta pero para el tablero de proyectos.
+ * Devuelve el colorToken y el estilo del tablero (accent) que se necesitan
+ * para pintar las columnas del tablero Kanban de proyectos.
+ *
+ * @param state - El codigo del estado del proyecto (ej: "nuevo", "en_progreso")
+ * @param rows - Las filas de configuracion leidas de la base de datos (opcional)
+ * @returns Objeto con nombre, nombre corto, descripcion, color y estilo del tablero
+ */
+export function getResolvedProjectBoardStatusMeta(
+  state: string,
+  rows: WorkflowStateConfigRow[] = [],
+) {
+  const resolvedRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.PROJECT_BOARD, rows)
+  const match = resolvedRows.find((row) => row.state_code === state)
+
+  if (!match) {
+    const fallback = getWorkflowStateColorStyle('slate')
+
+    return {
+      label: state,
+      shortLabel: state,
+      description: 'Estado de proyecto desconocido',
+      colorToken: 'slate' as WorkflowStateColorToken,
+      accent: fallback.boardAccent,
+      badge: fallback.badge,
+    }
+  }
+
+  return {
+    label: match.label,
+    shortLabel: match.short_label,
+    description: match.description ?? '',
+    colorToken: match.color_token,
+    accent: match.boardAccent,
+    badge: match.badge,
+  }
+}
+
+/**
+ * Verifica si un texto es un codigo de estado valido para el tablero de proyectos.
+ *
+ * @param value - El texto a verificar
+ * @returns true si es un codigo de estado de proyecto valido, false si no
+ */
+export function isProjectBoardStateCode(value: string): boolean {
+  return getAllowedWorkflowStateCodes(WORKFLOW_STATE_SCOPES.PROJECT_BOARD).includes(value)
 }

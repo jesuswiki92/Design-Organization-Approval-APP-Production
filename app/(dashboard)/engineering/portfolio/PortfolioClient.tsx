@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
   Calendar,
-  CheckSquare,
   ChevronDown,
   LayoutGrid,
   List,
@@ -20,28 +19,11 @@ import {
   getProjectStatusMeta,
 } from '@/lib/workflow-states'
 import { cn } from '@/lib/utils'
-import type { EstadoProyecto, ProyectoConRelaciones } from '@/types/database'
+import type { EstadoProyecto, Proyecto } from '@/types/database'
 
-const CLASIFICACION_COLORS: Record<string, string> = {
-  mayor: 'text-purple-700 bg-purple-50 border border-purple-200',
-  menor: 'text-blue-700 bg-blue-50 border border-blue-200',
-  reparacion: 'text-orange-700 bg-orange-50 border border-orange-200',
-  stc: 'text-pink-700 bg-pink-50 border border-pink-200',
-  otro: 'text-slate-600 bg-slate-100 border border-slate-200',
-}
-
-const TIPO_LABELS: Record<string, string> = {
-  antena_comms: 'Antena/Comms',
-  cabina_it: 'Cabina IT',
-  livery: 'Livery',
-  cargo_cabina: 'Cargo/Cabina',
-  equipamiento_medico: 'Equipamiento Medico',
-  reparacion_estructural: 'Reparacion Estructural',
-  mision_especial: 'Mision Especial',
-  electrico: 'Electrico',
-  otro: 'Otro',
-}
-
+/**
+ * Badge visual del estado de un proyecto.
+ */
 function StatusBadge({ estado }: { estado: string }) {
   const cfg = getProjectStatusMeta(estado)
   return (
@@ -59,53 +41,15 @@ function StatusBadge({ estado }: { estado: string }) {
   )
 }
 
-function getProgressBarClass(estado: string) {
-  const operationalState = getProjectOperationalState(estado) ?? estado
-
-  switch (operationalState) {
-    case 'op_10_ready_for_delivery':
-    case 'op_11_delivered':
-    case 'op_12_closed':
-    case 'op_13_invoiced':
-      return 'bg-emerald-500'
-    case 'op_08_pending_signature':
-    case 'op_09_pending_authority':
-      return 'bg-purple-500'
-    case 'op_02_pending_info':
-    case 'op_03_pending_tests':
-      return 'bg-amber-500'
-    default:
-      return 'bg-[linear-gradient(90deg,#2563EB,#38BDF8)]'
-  }
-}
-
-function ProgressBar({ value, estado }: { value: number; estado: string }) {
-  return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-      <div
-        className={cn('h-full rounded-full transition-all', getProgressBarClass(estado))}
-        style={{ width: `${value}%` }}
-      />
-    </div>
-  )
-}
-
-function calcProgress(project: ProyectoConRelaciones): number {
-  if (!project.horas_estimadas || project.horas_estimadas === 0) return 0
-  const real = Number(project.horas_reales ?? 0)
-  return Math.min(100, Math.round((real / project.horas_estimadas) * 100))
-}
-
-function KanbanCard({ project }: { project: ProyectoConRelaciones }) {
-  const progress = calcProgress(project)
-  const aircraft = project.modelo
-    ? `${project.modelo.fabricante} ${project.modelo.modelo}`
-    : '-'
-  const client = project.cliente?.nombre ?? '-'
-  const owner = project.owner
-    ? `${project.owner.nombre}${project.owner.apellidos ? ` ${project.owner.apellidos[0]}.` : ''}`
-    : '-'
-  const delivery = project.fecha_prevista ?? '-'
+/**
+ * Tarjeta individual del Kanban para un proyecto.
+ * Usa los campos reales de la tabla doa_proyectos.
+ */
+function KanbanCard({ project }: { project: Proyecto }) {
+  const aircraft = project.aeronave ?? '-'
+  const client = project.cliente_nombre ?? '-'
+  const owner = project.owner ?? '-'
+  const delivery = project.fecha_entrega_estimada ?? '-'
 
   return (
     <div className="rounded-[18px] border border-slate-200 bg-white p-3 shadow-[0_10px_24px_rgba(148,163,184,0.12)] transition-all hover:border-sky-300 hover:bg-sky-50/40">
@@ -116,13 +60,7 @@ function KanbanCard({ project }: { project: ProyectoConRelaciones }) {
         >
           {project.numero_proyecto}
         </Link>
-        <div className="flex items-center gap-2">
-          <StatusBadge estado={project.estado} />
-          <span className="flex items-center gap-1 text-[11px] text-slate-500">
-            <CheckSquare size={11} />
-            {project.num_aeronaves_afectadas}
-          </span>
-        </div>
+        <StatusBadge estado={project.estado} />
       </div>
 
       <Link href={`/engineering/projects/${project.id}`} className="block">
@@ -138,10 +76,7 @@ function KanbanCard({ project }: { project: ProyectoConRelaciones }) {
         <span>{client}</span>
       </div>
 
-      <ProgressBar value={progress} estado={project.estado} />
-
       <div className="mt-2 flex items-center justify-between">
-        <span className="text-[11px] text-slate-500">{progress}%</span>
         <div className="flex items-center gap-1 text-[11px] text-slate-500">
           <User size={11} />
           <span>{owner}</span>
@@ -153,16 +88,18 @@ function KanbanCard({ project }: { project: ProyectoConRelaciones }) {
           </div>
         )}
       </div>
-
     </div>
   )
 }
 
+/**
+ * Vista Kanban: columnas por estado.
+ */
 function KanbanView({
   projects,
   statuses,
 }: {
-  projects: ProyectoConRelaciones[]
+  projects: Proyecto[]
   statuses: EstadoProyecto[]
 }) {
   return (
@@ -206,7 +143,10 @@ function KanbanView({
   )
 }
 
-function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
+/**
+ * Vista Lista: tabla con datos del proyecto.
+ */
+function ListView({ projects }: { projects: Proyecto[] }) {
   return (
     <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
       <table className="w-full text-sm">
@@ -218,10 +158,9 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
               'Cliente',
               'Aeronave',
               'Estado',
-              'Clasificacion',
+              'Prioridad',
               'Owner',
               'Entrega',
-              'Progreso',
             ].map((column) => (
               <th
                 key={column}
@@ -234,16 +173,11 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
         </thead>
         <tbody>
           {projects.map((project, idx) => {
-            const progress = calcProgress(project)
-            const aircraft = project.modelo
-              ? `${project.modelo.fabricante} ${project.modelo.modelo}`
-              : '-'
-            const client = project.cliente?.nombre ?? '-'
-            const owner = project.owner
-              ? `${project.owner.nombre}${project.owner.apellidos ? ` ${project.owner.apellidos[0]}.` : ''}`
-              : '-'
-            const delivery = project.fecha_prevista ?? '-'
-            const clasificacion = project.clasificacion_cambio ?? 'otro'
+            const aircraft = project.aeronave ?? '-'
+            const client = project.cliente_nombre ?? '-'
+            const owner = project.owner ?? '-'
+            const delivery = project.fecha_entrega_estimada ?? '-'
+            const prioridad = project.prioridad ?? '-'
 
             return (
               <tr
@@ -266,9 +200,11 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
                     <span className="block truncate font-medium text-slate-950">
                       {project.titulo}
                     </span>
-                    <span className="text-[11px] text-slate-500">
-                      {TIPO_LABELS[project.tipo_modificacion] ?? project.tipo_modificacion}
-                    </span>
+                    {project.descripcion ? (
+                      <span className="block truncate text-[11px] italic text-slate-500">
+                        {project.descripcion}
+                      </span>
+                    ) : null}
                   </Link>
                 </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">{client}</td>
@@ -277,15 +213,7 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
                   <StatusBadge estado={project.estado} />
                 </td>
                 <td className="px-3 py-2.5">
-                  <span
-                    className={cn(
-                      'rounded-full px-2 py-0.5 text-xs font-medium',
-                      CLASIFICACION_COLORS[clasificacion] ??
-                        'border border-slate-200 bg-slate-100 text-slate-600',
-                    )}
-                  >
-                    {clasificacion}
-                  </span>
+                  <span className="text-xs text-slate-600">{prioridad}</span>
                 </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">
                   <div className="flex items-center gap-1.5">
@@ -299,16 +227,6 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
                     {delivery}
                   </div>
                 </td>
-                <td className="min-w-[100px] px-3 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <ProgressBar value={progress} estado={project.estado} />
-                    </div>
-                    <span className="w-8 shrink-0 text-right text-xs text-slate-500">
-                      {progress}%
-                    </span>
-                  </div>
-                </td>
               </tr>
             )
           })}
@@ -318,7 +236,7 @@ function ListView({ projects }: { projects: ProyectoConRelaciones[] }) {
   )
 }
 
-export function PortfolioClient({ projects }: { projects: ProyectoConRelaciones[] }) {
+export function PortfolioClient({ projects }: { projects: Proyecto[] }) {
   const [view, setView] = useState<'kanban' | 'list'>('kanban')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<EstadoProyecto | 'all'>('all')
@@ -330,7 +248,8 @@ export function PortfolioClient({ projects }: { projects: ProyectoConRelaciones[
           search === '' ||
           project.titulo.toLowerCase().includes(search.toLowerCase()) ||
           project.numero_proyecto.toLowerCase().includes(search.toLowerCase()) ||
-          (project.cliente?.nombre ?? '').toLowerCase().includes(search.toLowerCase())
+          (project.cliente_nombre ?? '').toLowerCase().includes(search.toLowerCase()) ||
+          (project.aeronave ?? '').toLowerCase().includes(search.toLowerCase())
         const matchStatus =
           statusFilter === 'all' || getProjectOperationalState(project.estado) === statusFilter
         return matchSearch && matchStatus

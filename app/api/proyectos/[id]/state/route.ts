@@ -6,18 +6,15 @@
  * Endpoint: PATCH /api/proyectos/[id]/state
  * Body: { estado: string }
  *
- * Valida que la transicion sea permitida segun las reglas del workflow
- * antes de actualizar el estado en doa_proyectos.
+ * Valida que el estado solicitado sea un codigo valido del workflow
+ * (sin restriccion de transiciones) y actualiza en doa_proyectos.
  * ============================================================================
  */
 
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-import {
-  getAllowedProjectTransitions,
-  getProjectStatusMeta,
-} from '@/lib/workflow-states'
+import { isProjectWorkflowState } from '@/lib/workflow-states'
 
 export async function PATCH(
   request: Request,
@@ -36,43 +33,24 @@ export async function PATCH(
 
     const nextState = body.estado
 
-    // Obtener el proyecto actual para validar la transicion
-    const supabase = await createClient()
-
-    const { data: proyecto, error: fetchError } = await supabase
-      .from('doa_proyectos')
-      .select('id, estado')
-      .eq('id', id)
-      .single()
-
-    if (fetchError || !proyecto) {
+    // Validar que el estado solicitado es un codigo de estado valido del workflow
+    if (!isProjectWorkflowState(nextState)) {
       return NextResponse.json(
-        { error: 'Proyecto no encontrado.' },
-        { status: 404 },
-      )
-    }
-
-    // Validar que la transicion esta permitida
-    const allowed = getAllowedProjectTransitions(proyecto.estado)
-    if (!allowed.includes(nextState as never)) {
-      const currentMeta = getProjectStatusMeta(proyecto.estado)
-      const nextMeta = getProjectStatusMeta(nextState)
-      return NextResponse.json(
-        {
-          error: `Transicion no permitida: de "${currentMeta.label}" a "${nextMeta.label}".`,
-        },
+        { error: `Estado "${nextState}" no es un codigo de estado de proyecto valido.` },
         { status: 422 },
       )
     }
 
-    // Actualizar el estado en la base de datos
-    const { error: updateError } = await supabase
+    // Actualizar el estado en la base de datos sin restriccion de transicion
+    // (el usuario puede cambiar manualmente a cualquier estado)
+    // (updated_at se actualiza automaticamente via trigger en doa_proyectos)
+    const supabase = await createClient()
+
+    const { data: updatedRows, error: updateError } = await supabase
       .from('doa_proyectos')
-      .update({
-        estado: nextState,
-        estado_updated_at: new Date().toISOString(),
-      })
+      .update({ estado: nextState })
       .eq('id', id)
+      .select('id, estado')
 
     if (updateError) {
       console.error('Error actualizando estado del proyecto:', updateError)
@@ -82,7 +60,21 @@ export async function PATCH(
       )
     }
 
-    return NextResponse.json({ ok: true, estado: nextState })
+    // Verificar que realmente se actualizo al menos una fila.
+    // Supabase puede devolver error: null pero 0 filas si RLS bloquea la operacion
+    // o si el ID no existe en la tabla.
+    if (!updatedRows || updatedRows.length === 0) {
+      console.error(
+        `Estado del proyecto no actualizado: id=${id}, estado=${nextState}. ` +
+        'Posible causa: RLS bloqueando la operacion o ID inexistente.',
+      )
+      return NextResponse.json(
+        { error: 'No se encontro el proyecto o no se tienen permisos para actualizarlo.' },
+        { status: 404 },
+      )
+    }
+
+    return NextResponse.json({ ok: true, estado: updatedRows[0].estado })
   } catch (error) {
     console.error('Error en PATCH /api/proyectos/[id]/state:', error)
     return NextResponse.json(

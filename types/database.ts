@@ -218,7 +218,7 @@ export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLe
 // ─── doa_proyectos ───────────────────────────────────────────────────────────
 
 /**
- * PROYECTO DE INGENIERIA
+ * PROYECTO DE INGENIERIA (ACTIVO)
  * Es la pieza central de la aplicacion. Representa un trabajo de ingenieria
  * aeronautica que realizamos para un cliente (ej: una modificacion en un avion,
  * una reparacion, un cambio de diseno, etc.).
@@ -227,83 +227,88 @@ export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLe
  * y tiene asignados responsables internos (owner, checker, approval, CVE).
  *
  * Corresponde a la tabla "doa_proyectos" en la base de datos.
+ * Los campos coinciden 1:1 con las columnas de la migracion
+ * 202604051200_create_doa_proyectos.sql.
  */
 export interface Proyecto {
   // Identificador unico del proyecto
   id: string
-  // Numero de proyecto interno (ej: "DOA-2024-0042") - es la referencia que usamos dia a dia
+  // Numero de proyecto interno (ej: "IM.A.226-0002") - referencia diaria
   numero_proyecto: string
-  // Referencia a la cotizacion/oferta de la que nacio este proyecto (puede estar vacia)
-  oferta_id?: string | null
-  // Titulo descriptivo del proyecto (ej: "Instalacion de WiFi en A320")
+  // Titulo descriptivo del proyecto (ej: "Antenna installation in Cessna 208B")
   titulo: string
   // Descripcion detallada del trabajo a realizar (puede estar vacia)
   descripcion: string | null
-  // Referencia al cliente que nos ha contratado el trabajo
-  cliente_id: string | null
-  // Referencia al modelo de aeronave afectado (ej: A320-214)
-  modelo_id: string | null
-  // Tipo de modificacion segun normativa (ej: "modificacion mayor", "STC", etc.)
-  tipo_modificacion: string
-  // Clasificacion del cambio segun su complejidad y alcance regulatorio:
-  //   - 'menor': cambio menor, aprobacion interna
-  //   - 'mayor': cambio mayor, requiere mas revision
-  //   - 'stc': Supplemental Type Certificate (certificado de tipo suplementario)
-  //   - 'reparacion': diseno de reparacion
-  //   - 'otro': otro tipo de clasificacion
-  clasificacion_cambio: 'menor' | 'mayor' | 'stc' | 'reparacion' | 'otro' | null
-  // Base de certificacion aplicable (normas EASA CS que aplican) (puede estar vacia)
-  base_certificacion: string | null
-  // Estado actual del proyecto dentro del flujo simplificado (ver EstadoProyectoWorkflow)
+
+  // --- Relaciones ---
+  // Referencia a la consulta entrante de la que nacio este proyecto (puede estar vacia)
+  consulta_id: string | null
+  // Nombre del cliente (texto libre, denormalizado)
+  cliente_nombre: string | null
+  // Referencia al cliente en doa_clientes (puede estar vacia)
+  client_id: string | null
+
+  // --- Aeronave ---
+  // Tipo de aeronave (ej: "Cessna 208B")
+  aeronave: string | null
+  // Modelo de aeronave (ej: "208B")
+  modelo: string | null
+  // Numeros de serie de fabrica (MSN)
+  msn: string | null
+  // Codigo TCDS completo (ej: "EASA.IM.A.226")
+  tcds_code: string | null
+  // Codigo TCDS corto (ej: "IM.A.226")
+  tcds_code_short: string | null
+
+  // --- Estado (workflow) ---
+  // Estado actual del proyecto dentro del flujo simplificado
   estado: EstadoProyectoPersistido
-  // Fecha y hora del ultimo cambio de estado (puede estar vacia)
-  estado_updated_at?: string | null
-  // Quien realizo el ultimo cambio de estado (puede estar vacio)
-  estado_updated_by?: string | null
-  // Motivo o justificacion del ultimo cambio de estado (puede estar vacio)
-  estado_motivo?: string | null
-  // Fecha en que se abrio/inicio el proyecto
-  fecha_apertura: string | null
-  // Fecha en que se cerro el proyecto (se rellena al finalizar)
-  fecha_cierre: string | null
-  // Fecha prevista de finalizacion (la fecha limite que le damos al cliente)
-  fecha_prevista: string | null
-  // Horas de trabajo estimadas para completar el proyecto
-  horas_estimadas: number | null
-  // Horas de trabajo realmente empleadas (se va actualizando durante el proyecto)
-  horas_reales: number | null
-  // Presupuesto del proyecto en euros
-  presupuesto_euros: number | null
-  // Ingeniero responsable del proyecto (el "dueno" del proyecto)
-  owner_id: string | null
-  // Ingeniero que revisa el trabajo (el "checker" o verificador)
-  checker_id: string | null
+
+  // --- Equipo asignado (texto por ahora) ---
+  // Ingeniero responsable del proyecto (el "dueno")
+  owner: string | null
+  // Ingeniero que revisa el trabajo (checker)
+  checker: string | null
   // Persona que da la aprobacion final interna
-  approval_id: string | null
-  // CVE asignado (Compliance Verification Engineer - ingeniero que verifica cumplimiento normativo)
-  cve_id: string | null
-  // Numero de aeronaves afectadas por esta modificacion
-  num_aeronaves_afectadas: number
-  // Resumen ejecutivo del proyecto para informes y vistas rapidas (puede estar vacio)
-  resumen_ejecutivo: string | null
-  // Fecha y hora en que se creo el registro del proyecto
+  approval: string | null
+  // CVE (Compliance Verification Engineer)
+  cve: string | null
+
+  // --- Fechas ---
+  // Fecha en que se inicio el proyecto
+  fecha_inicio: string | null
+  // Fecha estimada de entrega
+  fecha_entrega_estimada: string | null
+  // Fecha en que se cerro el proyecto
+  fecha_cierre: string | null
+
+  // --- Carpeta ---
+  // Ruta del proyecto en el filesystem
+  ruta_proyecto: string | null
+
+  // --- Metadata ---
+  // Prioridad del proyecto: baja, normal, alta, urgente
+  prioridad: string | null
+  // Ano del proyecto
+  anio: number | null
+  // Notas internas
+  notas: string | null
+
+  // --- Timestamps ---
   created_at: string
+  updated_at: string
 }
 
 /**
  * PROYECTO CON SUS RELACIONES
- * Version ampliada del Proyecto que incluye los datos completos del cliente,
- * el modelo de aeronave, el ingeniero responsable y el historial de cambios
- * de estado. Se usa en las pantallas de detalle donde necesitamos ver
- * toda la informacion junta sin hacer consultas adicionales.
+ * Version ampliada del Proyecto que incluye los datos completos del cliente
+ * y el historial de cambios de estado. Se usa en las pantallas de detalle
+ * donde necesitamos ver toda la informacion junta sin hacer consultas
+ * adicionales.
  */
 export interface ProyectoConRelaciones extends Proyecto {
   // Datos completos del cliente (no solo su ID)
   cliente: Cliente | null
-  // Datos completos del modelo de aeronave
-  modelo: AeronaveModelo | null
-  // Datos completos del ingeniero responsable (owner)
-  owner: UsuarioDoa | null
   // Historial de todos los cambios de estado que ha tenido el proyecto
   estado_historial?: ProyectoEstadoHistorial[]
 }
@@ -469,6 +474,38 @@ export interface ConsultaEntrante {
   aircraft_msn?: string | null
   // URL al PDF del TCDS descargado para referencia
   tcds_pdf_url?: string | null
+  // Tipo de trabajo solicitado: "proyecto_nuevo" o "modificacion_existente"
+  work_type?: string | null
+  // Codigo del proyecto existente (solo si work_type = "modificacion_existente")
+  existing_project_code?: string | null
+  // Resumen de la modificacion solicitada
+  modification_summary?: string | null
+  // Objetivo operativo que se busca lograr
+  operational_goal?: string | null
+  // Indica si el cliente dispone de equipamiento: "si", "no", "no_aplica"
+  has_equipment?: string | null
+  // Detalles del equipamiento (si has_equipment = "si")
+  equipment_details?: string | null
+  // Indica si el cliente tiene planos o documentacion: "si" o "no"
+  has_drawings?: string | null
+  // Indica si existe una modificacion similar previa: "si", "no", "no_seguro"
+  has_previous_mod?: string | null
+  // Referencia a la modificacion previa (si has_previous_mod = "si")
+  previous_mod_ref?: string | null
+  // Indica si el cliente tiene documentacion del fabricante: "si" o "no"
+  has_manufacturer_docs?: string | null
+  // Fecha objetivo deseada por el cliente
+  target_date?: string | null
+  // Indica si es una situacion AOG (Aircraft on Ground): "si" o "no"
+  is_aog?: string | null
+  // Ubicacion actual de la aeronave
+  aircraft_location?: string | null
+  // Notas adicionales del cliente
+  additional_notes?: string | null
+  // Cuerpo de la respuesta enviada al cliente (guardado para mostrar en el hilo de emails)
+  reply_body?: string | null
+  // Fecha y hora en que se envio la respuesta al cliente
+  reply_sent_at?: string | null
 }
 
 /**
@@ -480,7 +517,7 @@ export interface ConsultaEntrante {
  * Esto permite que cada seccion de la app tenga sus propios estados
  * independientes sin mezclarse.
  */
-export type WorkflowStateScope = 'incoming_queries' | 'quotation_board'
+export type WorkflowStateScope = 'incoming_queries' | 'quotation_board' | 'project_board'
 
 /**
  * COLORES PARA ESTADOS
@@ -575,6 +612,41 @@ export interface MdlDocumento {
 export interface MdlContenido {
   entregables: MdlDocumento[]
   no_entregables: MdlDocumento[]
+}
+
+// ─── doa_emails ──────────────────────────────────────────────────────────────
+
+/**
+ * EMAIL ASOCIADO A UNA CONSULTA
+ * Representa un correo electronico (entrante o saliente) vinculado a una consulta.
+ * Los emails son registros INMUTABLES: una vez insertados, NUNCA se actualizan.
+ * El hilo se mantiene via consulta_id (agrupa todos los emails de una consulta)
+ * y orden cronologico por fecha.
+ * Corresponde a la tabla "doa_emails" en la base de datos.
+ */
+export interface DoaEmail {
+  // Identificador unico del email
+  id: string
+  // Referencia a la consulta entrante a la que pertenece este email
+  consulta_id: string
+  // Direccion del email: 'entrante' (del cliente) o 'saliente' (nuestra respuesta)
+  direccion: 'entrante' | 'saliente'
+  // Direccion de correo del remitente
+  de: string
+  // Direccion de correo del destinatario (puede estar vacio)
+  para: string | null
+  // Asunto del correo
+  asunto: string
+  // Cuerpo del correo
+  cuerpo: string
+  // Fecha original del correo en el servidor de correo
+  fecha: string
+  // Identificador unico RFC Message-ID (inmutable)
+  mensaje_id: string | null
+  // Referencia al mensaje_id del correo padre (para hilos)
+  en_respuesta_a: string | null
+  // Fecha y hora en que se inserto el registro en la base de datos
+  created_at: string
 }
 
 // ─── doa_proyectos_historico_archivos ────────────────────────────────────────

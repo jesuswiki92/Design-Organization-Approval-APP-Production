@@ -146,6 +146,11 @@ const SCOPE_COPY: Record<
     description: 'Configura cómo se muestran los estados del flujo previo a quotation.',
     helper: 'Los códigos técnicos siguen fijos en Supabase; aquí solo cambias presentación.',
   },
+  project_board: {
+    title: 'Board de proyectos',
+    description: 'Configura columnas, color, etiquetas cortas y orden visual del tablero de proyectos.',
+    helper: 'Estos estados controlan el board y la vista lista de Proyectos.',
+  },
 }
 
 /** Opciones de colores disponibles para configurar estados */
@@ -165,6 +170,10 @@ function normalizeEditableRows(
     ).map(stripResolvedStateMeta),
     incoming_queries: resolveWorkflowStateRows(
       WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
+      rows,
+    ).map(stripResolvedStateMeta),
+    project_board: resolveWorkflowStateRows(
+      WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
       rows,
     ).map(stripResolvedStateMeta),
   }
@@ -944,6 +953,7 @@ export function QuotationStatesBoard({
   const [stateConfigRows, setStateConfigRows] = useState<WorkflowStateConfigRow[]>([
     ...initialEditableRows.quotation_board,
     ...initialEditableRows.incoming_queries,
+    ...initialEditableRows.project_board,
   ])
   // Copia de trabajo para el editor de configuracion (se modifica sin guardar)
   const [draftConfigRows, setDraftConfigRows] = useState(initialEditableRows)
@@ -961,6 +971,7 @@ export function QuotationStatesBoard({
   const [saveState, setSaveState] = useState<Record<WorkflowStateScope, ScopeSaveState>>({
     quotation_board: { status: 'idle', message: null },
     incoming_queries: { status: 'idle', message: null },
+    project_board: { status: 'idle', message: null },
   })
   // Referencia para saber si el componente ya se monto (evitar guardar en el primer render)
   const hasMountedRef = useRef(false)

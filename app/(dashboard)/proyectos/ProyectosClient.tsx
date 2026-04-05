@@ -3,27 +3,31 @@
  * COMPONENTE CLIENTE DE PROYECTOS ACTIVOS (TABLERO + LISTA)
  * ============================================================================
  *
- * Este componente ofrece dos vistas para gestionar los proyectos activos:
+ * Este componente replica la misma filosofia visual del modulo de Quotations:
+ * columnas/filas con cabecera coloreada (dot + titulo + chip de conteo),
+ * tarjetas con datos del proyecto, selector de estado y acciones.
+ *
+ * Los colores se resuelven via COLOR_STYLE_MAP y boardAccent del sistema
+ * de workflow-state-config, exactamente igual que QuotationStatesBoard.
  *
  * VISTAS DISPONIBLES:
- *   1. TABLERO (Kanban): una columna por cada estado del flujo simplificado
- *   2. LISTA: tabla con filtros y busqueda para operacion rapida
+ *   1. TABLERO (Kanban): una columna por cada estado del workflow de proyectos
+ *   2. LISTA: tabla con filas para cada proyecto con sus datos operativos
  *
- * COLUMNAS DEL TABLERO (estados simplificados):
+ * COLUMNAS DEL TABLERO (resueltas desde workflow-state-config):
  *   - Nuevo: proyecto recien creado
  *   - En Progreso: trabajo de ingenieria en curso
  *   - Revision: en proceso de revision tecnica
  *   - Aprobacion: pendiente de aprobacion
  *   - Entregado: documentacion entregada al cliente
  *
- * FUNCIONALIDADES:
- *   - Cambiar estado de un proyecto desde el tablero o la lista
- *   - Buscar por numero de proyecto, titulo o descripcion
- *   - Filtrar por estado
- *   - Ver detalle del proyecto al hacer click
+ * NOTA TECNICA: El estado "cerrado" no se muestra como columna en el tablero
+ * porque se filtra en el servidor (page.tsx), pero sigue siendo una
+ * transicion valida desde el selector de estado.
  *
- * NOTA TECNICA: El estado "cerrado" no se muestra en este tablero
- * porque se filtra en el servidor (page.tsx).
+ * CAMPOS DE LA TABLA doa_proyectos usados aqui:
+ *   numero_proyecto, titulo, descripcion, cliente_nombre, aeronave,
+ *   owner, prioridad, fecha_inicio, estado
  * ============================================================================
  */
 
@@ -32,13 +36,15 @@
 // --- IMPORTACIONES ---
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { startTransition, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { createClient } from '@/lib/supabase/client'
 import {
   ChevronDown,
   Inbox,
   LayoutGrid,
   List,
+  Plane,
   Search,
   User,
 } from 'lucide-react'
@@ -46,13 +52,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import {
-  PROJECT_STATE_CONFIG,
-  PROJECT_WORKFLOW_STATES,
-  getAllowedProjectTransitions,
+  getResolvedProjectBoardStatusMeta,
+  resolveWorkflowStateRows,
+  WORKFLOW_STATE_SCOPES,
+} from '@/lib/workflow-state-config'
+import type { ResolvedWorkflowStateMeta } from '@/lib/workflow-state-config'
+import {
   getProjectOperationalState,
-  getProjectStatusMeta,
+  PROJECT_WORKFLOW_STATES,
 } from '@/lib/workflow-states'
-import type { Proyecto } from '@/types/database'
+import type { EstadoProyectoPersistido, Proyecto, WorkflowStateConfigRow } from '@/types/database'
 
 // --- TIPOS INTERNOS ---
 
@@ -69,113 +78,28 @@ const VIEW_OPTIONS: Array<{
   { value: 'list', label: 'Lista', icon: List },
 ]
 
-/**
- * Definicion de las columnas del Kanban.
- * Cada columna corresponde a un estado del flujo simplificado de proyectos.
- */
-type KanbanColumnDef = {
-  id: string
-  title: string
-  states: readonly string[]
-  color: string
-  bg: string
-  border: string
-  dot: string
-}
+// --- CONSTANTES DE PRIORIDAD ---
 
-const KANBAN_COLUMNS: KanbanColumnDef[] = [
-  {
-    id: 'nuevo',
-    title: 'Nuevo',
-    states: ['nuevo'],
-    color: 'text-green-700',
-    bg: 'bg-green-50',
-    border: 'border-green-200',
-    dot: 'bg-green-500',
-  },
-  {
-    id: 'en_progreso',
-    title: 'En Progreso',
-    states: ['en_progreso'],
-    color: 'text-blue-700',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    dot: 'bg-blue-500',
-  },
-  {
-    id: 'revision',
-    title: 'Revision',
-    states: ['revision'],
-    color: 'text-amber-700',
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    dot: 'bg-amber-500',
-  },
-  {
-    id: 'aprobacion',
-    title: 'Aprobacion',
-    states: ['aprobacion'],
-    color: 'text-purple-700',
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    dot: 'bg-purple-500',
-  },
-  {
-    id: 'entregado',
-    title: 'Entregado',
-    states: ['entregado'],
-    color: 'text-emerald-700',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    dot: 'bg-emerald-500',
-  },
-]
+/** Colores de prioridad para badges */
+const PRIORIDAD_COLORS: Record<string, string> = {
+  alta: 'text-rose-700 bg-rose-50 border-rose-200',
+  urgente: 'text-rose-700 bg-rose-50 border-rose-200',
+  media: 'text-amber-700 bg-amber-50 border-amber-200',
+  normal: 'text-amber-700 bg-amber-50 border-amber-200',
+  baja: 'text-green-700 bg-green-50 border-green-200',
+}
 
 // --- COMPONENTES AUXILIARES ---
 
 /**
- * Badge visual del estado de un proyecto.
- * Usa los colores definidos en PROJECT_STATE_CONFIG.
+ * Badge visual de prioridad del proyecto.
+ * alta/urgente = rojo, media/normal = ambar, baja = verde.
  */
-function StatusBadge({ estado }: { estado: string }) {
-  const cfg = getProjectStatusMeta(estado)
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] font-medium',
-        cfg.color,
-        cfg.bg,
-        cfg.border,
-      )}
-    >
-      <span className={cn('h-1.5 w-1.5 rounded-full', cfg.dot)} />
-      {cfg.shortLabel}
-    </span>
-  )
-}
-
-/**
- * Badge de prioridad del proyecto.
- * Usa clasificacion_cambio como indicador visual.
- */
-function PrioridadBadge({
-  clasificacion,
-}: {
-  clasificacion: string | null
-}) {
-  if (!clasificacion) return null
-
-  const CLASIFICACION_COLORS: Record<string, string> = {
-    mayor: 'text-purple-700 bg-purple-50 border-purple-200',
-    menor: 'text-blue-700 bg-blue-50 border-blue-200',
-    reparacion: 'text-orange-700 bg-orange-50 border-orange-200',
-    stc: 'text-pink-700 bg-pink-50 border-pink-200',
-    otro: 'text-slate-600 bg-slate-100 border-slate-200',
-  }
+function PrioridadBadge({ prioridad }: { prioridad: string | null }) {
+  if (!prioridad) return null
 
   const colorClass =
-    CLASIFICACION_COLORS[clasificacion] ??
-    'text-slate-600 bg-slate-100 border-slate-200'
+    PRIORIDAD_COLORS[prioridad] ?? 'text-slate-600 bg-slate-100 border-slate-200'
 
   return (
     <span
@@ -184,60 +108,75 @@ function PrioridadBadge({
         colorClass,
       )}
     >
-      {clasificacion}
+      {prioridad}
     </span>
   )
 }
 
 /**
  * Selector desplegable para cambiar el estado de un proyecto.
- * Muestra solo las transiciones permitidas desde el estado actual.
+ * Muestra TODOS los estados del workflow de proyectos para permitir
+ * cambio manual a cualquier estado sin restricciones de transicion.
  * Llama a la API PATCH y refresca la pagina al cambiar.
+ * Usa labels resueltos desde workflow-state-config.
  */
-function ProjectStateControl({ proyecto }: { proyecto: Proyecto }) {
-  const router = useRouter()
-  const [selectedState, setSelectedState] = useState<string>(proyecto.estado)
+function ProjectStateControl({
+  proyecto,
+  stateConfigRows,
+  onEstadoChange,
+  onEstadoRevert,
+}: {
+  proyecto: Proyecto
+  stateConfigRows: WorkflowStateConfigRow[]
+  onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
+  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
+}) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
-  const allowedTransitions = getAllowedProjectTransitions(proyecto.estado)
-
-  // Si no hay transiciones posibles, solo mostrar el estado actual
-  if (allowedTransitions.length === 0) {
-    return <StatusBadge estado={proyecto.estado} />
-  }
+  // El dropdown usa directamente proyecto.estado (que viene del estado local del padre).
+  // No mantenemos un selectedState propio para evitar desincronizaciones.
 
   async function handleChange(nextState: string) {
     if (!nextState || nextState === proyecto.estado) {
-      setSelectedState(proyecto.estado)
       return
     }
 
-    setSelectedState(nextState)
+    const previousState = proyecto.estado
+
+    // Actualizar optimistamente el estado del padre PRIMERO (mueve la tarjeta)
+    onEstadoChange?.(proyecto.id, nextState)
     setStatus('saving')
     setMessage(null)
 
     try {
-      const response = await fetch(`/api/proyectos/${proyecto.id}/state`, {
-        method: 'PATCH',
+      const webhookUrl = process.env.NEXT_PUBLIC_DOA_PROJECT_STATE_WEBHOOK_URL || 'https://sswebhook.testn8n.com/webhook/doa-project-cambio-estado'
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: nextState }),
+        body: JSON.stringify({
+          proyecto_id: proyecto.id,
+          estado: nextState
+        }),
       })
 
       const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
+        | { ok?: boolean; error?: string }
         | null
 
-      if (!response.ok) {
+      if (!response.ok || !payload?.ok) {
         throw new Error(
           payload?.error || 'No se pudo actualizar el estado del proyecto.',
         )
       }
 
       setStatus('idle')
-      startTransition(() => router.refresh())
+      // Supabase Realtime se encarga de actualizar el estado local automaticamente.
+      // No es necesario hacer router.refresh().
     } catch (error) {
-      setSelectedState(proyecto.estado)
+      // REVERTIR: restaurar el estado anterior en el padre y limpiar el override optimista
+      onEstadoRevert?.(proyecto.id, previousState)
       setStatus('error')
       setMessage(
         error instanceof Error
@@ -247,17 +186,15 @@ function ProjectStateControl({ proyecto }: { proyecto: Proyecto }) {
     }
   }
 
-  // Construir opciones: estado actual + transiciones permitidas
-  const options: Array<{ value: string; label: string }> = [
-    {
-      value: proyecto.estado,
-      label: getProjectStatusMeta(proyecto.estado).label,
-    },
-    ...allowedTransitions.map((state) => ({
-      value: state,
-      label: getProjectStatusMeta(state).label,
-    })),
-  ]
+  // Construir opciones: TODOS los 6 estados del workflow de proyectos
+  const allOptions = PROJECT_WORKFLOW_STATES.map((stateCode) => {
+    const meta = getResolvedProjectBoardStatusMeta(stateCode, stateConfigRows)
+    return {
+      value: stateCode,
+      label: meta.label,
+      dot: meta.accent.dot,
+    }
+  })
 
   return (
     <div className="space-y-1">
@@ -266,14 +203,17 @@ function ProjectStateControl({ proyecto }: { proyecto: Proyecto }) {
       </label>
       <select
         id={`project-state-${proyecto.id}`}
-        value={selectedState}
+        value={proyecto.estado}
         disabled={status === 'saving'}
         onChange={(event) => void handleChange(event.target.value)}
-        className="h-7 min-w-[160px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-600 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
+        className="h-8 min-w-[140px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
+        {allOptions.map((option) => (
+          <option
+            key={option.value}
+            value={option.value}
+          >
+            {option.value === proyecto.estado ? `● ${option.label}` : option.label}
           </option>
         ))}
       </select>
@@ -289,128 +229,218 @@ function ProjectStateControl({ proyecto }: { proyecto: Proyecto }) {
 
 /**
  * Tarjeta individual de un proyecto en la vista Kanban.
- * Muestra: numero_proyecto, titulo, tipo_modificacion, owner_id, estado.
+ * Replica el patron visual exacto de BoardCard en QuotationStatesBoard:
+ *   - Codigo del proyecto (numero_proyecto)
+ *   - Titulo en negrita
+ *   - Descripcion en gris italica truncada
+ *   - Bloque de cliente (cliente_nombre) en verde
+ *   - Badge de aeronave
+ *   - Badge de owner
+ *   - Badge de prioridad
+ *   - Fecha (fecha_inicio) abajo a la derecha
+ *   - Selector de estado al pie
  */
-function ProyectoKanbanCard({ proyecto }: { proyecto: Proyecto }) {
-  const meta = getProjectStatusMeta(proyecto.estado)
-
+function BoardCard({
+  proyecto,
+  stateConfigRows,
+  onEstadoChange,
+  onEstadoRevert,
+}: {
+  proyecto: Proyecto
+  stateConfigRows: WorkflowStateConfigRow[]
+  onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
+  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
+}) {
   return (
-    <div className="rounded-[18px] border border-slate-200 bg-white p-3 shadow-[0_10px_24px_rgba(148,163,184,0.12)] transition-all hover:border-sky-300 hover:bg-sky-50/40">
-      {/* Cabecera: numero de proyecto + estado */}
-      <div className="mb-2 flex items-start justify-between gap-2">
+    <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-sky-300">
+      {/* Cabecera: codigo de proyecto */}
+      <div className="space-y-1">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-slate-500">
+          {proyecto.numero_proyecto}
+        </p>
         <Link
           href={`/engineering/projects/${proyecto.id}`}
-          className="font-mono text-[11px] tracking-wide text-slate-500 hover:text-sky-700"
+          className="block"
         >
-          {proyecto.numero_proyecto}
+          <h4 className="text-sm font-semibold leading-5 text-slate-950 transition-colors hover:text-sky-800">
+            {proyecto.titulo}
+          </h4>
         </Link>
-        <StatusBadge estado={proyecto.estado} />
       </div>
 
-      {/* Titulo del proyecto */}
-      <Link
-        href={`/engineering/projects/${proyecto.id}`}
-        className="block"
-      >
-        <p className="mb-2 line-clamp-2 text-sm font-medium leading-snug text-slate-950 transition-colors hover:text-sky-800">
-          {proyecto.titulo}
+      {/* Descripcion preview */}
+      {proyecto.descripcion ? (
+        <p className="mt-2 text-xs italic text-slate-400 line-clamp-1">
+          {proyecto.descripcion}
         </p>
-      </Link>
+      ) : null}
 
-      {/* Tipo de modificacion y clasificacion */}
-      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] text-slate-500">
-          {proyecto.tipo_modificacion}
-        </span>
-        <PrioridadBadge clasificacion={proyecto.clasificacion_cambio} />
+      {/* Bloque de cliente (replica el patron de IncomingClientIdentityBlock) */}
+      {proyecto.cliente_nombre ? (
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-3 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+            Cliente
+          </p>
+          <p className="mt-1 text-sm font-semibold text-slate-950">
+            {proyecto.cliente_nombre}
+          </p>
+        </div>
+      ) : null}
+
+      {/* Aeronave info */}
+      {proyecto.aeronave ? (
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
+          <Plane size={11} />
+          <span className="truncate">{proyecto.aeronave}</span>
+        </div>
+      ) : null}
+
+      {/* Owner + Prioridad badges */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {proyecto.owner ? (
+          <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+            <User size={10} />
+            <span className="max-w-[80px] truncate">{proyecto.owner}</span>
+          </span>
+        ) : null}
+        <PrioridadBadge prioridad={proyecto.prioridad} />
       </div>
 
-      {/* Owner y selector de estado */}
-      <div className="flex items-center justify-between gap-2">
-        {proyecto.owner_id ? (
-          <div className="flex items-center gap-1 text-[11px] text-slate-500">
-            <User size={11} />
-            <span className="max-w-[80px] truncate">{proyecto.owner_id}</span>
-          </div>
-        ) : (
-          <span className="text-[11px] text-slate-400">Sin asignar</span>
-        )}
-        <ProjectStateControl proyecto={proyecto} />
+      {/* Fecha inicio alineada a la derecha */}
+      {proyecto.fecha_inicio ? (
+        <p className="mt-2 text-right text-[11px] text-slate-400">
+          {proyecto.fecha_inicio}
+        </p>
+      ) : null}
+
+      {/* Selector de estado (igual que en Quotations) */}
+      <div className="mt-3">
+        <ProjectStateControl proyecto={proyecto} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} onEstadoRevert={onEstadoRevert} />
       </div>
-    </div>
+    </article>
   )
 }
 
-// --- COLUMNA KANBAN ---
+// --- COLUMNA KANBAN (BoardLane) ---
 
 /**
- * Una columna del tablero Kanban. Agrupa proyectos de varios estados
- * operativos bajo una misma fase logica.
+ * Una columna del tablero Kanban.
+ * Replica el patron EXACTO de BoardLane en QuotationStatesBoard:
+ *   - Cabecera con dot coloreado + nombre del estado + chip contador
+ *   - Borde de la columna con el color del estado
+ *   - Tarjetas del proyecto
+ *   - Estado vacio si no hay proyectos
  */
-function KanbanColumn({
-  column,
+function BoardLane({
+  stateMeta,
   proyectos,
+  stateConfigRows,
+  onEstadoChange,
+  onEstadoRevert,
 }: {
-  column: KanbanColumnDef
+  stateMeta: ResolvedWorkflowStateMeta
   proyectos: Proyecto[]
+  stateConfigRows: WorkflowStateConfigRow[]
+  onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
+  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
-  // Filtrar proyectos que estan en alguno de los estados de esta columna
-  const columnProyectos = proyectos.filter((proyecto) => {
+  // Filtrar proyectos que estan en este estado (incluyendo estados legacy)
+  const laneProyectos = proyectos.filter((proyecto) => {
     const opState = getProjectOperationalState(proyecto.estado)
-    return opState ? column.states.includes(opState) : false
+    return opState === stateMeta.state_code
   })
 
   return (
-    <div className="min-w-[280px] flex-none">
-      {/* Cabecera de la columna */}
-      <div className="mb-3 flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className={cn('h-2 w-2 rounded-full', column.dot)} />
-          <span className="text-sm font-medium text-slate-900">
-            {column.title}
+    <section
+      className={cn(
+        'flex h-full w-[320px] flex-none flex-col rounded-[30px] border bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 shadow-[0_18px_42px_rgba(148,163,184,0.14)]',
+        stateMeta.boardAccent.border,
+      )}
+    >
+      {/* Cabecera coloreada - patron identico a Quotations */}
+      <div
+        className={cn('rounded-[22px] border px-4 py-4', stateMeta.boardAccent.bg, stateMeta.boardAccent.border)}
+        title={stateMeta.description ?? ''}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className={cn('h-2.5 w-2.5 rounded-full', stateMeta.boardAccent.dot)} />
+            <h3 className={cn('text-sm font-semibold', stateMeta.boardAccent.text)}>
+              {stateMeta.label}
+            </h3>
+          </div>
+          <span
+            className={cn(
+              'rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]',
+              stateMeta.boardAccent.chip,
+            )}
+          >
+            {laneProyectos.length}
           </span>
         </div>
-        <span
-          className={cn(
-            'rounded-full border px-2 py-0.5 text-xs font-semibold',
-            column.color,
-            column.bg,
-            column.border,
-          )}
-        >
-          {columnProyectos.length}
-        </span>
       </div>
 
       {/* Tarjetas */}
-      <div className="flex flex-col gap-2">
-        {columnProyectos.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-400">
-            Sin proyectos
+      <div className="mt-4 flex-1 space-y-3">
+        {laneProyectos.map((proyecto) => (
+          <BoardCard
+            key={proyecto.id}
+            proyecto={proyecto}
+            stateConfigRows={stateConfigRows}
+            onEstadoChange={onEstadoChange}
+            onEstadoRevert={onEstadoRevert}
+          />
+        ))}
+
+        {laneProyectos.length === 0 ? (
+          <div className="rounded-[22px] border border-dashed border-slate-200 bg-white/80 px-4 py-5 text-center">
+            <p className="text-sm font-medium text-slate-900">Sin proyectos</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Esta columna queda preparada para recibir proyectos.
+            </p>
           </div>
-        ) : (
-          columnProyectos.map((proyecto) => (
-            <ProyectoKanbanCard key={proyecto.id} proyecto={proyecto} />
-          ))
-        )}
+        ) : null}
       </div>
-    </div>
+    </section>
   )
 }
 
 // --- VISTA TABLERO (KANBAN) ---
 
-function TableroView({ proyectos }: { proyectos: Proyecto[] }) {
+function TableroView({
+  proyectos,
+  resolvedStates,
+  stateConfigRows,
+  onEstadoChange,
+  onEstadoRevert,
+}: {
+  proyectos: Proyecto[]
+  resolvedStates: ResolvedWorkflowStateMeta[]
+  stateConfigRows: WorkflowStateConfigRow[]
+  onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
+  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
+}) {
   return (
-    <div className="overflow-x-auto pb-4">
-      <div className="flex min-w-max gap-4 pr-2">
-        {KANBAN_COLUMNS.map((column) => (
-          <KanbanColumn
-            key={column.id}
-            column={column}
-            proyectos={proyectos}
-          />
-        ))}
+    <div className="px-5 py-5">
+      <div className="mb-4 rounded-[28px] border border-sky-100 bg-white/85 px-4 py-3 text-sm text-slate-600 shadow-sm">
+        El tablero usa scroll horizontal. Usa la barra de desplazamiento o el trackpad para navegar entre columnas.
+      </div>
+
+      <div className="overflow-x-auto pb-4">
+        <div className="flex min-w-max gap-4 pr-2">
+          {resolvedStates
+            .filter((meta) => meta.state_code !== 'cerrado')
+            .map((meta) => (
+              <BoardLane
+                key={meta.state_code}
+                stateMeta={meta}
+                proyectos={proyectos}
+                stateConfigRows={stateConfigRows}
+                onEstadoChange={onEstadoChange}
+                onEstadoRevert={onEstadoRevert}
+              />
+            ))}
+        </div>
       </div>
     </div>
   )
@@ -418,121 +448,144 @@ function TableroView({ proyectos }: { proyectos: Proyecto[] }) {
 
 // --- VISTA LISTA ---
 
-function ListaView({ proyectos }: { proyectos: Proyecto[] }) {
+function ListaView({
+  proyectos,
+  stateConfigRows,
+  onEstadoChange,
+  onEstadoRevert,
+}: {
+  proyectos: Proyecto[]
+  stateConfigRows: WorkflowStateConfigRow[]
+  onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
+  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
+}) {
   return (
-    <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-        <h3 className="text-base font-semibold text-slate-950">
-          Lista de proyectos
-        </h3>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          Vista compacta de todos los proyectos activos con sus datos operativos.
-        </p>
-      </div>
+    <div className="px-5 py-5">
+      <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <h3 className="text-base font-semibold text-slate-950">
+            Lista de proyectos
+          </h3>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            Vista compacta de todos los proyectos activos con sus datos operativos.
+          </p>
+        </div>
 
-      <div className="overflow-auto">
-        <table className="min-w-[1060px] w-full border-separate border-spacing-0 text-left">
-          <thead className="sticky top-0 z-10 bg-white">
-            <tr className="border-b border-slate-200 bg-slate-50">
-              {[
-                'Codigo',
-                'Titulo',
-                'Tipo',
-                'Estado',
-                'Clasificacion',
-                'Owner',
-                'Fecha apertura',
-                'Fecha prevista',
-              ].map((label) => (
-                <th
-                  key={label}
-                  className="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
-                >
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {proyectos.map((proyecto, idx) => (
-              <tr
-                key={proyecto.id}
-                className={cn(
-                  'border-b border-slate-200/60 align-top transition-colors hover:bg-sky-50/60',
-                  idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40',
-                )}
-              >
-                {/* Codigo / Numero de proyecto */}
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/engineering/projects/${proyecto.id}`}
-                    className="block font-mono text-xs text-slate-500 hover:text-sky-700"
+        <div className="overflow-auto">
+          <table className="min-w-[1060px] w-full border-separate border-spacing-0 text-left">
+            <thead className="sticky top-0 z-10 bg-white">
+              <tr className="border-b border-slate-200 bg-slate-50">
+                {[
+                  'Codigo',
+                  'Titulo',
+                  'Cliente',
+                  'Estado',
+                  'Aeronave',
+                  'Owner',
+                  'Prioridad',
+                  'Fecha inicio',
+                ].map((label) => (
+                  <th
+                    key={label}
+                    className="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
                   >
-                    {proyecto.numero_proyecto}
-                  </Link>
-                </td>
-
-                {/* Titulo */}
-                <td className="max-w-[260px] px-4 py-3">
-                  <Link
-                    href={`/engineering/projects/${proyecto.id}`}
-                    className="block"
-                  >
-                    <span className="block truncate text-sm font-medium text-slate-950 hover:text-sky-800">
-                      {proyecto.titulo}
-                    </span>
-                    {proyecto.descripcion ? (
-                      <span className="block truncate text-[11px] text-slate-500">
-                        {proyecto.descripcion}
-                      </span>
-                    ) : null}
-                  </Link>
-                </td>
-
-                {/* Tipo de modificacion */}
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                  {proyecto.tipo_modificacion}
-                </td>
-
-                {/* Estado con selector de cambio */}
-                <td className="min-w-[200px] px-4 py-3">
-                  <ProjectStateControl proyecto={proyecto} />
-                </td>
-
-                {/* Clasificacion del cambio */}
-                <td className="px-4 py-3">
-                  <PrioridadBadge
-                    clasificacion={proyecto.clasificacion_cambio}
-                  />
-                </td>
-
-                {/* Owner */}
-                <td className="whitespace-nowrap px-4 py-3">
-                  {proyecto.owner_id ? (
-                    <div className="flex items-center gap-1.5 text-sm text-slate-600">
-                      <User size={12} />
-                      <span className="max-w-[100px] truncate">
-                        {proyecto.owner_id}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-slate-400">-</span>
-                  )}
-                </td>
-
-                {/* Fecha apertura */}
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                  {proyecto.fecha_apertura ?? '-'}
-                </td>
-
-                {/* Fecha prevista */}
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
-                  {proyecto.fecha_prevista ?? '-'}
-                </td>
+                    {label}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {proyectos.map((proyecto, idx) => {
+                const meta = getResolvedProjectBoardStatusMeta(proyecto.estado, stateConfigRows)
+                return (
+                  <tr
+                    key={proyecto.id}
+                    className={cn(
+                      'border-b border-slate-200/60 align-top transition-colors hover:bg-sky-50/60',
+                      idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40',
+                    )}
+                  >
+                    {/* Codigo / Numero de proyecto */}
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/engineering/projects/${proyecto.id}`}
+                        className="block font-mono text-xs text-slate-500 hover:text-sky-700"
+                      >
+                        {proyecto.numero_proyecto}
+                      </Link>
+                    </td>
+
+                    {/* Titulo + Descripcion */}
+                    <td className="max-w-[260px] px-4 py-3">
+                      <Link
+                        href={`/engineering/projects/${proyecto.id}`}
+                        className="block"
+                      >
+                        <span className="block truncate text-sm font-medium text-slate-950 hover:text-sky-800">
+                          {proyecto.titulo}
+                        </span>
+                        {proyecto.descripcion ? (
+                          <span className="block truncate text-[11px] italic text-slate-500">
+                            {proyecto.descripcion}
+                          </span>
+                        ) : null}
+                      </Link>
+                    </td>
+
+                    {/* Cliente */}
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                      {proyecto.cliente_nombre ?? '-'}
+                    </td>
+
+                    {/* Estado con badge coloreado + selector de cambio */}
+                    <td className="min-w-[200px] px-4 py-3">
+                      <div className="space-y-1.5">
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[11px] font-medium',
+                            meta.badge.color,
+                          )}
+                        >
+                          {meta.label}
+                        </span>
+                        <ProjectStateControl proyecto={proyecto} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} onEstadoRevert={onEstadoRevert} />
+                      </div>
+                    </td>
+
+                    {/* Aeronave */}
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                      {proyecto.aeronave ?? '-'}
+                    </td>
+
+                    {/* Owner */}
+                    <td className="whitespace-nowrap px-4 py-3">
+                      {proyecto.owner ? (
+                        <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                          <User size={12} />
+                          <span className="max-w-[100px] truncate">
+                            {proyecto.owner}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-slate-400">-</span>
+                      )}
+                    </td>
+
+                    {/* Prioridad */}
+                    <td className="px-4 py-3">
+                      <PrioridadBadge prioridad={proyecto.prioridad} />
+                    </td>
+
+                    {/* Fecha inicio */}
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                      {proyecto.fecha_inicio ?? '-'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
@@ -544,20 +597,96 @@ function ListaView({ proyectos }: { proyectos: Proyecto[] }) {
  * Componente principal de Proyectos activos.
  * Ofrece toggle entre vista Tablero (Kanban) y Lista,
  * con barra de busqueda y filtro de estado.
+ *
+ * Los colores de las columnas, badges y chips se resuelven desde
+ * workflow-state-config usando el sistema de COLOR_STYLE_MAP,
+ * siguiendo la misma filosofia que el modulo de Quotations.
  */
 export function ProyectosClient({
   initialProyectos,
+  initialStateConfigRows,
 }: {
   initialProyectos: Proyecto[]
+  initialStateConfigRows: WorkflowStateConfigRow[]
 }) {
   const [view, setView] = useState<BoardView>('board')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
+  // Estado local de proyectos. Se inicializa con los datos del servidor
+  // y se actualiza en tiempo real via Supabase Realtime.
+  const [proyectos, setProyectos] = useState<Proyecto[]>(initialProyectos)
+
+  // Sincronizar si los datos iniciales del servidor cambian (navegacion, etc.)
+  useEffect(() => {
+    setProyectos(initialProyectos)
+  }, [initialProyectos])
+
+  // --- Supabase Realtime: suscripcion a cambios en doa_proyectos ---
+  // Escucha INSERT, UPDATE y DELETE en la tabla y actualiza el estado local
+  // automaticamente sin necesidad de router.refresh().
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel('proyectos-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'doa_proyectos' },
+        (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            setProyectos((prev) =>
+              prev.map((p) =>
+                p.id === (payload.new as Proyecto).id
+                  ? { ...p, ...(payload.new as Proyecto) }
+                  : p,
+              ),
+            )
+          } else if (payload.eventType === 'INSERT') {
+            setProyectos((prev) => [...prev, payload.new as Proyecto])
+          } else if (payload.eventType === 'DELETE') {
+            setProyectos((prev) =>
+              prev.filter((p) => p.id !== (payload.old as { id: string }).id),
+            )
+          }
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
+  // Callback para actualizar el estado de un proyecto localmente (optimista).
+  // La tarjeta se mueve inmediatamente; luego Supabase Realtime confirma el cambio real.
+  const handleEstadoChange = useCallback((proyectoId: string, nuevoEstado: string) => {
+    setProyectos((prev) =>
+      prev.map((p) =>
+        p.id === proyectoId ? { ...p, estado: nuevoEstado as EstadoProyectoPersistido } : p,
+      ),
+    )
+  }, [])
+
+  // Callback para revertir un cambio optimista (cuando la API falla).
+  const handleEstadoRevert = useCallback((proyectoId: string, estadoAnterior: string) => {
+    setProyectos((prev) =>
+      prev.map((p) =>
+        p.id === proyectoId ? { ...p, estado: estadoAnterior as EstadoProyectoPersistido } : p,
+      ),
+    )
+  }, [])
+
+  // Resolver los estados del tablero de proyectos con la configuracion actual
+  const resolvedStates = useMemo(
+    () => resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.PROJECT_BOARD, initialStateConfigRows),
+    [initialStateConfigRows],
+  )
+
   // Filtrar proyectos por busqueda y estado
   const filtered = useMemo(
     () =>
-      initialProyectos.filter((proyecto) => {
+      proyectos.filter((proyecto) => {
         // Filtro de busqueda por texto
         const matchSearch =
           search === '' ||
@@ -566,6 +695,12 @@ export function ProyectosClient({
             .toLowerCase()
             .includes(search.toLowerCase()) ||
           (proyecto.descripcion ?? '')
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          (proyecto.cliente_nombre ?? '')
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+          (proyecto.aeronave ?? '')
             .toLowerCase()
             .includes(search.toLowerCase())
 
@@ -576,33 +711,34 @@ export function ProyectosClient({
 
         return matchSearch && matchStatus
       }),
-    [initialProyectos, search, statusFilter],
+    [proyectos, search, statusFilter],
   )
 
-  // Metricas de resumen
+  // Metricas de resumen por columna (usando los estados resueltos)
   const metrics = useMemo(() => {
-    const byColumn = KANBAN_COLUMNS.map((col) => ({
-      id: col.id,
-      title: col.title,
-      count: filtered.filter((p) => {
-        const opState = getProjectOperationalState(p.estado)
-        return opState ? col.states.includes(opState) : false
-      }).length,
-      dot: col.dot,
-      color: col.color,
-    }))
+    const byColumn = resolvedStates
+      .filter((meta) => meta.state_code !== 'cerrado')
+      .map((meta) => ({
+        stateCode: meta.state_code,
+        title: meta.label,
+        count: filtered.filter((p) => {
+          const opState = getProjectOperationalState(p.estado)
+          return opState === meta.state_code
+        }).length,
+        accent: meta.boardAccent,
+      }))
     return { total: filtered.length, byColumn }
-  }, [filtered])
+  }, [filtered, resolvedStates])
 
   // Estados disponibles para el filtro (solo los que tienen proyectos)
   const availableStates = useMemo(
     () =>
-      PROJECT_WORKFLOW_STATES.filter((state) =>
-        initialProyectos.some(
-          (p) => getProjectOperationalState(p.estado) === state,
+      resolvedStates.filter((meta) =>
+        proyectos.some(
+          (p) => getProjectOperationalState(p.estado) === meta.state_code,
         ),
       ),
-    [initialProyectos],
+    [proyectos, resolvedStates],
   )
 
   return (
@@ -648,7 +784,7 @@ export function ProyectosClient({
                 .filter((col) => col.count > 0)
                 .map((col) => (
                   <div
-                    key={col.id}
+                    key={col.stateCode}
                     className="rounded-[22px] border border-sky-200 bg-white/90 px-4 py-3"
                   >
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -707,14 +843,11 @@ export function ProyectosClient({
                 className="cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-950 transition-colors focus:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-100"
               >
                 <option value="all">Todos los estados</option>
-                {availableStates.map((state) => {
-                  const meta = getProjectStatusMeta(state)
-                  return (
-                    <option key={state} value={state}>
-                      {meta.label}
-                    </option>
-                  )
-                })}
+                {availableStates.map((meta) => (
+                  <option key={meta.state_code} value={meta.state_code}>
+                    {meta.label}
+                  </option>
+                ))}
               </select>
               <ChevronDown
                 size={14}
@@ -737,12 +870,23 @@ export function ProyectosClient({
             </div>
           ) : (
             <>
-              <TabsContent value="board" className="min-h-0 px-5 py-5">
-                <TableroView proyectos={filtered} />
+              <TabsContent value="board" className="min-h-0">
+                <TableroView
+                  proyectos={filtered}
+                  resolvedStates={resolvedStates}
+                  stateConfigRows={initialStateConfigRows}
+                  onEstadoChange={handleEstadoChange}
+                  onEstadoRevert={handleEstadoRevert}
+                />
               </TabsContent>
 
-              <TabsContent value="list" className="px-5 py-5">
-                <ListaView proyectos={filtered} />
+              <TabsContent value="list">
+                <ListaView
+                  proyectos={filtered}
+                  stateConfigRows={initialStateConfigRows}
+                  onEstadoChange={handleEstadoChange}
+                  onEstadoRevert={handleEstadoRevert}
+                />
               </TabsContent>
             </>
           )}

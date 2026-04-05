@@ -1,44 +1,45 @@
 /**
  * ============================================================================
- * COLUMNA CENTRAL — Hilo de comunicacion con el cliente
+ * SECCION DE EMAILS — Layout lado a lado (entrante izquierda, saliente derecha)
  * ============================================================================
  *
- * Componente cliente que organiza la columna central de la vista de detalle
- * de consulta como un HILO DE COMUNICACION (timeline vertical de emails).
+ * Componente cliente que organiza los correos de la consulta en un layout
+ * de dos columnas:
+ *   - IZQUIERDA: correos entrantes del cliente (tarjetas azules)
+ *   - DERECHA: respuestas enviadas (tarjetas verdes)
  *
- * Estructura del hilo:
- *   1. Correo entrante — el email original del cliente (colapsado por defecto)
- *   2. Respuesta enviada — si ya se envio una respuesta (colapsado, solo si existe)
- *   3. Nueva respuesta — el compositor para redactar y enviar (expandido)
+ * Fuente de datos (prioridad):
+ *   1. Tabla doa_emails — si el array emails[] tiene elementos, se usa como
+ *      fuente principal. Los emails se separan por direccion ('entrante' / 'saliente')
+ *      y se muestran en orden cronologico por fecha en cada columna.
+ *   2. Campos legacy de la consulta (remitente, asunto, cuerpo_original, etc.) —
+ *      se usan como fallback cuando el array emails[] esta vacio, para mantener
+ *      compatibilidad con consultas antiguas que no tienen filas en doa_emails.
  *
- * Cada email del hilo es una tarjeta colapsable con:
- *   - Icono de direccion (entrante/saliente)
- *   - Fecha y hora formateada en espanol
- *   - Remitente o destinatario
- *   - Snippet del cuerpo cuando esta colapsado
- *   - Texto completo cuando esta expandido
- *   - Borde lateral coloreado (azul = entrante, verde = saliente)
+ * Incluye una suscripcion Supabase Realtime para INSERTs en doa_emails
+ * filtrados por consulta_id, de modo que nuevos emails aparecen automaticamente.
  *
- * Una linea vertical conecta las tarjetas como timeline.
- *
- * Disenado con estructura de array para facilitar la adicion de mas
- * mensajes en el futuro (threading completo).
+ * Debajo de los emails se muestra el compositor de nueva respuesta.
  * ============================================================================
  */
 
 "use client"
 
-import { useState, useMemo } from "react"
-import { ChevronDown, Inbox, Send, Mail, PenLine } from "lucide-react"
+import { useState, useMemo, useEffect } from "react"
+import { ChevronDown, Inbox, Send, Mail, PenLine, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
 import { ClientReplyComposer } from "./ClientReplyComposer"
+import type { DoaEmail } from "@/types/database"
 
 // ---------------------------------------------------------------------------
 // Tipos
 // ---------------------------------------------------------------------------
 
-/** Datos necesarios para renderizar el hilo completo */
+/** Datos necesarios para renderizar la seccion de emails */
 type CenterColumnCollapsibleProps = {
+  /** Emails de la tabla doa_emails ordenados cronologicamente por fecha */
+  emails?: DoaEmail[]
   query: {
     id: string
     codigo: string
@@ -48,18 +49,21 @@ type CenterColumnCollapsibleProps = {
     clasificacion: string | null
     cuerpoOriginal: string
     respuestaIa: string | null
-    // Campos de fecha y respuesta para el hilo de comunicacion
     creadoEn: string
     correoClienteEnviadoAt: string | null
     correoClienteEnviadoBy: string | null
     ultimoBorradorCliente: string | null
+    replyBody: string | null
+    replySentAt: string | null
   }
+  /** Si true, no muestra el compositor de nueva respuesta (usado cuando ya se envio) */
+  hideComposer?: boolean
 }
 
-/** Direccion del email en el hilo */
+/** Direccion del email */
 type EmailDirection = "incoming" | "outgoing"
 
-/** Un mensaje individual dentro del hilo de comunicacion */
+/** Un mensaje individual */
 type ThreadEmail = {
   id: string
   direction: EmailDirection
@@ -69,22 +73,20 @@ type ThreadEmail = {
   date: string | null
   body: string
   subject?: string
+  /** Si true, el body es HTML y se renderiza como tal */
+  isHtml?: boolean
+  /** Si true, se puede eliminar (solo emails de doa_emails, no legacy) */
+  isDeletable?: boolean
 }
 
 // ---------------------------------------------------------------------------
 // Utilidades de formato
 // ---------------------------------------------------------------------------
 
-/**
- * Formatea un ISO timestamp a un formato legible en espanol.
- * Ejemplo: "05 abr 2026, 11:01"
- */
 function formatDateSpanish(isoDate: string | null | undefined): string {
   if (!isoDate) return "Fecha no disponible"
-
   const date = new Date(isoDate)
   if (Number.isNaN(date.getTime())) return "Fecha no disponible"
-
   return new Intl.DateTimeFormat("es-ES", {
     day: "2-digit",
     month: "short",
@@ -94,12 +96,24 @@ function formatDateSpanish(isoDate: string | null | undefined): string {
   }).format(date)
 }
 
-/**
- * Genera un snippet del cuerpo del email (primeros ~80 caracteres).
- */
-function buildSnippet(body: string, maxLength = 80): string {
-  if (body.length <= maxLength) return body
-  return body.slice(0, maxLength).trimEnd() + "..."
+/** Extrae texto plano de HTML para mostrar como snippet colapsado */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function buildSnippet(body: string, isHtml = false, maxLength = 100): string {
+  const text = isHtml ? stripHtml(body) : body
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength).trimEnd() + "..."
 }
 
 // ---------------------------------------------------------------------------
@@ -107,138 +121,158 @@ function buildSnippet(body: string, maxLength = 80): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Cabecera clicable de un email en el hilo.
- * Muestra icono, etiqueta de direccion, fecha, contacto, snippet y chevron.
+ * Tarjeta de email individual (colapsable).
+ * Se adapta al lado en que esta (entrante = azul, saliente = verde).
  */
-function ThreadEmailHeader({
+function EmailCard({
   email,
   isOpen,
   onToggle,
+  onDelete,
 }: {
   email: ThreadEmail
   isOpen: boolean
   onToggle: () => void
+  onDelete?: (id: string) => void
 }) {
   const isIncoming = email.direction === "incoming"
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={cn(
-        "flex w-full items-start gap-3 rounded-2xl border bg-white px-4 py-3 text-left shadow-sm transition-colors hover:bg-slate-50/80",
-        // Borde lateral coloreado segun la direccion
-        isIncoming
-          ? "border-l-[3px] border-l-sky-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-l-[3px] border-l-emerald-400 border-t-slate-200 border-r-slate-200 border-b-slate-200",
-      )}
-    >
-      {/* Icono de direccion */}
+    <div className="flex flex-col">
+      {/* Cabecera clicable */}
       <div
         className={cn(
-          "mt-0.5 shrink-0 rounded-lg p-1.5",
-          isIncoming ? "bg-sky-50 text-sky-500" : "bg-emerald-50 text-emerald-500",
+          "flex w-full items-start gap-3 rounded-2xl border bg-white px-4 py-3 shadow-sm transition-colors hover:bg-slate-50/80",
+          isIncoming
+            ? "border-l-[3px] border-l-sky-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
+            : "border-r-[3px] border-r-emerald-400 border-t-slate-200 border-l-slate-200 border-b-slate-200",
         )}
       >
-        {isIncoming ? (
-          <Inbox className="h-3.5 w-3.5" />
-        ) : (
-          <Send className="h-3.5 w-3.5" />
-        )}
+        {/* Icono de direccion */}
+        <button
+          type="button"
+          onClick={onToggle}
+          className={cn(
+            "mt-0.5 shrink-0 rounded-lg p-1.5",
+            isIncoming ? "bg-sky-50 text-sky-500" : "bg-emerald-50 text-emerald-500",
+          )}
+        >
+          {isIncoming ? (
+            <Inbox className="h-3.5 w-3.5" />
+          ) : (
+            <Send className="h-3.5 w-3.5" />
+          )}
+        </button>
+
+        {/* Contenido textual */}
+        <button type="button" onClick={onToggle} className="min-w-0 flex-1 text-left">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <p
+              className={cn(
+                "text-[10px] font-semibold uppercase tracking-[0.16em]",
+                isIncoming ? "text-sky-500" : "text-emerald-500",
+              )}
+            >
+              {email.label}
+            </p>
+            {email.date && (
+              <p className="text-[10px] text-slate-400">
+                {formatDateSpanish(email.date)}
+              </p>
+            )}
+          </div>
+
+          {email.subject && (
+            <p className="mt-0.5 text-sm font-semibold text-slate-950">
+              {email.subject}
+            </p>
+          )}
+
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+            <Mail className="h-3 w-3 shrink-0" />
+            <span className="font-medium text-slate-400">{email.contactLabel}:</span>
+            {email.contactValue}
+          </p>
+
+          {!isOpen && (
+            <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-slate-400 italic">
+              {buildSnippet(email.body, email.isHtml)}
+            </p>
+          )}
+        </button>
+
+        {/* Acciones: papelera + chevron */}
+        <div className="flex shrink-0 items-center gap-1">
+          {email.isDeletable && onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(email.id)
+              }}
+              className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500"
+              title="Eliminar email"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button type="button" onClick={onToggle} className="p-1">
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 text-slate-400 transition-transform duration-200",
+                isOpen && "rotate-180",
+              )}
+            />
+          </button>
+        </div>
       </div>
 
-      {/* Contenido textual */}
-      <div className="min-w-0 flex-1">
-        {/* Etiqueta de direccion + fecha en la misma fila */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <p
-            className={cn(
-              "text-[10px] font-semibold uppercase tracking-[0.16em]",
-              isIncoming ? "text-sky-500" : "text-emerald-500",
-            )}
-          >
-            {email.label}
-          </p>
+      {/* Cuerpo expandido */}
+      {isOpen && (
+        <div
+          className={cn(
+            "mt-2 rounded-2xl border p-4",
+            isIncoming
+              ? "border-sky-100 bg-sky-50/30"
+              : "border-emerald-100 bg-emerald-50/30",
+          )}
+        >
           {email.date && (
-            <p className="text-[10px] text-slate-400">
+            <p className="mb-3 text-[11px] font-medium text-slate-400">
               {formatDateSpanish(email.date)}
             </p>
           )}
+          {email.isHtml ? (
+            <div
+              className="prose prose-sm max-w-none text-slate-700 [overflow-wrap:break-word] [word-break:break-word] [&_a]:text-sky-600 [&_a]:underline"
+              dangerouslySetInnerHTML={{ __html: email.body }}
+            />
+          ) : (
+            <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+              {email.body}
+            </p>
+          )}
         </div>
-
-        {/* Asunto (solo para el correo original) */}
-        {email.subject && (
-          <p className="mt-0.5 text-sm font-semibold text-slate-950">
-            {email.subject}
-          </p>
-        )}
-
-        {/* Contacto: De / A */}
-        <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
-          <Mail className="h-3 w-3 shrink-0" />
-          <span className="font-medium text-slate-400">{email.contactLabel}:</span>
-          {email.contactValue}
-        </p>
-
-        {/* Snippet visible solo cuando esta colapsado */}
-        {!isOpen && (
-          <p className="mt-1.5 line-clamp-1 text-xs leading-5 text-slate-400 italic">
-            {buildSnippet(email.body)}
-          </p>
-        )}
-      </div>
-
-      {/* Chevron animado */}
-      <ChevronDown
-        className={cn(
-          "mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200",
-          isOpen && "rotate-180",
-        )}
-      />
-    </button>
-  )
-}
-
-/**
- * Cuerpo expandido de un email en el hilo.
- */
-function ThreadEmailBody({
-  email,
-}: {
-  email: ThreadEmail
-}) {
-  const isIncoming = email.direction === "incoming"
-
-  return (
-    <div
-      className={cn(
-        "mt-2 rounded-2xl border p-4",
-        isIncoming
-          ? "border-sky-100 bg-sky-50/30"
-          : "border-emerald-100 bg-emerald-50/30",
       )}
-    >
-      {/* Fecha repetida en el cuerpo expandido para referencia rapida */}
-      {email.date && (
-        <p className="mb-3 text-[11px] font-medium text-slate-400">
-          {formatDateSpanish(email.date)}
-        </p>
-      )}
-      <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
-        {email.body}
-      </p>
     </div>
   )
 }
 
 /**
- * Indicador de timeline: una linea vertical con un punto conector.
- * Se muestra entre los items del hilo.
+ * Placeholder para el lado derecho cuando no hay respuesta enviada todavia.
  */
-function TimelineConnector() {
+function EmptyResponsePlaceholder() {
   return (
-    <div className="flex justify-start pl-[26px]">
-      <div className="h-4 w-px bg-slate-200" />
+    <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6">
+      <div className="text-center">
+        <Send className="mx-auto h-5 w-5 text-slate-300" />
+        <p className="mt-2 text-xs font-medium text-slate-400">
+          Sin respuesta enviada
+        </p>
+        <p className="mt-0.5 text-[10px] text-slate-300">
+          Usa el compositor de abajo para responder
+        </p>
+      </div>
     </div>
   )
 }
@@ -247,165 +281,315 @@ function TimelineConnector() {
 // Componente principal
 // ---------------------------------------------------------------------------
 
-/**
- * Columna central con hilo de comunicacion tipo timeline.
- */
-export function CenterColumnCollapsible({ query }: CenterColumnCollapsibleProps) {
-  // --- Construir el array de emails del hilo ---
-  const threadEmails = useMemo(() => {
-    const emails: ThreadEmail[] = []
+export function CenterColumnCollapsible({ emails: initialEmails = [], query, hideComposer = false }: CenterColumnCollapsibleProps) {
+  // --- Estado local de emails para poder actualizar via Realtime ---
+  const [liveEmails, setLiveEmails] = useState<DoaEmail[]>(initialEmails)
 
-    // 1. Correo entrante original (siempre presente)
-    emails.push({
-      id: "original",
-      direction: "incoming",
-      label: "Correo entrante",
-      contactLabel: "De",
-      contactValue: query.remitente,
-      date: query.creadoEn,
-      body: query.cuerpoOriginal,
-      subject: query.asunto,
-    })
+  // Sincronizar si las props cambian (navegacion, etc.)
+  useEffect(() => {
+    setLiveEmails(initialEmails)
+  }, [initialEmails])
 
-    // 2. Respuesta enviada (solo si se envio una respuesta)
-    if (query.correoClienteEnviadoAt && query.ultimoBorradorCliente) {
-      emails.push({
+  // --- Suscripcion Realtime a INSERTs y DELETEs de emails de esta consulta ---
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel(`doa-emails-${query.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'doa_emails',
+          filter: `consulta_id=eq.${query.id}`,
+        },
+        (payload) => {
+          const newEmail = payload.new as DoaEmail
+          setLiveEmails((prev) => {
+            if (prev.some((e) => e.id === newEmail.id)) return prev
+            const updated = [...prev, newEmail]
+            updated.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+            return updated
+          })
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'doa_emails',
+          filter: `consulta_id=eq.${query.id}`,
+        },
+        (payload) => {
+          const deletedId = (payload.old as { id?: string }).id
+          if (deletedId) {
+            setLiveEmails((prev) => prev.filter((e) => e.id !== deletedId))
+          }
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [query.id])
+
+  // --- Eliminar email de doa_emails (optimista) ---
+  async function handleDeleteEmail(emailId: string) {
+    // Eliminacion optimista
+    setLiveEmails((prev) => prev.filter((e) => e.id !== emailId))
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('doa_emails')
+      .delete()
+      .eq('id', emailId)
+
+    if (error) {
+      console.error('Error eliminando email:', error)
+      // Revertir: volver a cargar desde server
+      const { data } = await supabase
+        .from('doa_emails')
+        .select('*')
+        .eq('consulta_id', query.id)
+        .order('fecha', { ascending: true })
+      if (data) setLiveEmails(data)
+    }
+  }
+
+  // --- Determinar si usamos emails de doa_emails o fallback a campos legacy ---
+  const useDoaEmails = liveEmails.length > 0
+
+  // --- Construir listas de emails entrantes y salientes ---
+  const { entrantes, salientes, totalEmails } = useMemo(() => {
+    if (useDoaEmails) {
+      // Usar emails de doa_emails
+      const inc: ThreadEmail[] = liveEmails
+        .filter((e) => e.direccion === "entrante")
+        .map((e) => ({
+          id: e.id,
+          direction: "incoming" as EmailDirection,
+          label: "Correo entrante",
+          contactLabel: "De",
+          contactValue: e.de,
+          date: e.fecha,
+          body: e.cuerpo,
+          subject: e.asunto,
+          isDeletable: true,
+        }))
+
+      const out: ThreadEmail[] = liveEmails
+        .filter((e) => e.direccion === "saliente")
+        .map((e) => ({
+          id: e.id,
+          direction: "outgoing" as EmailDirection,
+          label: "Respuesta enviada",
+          contactLabel: "A",
+          contactValue: e.para ?? e.de,
+          date: e.fecha,
+          body: e.cuerpo,
+          subject: e.asunto,
+          isHtml: true,
+          isDeletable: true,
+        }))
+
+      return {
+        entrantes: inc,
+        salientes: out,
+        totalEmails: inc.length + out.length,
+      }
+    }
+
+    // Fallback: construir desde campos legacy de la consulta
+    const legacyIncoming: ThreadEmail[] = [
+      {
+        id: "original",
+        direction: "incoming" as EmailDirection,
+        label: "Correo entrante",
+        contactLabel: "De",
+        contactValue: query.remitente,
+        date: query.creadoEn,
+        body: query.cuerpoOriginal,
+        subject: query.asunto,
+      },
+    ]
+
+    const legacyOutgoing: ThreadEmail[] = []
+    if (query.replyBody && query.replySentAt) {
+      legacyOutgoing.push({
+        id: "reply-saved",
+        direction: "outgoing" as EmailDirection,
+        label: "Respuesta enviada",
+        contactLabel: "A",
+        contactValue: query.remitente,
+        date: query.replySentAt,
+        body: query.replyBody,
+        isHtml: true,
+      })
+    } else if (query.correoClienteEnviadoAt && query.ultimoBorradorCliente) {
+      legacyOutgoing.push({
         id: "response-sent",
-        direction: "outgoing",
+        direction: "outgoing" as EmailDirection,
         label: "Respuesta enviada",
         contactLabel: "A",
         contactValue: query.remitente,
         date: query.correoClienteEnviadoAt,
         body: query.ultimoBorradorCliente,
+        isHtml: true,
       })
     }
 
-    return emails
-  }, [query])
+    return {
+      entrantes: legacyIncoming,
+      salientes: legacyOutgoing,
+      totalEmails: legacyIncoming.length + legacyOutgoing.length,
+    }
+  }, [useDoaEmails, liveEmails, query])
 
-  // --- Estado de apertura/cierre de cada email del hilo ---
-  // Todos colapsados por defecto
+  // --- Estado de apertura/cierre de cada email ---
   const [openStates, setOpenStates] = useState<Record<string, boolean>>({})
-
-  // El compositor de respuesta siempre esta abierto por defecto
   const [composeOpen, setComposeOpen] = useState(true)
 
-  /** Alterna el estado de apertura de un email por su id */
   function toggleEmail(id: string) {
     setOpenStates((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  // Calcular el total de emails para la cabecera del hilo
-  const emailCount = threadEmails.length
-
   return (
-    <div className="space-y-0">
+    <div className="space-y-4">
       {/* ================================================================
-          CABECERA DEL HILO
+          CABECERA DE LA SECCION
           ================================================================ */}
-      <div className="mb-3 flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">
           <Mail className="h-3 w-3 text-slate-500" />
         </div>
         <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Hilo de comunicación
+          Hilo de comunicacion
         </h3>
         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
-          {emailCount} {emailCount === 1 ? "email" : "emails"}
+          {totalEmails} {totalEmails === 1 ? "email" : "emails"}
         </span>
       </div>
 
       {/* ================================================================
-          TIMELINE DE EMAILS
+          LEYENDA DE COLUMNAS
           ================================================================ */}
-      <div className="relative">
-        {/* Linea vertical del timeline (posicionada detras de las tarjetas) */}
-        <div className="absolute left-[26px] top-0 bottom-0 w-px bg-slate-200" />
-
-        <div className="relative space-y-0">
-          {threadEmails.map((email, index) => {
-            const isOpen = openStates[email.id] ?? false
-
-            return (
-              <div key={email.id}>
-                {/* Conector entre items (no antes del primero) */}
-                {index > 0 && <TimelineConnector />}
-
-                {/* Tarjeta del email */}
-                <div className="relative">
-                  <ThreadEmailHeader
-                    email={email}
-                    isOpen={isOpen}
-                    onToggle={() => toggleEmail(email.id)}
-                  />
-                  {isOpen && <ThreadEmailBody email={email} />}
-                </div>
-              </div>
-            )
-          })}
-
-          {/* ================================================================
-              CONECTOR + SECCION DE NUEVA RESPUESTA (compositor)
-              ================================================================ */}
-          <TimelineConnector />
-
-          <div className="relative">
-            {/* Cabecera colapsable del compositor */}
-            <button
-              type="button"
-              onClick={() => setComposeOpen((prev) => !prev)}
-              className="flex w-full items-start gap-3 rounded-2xl border border-l-[3px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:bg-slate-50/80"
-            >
-              {/* Icono de composicion */}
-              <div className="mt-0.5 shrink-0 rounded-lg bg-amber-50 p-1.5 text-amber-500">
-                <PenLine className="h-3.5 w-3.5" />
-              </div>
-
-              {/* Texto */}
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-500">
-                  Nueva respuesta
-                </p>
-                <p className="mt-0.5 text-sm font-semibold text-slate-950">
-                  Redactar y enviar respuesta
-                </p>
-                {!composeOpen && (
-                  <p className="mt-1 text-xs leading-5 text-slate-400 italic">
-                    Pulsa para abrir el editor de respuesta y enviar al cliente.
-                  </p>
-                )}
-              </div>
-
-              {/* Chevron */}
-              <ChevronDown
-                className={cn(
-                  "mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200",
-                  composeOpen && "rotate-180",
-                )}
-              />
-            </button>
-
-            {/* Contenido expandido: el compositor de respuesta */}
-            {composeOpen && (
-              <div className="mt-2">
-                <ClientReplyComposer
-                  compact
-                  query={{
-                    id: query.id,
-                    codigo: query.codigo,
-                    asunto: query.asunto,
-                    remitente: query.remitente,
-                    urlFormulario: query.urlFormulario,
-                    clasificacion: query.clasificacion,
-                    cuerpoOriginal: query.cuerpoOriginal,
-                    respuestaIa: query.respuestaIa,
-                  }}
-                />
-              </div>
-            )}
-          </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-sky-400" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+            Correos del cliente
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-emerald-400" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-500">
+            Nuestras respuestas
+          </span>
         </div>
       </div>
+
+      {/* ================================================================
+          EMAILS — GRID 2 COLUMNAS (izquierda entrantes, derecha salientes)
+          ================================================================ */}
+      <div className="grid grid-cols-2 gap-4 items-start">
+        {/* Columna izquierda: correos entrantes */}
+        <div className="space-y-3">
+          {entrantes.length > 0 ? (
+            entrantes.map((email) => (
+              <EmailCard
+                key={email.id}
+                email={email}
+                isOpen={openStates[email.id] ?? false}
+                onToggle={() => toggleEmail(email.id)}
+                onDelete={handleDeleteEmail}
+              />
+            ))
+          ) : (
+            <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6">
+              <div className="text-center">
+                <Inbox className="mx-auto h-5 w-5 text-slate-300" />
+                <p className="mt-2 text-xs font-medium text-slate-400">
+                  Sin correos entrantes
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Columna derecha: respuestas salientes */}
+        <div className="space-y-3">
+          {salientes.length > 0 ? (
+            salientes.map((email) => (
+              <EmailCard
+                key={email.id}
+                email={email}
+                isOpen={openStates[email.id] ?? false}
+                onToggle={() => toggleEmail(email.id)}
+                onDelete={handleDeleteEmail}
+              />
+            ))
+          ) : (
+            <EmptyResponsePlaceholder />
+          )}
+        </div>
+      </div>
+
+      {/* ================================================================
+          COMPOSITOR DE NUEVA RESPUESTA
+          ================================================================ */}
+      {!hideComposer && (
+        <div>
+          <button
+            type="button"
+            onClick={() => setComposeOpen((prev) => !prev)}
+            className="flex w-full items-start gap-3 rounded-2xl border border-l-[3px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:bg-slate-50/80"
+          >
+            <div className="mt-0.5 shrink-0 rounded-lg bg-amber-50 p-1.5 text-amber-500">
+              <PenLine className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-500">
+                Nueva respuesta
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-slate-950">
+                Redactar y enviar respuesta
+              </p>
+              {!composeOpen && (
+                <p className="mt-1 text-xs leading-5 text-slate-400 italic">
+                  Pulsa para abrir el editor de respuesta y enviar al cliente.
+                </p>
+              )}
+            </div>
+            <ChevronDown
+              className={cn(
+                "mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200",
+                composeOpen && "rotate-180",
+              )}
+            />
+          </button>
+
+          {composeOpen && (
+            <div className="mt-2">
+              <ClientReplyComposer
+                compact
+                query={{
+                  id: query.id,
+                  codigo: query.codigo,
+                  asunto: query.asunto,
+                  remitente: query.remitente,
+                  urlFormulario: query.urlFormulario,
+                  clasificacion: query.clasificacion,
+                  cuerpoOriginal: query.cuerpoOriginal,
+                  respuestaIa: query.respuestaIa,
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
