@@ -293,37 +293,22 @@ export default async function IncomingQuotationDetailPage({
         .flatMap((kw) => [`titulo.ilike.%${kw}%`, `descripcion.ilike.%${kw}%`])
         .join(',')
 
-      const [{ data: simActiveRows, error: simActiveError }, { data: simHistRows, error: simHistError }] =
-        await Promise.all([
-          supabase
-            .from('doa_proyectos')
-            .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
-            .or(orFilters)
-            .order('created_at', { ascending: false })
-            .limit(10),
-          supabase
-            .from('doa_proyectos_historico')
-            .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
-            .or(orFilters)
-            .order('created_at', { ascending: false })
-            .limit(10),
-        ])
+      // Solo buscamos en proyectos historicos (cerrados), no en proyectos activos
+      const { data: simHistRows, error: simHistError } = await supabase
+        .from('doa_proyectos_historico')
+        .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
+        .or(orFilters)
+        .order('created_at', { ascending: false })
+        .limit(10)
 
-      if (simActiveError) {
-        console.error('Error buscando proyectos similares activos:', simActiveError)
-      }
       if (simHistError) {
         console.error('Error buscando proyectos similares historicos:', simHistError)
       }
 
-      // Combine and deduplicate
-      const activeWithSource = (simActiveRows ?? []).map((p) => ({ ...p, source: 'active' as const }))
-      const histWithSource = (simHistRows ?? []).map((p) => ({ ...p, source: 'historic' as const }))
-
       const seenSimilar = new Set<string>()
       const combinedSimilar: typeof similarProjects = []
 
-      for (const p of [...activeWithSource, ...histWithSource]) {
+      for (const p of (simHistRows ?? [])) {
         const key = p.numero_proyecto ?? p.id
         if (seenSimilar.has(key)) continue
         seenSimilar.add(key)
@@ -335,7 +320,7 @@ export default async function IncomingQuotationDetailPage({
           (kw) => titleLower.includes(kw) || descLower.includes(kw),
         )
 
-        combinedSimilar.push({ ...p, matchedKeywords: matched })
+        combinedSimilar.push({ ...p, source: 'historic' as const, matchedKeywords: matched })
       }
 
       // Sort by relevance (number of keyword matches desc), then by date
@@ -467,7 +452,7 @@ export default async function IncomingQuotationDetailPage({
                                     ? 'bg-emerald-100 text-emerald-700'
                                     : 'bg-slate-200 text-slate-500'
                                 }`}>
-                                  {project.source === 'active' ? 'Activo' : 'Historico'}
+                                  Historico
                                 </span>
                               </div>
                               <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
@@ -488,7 +473,7 @@ export default async function IncomingQuotationDetailPage({
                                 </span>
                               )}
                               <Link
-                                href={project.source === 'active' ? `/engineering/${project.id}` : `/proyectos-historico/${project.id}`}
+                                href={`/proyectos-historico/${project.id}`}
                                 className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
                                 title="Abrir ficha"
                                 aria-label={`Abrir ficha de ${project.numero_proyecto}`}
@@ -603,12 +588,8 @@ export default async function IncomingQuotationDetailPage({
                                       {project.numero_proyecto}
                                     </span>
                                   )}
-                                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
-                                    project.source === 'active'
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : 'bg-slate-200 text-slate-500'
-                                  }`}>
-                                    {project.source === 'active' ? 'Activo' : 'Historico'}
+                                  <span className={"rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500"}>
+                                    Historico
                                   </span>
                                 </div>
                                 <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
@@ -620,16 +601,12 @@ export default async function IncomingQuotationDetailPage({
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 {project.estado && (
-                                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                                    project.source === 'active'
-                                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                      : 'border-slate-200 bg-white text-slate-600'
-                                  }`}>
+                                  <span className={"rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600"}>
                                     {project.estado}
                                   </span>
                                 )}
                                 <Link
-                                  href={project.source === 'active' ? `/engineering/${project.id}` : `/proyectos-historico/${project.id}`}
+                                  href={`/proyectos-historico/${project.id}`}
                                   className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
                                   title="Abrir ficha"
                                   aria-label={`Abrir ficha de ${project.numero_proyecto}`}
@@ -739,12 +716,8 @@ export default async function IncomingQuotationDetailPage({
                                       {project.numero_proyecto}
                                     </span>
                                   )}
-                                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
-                                    project.source === 'active'
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : 'bg-slate-200 text-slate-500'
-                                  }`}>
-                                    {project.source === 'active' ? 'Activo' : 'Historico'}
+                                  <span className={"rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500"}>
+                                    Historico
                                   </span>
                                 </div>
                                 <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
@@ -756,16 +729,12 @@ export default async function IncomingQuotationDetailPage({
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 {project.estado && (
-                                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                                    project.source === 'active'
-                                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                      : 'border-slate-200 bg-white text-slate-600'
-                                  }`}>
+                                  <span className={"rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600"}>
                                     {project.estado}
                                   </span>
                                 )}
                                 <Link
-                                  href={project.source === 'active' ? `/engineering/${project.id}` : `/proyectos-historico/${project.id}`}
+                                  href={`/proyectos-historico/${project.id}`}
                                   className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
                                   title="Abrir ficha"
                                   aria-label={`Abrir ficha de ${project.numero_proyecto}`}
@@ -1017,12 +986,8 @@ export default async function IncomingQuotationDetailPage({
                                       {project.numero_proyecto}
                                     </span>
                                   )}
-                                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
-                                    project.source === 'active'
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : 'bg-slate-200 text-slate-500'
-                                  }`}>
-                                    {project.source === 'active' ? 'Activo' : 'Historico'}
+                                  <span className={"rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500"}>
+                                    Historico
                                   </span>
                                 </div>
                                 <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
@@ -1048,16 +1013,12 @@ export default async function IncomingQuotationDetailPage({
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 {project.estado && (
-                                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
-                                    project.source === 'active'
-                                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                      : 'border-slate-200 bg-white text-slate-600'
-                                  }`}>
+                                  <span className={"rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600"}>
                                     {project.estado}
                                   </span>
                                 )}
                                 <Link
-                                  href={project.source === 'active' ? `/engineering/${project.id}` : `/proyectos-historico/${project.id}`}
+                                  href={`/proyectos-historico/${project.id}`}
                                   className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
                                   title="Abrir ficha"
                                   aria-label={`Abrir ficha de ${project.numero_proyecto}`}
