@@ -24,7 +24,7 @@
  */
 
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Clock, FolderOpen, Mail, MessageSquarePlus, Plane, Plus, ScanSearch, Search, UserRoundX, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, Crosshair, FolderOpen, Mail, MessageSquarePlus, Plane, Plus, ScanSearch, Search, UserRoundX, XCircle } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
@@ -1100,6 +1100,27 @@ export default async function IncomingQuotationDetailPage({
                 </section>
               )}
             </div>
+
+            {/* --- Definir alcance (ancho completo, colapsable) --- */}
+            <section className="rounded-[22px] border border-emerald-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-emerald-200 bg-[linear-gradient(135deg,#ffffff_0%,#ecfdf5_100%)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Crosshair className="h-4 w-4 text-emerald-600" />
+                  <h2 className="text-sm font-semibold text-slate-950">Definir alcance</h2>
+                </div>
+              </div>
+              <details className="group" open>
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-emerald-600 hover:text-emerald-700">
+                  <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  Ver alcance
+                </summary>
+                <div className="space-y-3 px-5 pb-5">
+                  <p className="text-xs text-slate-400 italic">
+                    Contenido pendiente de definir.
+                  </p>
+                </div>
+              </details>
+            </section>
 
             {/* --- Panel de decision (ancho completo) --- */}
             <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
