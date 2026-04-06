@@ -274,6 +274,28 @@ export default async function IncomingQuotationDetailPage({
     ? data.proyectos_referencia
     : []
 
+  // Cargar datos completos de los proyectos referencia para la comparacion
+  type RefProject = {
+    id: string
+    numero_proyecto: string | null
+    titulo: string | null
+    descripcion: string | null
+    estado: string | null
+    aeronave: string | null
+    msn: string | null
+    cliente_nombre: string | null
+    anio: number | null
+    created_at: string | null
+  }
+  let referenceProjects: RefProject[] = []
+  if (currentRefs.length > 0) {
+    const { data: refRows } = await supabase
+      .from('doa_proyectos_historico')
+      .select('id, numero_proyecto, titulo, descripcion, estado, aeronave, msn, cliente_nombre, anio, created_at')
+      .in('id', currentRefs)
+    referenceProjects = refRows ?? []
+  }
+
   // --- Buscar proyectos similares basados en datos tecnicos ---
   // Solo busca en doa_proyectos_historico (cerrados). Filtra palabras genericas
   // del dominio aeronautico para buscar por terminos especificos (ej: "rack",
@@ -1114,10 +1136,115 @@ export default async function IncomingQuotationDetailPage({
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver alcance
                 </summary>
-                <div className="space-y-3 px-5 pb-5">
-                  <p className="text-xs text-slate-400 italic">
-                    Contenido pendiente de definir.
-                  </p>
+                <div className="space-y-5 px-5 pb-5">
+
+                  {/* --- Comparacion con proyectos referencia --- */}
+                  {referenceProjects.length > 0 ? (
+                    referenceProjects.map((ref) => {
+                      const clientName = matchedClient?.nombre ?? query.remitente
+                      const rows: { label: string; current: string; reference: string; match: boolean }[] = [
+                        {
+                          label: 'Descripcion del trabajo',
+                          current: data.modification_summary ?? data.asunto ?? '—',
+                          reference: ref.descripcion ?? ref.titulo ?? '—',
+                          match: false,
+                        },
+                        {
+                          label: 'Aeronave',
+                          current: [data.aircraft_manufacturer, data.aircraft_model].filter(Boolean).join(' ') || '—',
+                          reference: ref.aeronave ?? '—',
+                          match: !!(data.aircraft_model && ref.aeronave && ref.aeronave.toLowerCase().includes(data.aircraft_model.toLowerCase())),
+                        },
+                        {
+                          label: 'MSN',
+                          current: data.aircraft_msn ?? '—',
+                          reference: ref.msn ?? '—',
+                          match: !!(data.aircraft_msn && ref.msn && data.aircraft_msn === ref.msn),
+                        },
+                        {
+                          label: 'Cliente',
+                          current: clientName,
+                          reference: ref.cliente_nombre ?? '—',
+                          match: !!(clientName && ref.cliente_nombre && ref.cliente_nombre.toLowerCase().includes(clientName.toLowerCase().split(' ')[0])),
+                        },
+                        {
+                          label: 'Tipo de trabajo',
+                          current: data.work_type === 'proyecto_nuevo' ? 'Proyecto nuevo' : data.work_type === 'modificacion_existente' ? 'Modificacion existente' : data.work_type ?? '—',
+                          reference: ref.titulo?.toLowerCase().includes('repair') ? 'Reparacion' : ref.titulo?.toLowerCase().includes('mod') ? 'Modificacion' : 'Instalacion / Otro',
+                          match: false,
+                        },
+                        {
+                          label: 'TCDS',
+                          current: data.tcds_number ?? '—',
+                          reference: '—',
+                          match: false,
+                        },
+                        {
+                          label: 'Objetivo operativo',
+                          current: data.operational_goal ?? '—',
+                          reference: '—',
+                          match: false,
+                        },
+                        {
+                          label: 'Año',
+                          current: new Date().getFullYear().toString(),
+                          reference: ref.anio?.toString() ?? (ref.created_at ? new Date(ref.created_at).getFullYear().toString() : '—'),
+                          match: false,
+                        },
+                      ]
+
+                      return (
+                        <div key={`ref-compare-${ref.id}`}>
+                          <div className="mb-3 flex items-center gap-2">
+                            <span className="rounded bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-700">
+                              {ref.numero_proyecto ?? 'REF'}
+                            </span>
+                            <span className="text-xs font-medium text-slate-700">{ref.titulo ?? 'Proyecto de referencia'}</span>
+                          </div>
+                          <div className="overflow-hidden rounded-xl border border-slate-200">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className="bg-slate-50">
+                                  <th className="px-3 py-2 text-left font-semibold text-slate-500 w-[140px]">Campo</th>
+                                  <th className="px-3 py-2 text-left font-semibold text-emerald-600">Consulta actual</th>
+                                  <th className="px-3 py-2 text-left font-semibold text-sky-600">Proyecto referencia</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {rows.map((row) => (
+                                  <tr key={row.label} className={row.match ? 'bg-emerald-50/50' : ''}>
+                                    <td className="px-3 py-2 font-medium text-slate-500 align-top">{row.label}</td>
+                                    <td className="px-3 py-2 text-slate-900 align-top">{row.current}</td>
+                                    <td className="px-3 py-2 text-slate-900 align-top">
+                                      <div className="flex items-start gap-1.5">
+                                        <span className="flex-1">{row.reference}</span>
+                                        {row.match && (
+                                          <span className="mt-0.5 shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
+                                            Coincide
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <div className="flex items-center gap-3 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/30 px-4 py-4">
+                      <Crosshair className="h-5 w-5 shrink-0 text-emerald-300" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-500">Sin proyecto de referencia</p>
+                        <p className="mt-0.5 text-xs text-slate-400">
+                          Marca un proyecto como referencia en la seccion &quot;Proyectos similares&quot; para ver la comparacion aqui.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </details>
             </section>
