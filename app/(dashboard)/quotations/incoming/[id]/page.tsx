@@ -39,6 +39,7 @@ import {
 } from '../../incoming-queries'
 import { QuotationStateSelector } from '../../QuotationStateSelector'
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
+import { ReferenceProjectButton } from './ReferenceProjectButton'
 import { TcdsStatusBanner } from './TcdsStatusBanner'
 
 // ---------------------------------------------------------------------------
@@ -267,6 +268,11 @@ export default async function IncomingQuotationDetailPage({
 
     projectHistory = combined
   }
+
+  // --- Proyectos marcados como referencia ---
+  const currentRefs: string[] = Array.isArray(data.proyectos_referencia)
+    ? data.proyectos_referencia
+    : []
 
   // --- Buscar proyectos similares basados en datos tecnicos ---
   // Solo busca en doa_proyectos_historico (cerrados). Filtra palabras genericas
@@ -1006,59 +1012,76 @@ export default async function IncomingQuotationDetailPage({
                     </summary>
                     <div className="space-y-2 px-5 pb-4">
                       {similarProjects.length > 0 ? (
-                        similarProjects.map((project) => (
-                          <div key={`similar-${project.source}-${project.id}`} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  {project.numero_proyecto && (
-                                    <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
-                                      {project.numero_proyecto}
+                        similarProjects.map((project) => {
+                          const isRef = currentRefs.includes(project.id)
+                          return (
+                            <div
+                              key={`similar-${project.source}-${project.id}`}
+                              className={`rounded-xl border px-3 py-2.5 ${
+                                isRef
+                                  ? 'border-amber-300 bg-amber-50/60'
+                                  : 'border-slate-200 bg-slate-50'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    {project.numero_proyecto && (
+                                      <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                        {project.numero_proyecto}
+                                      </span>
+                                    )}
+                                    {isRef && (
+                                      <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700">
+                                        Referencia
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
+                                  <div className="mt-1 flex flex-wrap items-center gap-1">
+                                    {project.created_at && (
+                                      <p className="text-[10px] text-slate-400">
+                                        {new Date(project.created_at).getFullYear()}
+                                      </p>
+                                    )}
+                                    {project.matchedKeywords.length > 0 && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {project.matchedKeywords.map((kw) => (
+                                          <span
+                                            key={kw}
+                                            className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-medium text-amber-700"
+                                          >
+                                            {kw}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                  {project.estado && (
+                                    <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                      {project.estado}
                                     </span>
                                   )}
-                                  <span className={"rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500"}>
-                                    Historico
-                                  </span>
+                                  <ReferenceProjectButton
+                                    consultaId={id}
+                                    proyectoId={project.id}
+                                    isReferenced={isRef}
+                                  />
+                                  <Link
+                                    href={`/proyectos-historico/${project.id}`}
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                                    title="Abrir ficha"
+                                    aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                  </Link>
                                 </div>
-                                <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
-                                <div className="mt-1 flex flex-wrap items-center gap-1">
-                                  {project.created_at && (
-                                    <p className="text-[10px] text-slate-400">
-                                      {new Date(project.created_at).getFullYear()}
-                                    </p>
-                                  )}
-                                  {project.matchedKeywords.length > 0 && (
-                                    <div className="flex flex-wrap gap-1">
-                                      {project.matchedKeywords.map((kw) => (
-                                        <span
-                                          key={kw}
-                                          className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-medium text-amber-700"
-                                        >
-                                          {kw}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex shrink-0 items-center gap-2">
-                                {project.estado && (
-                                  <span className={"rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600"}>
-                                    {project.estado}
-                                  </span>
-                                )}
-                                <Link
-                                  href={`/proyectos-historico/${project.id}`}
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
-                                  title="Abrir ficha"
-                                  aria-label={`Abrir ficha de ${project.numero_proyecto}`}
-                                >
-                                  <Plus className="h-3.5 w-3.5" />
-                                </Link>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          )
+                        })
                       ) : (
                         <p className="text-xs italic text-slate-400">No se encontraron proyectos similares.</p>
                       )}
