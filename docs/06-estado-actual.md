@@ -142,7 +142,10 @@ Las consultas entrantes son la fuente de datos principal del tablero de quotatio
   - Seccion colapsable **Aircraft Data** con datos de aeronave, upload y visualizacion de TCDS en PDF
   - Seccion colapsable **Project History** que muestra proyectos previos del cliente cuando se identifica un cliente conocido
   - Boton "+" en Project History que enlaza a `/proyectos-historico` para consultar el historico completo
+- Seccion colapsable **Definir alcance** con comparacion 1-to-1 entre la consulta actual y los proyectos referencia (8 campos: descripcion, aeronave, MSN, cliente, tipo trabajo, TCDS, objetivo operativo, año)
+  - Seccion colapsable **Definir documentacion** con las 44 plantillas de compliance agrupadas por categoria como checkboxes. Pre-seleccion automatica basada en documentos del proyecto referencia. El ingeniero valida y guarda la seleccion. Datos persistidos en `doa_consultas_entrantes.documentos_compliance` (jsonb). Plantillas servidas desde tabla `doa_plantillas_compliance`.
 - `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n usando `url_formulario` ya existente
+- Guardado de documentos compliance via webhook n8n `DOA - Guardar Documentos Compliance` (ID: `FUmlV5uBEnacTVs2`, path: `doa-compliance-docs`). Variable: `NEXT_PUBLIC_DOA_COMPLIANCE_DOCS_WEBHOOK_URL`
 - La respuesta del formulario ya no la aloja la app: n8n sirve el HTML y guarda en `doa_respuestas_formularios`
 - El envio de formularios al cliente usa un unico webhook n8n (`doa-form-submit`) con campo `section` que determina el branching (client/aircraft)
 

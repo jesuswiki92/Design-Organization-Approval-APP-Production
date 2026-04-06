@@ -55,6 +55,12 @@ Estas tablas existen en la base de datos y se muestran en la sección `/database
 | `documents` | Metadatos de documentos vectorizados del sistema RAG. | /databases | ⏸️ Desconectada |
 | `doa_chunks` | Fragmentos indexados del corpus DOA para recuperación semántica. | /databases | ⏸️ Desconectada |
 
+### Plantillas de compliance
+
+| Tabla | Para que sirve | Usada en | Estado |
+|-------|----------------|----------|--------|
+| `doa_plantillas_compliance` | Catalogo maestro de las 44 plantillas de documentos de compliance (G12-xx, G18-xx). Cada registro tiene: code (unico), name, category, sort_order, active. Se usa para la seleccion de documentacion en consultas entrantes y se reutilizara en proyectos. | /quotations/incoming/[id] (seccion "Definir documentacion") | ✅ Conectada |
+
 ### Configuracion de workflow
 
 | Tabla | Para que sirve | Usada en | Estado |

@@ -24,7 +24,7 @@
  */
 
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2, Clock, Crosshair, FolderOpen, Mail, MessageSquarePlus, Plane, Plus, ScanSearch, Search, UserRoundX, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, Crosshair, FileText, FolderOpen, Mail, MessageSquarePlus, Plane, Plus, ScanSearch, Search, UserRoundX, XCircle } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
@@ -38,7 +38,10 @@ import {
   toIncomingQuery,
 } from '../../incoming-queries'
 import { QuotationStateSelector } from '../../QuotationStateSelector'
+import { codeToColumn, getPreselectedTemplates, type ComplianceTemplate } from '@/lib/compliance-templates'
+
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
+import { ComplianceDocumentsSection } from './ComplianceDocumentsSection'
 import { ReferenceProjectButton } from './ReferenceProjectButton'
 import { TcdsStatusBanner } from './TcdsStatusBanner'
 
@@ -295,6 +298,42 @@ export default async function IncomingQuotationDetailPage({
       .in('id', currentRefs)
     referenceProjects = refRows ?? []
   }
+
+  // --- Plantillas de compliance (desde BD) y pre-seleccion por referencia ---
+  const { data: templateRows } = await supabase
+    .from('doa_plantillas_compliance')
+    .select('code, name, category')
+    .eq('active', true)
+    .order('category')
+    .order('sort_order')
+
+  const complianceTemplates: ComplianceTemplate[] = (templateRows ?? []).map((r) => ({
+    code: r.code,
+    name: r.name,
+    category: r.category as ComplianceTemplate['category'],
+  }))
+
+  // Documentos del proyecto referencia → familias → codigos pre-seleccionados
+  let preselectedComplianceCodes: string[] = []
+  if (currentRefs.length > 0) {
+    const { data: refDocRows } = await supabase
+      .from('doa_proyectos_historico_documentos')
+      .select('familia_documental')
+      .in('proyecto_id', currentRefs)
+
+    if (refDocRows && refDocRows.length > 0) {
+      const familias = [...new Set(refDocRows.map((d) => d.familia_documental).filter(Boolean))]
+      preselectedComplianceCodes = getPreselectedTemplates(familias)
+    }
+  }
+
+  // Seleccion guardada previamente por el ingeniero (columnas booleanas doc_g12_xx)
+  const savedComplianceCodes: string[] = complianceTemplates
+    .filter((t) => {
+      const col = codeToColumn(t.code)
+      return (data as Record<string, unknown>)[col] === true
+    })
+    .map((t) => t.code)
 
   // --- Buscar proyectos similares basados en datos tecnicos ---
   // Solo busca en doa_proyectos_historico (cerrados). Filtra palabras genericas
@@ -1245,6 +1284,30 @@ export default async function IncomingQuotationDetailPage({
                     </div>
                   )}
 
+                </div>
+              </details>
+            </section>
+
+            {/* --- Definir documentacion (ancho completo, colapsable) --- */}
+            <section className="rounded-[22px] border border-violet-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-violet-200 bg-[linear-gradient(135deg,#ffffff_0%,#f5f3ff_100%)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-violet-600" />
+                  <h2 className="text-sm font-semibold text-slate-950">Definir documentacion</h2>
+                </div>
+              </div>
+              <details className="group">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-violet-600 hover:text-violet-700">
+                  <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                  Seleccionar documentos de compliance
+                </summary>
+                <div className="px-5 pb-5">
+                  <ComplianceDocumentsSection
+                    consultaId={id}
+                    templates={complianceTemplates}
+                    preselectedCodes={preselectedComplianceCodes}
+                    savedCodes={savedComplianceCodes}
+                  />
                 </div>
               </details>
             </section>
