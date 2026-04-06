@@ -269,31 +269,62 @@ export default async function IncomingQuotationDetailPage({
   }
 
   // --- Buscar proyectos similares basados en datos tecnicos ---
+  // Solo busca en doa_proyectos_historico (cerrados). Filtra palabras genericas
+  // del dominio aeronautico para buscar por terminos especificos (ej: "rack",
+  // "antenna", "STC") y no por genericos (ej: "installation", "modification").
   let similarProjects: { id: string; numero_proyecto: string | null; titulo: string | null; descripcion: string | null; estado: string | null; created_at: string | null; source: 'active' | 'historic'; matchedKeywords: string[] }[] = []
   const hasTechnicalData = !!(data.modification_summary || data.subject)
 
   if (hasTechnicalData) {
-    const stopWords = new Set([
+    // Palabras comunes en ingles/español que no aportan especificidad
+    const generalStopWords = new Set([
       'in', 'of', 'a', 'the', 'and', 'for', 'to', 'on', 'is', 'it', 'at', 'by',
       'el', 'la', 'de', 'en', 'un', 'una', 'del', 'los', 'las', 'por', 'para',
       'con', 'que', 'se', 'no', 'es', 'al', 'lo', 'su', 'como', 'this', 'that',
       'with', 'from', 'are', 'was', 'will', 'be', 'has', 'have', 'been', 'which',
       'must', 'inside', 'outside', 'also', 'into', 'about', 'more', 'than', 'can',
+      'new', 'per', 'its', 'but', 'not', 'all', 'any', 'may', 'other', 'each',
     ])
 
+    // Palabras genericas del dominio aeronautico — demasiado comunes para filtrar
+    const domainStopWords = new Set([
+      'installation', 'install', 'installed', 'installing',
+      'modification', 'modify', 'modified', 'modifying',
+      'repair', 'repaired', 'repairing',
+      'design', 'designed', 'designing',
+      'project', 'proyecto', 'projects', 'proyectos',
+      'provide', 'provided', 'providing',
+      'equipment', 'system', 'systems', 'component', 'components',
+      'aircraft', 'airplane', 'aeronave', 'avion',
+      'approval', 'approved', 'certificate', 'certification',
+      'compliance', 'compliant', 'requirement', 'requirements',
+      'minor', 'major', 'mod', 'nuevo', 'nueva', 'new',
+      'cabin', 'within', 'area', 'zone', 'section',
+      'data', 'document', 'documentation', 'report',
+      'part', 'parts', 'number', 'serial',
+      'needs', 'need', 'necesita', 'required',
+    ])
+
+    const isStopWord = (w: string) => generalStopWords.has(w) || domainStopWords.has(w)
+
     const text = `${data.modification_summary ?? ''} ${data.subject ?? ''}`.toLowerCase()
-    const keywords = text
+    const allWords = text
       .split(/\s+/)
       .map((w) => w.replace(/[^a-záéíóúñü0-9-]/gi, ''))
-      .filter((w) => w.length > 2 && !stopWords.has(w))
-    const uniqueKeywords = [...new Set(keywords)].slice(0, 5)
+      .filter((w) => w.length > 2)
 
-    if (uniqueKeywords.length > 0) {
-      const orFilters = uniqueKeywords
+    // Separar en especificos (no stop) y genericos (domain stop)
+    const specificKeywords = [...new Set(allWords.filter((w) => !isStopWord(w)))].slice(0, 5)
+    // Si no hay especificos, usar los genericos de dominio como fallback
+    const fallbackKeywords = [...new Set(allWords.filter((w) => !generalStopWords.has(w) && domainStopWords.has(w)))].slice(0, 3)
+    const searchKeywords = specificKeywords.length > 0 ? specificKeywords : fallbackKeywords
+
+    if (searchKeywords.length > 0) {
+      const orFilters = searchKeywords
         .flatMap((kw) => [`titulo.ilike.%${kw}%`, `descripcion.ilike.%${kw}%`])
         .join(',')
 
-      // Solo buscamos en proyectos historicos (cerrados), no en proyectos activos
+      // Solo buscamos en proyectos historicos (cerrados)
       const { data: simHistRows, error: simHistError } = await supabase
         .from('doa_proyectos_historico')
         .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
@@ -313,17 +344,16 @@ export default async function IncomingQuotationDetailPage({
         if (seenSimilar.has(key)) continue
         seenSimilar.add(key)
 
-        // Calculate matched keywords for relevance sorting
         const titleLower = (p.titulo ?? '').toLowerCase()
         const descLower = (p.descripcion ?? '').toLowerCase()
-        const matched = uniqueKeywords.filter(
+        const matched = searchKeywords.filter(
           (kw) => titleLower.includes(kw) || descLower.includes(kw),
         )
 
         combinedSimilar.push({ ...p, source: 'historic' as const, matchedKeywords: matched })
       }
 
-      // Sort by relevance (number of keyword matches desc), then by date
+      // Ordenar por relevancia (mas keywords coinciden = primero), luego por fecha
       combinedSimilar.sort((a, b) => {
         const diff = b.matchedKeywords.length - a.matchedKeywords.length
         if (diff !== 0) return diff
