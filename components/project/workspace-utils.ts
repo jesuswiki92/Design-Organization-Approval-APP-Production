@@ -7,66 +7,6 @@ import { getProjectStatusMeta as getSharedProjectStatusMeta } from '@/lib/workfl
 
 export type ExpertMode = 'overview' | 'document' | 'missing' | 'next' | 'references'
 
-export const PROJECT_STATUS_CONFIG: Record<
-  string,
-  { label: string; badge: string; dot: string; emphasis: 'low' | 'medium' | 'high' }
-> = {
-  oferta: {
-    label: 'Oferta',
-    badge: 'border-slate-200 bg-slate-100 text-slate-600',
-    dot: 'bg-slate-400',
-    emphasis: 'low',
-  },
-  activo: {
-    label: 'Activo',
-    badge: 'border-blue-200 bg-blue-50 text-blue-700',
-    dot: 'bg-blue-500',
-    emphasis: 'low',
-  },
-  en_revision: {
-    label: 'En revision',
-    badge: 'border-amber-200 bg-amber-50 text-amber-700',
-    dot: 'bg-amber-500',
-    emphasis: 'medium',
-  },
-  pendiente_aprobacion_cve: {
-    label: 'En aprobacion',
-    badge: 'border-orange-200 bg-orange-50 text-orange-700',
-    dot: 'bg-orange-500',
-    emphasis: 'high',
-  },
-  pendiente_aprobacion_easa: {
-    label: 'En aprobacion',
-    badge: 'border-orange-200 bg-orange-50 text-orange-700',
-    dot: 'bg-orange-500',
-    emphasis: 'high',
-  },
-  en_pausa: {
-    label: 'En pausa',
-    badge: 'border-violet-200 bg-violet-50 text-violet-700',
-    dot: 'bg-violet-500',
-    emphasis: 'high',
-  },
-  cancelado: {
-    label: 'Cancelado',
-    badge: 'border-rose-200 bg-rose-50 text-rose-700',
-    dot: 'bg-rose-500',
-    emphasis: 'medium',
-  },
-  cerrado: {
-    label: 'Cerrado',
-    badge: 'border-slate-200 bg-slate-100 text-slate-500',
-    dot: 'bg-slate-400',
-    emphasis: 'low',
-  },
-  guardado_en_base_de_datos: {
-    label: 'Guardado en base de datos',
-    badge: 'border-slate-200 bg-slate-50 text-slate-500',
-    dot: 'bg-slate-400',
-    emphasis: 'low',
-  },
-}
-
 export const DOCUMENT_STATUS_CONFIG: Record<
   string,
   { label: string; badge: string; accent: string }
@@ -107,14 +47,6 @@ const REQUIRED_DOCUMENTS = [
   },
   { label: 'Master Document List', patterns: ['master document list', 'mdl'] },
 ]
-
-/**
- * Calcula el progreso del proyecto como porcentaje (0-100).
- * Devuelve 0 porque doa_proyectos no tiene horas_estimadas / horas_reales.
- */
-export function calcProjectProgress(_project: ProyectoConRelaciones) {
-  return 0
-}
 
 export function calcDocumentCompletion(docs: ProyectoDocumento[]) {
   if (docs.length === 0) return 0

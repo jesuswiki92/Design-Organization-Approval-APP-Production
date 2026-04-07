@@ -21,29 +21,10 @@
 
 // Funcion para conectarse a la base de datos Supabase desde el servidor
 import { createClient } from '@/lib/supabase/server'
+import type { ProyectoHistoricoRow } from '@/types/database'
 
 // Componente visual (del lado del cliente) que muestra la tabla de proyectos
 import ProyectosHistoricoPageClient from './ProyectosHistoricoPageClient'
-
-/**
- * Estructura de datos de un proyecto historico.
- * Cada campo corresponde a una columna de la tabla "doa_proyectos_historico"
- * en Supabase.
- */
-interface ProyectoHistoricoRow {
-  id: string                          // Identificador unico del registro
-  numero_proyecto: string             // Codigo visible del proyecto (ej: "PRJ-2024-001")
-  titulo: string                      // Nombre descriptivo del proyecto
-  descripcion: string | null          // Texto con detalles (puede estar vacio)
-  cliente_nombre: string | null       // Nombre del cliente (puede estar vacio)
-  anio: number | null                 // Anio del proyecto (puede estar vacio)
-  aeronave: string | null             // Aeronave asociada al proyecto
-  msn: string | null                  // MSN asociado al proyecto
-  ruta_origen: string | null          // Ruta de la carpeta original en el servidor
-  nombre_carpeta_origen: string | null // Nombre corto de la carpeta de origen
-  created_at: string                  // Fecha de creacion del registro
-  updated_at: string                  // Fecha de ultima modificacion
-}
 
 /**
  * Funcion principal de la pagina.

@@ -21,6 +21,7 @@
 
 // Funcion para conectarse a la base de datos Supabase desde el servidor
 import { createClient } from '@/lib/supabase/server'
+import type { MdlContenido, ProyectoHistoricoRow } from '@/types/database'
 // Barra superior de la pagina con titulo y subtitulo
 import { TopBar } from '@/components/layout/TopBar'
 
@@ -29,21 +30,6 @@ import ProyectosHistoricoEntryClient from './ProyectosHistoricoEntryClient'
 
 // Forzar que esta pagina se regenere en cada visita (no usar cache)
 export const dynamic = 'force-dynamic'
-
-/** Estructura de datos de un proyecto historico (tabla principal) */
-interface ProyectoHistoricoRow {
-  id: string                          // Identificador unico
-  numero_proyecto: string             // Codigo del proyecto
-  titulo: string                      // Nombre del proyecto
-  descripcion: string | null          // Descripcion libre
-  cliente_nombre: string | null       // Nombre del cliente
-  anio: number | null                 // Anio del proyecto
-  ruta_origen: string | null          // Ruta de la carpeta original
-  nombre_carpeta_origen: string | null // Nombre corto de la carpeta
-  mdl_contenido: import('@/types/database').MdlContenido | null // Master Document List (JSONB)
-  created_at: string                  // Fecha de creacion
-  updated_at: string                  // Fecha de ultima actualizacion
-}
 
 /** Estructura de datos de un documento/familia documental del proyecto historico */
 interface ProyectoHistoricoDocumentoRow {
@@ -58,6 +44,10 @@ interface ProyectoHistoricoDocumentoRow {
   formatos_disponibles: string[]
   created_at: string
   updated_at: string
+}
+
+type ProyectoHistoricoDetailRow = Omit<ProyectoHistoricoRow, 'mdl_contenido'> & {
+  mdl_contenido: MdlContenido | null
 }
 
 /**
@@ -134,7 +124,7 @@ export default async function ProyectosHistoricoEntryPage({
       />
       {/* Componente visual interactivo con todos los datos del proyecto y sus documentos */}
       <ProyectosHistoricoEntryClient
-        project={project as ProyectoHistoricoRow}
+        project={project as ProyectoHistoricoDetailRow}
         documentos={documentos}
       />
     </div>

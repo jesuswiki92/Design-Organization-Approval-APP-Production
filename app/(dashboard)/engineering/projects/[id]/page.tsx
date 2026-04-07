@@ -7,7 +7,7 @@
  * desde doa_conteo_horas_proyectos, y pasa ambos al componente visual
  * ProjectDetailClient.
  *
- * Si el proyecto no existe, redirige a /proyectos.
+ * Si el proyecto no existe, redirige a /engineering/portfolio.
  * ============================================================================
  */
 
@@ -45,7 +45,7 @@ export default async function ProjectDetailPage({
 
   if (proyectoResult.error || !proyectoResult.data) {
     console.error('Proyecto no encontrado o error:', proyectoResult.error)
-    redirect('/proyectos')
+    redirect('/engineering/portfolio')
   }
 
   if (horasResult.error) {

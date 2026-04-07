@@ -44,7 +44,7 @@ import {
 import { type ReactNode, useState } from 'react'
 
 // Tipos para el Master Document List (MDL) del proyecto
-import type { MdlContenido, MdlDocumento } from '@/types/database'
+import type { MdlContenido, MdlDocumento, ProyectoHistoricoRow } from '@/types/database'
 
 // ============================================================================
 // DEFINICION DE LA ESTRUCTURA DE DATOS
@@ -68,18 +68,8 @@ import type { MdlContenido, MdlDocumento } from '@/types/database'
  * - created_at: fecha en que se creo el registro en la base de datos
  * - updated_at: fecha de la ultima modificacion del registro
  */
-interface ProyectoHistoricoRow {
-  id: string
-  numero_proyecto: string
-  titulo: string
-  descripcion: string | null
-  cliente_nombre: string | null
-  anio: number | null
-  ruta_origen: string | null
-  nombre_carpeta_origen: string | null
+type ProyectoHistoricoDetailRow = Omit<ProyectoHistoricoRow, 'mdl_contenido'> & {
   mdl_contenido: MdlContenido | null
-  created_at: string
-  updated_at: string
 }
 
 /**
@@ -256,7 +246,7 @@ export default function ProyectosHistoricoEntryClient({
   project,
   documentos,
 }: {
-  project: ProyectoHistoricoRow
+  project: ProyectoHistoricoDetailRow
   documentos: ProyectoHistoricoDocumentoRow[]
 }) {
   // -- Estado para el feedback visual al copiar la ruta al portapapeles --

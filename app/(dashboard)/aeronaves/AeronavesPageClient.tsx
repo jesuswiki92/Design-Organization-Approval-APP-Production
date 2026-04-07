@@ -30,31 +30,7 @@ import { Search } from 'lucide-react'
 
 // Barra superior de la pagina con titulo y subtitulo
 import { TopBar } from '@/components/layout/TopBar'
-
-/**
- * Estructura de datos de una aeronave.
- * Replica exacta de la estructura del servidor para que los datos
- * se transfieran correctamente.
- */
-interface AeronaveRow {
-  id: string                        // Identificador unico
-  tcds_code: string                 // Codigo TCDS completo
-  tcds_code_short: string           // Codigo TCDS abreviado
-  tcds_issue: string | null         // Edicion del TCDS
-  tcds_date: string | null          // Fecha del TCDS
-  fabricante: string | null         // Fabricante
-  pais: string | null               // Pais del fabricante
-  tipo: string | null               // Tipo de aeronave
-  modelo: string | null             // Modelo especifico
-  motor: string | null              // Motor instalado
-  mtow_kg: number | null            // Peso maximo al despegue (kg)
-  mlw_kg: number | null             // Peso maximo al aterrizaje (kg)
-  regulacion_base: string | null    // Regulacion de certificacion
-  categoria: string | null          // Categoria de la aeronave
-  msn_elegibles: string | null      // MSN elegibles
-  notas: string | null              // Notas adicionales
-  created_at: string                // Fecha de creacion
-}
+import type { AeronaveRow } from '@/types/database'
 
 /**
  * Componente principal de la pagina de listado de aeronaves.

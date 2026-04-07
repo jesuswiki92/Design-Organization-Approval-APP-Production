@@ -123,6 +123,30 @@ export interface AeronaveModelo {
   activo: boolean
 }
 
+/**
+ * FILA DE AERONAVE
+ * Representa un registro de la tabla "doa_aeronaves".
+ */
+export interface AeronaveRow {
+  id: string
+  tcds_code: string
+  tcds_code_short: string
+  tcds_issue: string | null
+  tcds_date: string | null
+  fabricante: string | null
+  pais: string | null
+  tipo: string | null
+  modelo: string | null
+  motor: string | null
+  mtow_kg: number | null
+  mlw_kg: number | null
+  regulacion_base: string | null
+  categoria: string | null
+  msn_elegibles: string | null
+  notas: string | null
+  created_at: string
+}
+
 // ─── doa_usuarios ─────────────────────────────────────────────────────────────
 
 /**
@@ -636,6 +660,26 @@ export interface MdlDocumento {
 export interface MdlContenido {
   entregables: MdlDocumento[]
   no_entregables: MdlDocumento[]
+}
+
+/**
+ * FILA DE PROYECTO HISTORICO
+ * Representa un registro de la tabla "doa_proyectos_historico".
+ */
+export interface ProyectoHistoricoRow {
+  id: string
+  numero_proyecto: string
+  titulo: string
+  descripcion: string | null
+  cliente_nombre: string | null
+  anio: number | null
+  aeronave: string | null
+  msn: string | null
+  ruta_origen: string | null
+  nombre_carpeta_origen: string | null
+  mdl_contenido: MdlContenido | null
+  created_at: string
+  updated_at: string
 }
 
 // ─── doa_emails ──────────────────────────────────────────────────────────────

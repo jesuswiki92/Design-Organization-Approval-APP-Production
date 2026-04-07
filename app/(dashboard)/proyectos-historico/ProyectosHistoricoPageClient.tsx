@@ -34,26 +34,7 @@ import { deleteProyectoHistorico } from './actions'
 
 // Barra superior de la pagina con titulo y subtitulo
 import { TopBar } from '@/components/layout/TopBar'
-
-/**
- * Estructura de datos de un proyecto historico.
- * Replica exacta de la estructura del servidor para que los datos
- * se transfieran correctamente.
- */
-interface ProyectoHistoricoRow {
-  id: string                          // Identificador unico
-  numero_proyecto: string             // Codigo del proyecto
-  titulo: string                      // Nombre del proyecto
-  descripcion: string | null          // Descripcion (puede estar vacia)
-  cliente_nombre: string | null       // Nombre del cliente
-  anio: number | null                 // Anio del proyecto
-  aeronave: string | null             // Aeronave asociada al proyecto
-  msn: string | null                  // MSN asociado al proyecto
-  ruta_origen: string | null          // Ruta completa de la carpeta original
-  nombre_carpeta_origen: string | null // Nombre corto de la carpeta
-  created_at: string                  // Fecha de creacion
-  updated_at: string                  // Fecha de ultima actualizacion
-}
+import type { ProyectoHistoricoRow } from '@/types/database'
 
 /**
  * Genera una etiqueta corta (badge) a partir del codigo del proyecto.

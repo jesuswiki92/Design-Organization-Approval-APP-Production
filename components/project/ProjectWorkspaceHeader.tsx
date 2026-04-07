@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils'
 import type { ProyectoConRelaciones } from '@/types/database'
 
 import {
-  calcProjectProgress,
   daysRemaining,
   getAircraftLabel,
   getProjectStatusMeta,
@@ -33,7 +32,6 @@ export function ProjectWorkspaceHeader({
   onCopyReference: () => void
 }) {
   const status = getProjectStatusMeta(project.estado)
-  const projectProgress = calcProjectProgress(project)
   const deliveryDays = daysRemaining(project.fecha_entrega_estimada)
 
   return (
@@ -149,35 +147,26 @@ export function ProjectWorkspaceHeader({
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-400">
-            <span>Control operativo</span>
-            <span>{projectProgress}% estimado</span>
+          <div className="mb-3 text-xs uppercase tracking-[0.18em] text-slate-400">
+            Control operativo
           </div>
-          <div className="space-y-3">
-            <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#2563EB,#38BDF8)] transition-all"
-                style={{ width: `${Math.max(projectProgress, 8)}%` }}
-              />
-            </div>
-            <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
-              <InfoPill label="Owner" value={userName(project.owner)} />
-              <InfoPill
-                label="Aeronave"
-                value={project.aeronave ?? '-'}
-              />
-              <InfoPill
-                label="Alertas"
-                value={
-                  deliveryDays !== null && deliveryDays <= 7
-                    ? 'Plazo critico'
-                    : status.emphasis === 'high'
-                      ? 'Atencion'
-                      : 'Controlado'
-                }
-                danger={deliveryDays !== null && deliveryDays <= 7}
-              />
-            </div>
+          <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
+            <InfoPill label="Owner" value={userName(project.owner)} />
+            <InfoPill
+              label="Aeronave"
+              value={project.aeronave ?? '-'}
+            />
+            <InfoPill
+              label="Alertas"
+              value={
+                deliveryDays !== null && deliveryDays <= 7
+                  ? 'Plazo critico'
+                  : status.emphasis === 'high'
+                    ? 'Atencion'
+                    : 'Controlado'
+              }
+              danger={deliveryDays !== null && deliveryDays <= 7}
+            />
           </div>
         </div>
       </div>

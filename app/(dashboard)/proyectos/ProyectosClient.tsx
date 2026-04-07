@@ -153,7 +153,10 @@ function ProjectStateControl({
     setMessage(null)
 
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_DOA_PROJECT_STATE_WEBHOOK_URL || 'https://sswebhook.testn8n.com/webhook/doa-project-cambio-estado'
+      const webhookUrl = process.env.NEXT_PUBLIC_DOA_PROJECT_STATE_WEBHOOK_URL
+      if (!webhookUrl) {
+        throw new Error('NEXT_PUBLIC_DOA_PROJECT_STATE_WEBHOOK_URL no configurada')
+      }
 
       const response = await fetch(webhookUrl, {
         method: 'POST',

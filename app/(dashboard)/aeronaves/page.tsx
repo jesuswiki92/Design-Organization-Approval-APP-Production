@@ -21,34 +21,10 @@
 
 // Funcion para conectarse a la base de datos Supabase desde el servidor
 import { createClient } from '@/lib/supabase/server'
+import type { AeronaveRow } from '@/types/database'
 
 // Componente visual (del lado del cliente) que muestra la tabla de aeronaves
 import AeronavesPageClient from './AeronavesPageClient'
-
-/**
- * Estructura de datos de una aeronave.
- * Cada campo corresponde a una columna de la tabla "doa_aeronaves"
- * en Supabase.
- */
-export interface AeronaveRow {
-  id: string                        // Identificador unico del registro
-  tcds_code: string                 // Codigo TCDS completo (ej: "EASA.A.064")
-  tcds_code_short: string           // Codigo TCDS abreviado (ej: "A.064")
-  tcds_issue: string | null         // Numero de edicion del TCDS
-  tcds_date: string | null          // Fecha de emision del TCDS
-  fabricante: string | null         // Fabricante de la aeronave (ej: "Airbus")
-  pais: string | null               // Pais del fabricante (ej: "France")
-  tipo: string | null               // Tipo de aeronave (ej: "Aeroplane")
-  modelo: string | null             // Modelo especifico (ej: "A320-214")
-  motor: string | null              // Motor instalado (ej: "CFM56-5B4")
-  mtow_kg: number | null            // Peso maximo al despegue en kg
-  mlw_kg: number | null             // Peso maximo al aterrizaje en kg
-  regulacion_base: string | null    // Regulacion de certificacion (ej: "CS-25")
-  categoria: string | null          // Categoria de la aeronave
-  msn_elegibles: string | null      // MSN elegibles (puede ser una lista larga)
-  notas: string | null              // Notas adicionales
-  created_at: string                // Fecha de creacion del registro
-}
 
 /**
  * Funcion principal de la pagina.
