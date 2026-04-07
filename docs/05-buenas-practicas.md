@@ -173,10 +173,29 @@ const url = process.env.MI_WEBHOOK_URL!
 ## Supabase
 
 ### Siempre verificar autenticacion en APIs
+Usar el helper centralizado `requireUserApi` de `@/lib/auth/require-user` en todas las API routes:
+
 ```tsx
-const { data: { user }, error } = await supabase.auth.getUser()
-if (error || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+import { requireUserApi } from '@/lib/auth/require-user'
+
+export async function POST(request: Request) {
+  const auth = await requireUserApi()
+  if (auth instanceof Response) return auth
+  const { user, supabase } = auth
+  // ...
+}
 ```
+
+`requireUserApi` llama internamente a `createClient` de `@/lib/supabase/server`, hace `supabase.auth.getUser()` y devuelve `Response` 401 `{ error: 'Unauthorized' }` si no hay sesion. En server actions y server components, usar `requireUserAction` (misma firma pero hace `redirect('/login')` cuando no hay sesion).
+
+### Middleware de rutas protegidas
+El guard de rutas del dashboard vive en `middleware.ts` (raiz de `01.Desarrollo de App/`). Next.js solo ejecuta el middleware si el archivo se llama exactamente `middleware.ts` y exporta una funcion llamada `middleware` — no renombrar. El matcher excluye `/_next/*`, `/favicon.ico`, recursos estaticos y `/api/*`; por eso la proteccion de API routes es responsabilidad de cada `route.ts` via `requireUserApi`.
+
+Reglas que aplica `middleware.ts`:
+
+- `/home`, `/engineering`, `/quotations`, `/clients`, `/databases`, `/tools` sin sesion -> 307 a `/login`
+- `/login` con sesion valida -> 307 a `/home`
+- Cualquier otra ruta (landing, publica) -> pasa sin verificar
 
 ### Usar `createClient` del servidor en `page.tsx`
 ```tsx
@@ -228,7 +247,8 @@ if (error) {
 - Tratar `Engineering` y `Proyectos` como dominios distintos en la UI actual; visualmente ya es `Proyectos`
 - Meter logica comercial de `Quotations` dentro del workspace de `Proyectos`
 - Crear mocks nuevos donde ya existe una superficie real conectada
-- Tocar `proxy.ts` o `lib/supabase/server.ts` sin una razon concreta
+- Tocar `middleware.ts` o `lib/supabase/server.ts` sin una razon concreta
+- Reintroducir un `proxy.ts`: Next.js NO ejecuta ese nombre; el guard real es `middleware.ts`
 - Sobrescribir cambios locales ajenos en una rama de trabajo con el repo sucio
 
 ---

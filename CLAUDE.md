@@ -40,7 +40,13 @@ Lee los docs relevantes ANTES de hacer cambios.
 - Las tablas estan desconectadas. Ver `docs/02-bases-de-datos.md` para saber cuales reconectar.
 - Para reconectar: seguir la receta en `docs/04-como-añadir-cosas.md`
 - Usar `createClient` de `@/lib/supabase/server` en server components
-- SIEMPRE verificar autenticacion en API routes
+- SIEMPRE verificar autenticacion en API routes con `requireUserApi()` de `@/lib/auth/require-user`
+- En server actions o server components, usar `requireUserAction()` (redirige a `/login` si no hay sesion)
+
+### Autenticacion de rutas
+- El guard de rutas protegidas vive en `middleware.ts` (raiz de `01.Desarrollo de App/`). Next.js exige ese nombre exacto y el export `middleware`, no renombrar.
+- El middleware protege `/home`, `/engineering`, `/quotations`, `/clients`, `/databases`, `/tools`; redirige a `/login` si no hay sesion, y redirige a `/home` si un usuario ya autenticado entra a `/login`.
+- Las rutas `/api/*` estan excluidas del matcher del middleware, asi que la verificacion de sesion en APIs es responsabilidad de cada `route.ts` via `requireUserApi()`.
 
 ### Codigo limpio
 - No dejar codigo comentado - borrar lo que no se use
@@ -56,6 +62,7 @@ Lee los docs relevantes ANTES de hacer cambios.
 
 ### Lo que NO hacer
 - No crear archivos de documentacion en la raiz (van en `docs/`)
-- No tocar `proxy.ts` ni `lib/supabase/server.ts` sin razon
+- No tocar `middleware.ts` ni `lib/supabase/server.ts` sin razon (son la base de la autenticacion)
+- No reintroducir `proxy.ts` — ese nombre de archivo NO lo ejecuta Next.js; el guard real vive en `middleware.ts`
 - No instalar dependencias nuevas sin justificar
 - No crear tipos fuera de `types/database.ts`
