@@ -188,10 +188,10 @@ export async function POST(request: Request) {
 
 `requireUserApi` llama internamente a `createClient` de `@/lib/supabase/server`, hace `supabase.auth.getUser()` y devuelve `Response` 401 `{ error: 'Unauthorized' }` si no hay sesion. En server actions y server components, usar `requireUserAction` (misma firma pero hace `redirect('/login')` cuando no hay sesion).
 
-### Middleware de rutas protegidas
-El guard de rutas del dashboard vive en `middleware.ts` (raiz de `01.Desarrollo de App/`). Next.js solo ejecuta el middleware si el archivo se llama exactamente `middleware.ts` y exporta una funcion llamada `middleware` — no renombrar. El matcher excluye `/_next/*`, `/favicon.ico`, recursos estaticos y `/api/*`; por eso la proteccion de API routes es responsabilidad de cada `route.ts` via `requireUserApi`.
+### Proxy de rutas protegidas
+El guard de rutas del dashboard vive en `proxy.ts` (raiz de `01.Desarrollo de App/`). En Next.js 16 el archivo DEBE llamarse `proxy.ts` y exportar una funcion llamada `proxy` — el antiguo nombre `middleware.ts` quedo deprecado y Next.js emite un warning en cada build si se usa. No renombrar. El matcher excluye `/_next/*`, `/favicon.ico`, recursos estaticos y `/api/*`; por eso la proteccion de API routes es responsabilidad de cada `route.ts` via `requireUserApi`.
 
-Reglas que aplica `middleware.ts`:
+Reglas que aplica `proxy.ts`:
 
 - `/home`, `/engineering`, `/quotations`, `/clients`, `/databases`, `/tools` sin sesion -> 307 a `/login`
 - `/login` con sesion valida -> 307 a `/home`
@@ -247,8 +247,8 @@ if (error) {
 - Tratar `Engineering` y `Proyectos` como dominios distintos en la UI actual; visualmente ya es `Proyectos`
 - Meter logica comercial de `Quotations` dentro del workspace de `Proyectos`
 - Crear mocks nuevos donde ya existe una superficie real conectada
-- Tocar `middleware.ts` o `lib/supabase/server.ts` sin una razon concreta
-- Reintroducir un `proxy.ts`: Next.js NO ejecuta ese nombre; el guard real es `middleware.ts`
+- Tocar `proxy.ts` o `lib/supabase/server.ts` sin una razon concreta
+- Renombrar `proxy.ts` a `middleware.ts`: Next.js 16 deprecó `middleware.ts` y emite warning; el nombre canonico es `proxy.ts` con export `proxy`
 - Sobrescribir cambios locales ajenos en una rama de trabajo con el repo sucio
 
 ---

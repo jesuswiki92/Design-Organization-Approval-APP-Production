@@ -1,12 +1,17 @@
 /**
- * MIDDLEWARE DE AUTENTICACION (Next.js)
+ * PROXY DE AUTENTICACION (Next.js 16)
  *
- * Next.js ejecuta automaticamente el archivo `middleware.ts` en la raiz del
- * proyecto antes de cada request que coincida con `config.matcher`. Aqui es
- * donde protegemos las rutas del dashboard exigiendo una sesion valida de
- * Supabase antes de que el handler de la pagina se ejecute.
+ * En Next.js 16 el archivo que antes se llamaba `middleware.ts` paso a
+ * llamarse `proxy.ts`, y el export debe llamarse `proxy`. Next.js sigue
+ * aceptando `middleware.ts` pero emite un warning de deprecacion en cada
+ * build, asi que la convencion canonica es esta.
  *
- * Reglas que aplica este middleware:
+ * Next.js ejecuta automaticamente `proxy.ts` (en la raiz del proyecto) antes
+ * de cada request que coincida con `config.matcher`. Aqui es donde protegemos
+ * las rutas del dashboard exigiendo una sesion valida de Supabase antes de
+ * que el handler de la pagina se ejecute.
+ *
+ * Reglas que aplica este proxy:
  *
  * 1. Rutas excluidas del matcher (`/_next/*`, `/favicon.ico`, `/api/*`,
  *    recursos estaticos): NO pasan por aqui. Las APIs aplican su propia
@@ -26,11 +31,8 @@
  * 6. Cualquier otra ruta (landing, paginas publicas) -> deja pasar sin
  *    verificar.
  *
- * IMPORTANTE: Next.js requiere que el archivo se llame `middleware.ts` y que
- * el export de la funcion sea `middleware` (no otro nombre). Antes habia un
- * archivo `proxy.ts` con la logica correcta pero el nombre erroneo, asi que
- * Next.js NO lo ejecutaba y las rutas del dashboard estaban expuestas. No
- * renombrar este archivo ni su export.
+ * IMPORTANTE: Next.js 16 requiere que el archivo se llame `proxy.ts` y que
+ * el export de la funcion sea `proxy` (no `middleware`). No renombrar.
  */
 
 import { createServerClient } from '@supabase/ssr'
@@ -79,7 +81,7 @@ async function resolveUser(request: NextRequest) {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   const isLogin = pathname.startsWith('/login')

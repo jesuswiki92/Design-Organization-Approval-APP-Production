@@ -44,9 +44,9 @@ Lee los docs relevantes ANTES de hacer cambios.
 - En server actions o server components, usar `requireUserAction()` (redirige a `/login` si no hay sesion)
 
 ### Autenticacion de rutas
-- El guard de rutas protegidas vive en `middleware.ts` (raiz de `01.Desarrollo de App/`). Next.js exige ese nombre exacto y el export `middleware`, no renombrar.
-- El middleware protege `/home`, `/engineering`, `/quotations`, `/clients`, `/databases`, `/tools`; redirige a `/login` si no hay sesion, y redirige a `/home` si un usuario ya autenticado entra a `/login`.
-- Las rutas `/api/*` estan excluidas del matcher del middleware, asi que la verificacion de sesion en APIs es responsabilidad de cada `route.ts` via `requireUserApi()`.
+- El guard de rutas protegidas vive en `proxy.ts` (raiz de `01.Desarrollo de App/`). En Next.js 16 el archivo DEBE llamarse `proxy.ts` y el export DEBE ser `proxy` — `middleware.ts` quedo deprecado y emite warning en cada build. No renombrar.
+- `proxy.ts` protege `/home`, `/engineering`, `/quotations`, `/clients`, `/databases`, `/tools`; redirige a `/login` si no hay sesion, y redirige a `/home` si un usuario ya autenticado entra a `/login`.
+- Las rutas `/api/*` estan excluidas del matcher de `proxy.ts`, asi que la verificacion de sesion en APIs es responsabilidad de cada `route.ts` via `requireUserApi()`.
 
 ### Codigo limpio
 - No dejar codigo comentado - borrar lo que no se use
@@ -62,7 +62,7 @@ Lee los docs relevantes ANTES de hacer cambios.
 
 ### Lo que NO hacer
 - No crear archivos de documentacion en la raiz (van en `docs/`)
-- No tocar `middleware.ts` ni `lib/supabase/server.ts` sin razon (son la base de la autenticacion)
-- No reintroducir `proxy.ts` — ese nombre de archivo NO lo ejecuta Next.js; el guard real vive en `middleware.ts`
+- No tocar `proxy.ts` ni `lib/supabase/server.ts` sin razon (son la base de la autenticacion)
+- No renombrar `proxy.ts` a `middleware.ts` — Next.js 16 deprecó `middleware.ts` y emite warning; el nombre canonico es `proxy.ts` con export `proxy`
 - No instalar dependencias nuevas sin justificar
 - No crear tipos fuera de `types/database.ts`
