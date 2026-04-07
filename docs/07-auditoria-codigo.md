@@ -29,6 +29,47 @@ A pesar de los hallazgos, el codigo muestra buenas practicas de arquitectura: se
 
 ---
 
+## Estado de implementacion
+
+Seguimiento de las correcciones aplicadas tras la auditoria. Regla #1: **no romper la app**. Cada fase pasa por `npm run lint`, `npm run build` y `npm run smoke` antes de commit.
+
+### Fase 1 — Quick wins (✅ completada)
+
+Commit: `00adbc3` — "Fase 1. Auditoria"
+
+| Item | Descripcion | Estado |
+|------|-------------|--------|
+| H7 | Borrar `IncomingQueriesPanel` (dead code) | ✅ |
+| H8 | Borrar `ConsultaFormPreview` (dead code) | ✅ |
+| H9 | Eliminar `PROJECT_STATUS_CONFIG` no usado | ✅ |
+| H10 | Mover `AeronaveRow` a `types/database.ts` | ✅ |
+| H11 | Mover `ProyectoHistoricoRow` a `types/database.ts` | ✅ |
+| H12 | Añadir `error.tsx` a 7 rutas del dashboard | ✅ |
+| M8 | Fix CSS typo `#f8fasc` → `#f8fafc` | ✅ |
+| M10 | Fix redirect `/proyectos` → `/engineering/portfolio` | ✅ |
+| M13 | Eliminar barra de progreso engañosa (siempre 0) | ✅ |
+| L19 | `lib/app-release.ts` lee version desde `package.json` | ✅ |
+| C6 | Eliminar fallback hardcoded de webhook en `ProyectosClient.tsx` | ✅ |
+
+Extra: `eslint.config.mjs` ignora `rag-backend/**` (JS vendored del venv Python que hacia fallar lint).
+
+### Fase 2 — Estabilidad (✅ completada)
+
+| Item | Descripcion | Estado |
+|------|-------------|--------|
+| H2 | `QuotationDetailClient` ya no muestra "not found": el server carga `incomingQueries` y los pasa al cliente, que los inyecta en `defaultQuotationLanes` | ✅ |
+| C8 | Guards explicitos de env vars en `lib/supabase/server.ts` y `lib/supabase/client.ts` (error claro si falta `NEXT_PUBLIC_SUPABASE_URL` o `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | ✅ |
+
+### Fase 3 — Seguridad critica (pendiente, bloqueante pre-prod)
+
+Pendiente: C1 (middleware auth), C2 (auth en API routes), C3 (auth en server action delete), C4 (DOMPurify), C5 (quitar `NEXT_PUBLIC_` de webhooks), C7 (SQL injection en `.or()` filters).
+
+### Fase 4 — Refactor post-launch
+
+Pendiente: H3, H4, H5, H6, M1, M2, M6 y resto de MEDIUM/LOW.
+
+---
+
 ## CRITICAL — Seguridad (pre-produccion)
 
 Estos hallazgos son vulnerabilidades de seguridad que deben resolverse antes de que la aplicacion salga a produccion. Se documentan ahora para tener visibilidad completa.

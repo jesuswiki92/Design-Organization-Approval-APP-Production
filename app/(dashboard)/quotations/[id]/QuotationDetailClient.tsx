@@ -51,6 +51,8 @@ import { cn } from '@/lib/utils'
 // Tipo de datos para la configuracion de estados del workflow
 import type { WorkflowStateConfigRow } from '@/types/database'
 
+// Tipo de consulta entrante (datos reales del tablero)
+import type { IncomingQuery } from '../incoming-queries'
 // Funciones para trabajar con los datos del tablero de quotations
 import {
   defaultQuotationLanes,             // Genera las columnas por defecto del tablero
@@ -105,9 +107,11 @@ function DetailBlock({
 export function QuotationDetailClient({
   id,
   initialStateConfigRows,
+  initialIncomingQueries,
 }: {
   id: string
   initialStateConfigRows: WorkflowStateConfigRow[]
+  initialIncomingQueries: IncomingQuery[]
 }) {
   // Estado para las columnas personalizadas creadas por el usuario
   const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
@@ -119,10 +123,13 @@ export function QuotationDetailClient({
     setCustomLanes(loadStoredCustomQuotationLanes())
   }, [])
 
-  // Combinar columnas por defecto con las personalizadas
+  // Combinar columnas por defecto (con las consultas entrantes reales) con las personalizadas
   const lanes = useMemo(
-    () => [...defaultQuotationLanes(initialStateConfigRows), ...customLanes],
-    [customLanes, initialStateConfigRows],
+    () => [
+      ...defaultQuotationLanes(initialStateConfigRows, initialIncomingQueries),
+      ...customLanes,
+    ],
+    [customLanes, initialStateConfigRows, initialIncomingQueries],
   )
   // Buscar la tarjeta de la quotation por su ID en todas las columnas
   const detail = useMemo(() => findQuotationCardById(lanes, id), [id, lanes])

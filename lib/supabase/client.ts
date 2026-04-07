@@ -24,8 +24,19 @@ import { createBrowserClient } from '@supabase/ssr'
  * @returns Un objeto de conexion a Supabase listo para hacer consultas a la base de datos
  */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl) {
+    throw new Error(
+      'Falta la variable de entorno NEXT_PUBLIC_SUPABASE_URL. Configurala en .env.local antes de arrancar la app.',
+    )
+  }
+  if (!supabaseAnonKey) {
+    throw new Error(
+      'Falta la variable de entorno NEXT_PUBLIC_SUPABASE_ANON_KEY. Configurala en .env.local antes de arrancar la app.',
+    )
+  }
+
+  return createBrowserClient(supabaseUrl, supabaseAnonKey)
 }
