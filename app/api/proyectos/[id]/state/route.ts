@@ -13,14 +13,19 @@
 
 import { NextResponse } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireUserApi } from '@/lib/auth/require-user'
 import { isProjectWorkflowState } from '@/lib/workflow-states'
 
+// TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await requireUserApi()
+    if (auth instanceof Response) return auth
+    const { supabase } = auth
+
     const { id } = await params
     const body = (await request.json()) as { estado?: string }
 
@@ -44,8 +49,6 @@ export async function PATCH(
     // Actualizar el estado en la base de datos sin restriccion de transicion
     // (el usuario puede cambiar manualmente a cualquier estado)
     // (updated_at se actualiza automaticamente via trigger en doa_proyectos)
-    const supabase = await createClient()
-
     const { data: updatedRows, error: updateError } = await supabase
       .from('doa_proyectos')
       .update({ estado: nextState })

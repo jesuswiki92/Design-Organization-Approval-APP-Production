@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireUserApi } from '@/lib/auth/require-user'
 import { isMissingSchemaError } from '@/lib/supabase/errors'
 import { isIncomingQueryStateCode, isQuotationBoardStateCode } from '@/lib/workflow-state-config'
 
@@ -10,11 +10,16 @@ function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
 }
 
+// TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await requireUserApi()
+    if (auth instanceof Response) return auth
+    const { supabase } = auth
+
     const { id } = await context.params
     const body = (await request.json()) as { estado?: unknown }
     const estado = typeof body.estado === 'string' ? body.estado.trim() : ''
@@ -27,7 +32,6 @@ export async function PATCH(
       return jsonResponse(400, 'El estado solicitado no es válido.')
     }
 
-    const supabase = await createClient()
     const update = await supabase
       .from('doa_consultas_entrantes')
       .update({ estado })

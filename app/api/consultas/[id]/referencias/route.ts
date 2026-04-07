@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireUserApi } from '@/lib/auth/require-user'
 
 export const runtime = 'nodejs'
 
@@ -17,6 +17,10 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await requireUserApi()
+    if (auth instanceof Response) return auth
+    const { supabase } = auth
+
     const { id } = await context.params
     const body = (await request.json()) as { proyecto_id?: unknown }
     const proyectoId =
@@ -24,8 +28,6 @@ export async function POST(
 
     if (!id) return jsonResponse(400, { error: 'Consulta no válida.' })
     if (!proyectoId) return jsonResponse(400, { error: 'proyecto_id es obligatorio.' })
-
-    const supabase = await createClient()
 
     // Leer las referencias actuales
     const { data: current, error: readError } = await supabase
@@ -75,6 +77,10 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await requireUserApi()
+    if (auth instanceof Response) return auth
+    const { supabase } = auth
+
     const { id } = await context.params
     const body = (await request.json()) as { proyecto_id?: unknown }
     const proyectoId =
@@ -82,8 +88,6 @@ export async function DELETE(
 
     if (!id) return jsonResponse(400, { error: 'Consulta no válida.' })
     if (!proyectoId) return jsonResponse(400, { error: 'proyecto_id es obligatorio.' })
-
-    const supabase = await createClient()
 
     const { data: current, error: readError } = await supabase
       .from('doa_consultas_entrantes')

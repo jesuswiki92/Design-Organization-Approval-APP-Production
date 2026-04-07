@@ -45,26 +45,35 @@ async function expectPage(path, config) {
   log(`PASS ${path} -> ${response.status}`)
 }
 
-async function expectJsonError(path, body, expectedStatus) {
-  const response = await request(path, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  })
+/**
+ * Assert that a protected API route returns 401 (JSON) when called WITHOUT
+ * a session cookie. Used to verify that requireUserApi() guards run BEFORE
+ * any DB lookup or body validation. Used by Fase 3b to lock in API authz.
+ */
+async function expectUnauthorized(method, path, body) {
+  const init = { method }
+  if (body !== undefined) {
+    init.headers = { 'Content-Type': 'application/json' }
+    init.body = JSON.stringify(body)
+  }
+
+  const response = await request(path, init)
+
+  if (response.status !== 401) {
+    fail(`${method} ${path} returned ${response.status}, expected 401`)
+  }
+
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    fail(`${method} ${path} content-type "${contentType}" is not JSON (expected JSON 401, got HTML?)`)
+  }
 
   const payload = await response.json().catch(() => null)
-
-  if (response.status !== expectedStatus) {
-    fail(`${path} returned ${response.status}, expected ${expectedStatus}`)
-  }
-
   if (!payload || typeof payload.error !== 'string' || payload.error.length === 0) {
-    fail(`${path} did not return a valid error payload`)
+    fail(`${method} ${path} did not return a valid 401 error payload`)
   }
 
-  log(`PASS ${path} -> ${response.status}`)
+  log(`PASS ${method} ${path} -> 401`)
 }
 
 async function expectChat(path) {
@@ -106,12 +115,28 @@ async function main() {
     await expectPage('/quotations', { statuses: [307], locationIncludes: '/login' })
     await expectPage('/engineering/portfolio', { statuses: [307], locationIncludes: '/login' })
     await expectPage('/tools/experto', { statuses: [307], locationIncludes: '/login' })
+
+    // Fase 3b: protected API routes must return JSON 401 when called without
+    // a session cookie. The check must run BEFORE any DB lookup or body
+    // validation, so a fake/empty body is enough to trigger the auth gate.
+    await expectUnauthorized('POST', '/api/tools/chat', { question: 'Hello', history: [] })
+    await expectUnauthorized('DELETE', '/api/consultas/test-id')
+    await expectUnauthorized('PATCH', '/api/consultas/test-id/state', { estado: 'NUEVO' })
+    await expectUnauthorized('POST', '/api/consultas/test-id/send-client', {})
+    await expectUnauthorized('DELETE', '/api/consultas/test-id/referencias', { proyecto_id: 'x' })
+    await expectUnauthorized('POST', '/api/consultas/test-id/documentos', { docs: {} })
+    await expectUnauthorized('POST', '/api/consultas/test-id/quotation', {})
+    await expectUnauthorized('PATCH', '/api/proyectos/test-id/state', { estado: 'NUEVO' })
+    await expectUnauthorized('GET', '/api/proyectos-historico/search?q=test')
+    await expectUnauthorized('POST', '/api/workflow/transition', {})
   }
 
-  await expectJsonError('/api/workflow/transition', {}, 503)
-
   if (ENABLE_CHAT) {
-    await expectChat('/api/tools/chat')
+    if (!AUTH_COOKIE) {
+      log('SKIP /api/tools/chat SSE check (requires SMOKE_AUTH_COOKIE since Fase 3b)')
+    } else {
+      await expectChat('/api/tools/chat')
+    }
   } else {
     log('SKIP /api/tools/chat (set SMOKE_ENABLE_CHAT=1 to enable chat smoke)')
   }

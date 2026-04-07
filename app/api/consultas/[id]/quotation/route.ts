@@ -1,9 +1,14 @@
 import { NextRequest } from 'next/server'
 
+import { requireUserApi } from '@/lib/auth/require-user'
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireUserApi()
+  if (auth instanceof Response) return auth
+
   const { id } = await context.params
   const body = await request.json()
 

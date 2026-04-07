@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
 
+import { requireUserApi } from '@/lib/auth/require-user'
+
 /**
  * Proxy al webhook de n8n para guardar documentos compliance.
  * Recibe { docs: { doc_g12_01: true, doc_g12_17: false, ... } }
@@ -14,6 +16,9 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireUserApi()
+  if (auth instanceof Response) return auth
+
   const { id } = await context.params
   const body = await request.json()
 

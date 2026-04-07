@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireUserApi } from '@/lib/auth/require-user'
 import { isMissingSchemaError } from '@/lib/supabase/errors'
 
 export const runtime = 'nodejs'
@@ -7,18 +7,22 @@ function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
 }
 
+// TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
 export async function DELETE(
   _request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await requireUserApi()
+    if (auth instanceof Response) return auth
+    const { supabase } = auth
+
     const { id } = await context.params
 
     if (!id) {
       return jsonResponse(400, 'Consulta no válida.')
     }
 
-    const supabase = await createClient()
     const deletion = await supabase
       .from('doa_consultas_entrantes')
       .delete()

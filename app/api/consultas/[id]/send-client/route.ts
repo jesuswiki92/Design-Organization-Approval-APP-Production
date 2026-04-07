@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireUserApi } from '@/lib/auth/require-user'
 
 export const runtime = 'nodejs'
 
@@ -65,6 +65,10 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const auth = await requireUserApi()
+    if (auth instanceof Response) return auth
+    const { supabase } = auth
+
     const { id } = await context.params
     const body = (await request.json()) as {
       message?: unknown
@@ -88,7 +92,6 @@ export async function POST(
       )
     }
 
-    const supabase = await createClient()
     const persistedUrl =
       typeof query.urlFormulario === 'string' ? query.urlFormulario.trim() : ''
     const formUrl =

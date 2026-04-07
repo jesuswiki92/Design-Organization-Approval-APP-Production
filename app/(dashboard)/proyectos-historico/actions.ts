@@ -16,15 +16,17 @@
 
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { requireUserAction } from '@/lib/auth/require-user'
 
 /**
  * Elimina un proyecto historico de la base de datos.
  * El CASCADE en las FK se encarga de borrar documentos y archivos asociados.
  * No elimina datos del cliente.
+ *
+ * TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
  */
 export async function deleteProyectoHistorico(id: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireUserAction()
 
   const { error } = await supabase
     .from('doa_proyectos_historico')

@@ -1,13 +1,17 @@
 import { NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+
+import { requireUserApi } from '@/lib/auth/require-user'
 
 export async function GET(request: NextRequest) {
+  const auth = await requireUserApi()
+  if (auth instanceof Response) return auth
+  const { supabase } = auth
+
   const q = request.nextUrl.searchParams.get('q')?.trim()
   if (!q || q.length < 2) {
     return Response.json([])
   }
 
-  const supabase = await createClient()
   const pattern = `%${q}%`
 
   const { data, error } = await supabase

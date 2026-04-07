@@ -1,6 +1,8 @@
 import OpenAI from "openai";
 import { NextRequest } from "next/server";
 
+import { requireUserApi } from "@/lib/auth/require-user";
+
 export const runtime = "nodejs";
 
 type ChatHistoryItem = {
@@ -50,6 +52,9 @@ function sseEvent(event: string, data: unknown) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireUserApi();
+    if (auth instanceof Response) return auth;
+
     const body = (await request.json()) as {
       question?: unknown;
       history?: unknown;
