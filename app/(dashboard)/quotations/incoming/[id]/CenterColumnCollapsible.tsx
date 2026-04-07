@@ -27,10 +27,42 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { ChevronDown, Inbox, Send, Mail, PenLine, Trash2 } from "lucide-react"
+import DOMPurify from "isomorphic-dompurify"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { ClientReplyComposer } from "./ClientReplyComposer"
 import type { DoaEmail } from "@/types/database"
+
+// ---------------------------------------------------------------------------
+// Sanitizacion de HTML de emails (XSS guard — audit C4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Tags permitidos al renderizar cuerpos de email como HTML.
+ * Lista conservadora: formato basico, listas, tablas, imagenes y cabeceras.
+ * NO se permiten: script, style, iframe, object, embed, form, input, etc.
+ */
+const EMAIL_ALLOWED_TAGS = [
+  "a", "b", "i", "em", "strong", "u", "s", "br", "p", "div", "span",
+  "ul", "ol", "li", "blockquote", "pre", "code",
+  "h1", "h2", "h3", "h4", "h5", "h6",
+  "table", "thead", "tbody", "tfoot", "tr", "td", "th",
+  "img", "hr", "sub", "sup",
+] as const
+
+/**
+ * Atributos permitidos. Se mantiene `style` porque los emails externos
+ * frecuentemente llevan estilos inline para tablas/firmas; DOMPurify los
+ * sanea internamente bloqueando expresiones peligrosas.
+ */
+const EMAIL_ALLOWED_ATTR = [
+  "href", "src", "alt", "title", "target", "rel",
+  "class", "style", "colspan", "rowspan",
+  "width", "height", "align", "valign",
+] as const
+
+/** Esquemas permitidos en href/src. Bloquea javascript:, data:, vbscript:, etc. */
+const EMAIL_ALLOWED_URI_REGEXP = /^(https?:|mailto:|tel:|cid:|#)/i
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -136,6 +168,20 @@ function EmailCard({
   onDelete?: (id: string) => void
 }) {
   const isIncoming = email.direction === "incoming"
+
+  // Sanitizar el cuerpo HTML del email antes de renderizarlo. Los emails
+  // entrantes vienen de origen externo (Outlook/n8n), por lo que podrian
+  // contener scripts maliciosos. DOMPurify limpia cualquier tag/atributo
+  // no incluido en las listas blancas. Se memoiza por `email.body` para
+  // evitar re-sanitizar en cada render.
+  const sanitizedBody = useMemo(() => {
+    if (!email.isHtml) return ""
+    return DOMPurify.sanitize(email.body ?? "", {
+      ALLOWED_TAGS: [...EMAIL_ALLOWED_TAGS],
+      ALLOWED_ATTR: [...EMAIL_ALLOWED_ATTR],
+      ALLOWED_URI_REGEXP: EMAIL_ALLOWED_URI_REGEXP,
+    })
+  }, [email.body, email.isHtml])
 
   return (
     <div className="flex flex-col">
@@ -245,7 +291,7 @@ function EmailCard({
           {email.isHtml ? (
             <div
               className="prose prose-sm max-w-none text-slate-700 [overflow-wrap:break-word] [word-break:break-word] [&_a]:text-sky-600 [&_a]:underline"
-              dangerouslySetInnerHTML={{ __html: email.body }}
+              dangerouslySetInnerHTML={{ __html: sanitizedBody }}
             />
           ) : (
             <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
