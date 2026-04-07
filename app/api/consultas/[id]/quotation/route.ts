@@ -12,7 +12,7 @@ export async function POST(
   const { id } = await context.params
   const body = await request.json()
 
-  const webhookUrl = process.env.NEXT_PUBLIC_DOA_QUOTATION_SAVE_WEBHOOK_URL
+  const webhookUrl = process.env.DOA_QUOTATION_SAVE_WEBHOOK_URL
   if (!webhookUrl) {
     return Response.json(
       { error: 'Webhook URL not configured' },

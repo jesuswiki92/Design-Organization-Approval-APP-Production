@@ -129,6 +129,13 @@ async function main() {
     await expectUnauthorized('PATCH', '/api/proyectos/test-id/state', { estado: 'NUEVO' })
     await expectUnauthorized('GET', '/api/proyectos-historico/search?q=test')
     await expectUnauthorized('POST', '/api/workflow/transition', {})
+
+    // Fase 3d: webhook proxy routes must also return JSON 401 without a session.
+    // These proxies forward client requests to n8n server-side so the webhook
+    // URLs never leak into the client bundle.
+    await expectUnauthorized('POST', '/api/webhooks/quotation-state', {})
+    await expectUnauthorized('POST', '/api/webhooks/project-state', {})
+    await expectUnauthorized('POST', '/api/webhooks/conteo-horas', {})
   }
 
   if (ENABLE_CHAT) {

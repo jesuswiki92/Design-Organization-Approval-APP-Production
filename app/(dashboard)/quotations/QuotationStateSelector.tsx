@@ -63,15 +63,7 @@ export function QuotationStateSelector({
     setMessage(null)
 
     try {
-      const webhookUrl =
-        process.env.NEXT_PUBLIC_DOA_QUOTATION_STATE_WEBHOOK_URL
-      if (!webhookUrl) {
-        throw new Error(
-          'Webhook de cambio de estado de cotizaciones no configurado.',
-        )
-      }
-
-      const response = await fetch(webhookUrl, {
+      const response = await fetch('/api/webhooks/quotation-state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

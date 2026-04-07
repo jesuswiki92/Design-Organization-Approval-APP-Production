@@ -176,10 +176,7 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
     setStartTime(new Date(now))
 
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_DOA_CONTEO_HORAS_WEBHOOK_URL
-      if (!webhookUrl) throw new Error('NEXT_PUBLIC_DOA_CONTEO_HORAS_WEBHOOK_URL no configurada')
-
-      const res = await fetch(webhookUrl, {
+      const res = await fetch('/api/webhooks/conteo-horas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -213,10 +210,7 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
     setStartTime(null)
 
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_DOA_CONTEO_HORAS_WEBHOOK_URL
-      if (!webhookUrl) throw new Error('NEXT_PUBLIC_DOA_CONTEO_HORAS_WEBHOOK_URL no configurada')
-
-      const res = await fetch(webhookUrl, {
+      const res = await fetch('/api/webhooks/conteo-horas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

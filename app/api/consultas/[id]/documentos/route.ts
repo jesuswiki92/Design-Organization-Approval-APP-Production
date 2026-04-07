@@ -22,7 +22,7 @@ export async function POST(
   const { id } = await context.params
   const body = await request.json()
 
-  const webhookUrl = process.env.NEXT_PUBLIC_DOA_COMPLIANCE_DOCS_WEBHOOK_URL
+  const webhookUrl = process.env.DOA_COMPLIANCE_DOCS_WEBHOOK_URL
   if (!webhookUrl) {
     return Response.json({ error: 'Webhook no configurado.' }, { status: 500 })
   }
