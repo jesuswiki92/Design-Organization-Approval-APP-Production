@@ -9,7 +9,7 @@
  *
  *   - Mostrar una cabecera con titulo, descripcion y contador de resultados
  *   - Un campo de busqueda que filtra proyectos mientras el usuario escribe
- *   - Una tabla con columnas: Codigo, Titulo, Cliente, Origen, Accion
+ *   - Una tabla con columnas: Codigo, Titulo, Cliente, Accion
  *   - Un boton "+" en cada fila que abre la ficha detallada del proyecto
  *
  * NOTA TECNICA: 'use client' indica que este componente se ejecuta en el
@@ -27,7 +27,7 @@ import Link from 'next/link'
 // useState: permite que el componente "recuerde" datos, como el texto de busqueda
 import { useCallback, useMemo, useState } from 'react'
 // Iconos decorativos para la interfaz
-import { Check, FolderOpen, Plus, Search, Trash2 } from 'lucide-react'
+import { Plus, Search, Trash2 } from 'lucide-react'
 
 // Accion de servidor para eliminar un proyecto historico de la base de datos
 import { deleteProyectoHistorico } from './actions'
@@ -76,24 +76,11 @@ export default function ProyectosHistoricoPageClient({
   // Estado para guardar lo que el usuario escribe en el campo de busqueda
   const [search, setSearch] = useState('')
 
-  // Estado para rastrear que fila acaba de copiar su ruta al portapapeles
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-
   // Estado local de proyectos para poder eliminar filas sin recargar la pagina
   const [localProjects, setLocalProjects] = useState(projects)
 
   // Estado para rastrear que proyecto se esta eliminando (muestra feedback visual)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-
-  /**
-   * Copia la ruta de origen al portapapeles y muestra feedback visual
-   * cambiando el icono de carpeta a un checkmark durante 1.5 segundos.
-   */
-  const handleCopyRuta = (id: string, ruta: string) => {
-    navigator.clipboard.writeText(ruta)
-    setCopiedId(id)
-    setTimeout(() => setCopiedId(null), 1500)
-  }
 
   /**
    * Elimina un proyecto historico de la base de datos tras confirmar con el usuario.
@@ -124,7 +111,7 @@ export default function ProyectosHistoricoPageClient({
    * Lista filtrada de proyectos.
    * Se recalcula automaticamente cada vez que cambia el texto de busqueda
    * o la lista original de proyectos.
-   * Busca coincidencias en: codigo, titulo, cliente, carpeta, ruta, anio y descripcion.
+   * Busca coincidencias en: codigo, titulo, cliente, aeronave, msn, anio y descripcion.
    */
   const filtered = useMemo(() => {
     return localProjects.filter((project) => {
@@ -187,7 +174,7 @@ export default function ProyectosHistoricoPageClient({
               />
               <input
                 type="text"
-                placeholder="Buscar por codigo, titulo, cliente u origen..."
+                placeholder="Buscar por codigo, titulo o cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-950 shadow-sm transition-colors placeholder:text-slate-400 focus:border-sky-300 focus:outline-none"
@@ -207,7 +194,7 @@ export default function ProyectosHistoricoPageClient({
             {/* Cabecera de la tabla con los nombres de las columnas */}
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                {['Codigo', 'Titulo', 'Cliente', 'Origen', 'Accion'].map((col) => (
+                {['Codigo', 'Titulo', 'Cliente', 'Accion'].map((col) => (
                   <th
                     key={col}
                     className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
@@ -263,32 +250,6 @@ export default function ProyectosHistoricoPageClient({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-slate-600">{project.cliente_nombre ?? '-'}</td>
-                  <td className="px-4 py-3 text-slate-600">
-                    <div className="flex items-center gap-2">
-                      {/* Boton para copiar la ruta de origen al portapapeles */}
-                      <button
-                        type="button"
-                        title="Copiar ruta"
-                        disabled={!project.ruta_origen}
-                        onClick={() => project.ruta_origen && handleCopyRuta(project.id, project.ruta_origen)}
-                        className={`shrink-0 cursor-pointer rounded-lg p-1.5 transition-colors disabled:cursor-default disabled:opacity-40 ${
-                          copiedId === project.id
-                            ? 'bg-emerald-100 text-emerald-600'
-                            : 'bg-sky-100 text-sky-600 hover:bg-sky-200'
-                        }`}
-                      >
-                        {copiedId === project.id ? (
-                          <Check size={14} />
-                        ) : (
-                          <FolderOpen size={14} />
-                        )}
-                      </button>
-                      {/* Nombre corto de la carpeta de origen (sin mostrar la ruta completa) */}
-                      <span className="text-sm text-slate-700">
-                        {project.nombre_carpeta_origen ?? '-'}
-                      </span>
-                    </div>
-                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {/* Boton para abrir la ficha detallada del proyecto */}
@@ -319,7 +280,7 @@ export default function ProyectosHistoricoPageClient({
               {/* Mensaje cuando no hay resultados (tabla vacia o busqueda sin coincidencias) */}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-400">
                     {search
                       ? `No se encontraron proyectos historicos para "${search}"`
                       : 'No hay proyectos historicos registrados.'}

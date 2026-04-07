@@ -14,6 +14,7 @@
  * ============================================================================
  */
 
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
@@ -37,7 +38,9 @@ export default function TcdsRagPage() {
         </Link>
 
         {/* Componente cliente con toda la interactividad */}
-        <TcdsRagClient />
+        <Suspense fallback={<div className="text-slate-500">Cargando...</div>}>
+          <TcdsRagClient />
+        </Suspense>
       </main>
     </div>
   )
