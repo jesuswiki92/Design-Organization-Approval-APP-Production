@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { escapeIlikePattern } from '@/lib/supabase/escape-or-filter'
+
+const MAX_QUERY_LENGTH = 100
 
 export async function GET(request: NextRequest) {
   const auth = await requireUserApi()
@@ -11,8 +14,18 @@ export async function GET(request: NextRequest) {
   if (!q || q.length < 2) {
     return Response.json([])
   }
+  if (q.length > MAX_QUERY_LENGTH) {
+    return Response.json({ error: 'Query too long' }, { status: 400 })
+  }
 
-  const pattern = `%${q}%`
+  // Escape PostgREST `.or()` metacharacters and SQL LIKE wildcards before
+  // building the filter string. Without this, characters like `,`, `(`, `)`,
+  // `*`, `%`, `_` could break clause parsing or inject wildcards.
+  const safeQ = escapeIlikePattern(q)
+  if (!safeQ) {
+    return Response.json([])
+  }
+  const pattern = `%${safeQ}%`
 
   const { data, error } = await supabase
     .from('doa_proyectos_historico')

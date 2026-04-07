@@ -28,6 +28,7 @@ import { ArrowLeft, CheckCircle2, Clock, Crosshair, FileText, FolderOpen, Mail, 
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
+import { escapeIlikePattern, escapeOrFilterLiteral } from '@/lib/supabase/escape-or-filter'
 import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
 import type { Cliente, ClienteContacto, ConsultaEntrante, DoaEmail } from '@/types/database'
 
@@ -229,6 +230,12 @@ export default async function IncomingQuotationDetailPage({
   // --- Cargar historial de proyectos del cliente ---
   let projectHistory: { id: string; numero_proyecto: string | null; titulo: string | null; descripcion: string | null; estado: string | null; created_at: string | null; source: 'active' | 'historic' }[] = []
   if (matchedClient) {
+    // Defense in depth: matchedClient.id is a UUID and matchedClient.nombre
+    // comes from our DB, but the values land inside a PostgREST .or() clause
+    // string, so any stray `,`, `(`, `)`, `*`, `%`, `_` would alter the
+    // filter. Escape both before interpolation.
+    const safeClientId = escapeOrFilterLiteral(matchedClient.id)
+    const safeClientNombre = escapeOrFilterLiteral(matchedClient.nombre ?? '')
     const [
       { data: activeRows, error: activeError },
       { data: historyRows, error: historyError },
@@ -236,7 +243,7 @@ export default async function IncomingQuotationDetailPage({
       supabase
         .from('doa_proyectos')
         .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
-        .or(`client_id.eq.${matchedClient.id},cliente_nombre.ilike.${matchedClient.nombre}`)
+        .or(`client_id.eq.${safeClientId},cliente_nombre.ilike.${safeClientNombre}`)
         .order('created_at', { ascending: false }),
       supabase
         .from('doa_proyectos_historico')
@@ -388,10 +395,23 @@ export default async function IncomingQuotationDetailPage({
     const fallbackKeywords = [...new Set(allWords.filter((w) => !generalStopWords.has(w) && domainStopWords.has(w)))].slice(0, 3)
     const searchKeywords = specificKeywords.length > 0 ? specificKeywords : fallbackKeywords
 
-    if (searchKeywords.length > 0) {
-      const orFilters = searchKeywords
-        .flatMap((kw) => [`titulo.ilike.%${kw}%`, `descripcion.ilike.%${kw}%`])
-        .join(',')
+    // Defense in depth: keywords are already regex-sanitized above, but
+    // pass them through escapeIlikePattern as well so any character that
+    // would break PostgREST `.or()` parsing (`,`, `(`, `)`, `*`, `%`, `_`)
+    // is dropped or escaped. Also cap each keyword length and the total
+    // number of clauses to avoid runaway filters.
+    const MAX_KEYWORD_LENGTH = 50
+    const MAX_OR_CLAUSES = 20
+    const safeKeywords = searchKeywords
+      .map((kw) => escapeIlikePattern(kw).slice(0, MAX_KEYWORD_LENGTH))
+      .filter((kw) => kw.length > 0)
+
+    const orClauses = safeKeywords
+      .flatMap((kw) => [`titulo.ilike.%${kw}%`, `descripcion.ilike.%${kw}%`])
+      .slice(0, MAX_OR_CLAUSES)
+
+    if (orClauses.length > 0) {
+      const orFilters = orClauses.join(',')
 
       // Solo buscamos en proyectos historicos (cerrados)
       const { data: simHistRows, error: simHistError } = await supabase
