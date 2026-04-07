@@ -60,9 +60,18 @@ Extra: `eslint.config.mjs` ignora `rag-backend/**` (JS vendored del venv Python 
 | H2 | `QuotationDetailClient` ya no muestra "not found": el server carga `incomingQueries` y los pasa al cliente, que los inyecta en `defaultQuotationLanes` | ✅ |
 | C8 | Guards explicitos de env vars en `lib/supabase/server.ts` y `lib/supabase/client.ts` (error claro si falta `NEXT_PUBLIC_SUPABASE_URL` o `NEXT_PUBLIC_SUPABASE_ANON_KEY`) | ✅ |
 
-### Fase 3 — Seguridad critica (pendiente, bloqueante pre-prod)
+### Fase 3 — Seguridad critica (completada — ver commits 7b85689..a345e66)
 
-Pendiente: C1 (middleware auth), C2 (auth en API routes), C3 (auth en server action delete), C4 (DOMPurify), C5 (quitar `NEXT_PUBLIC_` de webhooks), C7 (SQL injection en `.or()` filters).
+| Item | Descripcion | Estado |
+|------|-------------|--------|
+| C1 | Middleware auth (`proxy.ts` canonico en Next.js 16) + helper `lib/auth/require-user.ts` | ✅ DONE (commit `7b85689`) |
+| C2 | `requireUserApi()` aplicado a 10 API routes sin auth | ✅ DONE (commit `14bc7b0`) |
+| C3 | `requireUserAction()` en server action `deleteProyectoHistorico` | ✅ DONE (commit `14bc7b0`) |
+| C4 | Sanitizacion de `email.body` con `isomorphic-dompurify` | ✅ DONE (commit `2452d08`) |
+| C5 | Webhooks movidos a API routes autenticadas + rename de vars sin `NEXT_PUBLIC_` | ✅ DONE (commit `15cf5cd`) |
+| C7 | Helper `escape-or-filter.ts` y escapado de 3 llamadas `.or()` de Supabase | ✅ DONE (commit `a345e66`) |
+
+RLS / authorization por ownership permanece diferida a Pre-prod paso 6 (4 TODO(RLS) marcadores en codigo).
 
 ### Fase 4 — Refactor post-launch
 

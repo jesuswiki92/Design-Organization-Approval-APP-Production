@@ -26,10 +26,10 @@
  * Ambas variantes reutilizan el `createClient` async de `lib/supabase/server.ts`
  * para respetar la misma configuracion de cookies SSR del resto de la app.
  *
- * IMPORTANTE: este helper NO sustituye al middleware de rutas (`middleware.ts`).
- * El middleware protege las paginas del dashboard; este helper protege
- * endpoints y acciones del lado servidor donde el middleware no se ejecuta
- * (las rutas `/api/*` estan excluidas del matcher del middleware).
+ * IMPORTANTE: este helper NO sustituye al guard de rutas (`proxy.ts`).
+ * El proxy protege las paginas del dashboard; este helper protege
+ * endpoints y acciones del lado servidor donde el proxy no se ejecuta
+ * (las rutas `/api/*` estan excluidas del matcher de `proxy.ts`).
  */
 
 import { createClient } from '@/lib/supabase/server'
