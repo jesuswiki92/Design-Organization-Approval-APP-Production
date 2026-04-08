@@ -36,6 +36,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
 import { ProjectTimerButton } from '@/app/(dashboard)/proyectos/ProjectTimerButton'
+import { PrecedentesSection } from './PrecedentesSection'
 
 // --- UTILIDADES ---
 
@@ -574,6 +575,9 @@ export function ProjectDetailClient({
           </div>
         )}
       </section>
+
+      {/* Seccion Proyectos similares (precedentes) */}
+      <PrecedentesSection projectId={project.id} projectNumber={project.numero_proyecto} />
     </div>
   )
 }
