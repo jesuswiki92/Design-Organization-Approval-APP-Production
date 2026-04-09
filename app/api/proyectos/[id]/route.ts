@@ -1,4 +1,5 @@
 import { requireUserApi } from '@/lib/auth/require-user'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { isMissingSchemaError } from '@/lib/supabase/errors'
 
 export const runtime = 'nodejs'
@@ -22,7 +23,12 @@ export async function DELETE(
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+
+    // Usamos el cliente admin (service_role) para las operaciones de
+    // escritura porque doa_proyectos tiene RLS habilitado y solo permite
+    // SELECT para usuarios autenticados — DELETE requiere service_role.
+    // La autenticacion del usuario ya se verifico con requireUserApi().
+    const admin = createAdminClient()
 
     const { id } = await context.params
 
@@ -31,7 +37,7 @@ export async function DELETE(
     }
 
     // 1) Obtener numero_proyecto para limpiar embeddings (FK por project_number text)
-    const project = await supabase
+    const project = await admin
       .from('doa_proyectos')
       .select('id, numero_proyecto')
       .eq('id', id)
@@ -56,7 +62,7 @@ export async function DELETE(
 
     // 2) Cleanup de doa_proyectos_embeddings por project_number.
     //    Si la tabla no existe todavia, ignoramos el error (entorno dev sin la migración).
-    const embeddingsCleanup = await supabase
+    const embeddingsCleanup = await admin
       .from('doa_proyectos_embeddings')
       .delete()
       .eq('project_number', project.data.numero_proyecto)
@@ -70,7 +76,7 @@ export async function DELETE(
 
     // 3) Cleanup de doa_conteo_horas_proyectos por proyecto_id.
     //    Idem: si no existe en este entorno, toleramos el missing-schema.
-    const timeEntriesCleanup = await supabase
+    const timeEntriesCleanup = await admin
       .from('doa_conteo_horas_proyectos')
       .delete()
       .eq('proyecto_id', id)
@@ -83,7 +89,7 @@ export async function DELETE(
     }
 
     // 4) Borrar el proyecto.
-    const deletion = await supabase
+    const deletion = await admin
       .from('doa_proyectos')
       .delete()
       .eq('id', id)
