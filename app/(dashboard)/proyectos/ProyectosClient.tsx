@@ -36,7 +36,8 @@
 // --- IMPORTACIONES ---
 
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { startTransition, useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -47,6 +48,7 @@ import {
   Plane,
   Plus,
   Search,
+  Trash2,
   User,
 } from 'lucide-react'
 
@@ -226,6 +228,71 @@ function ProjectStateControl({
   )
 }
 
+/**
+ * Boton para borrar un proyecto del tablero.
+ * Pide confirmacion al usuario antes de eliminar.
+ * Llama a la API DELETE y refresca la pagina.
+ * Replica el patron de IncomingQueryDeleteControl de QuotationStatesBoard.
+ */
+function ProjectDeleteControl({ proyecto }: { proyecto: Proyecto }) {
+  const router = useRouter()
+  const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
+  const [message, setMessage] = useState<string | null>(null)
+
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `¿Seguro que quieres borrar el proyecto "${proyecto.numero_proyecto} — ${proyecto.titulo}"?`,
+    )
+    if (!confirmed) return
+
+    setStatus('deleting')
+    setMessage(null)
+
+    try {
+      const response = await fetch(`/api/proyectos/${proyecto.id}`, {
+        method: 'DELETE',
+      })
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo borrar el proyecto.')
+      }
+
+      setStatus('idle')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setStatus('error')
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Se produjo un error borrando el proyecto.',
+      )
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <button
+        type="button"
+        onClick={() => void handleDelete()}
+        disabled={status === 'deleting'}
+        className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-wait disabled:opacity-70"
+        aria-label={`Borrar proyecto ${proyecto.numero_proyecto}`}
+        title="Borrar proyecto"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+      {status === 'deleting' ? (
+        <p className="text-[11px] text-slate-500">Borrando proyecto...</p>
+      ) : null}
+      {message ? <p className="text-[11px] text-rose-600 mt-1">{message}</p> : null}
+    </div>
+  )
+}
+
 // --- TARJETA KANBAN ---
 
 /**
@@ -327,7 +394,8 @@ function BoardCard({
       {/* Selector de estado + boton detalle */}
       <div className="mt-3 space-y-2">
         <ProjectStateControl proyecto={proyecto} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} onEstadoRevert={onEstadoRevert} />
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-between">
+          <ProjectDeleteControl proyecto={proyecto} />
           <Link
             href={`/engineering/projects/${proyecto.id}`}
             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700"

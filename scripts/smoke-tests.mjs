@@ -127,6 +127,7 @@ async function main() {
     await expectUnauthorized('POST', '/api/consultas/test-id/documentos', { docs: {} })
     await expectUnauthorized('POST', '/api/consultas/test-id/quotation', {})
     await expectUnauthorized('PATCH', '/api/proyectos/test-id/state', { estado: 'NUEVO' })
+    await expectUnauthorized('DELETE', '/api/proyectos/test-id', {})
     await expectUnauthorized('POST', '/api/proyectos/test-id/precedentes', {})
     await expectUnauthorized('GET', '/api/proyectos-historico/search?q=test')
     await expectUnauthorized('POST', '/api/workflow/transition', {})
