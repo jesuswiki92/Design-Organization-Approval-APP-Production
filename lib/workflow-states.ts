@@ -42,7 +42,9 @@ export const QUOTATION_BOARD_STATES = {
   ENTRADA_RECIBIDA: 'entrada_recibida',           // Acaba de llegar una consulta comercial
   FORMULARIO_ENVIADO: 'formulario_enviado',       // Formulario enviado al cliente, esperando respuesta
   FORMULARIO_RECIBIDO: 'formulario_recibido',     // Formulario recibido del cliente, pendiente de revision
-  DEFINIR_ALCANCE: 'definir_alcance',             // Se esta definiendo el alcance del trabajo
+  DEFINIR_ALCANCE: 'definir_alcance',             // Se esta definiendo el alcance del trabajo (preliminar)
+  FORMULARIO_ESPECIFICO_ENVIADO: 'formulario_especifico_enviado', // Formulario tecnico especifico enviado al cliente
+  DEFINIR_ALCANCE_FINAL: 'definir_alcance_final', // Definicion final del alcance con toda la informacion
   ALCANCE_DEFINIDO: 'alcance_definido',           // Alcance definido, preparar oferta comercial
   OFERTA_EN_REVISION: 'oferta_en_revision',       // Oferta preparada, en revision interna
   OFERTA_ENVIADA: 'oferta_enviada',               // Oferta enviada al cliente
@@ -101,6 +103,24 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     label: 'Definir alcance. Preliminar',
     shortLabel: 'Alcance prelim.',
     description: 'Se está definiendo el alcance técnico y comercial del trabajo',
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    dot: 'bg-emerald-500',
+  },
+  formulario_especifico_enviado: {
+    label: 'Formulario específico enviado. Esperando respuesta',
+    shortLabel: 'Form. específico enviado',
+    description: 'Formulario técnico específico enviado al cliente, esperando respuesta',
+    color: 'text-cyan-700',
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-200',
+    dot: 'bg-cyan-500',
+  },
+  definir_alcance_final: {
+    label: 'Definir alcance',
+    shortLabel: 'Definir alcance',
+    description: 'Definición final del alcance del proyecto con toda la información disponible',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',

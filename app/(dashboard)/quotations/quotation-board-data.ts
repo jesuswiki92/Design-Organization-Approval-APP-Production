@@ -146,6 +146,8 @@ const EMPTY_QUOTATION_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
   formulario_enviado: [],
   formulario_recibido: [],
   definir_alcance: [],
+  formulario_especifico_enviado: [],
+  definir_alcance_final: [],
   alcance_definido: [],
   oferta_en_revision: [],
   oferta_enviada: [],
