@@ -89,8 +89,8 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     dot: 'bg-cyan-500',
   },
   formulario_recibido: {
-    label: 'Formulario recibido. Revisar',
-    shortLabel: 'Revisar',
+    label: 'Formulario general recibido. Revisar',
+    shortLabel: 'Form. gral. recibido',
     description: 'El cliente respondió el formulario, pendiente de revisión interna',
     color: 'text-teal-700',
     bg: 'bg-teal-50',
@@ -98,8 +98,8 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     dot: 'bg-teal-500',
   },
   definir_alcance: {
-    label: 'Definir alcance',
-    shortLabel: 'Alcance',
+    label: 'Definir alcance. Preliminar',
+    shortLabel: 'Alcance prelim.',
     description: 'Se está definiendo el alcance técnico y comercial del trabajo',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
@@ -218,7 +218,7 @@ export const CONSULTA_STATE_CONFIG: Record<EstadoConsulta, { label: string; colo
     description: 'Formulario enviado al cliente, pendiente de respuesta',
   },
   formulario_recibido: {
-    label: 'Formulario recibido. Revisar',
+    label: 'Formulario general recibido. Revisar',
     color: 'bg-green-500/20 text-green-400 border-green-500/30',
     description: 'Formulario recibido del cliente, pendiente de revisión interna',
   },

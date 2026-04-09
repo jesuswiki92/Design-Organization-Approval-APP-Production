@@ -11,11 +11,11 @@ El tablero de quotations muestra un pipeline unico de 10 columnas. Las consultas
 
 1. **Entrada recibida** (`entrada_recibida`) — Ha llegado una consulta de un cliente por email. n8n procesa el email y crea la fila en `doa_consultas_entrantes`.
 2. **Formulario enviado. Esperando respuesta** (`formulario_enviado`) — El ingeniero envio el formulario al cliente. La app usa `url_formulario` y n8n envia el email.
-3. **Formulario recibido. Revisar** (`formulario_recibido`) — El cliente completo el formulario. n8n guarda la respuesta en `doa_respuestas_formularios`.
+3. **Formulario general recibido. Revisar** (`formulario_recibido`) — El cliente completo el formulario. n8n guarda la respuesta en `doa_respuestas_formularios`.
 
 ### Fase de cotizacion (estados 4-10, cambio manual via dropdown)
 
-4. **Definir alcance** (`definir_alcance`) — Revisar la informacion y definir el alcance del trabajo.
+4. **Definir alcance. Preliminar** (`definir_alcance`) — Revisar la informacion y definir el alcance del trabajo.
 5. **Alcance definido. Preparar oferta** (`alcance_definido`) — Alcance claro, preparar la oferta economica.
 6. **Oferta preparada. Revisar** (`oferta_en_revision`) — Oferta lista, revision interna antes de enviar.
 7. **Oferta enviada a cliente** (`oferta_enviada`) — Oferta enviada, esperando respuesta del cliente.

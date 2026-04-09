@@ -1210,12 +1210,12 @@ export default async function IncomingQuotationDetailPage({
               </div>
             </div>
 
-            {/* --- Definir alcance (ancho completo, colapsable) --- */}
+            {/* --- Definir alcance. Preliminar (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-emerald-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
               <div className="border-b border-emerald-200 bg-[linear-gradient(135deg,#ffffff_0%,#ecfdf5_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <Crosshair className="h-4 w-4 text-emerald-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Definir alcance</h2>
+                  <h2 className="text-sm font-semibold text-slate-950">Definir alcance. Preliminar</h2>
                 </div>
               </div>
               <details className="group" open>

@@ -52,8 +52,8 @@ El board de `Quotations` es un pipeline unificado de 10 estados que cubre desde 
 |---|--------|---------------|-------|
 | 1 | Entrada recibida | `entrada_recibida` | sky |
 | 2 | Formulario enviado. Esperando respuesta | `formulario_enviado` | cyan |
-| 3 | Formulario recibido. Revisar | `formulario_recibido` | teal |
-| 4 | Definir alcance | `definir_alcance` | emerald |
+| 3 | Formulario general recibido. Revisar | `formulario_recibido` | teal |
+| 4 | Definir alcance. Preliminar | `definir_alcance` | emerald |
 | 5 | Alcance definido. Preparar oferta | `alcance_definido` | green |
 | 6 | Oferta preparada. Revisar | `oferta_en_revision` | amber |
 | 7 | Oferta enviada a cliente | `oferta_enviada` | violet |
@@ -142,7 +142,7 @@ Las consultas entrantes son la fuente de datos principal del tablero de quotatio
   - Seccion colapsable **Aircraft Data** con datos de aeronave, upload y visualizacion de TCDS en PDF
   - Seccion colapsable **Project History** que muestra proyectos previos del cliente cuando se identifica un cliente conocido
   - Boton "+" en Project History que enlaza a `/proyectos-historico` para consultar el historico completo
-- Seccion colapsable **Definir alcance** con comparacion 1-to-1 entre la consulta actual y los proyectos referencia (8 campos: descripcion, aeronave, MSN, cliente, tipo trabajo, TCDS, objetivo operativo, año)
+- Seccion colapsable **Definir alcance. Preliminar** con comparacion 1-to-1 entre la consulta actual y los proyectos referencia (8 campos: descripcion, aeronave, MSN, cliente, tipo trabajo, TCDS, objetivo operativo, año)
   - Seccion colapsable **Definir documentacion** con las 44 plantillas de compliance agrupadas por categoria como checkboxes. Pre-seleccion automatica basada en documentos del proyecto referencia. El ingeniero valida y guarda la seleccion. Datos persistidos en `doa_consultas_entrantes.documentos_compliance` (jsonb). Plantillas servidas desde tabla `doa_plantillas_compliance`.
 - `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n usando `url_formulario` ya existente
 - Guardado de documentos compliance via webhook n8n `DOA - Guardar Documentos Compliance` (ID: `FUmlV5uBEnacTVs2`, path: `doa-compliance-docs`). Variable: `DOA_COMPLIANCE_DOCS_WEBHOOK_URL`
