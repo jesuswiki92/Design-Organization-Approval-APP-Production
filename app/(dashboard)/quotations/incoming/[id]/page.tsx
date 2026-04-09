@@ -44,6 +44,7 @@ import { codeToColumn, getPreselectedTemplates, type ComplianceTemplate } from '
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 import { ComplianceDocumentsSection } from './ComplianceDocumentsSection'
 import { ManualProjectSearch } from './ManualProjectSearch'
+import { ProjectSummaryPanel } from './ProjectSummaryPanel'
 import { QuotationInfoSection } from './QuotationInfoSection'
 import { ReferenceProjectButton } from './ReferenceProjectButton'
 import { TcdsStatusBanner } from './TcdsStatusBanner'
@@ -1317,6 +1318,11 @@ export default async function IncomingQuotationDetailPage({
                               </tbody>
                             </table>
                           </div>
+                          <ProjectSummaryPanel
+                            projectId={ref.id}
+                            projectCode={ref.numero_proyecto ?? ''}
+                            projectTitle={ref.titulo ?? ''}
+                          />
                         </div>
                       )
                     })

@@ -130,6 +130,7 @@ async function main() {
     await expectUnauthorized('DELETE', '/api/proyectos/test-id', {})
     await expectUnauthorized('POST', '/api/proyectos/test-id/precedentes', {})
     await expectUnauthorized('GET', '/api/proyectos-historico/search?q=test')
+    await expectUnauthorized('GET', '/api/proyectos-historico/test-id/summary')
     await expectUnauthorized('POST', '/api/workflow/transition', {})
 
     // Fase 3d: webhook proxy routes must also return JSON 401 without a session.
