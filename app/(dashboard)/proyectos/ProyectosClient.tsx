@@ -21,9 +21,9 @@
  *   - Aprobacion: pendiente de aprobacion
  *   - Entregado: documentacion entregada al cliente
  *
- * NOTA TECNICA: Los estados "cerrado" y "archivado" no se muestran como
- * columnas en el tablero, pero siguen siendo transiciones validas desde
- * el selector de estado. Los proyectos archivados permanecen en la BD.
+ * NOTA TECNICA: El estado "archivado" no se muestra como columna en el
+ * tablero, pero sigue siendo una transicion valida desde el selector de
+ * estado. Los proyectos archivados permanecen en la BD.
  *
  * CAMPOS DE LA TABLA doa_proyectos usados aqui:
  *   numero_proyecto, titulo, descripcion, cliente_nombre, aeronave,
@@ -517,7 +517,7 @@ function TableroView({
       <div className="overflow-x-auto pb-4">
         <div className="flex min-w-max gap-4 pr-2">
           {resolvedStates
-            .filter((meta) => meta.state_code !== 'cerrado' && meta.state_code !== 'archivado')
+            .filter((meta) => meta.state_code !== 'archivado')
             .map((meta) => (
               <BoardLane
                 key={meta.state_code}
@@ -818,7 +818,7 @@ export function ProyectosClient({
   // Metricas de resumen por columna (usando los estados resueltos)
   const metrics = useMemo(() => {
     const byColumn = resolvedStates
-      .filter((meta) => meta.state_code !== 'cerrado')
+      .filter((meta) => meta.state_code !== 'archivado')
       .map((meta) => ({
         stateCode: meta.state_code,
         title: meta.label,

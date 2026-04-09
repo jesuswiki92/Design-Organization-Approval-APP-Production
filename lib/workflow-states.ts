@@ -455,11 +455,11 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
 // a ciertos estados especificos. El flujo es lineal con posibilidad de
 // retroceder en algunos casos.
 const PROJECT_TRANSITIONS: Record<EstadoProyecto, EstadoProyecto[]> = {
-  nuevo: ['en_progreso'],
-  en_progreso: ['revision', 'aprobacion'],
-  revision: ['en_progreso', 'aprobacion'],
-  aprobacion: ['revision', 'entregado'],
-  entregado: ['cerrado'],
+  nuevo: ['en_progreso', 'archivado'],
+  en_progreso: ['revision', 'aprobacion', 'archivado'],
+  revision: ['en_progreso', 'aprobacion', 'archivado'],
+  aprobacion: ['revision', 'entregado', 'archivado'],
+  entregado: ['cerrado', 'archivado'],
   cerrado: ['archivado'],
   archivado: [],
 }
