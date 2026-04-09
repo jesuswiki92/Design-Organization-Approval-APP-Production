@@ -41,7 +41,7 @@ import {
   NotebookTabs,    // Icono de libreta (campo de cliente)
 } from 'lucide-react'
 // ReactNode: tipo que representa cualquier contenido visual de React (texto, iconos, etc.)
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 
 // Tipos para el Master Document List (MDL) del proyecto
 import type { MdlContenido, MdlDocumento, ProyectoHistoricoRow } from '@/types/database'
@@ -227,6 +227,109 @@ function MdlDocumentList({ docs }: { docs: MdlDocumento[] }) {
 }
 
 // ============================================================================
+// MARKDOWN PARSER MINIMO (sin dependencias externas)
+// ============================================================================
+// Parsea el markdown del resumen de proyecto para renderizarlo como HTML.
+// Soporta: encabezados (# ## ###), listas (- *), listas numeradas,
+// tablas (|), negrita (**), cursiva (*), codigo en linea (`), parrafos.
+
+/** Escapa entidades HTML para evitar XSS */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/** Parsea markdown inline: **negrita**, *cursiva*, `codigo` */
+function parseInline(text: string): string {
+  let result = escapeHtml(text)
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+  result = result.replace(/\*(.+?)\*/g, '<em>$1</em>')
+  result = result.replace(/`(.+?)`/g, '<code class="rounded bg-slate-100 px-1 py-0.5 text-[11px] font-mono text-slate-700">$1</code>')
+  return result
+}
+
+/** Renderiza una tabla markdown (delimitada por pipes) a HTML */
+function renderMdTable(lines: string[]): string {
+  if (lines.length < 2) return lines.map((l) => `<p class="text-xs text-slate-700">${escapeHtml(l)}</p>`).join('')
+
+  const parseRow = (line: string) =>
+    line.split('|').map((c) => c.trim()).filter((c) => c.length > 0)
+
+  const headerCells = parseRow(lines[0])
+  const isSeparator = (line: string) => /^\|[\s\-:|]+\|$/.test(line.trim())
+  const dataStartIdx = isSeparator(lines[1]) ? 2 : 1
+  const dataRows = lines.slice(dataStartIdx).map(parseRow)
+
+  const ths = headerCells
+    .map((h) => `<th class="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-500">${parseInline(h)}</th>`)
+    .join('')
+
+  const trs = dataRows
+    .map((cells) => {
+      const tds = cells.map((c) => `<td class="px-2 py-1 text-xs text-slate-700">${parseInline(c)}</td>`).join('')
+      return `<tr class="border-t border-slate-100">${tds}</tr>`
+    })
+    .join('')
+
+  return `<div class="overflow-x-auto rounded-lg border border-slate-200 my-2"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50">${ths}</tr></thead><tbody>${trs}</tbody></table></div>`
+}
+
+/** Convierte un string markdown completo a HTML */
+function parseMarkdown(md: string): string {
+  const lines = md.split('\n')
+  const htmlParts: string[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    const trimmed = lines[i].trim()
+
+    if (trimmed === '') { i++; continue }
+
+    if (trimmed.startsWith('###')) {
+      htmlParts.push(`<h4 class="mt-3 mb-1 text-xs font-bold text-slate-700">${parseInline(trimmed.replace(/^###\s*/, ''))}</h4>`)
+      i++; continue
+    }
+    if (trimmed.startsWith('##')) {
+      htmlParts.push(`<h3 class="mt-4 mb-1.5 text-sm font-bold text-slate-900 border-b border-slate-100 pb-1">${parseInline(trimmed.replace(/^##\s*/, ''))}</h3>`)
+      i++; continue
+    }
+    if (trimmed.startsWith('#')) {
+      htmlParts.push(`<h3 class="mt-4 mb-1.5 text-sm font-bold text-slate-900 border-b border-slate-100 pb-1">${parseInline(trimmed.replace(/^#\s*/, ''))}</h3>`)
+      i++; continue
+    }
+
+    if (trimmed.startsWith('|')) {
+      const tableLines: string[] = []
+      while (i < lines.length && lines[i].trim().startsWith('|')) { tableLines.push(lines[i].trim()); i++ }
+      htmlParts.push(renderMdTable(tableLines))
+      continue
+    }
+
+    if (/^[-*]\s/.test(trimmed)) {
+      const items: string[] = []
+      while (i < lines.length && /^[-*]\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^[-*]\s/, '')); i++ }
+      htmlParts.push(`<ul class="my-1.5 ml-4 list-disc space-y-0.5">${items.map((t) => `<li class="text-xs text-slate-700 leading-relaxed">${parseInline(t)}</li>`).join('')}</ul>`)
+      continue
+    }
+
+    if (/^\d+\.\s/.test(trimmed)) {
+      const items: string[] = []
+      while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^\d+\.\s/, '')); i++ }
+      htmlParts.push(`<ol class="my-1.5 ml-4 list-decimal space-y-0.5">${items.map((t) => `<li class="text-xs text-slate-700 leading-relaxed">${parseInline(t)}</li>`).join('')}</ol>`)
+      continue
+    }
+
+    htmlParts.push(`<p class="text-xs text-slate-700 leading-relaxed my-1">${parseInline(trimmed)}</p>`)
+    i++
+  }
+
+  return htmlParts.join('\n')
+}
+
+// ============================================================================
 // COMPONENTE PRINCIPAL DE LA PAGINA
 // ============================================================================
 
@@ -259,6 +362,15 @@ export default function ProyectosHistoricoEntryClient({
   // Por defecto: entregables abierto, no_entregables cerrado (cuando el MDL se abre)
   const [entregablesOpen, setEntregablesOpen] = useState(true)
   const [noEntregablesOpen, setNoEntregablesOpen] = useState(false)
+
+  // -- Estado para el panel colapsable de resumen del proyecto (cerrado por defecto) --
+  const [summaryOpen, setSummaryOpen] = useState(false)
+
+  // -- Parsear el markdown del resumen una sola vez (memoizado) --
+  const summaryHtml = useMemo(() => {
+    if (!project.summary_md) return null
+    return parseMarkdown(project.summary_md)
+  }, [project.summary_md])
 
   /**
    * Copia un texto al portapapeles y muestra feedback visual
@@ -614,6 +726,46 @@ export default function ProyectosHistoricoEntryClient({
                         )}
                       </div>
                     </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ============================================================ */}
+            {/* SECCION A.2: Resumen del Proyecto (colapsable, cerrado)      */}
+            {/* Muestra el contenido summary_md del proyecto historico en     */}
+            {/* formato markdown renderizado. Posicionado entre el MDL y     */}
+            {/* las familias documentales.                                    */}
+            {/* ============================================================ */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setSummaryOpen(prev => !prev)}
+                className="flex w-full items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/60 px-5 py-3 text-left transition-colors hover:bg-emerald-100/60"
+              >
+                {summaryOpen ? (
+                  <ChevronDown className="h-4 w-4 shrink-0 text-emerald-500" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 shrink-0 text-emerald-500" />
+                )}
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-900">
+                  <FileText className="h-4 w-4 text-emerald-600" />
+                  Resumen del Proyecto (Summary)
+                </span>
+              </button>
+
+              {/* Contenido del resumen (solo visible cuando esta expandido) */}
+              {summaryOpen && (
+                <div className="mt-3">
+                  {summaryHtml === null ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm italic text-slate-400">
+                      No hay resumen disponible para este proyecto
+                    </div>
+                  ) : (
+                    <div
+                      className="max-h-[600px] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4"
+                      dangerouslySetInnerHTML={{ __html: summaryHtml }}
+                    />
                   )}
                 </div>
               )}
