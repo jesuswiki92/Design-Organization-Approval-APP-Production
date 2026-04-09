@@ -680,6 +680,7 @@ export interface ProyectoHistoricoRow {
   nombre_carpeta_origen: string | null
   mdl_contenido: MdlContenido | null
   summary_md: string | null
+  compliance_docs_md: Record<string, { title: string; familia: string; content_md: string }> | null
   created_at: string
   updated_at: string
 }

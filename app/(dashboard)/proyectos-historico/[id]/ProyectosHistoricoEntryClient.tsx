@@ -366,11 +366,53 @@ export default function ProyectosHistoricoEntryClient({
   // -- Estado para el panel colapsable de resumen del proyecto (cerrado por defecto) --
   const [summaryOpen, setSummaryOpen] = useState(false)
 
+  // -- Estado para controlar que familias documentales muestran su contenido markdown --
+  const [expandedDocFamilies, setExpandedDocFamilies] = useState<Set<string>>(new Set())
+
   // -- Parsear el markdown del resumen una sola vez (memoizado) --
   const summaryHtml = useMemo(() => {
     if (!project.summary_md) return null
     return parseMarkdown(project.summary_md)
   }, [project.summary_md])
+
+  /**
+   * Busca documentos de compliance_docs_md que coincidan con una familia documental.
+   * Compara por nombre de carpeta (familia) o por referencia de archivo.
+   */
+  const findComplianceDocsForFamily = useMemo(() => {
+    if (!project.compliance_docs_md) return (_familia: string, _archivoRef: string | null) => []
+    const docsMap = project.compliance_docs_md
+    return (familia: string, archivoRef: string | null) => {
+      const matches: Array<{ ref: string; title: string; content_md: string }> = []
+      for (const [ref, doc] of Object.entries(docsMap)) {
+        // Coincidencia por nombre de familia (ej: "01.Change Classification")
+        if (doc.familia === familia) {
+          matches.push({ ref, title: doc.title, content_md: doc.content_md })
+          continue
+        }
+        // Coincidencia por referencia de archivo (ej: archivo_referencia contiene "20885-12-01")
+        if (archivoRef && archivoRef.includes(ref)) {
+          matches.push({ ref, title: doc.title, content_md: doc.content_md })
+        }
+      }
+      return matches
+    }
+  }, [project.compliance_docs_md])
+
+  /**
+   * Alterna la visibilidad del contenido markdown de una familia documental.
+   */
+  const toggleDocFamily = (docId: string) => {
+    setExpandedDocFamilies(prev => {
+      const next = new Set(prev)
+      if (next.has(docId)) {
+        next.delete(docId)
+      } else {
+        next.add(docId)
+      }
+      return next
+    })
+  }
 
   /**
    * Copia un texto al portapapeles y muestra feedback visual
@@ -858,6 +900,45 @@ export default function ProyectosHistoricoEntryClient({
                           )}
                         </button>
                       </div>
+
+                      {/* Contenido markdown del documento de compliance (colapsable) */}
+                      {(() => {
+                        const complianceDocs = findComplianceDocsForFamily(doc.familia_documental, doc.archivo_referencia)
+                        if (complianceDocs.length === 0) return null
+                        return (
+                          <div className="mt-2.5 space-y-2">
+                            {complianceDocs.map((cDoc) => {
+                              const isExpanded = expandedDocFamilies.has(cDoc.ref)
+                              return (
+                                <div key={cDoc.ref}>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleDocFamily(cDoc.ref)}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:border-sky-200 hover:text-sky-600"
+                                  >
+                                    {isExpanded ? (
+                                      <ChevronDown className="h-3 w-3 text-sky-500" />
+                                    ) : (
+                                      <ChevronRight className="h-3 w-3 text-slate-400" />
+                                    )}
+                                    <FileText className="h-3 w-3" />
+                                    Ver contenido: {cDoc.title}
+                                    <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[9px] text-slate-500">
+                                      {cDoc.ref}
+                                    </span>
+                                  </button>
+                                  {isExpanded && (
+                                    <div
+                                      className="mt-2 max-h-[400px] overflow-y-auto rounded-xl border border-slate-200 bg-white px-4 py-3"
+                                      dangerouslySetInnerHTML={{ __html: parseMarkdown(cDoc.content_md) }}
+                                    />
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )
+                      })()}
                     </div>
                   ))}
                 </div>
