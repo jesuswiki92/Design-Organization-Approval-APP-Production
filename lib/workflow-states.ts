@@ -286,6 +286,7 @@ export const PROJECT_WORKFLOW_STATES = [
   'aprobacion',     // Pendiente de aprobacion
   'entregado',      // Documentacion entregada al cliente
   'cerrado',        // Proyecto completado y cerrado
+  'archivado',      // Proyecto archivado (oculto del tablero, conservado en BD)
 ] as const satisfies readonly EstadoProyectoWorkflow[]
 
 // Estados que se muestran en la vista de portafolio de proyectos
@@ -370,6 +371,14 @@ export const PROJECT_STATE_CONFIG: Record<EstadoProyectoWorkflow, WorkflowConfig
     border: 'border-slate-200',
     dot: 'bg-slate-500',
   },
+  archivado: {
+    label: 'Archivado',
+    shortLabel: 'Arch.',
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    dot: 'bg-slate-500',
+  },
 }
 
 // Configuracion visual de los estados legacy (antiguos).
@@ -451,7 +460,8 @@ const PROJECT_TRANSITIONS: Record<EstadoProyecto, EstadoProyecto[]> = {
   revision: ['en_progreso', 'aprobacion'],
   aprobacion: ['revision', 'entregado'],
   entregado: ['cerrado'],
-  cerrado: [],
+  cerrado: ['archivado'],
+  archivado: [],
 }
 
 // Transiciones desde estados legacy hacia estados del nuevo flujo de trabajo.

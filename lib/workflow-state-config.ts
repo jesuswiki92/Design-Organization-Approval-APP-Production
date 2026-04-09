@@ -464,6 +464,17 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
     is_system: true,
     is_active: true,
   },
+  {
+    scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
+    state_code: 'archivado',
+    label: PROJECT_STATE_CONFIG.archivado.label,
+    short_label: PROJECT_STATE_CONFIG.archivado.shortLabel,
+    description: 'Proyecto archivado',
+    color_token: 'slate',
+    sort_order: 90,
+    is_system: true,
+    is_active: true,
+  },
 ]
 
 // Agrupa los valores por defecto por ambito, para buscar rapidamente

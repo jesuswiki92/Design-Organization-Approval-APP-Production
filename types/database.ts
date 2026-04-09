@@ -223,6 +223,7 @@ export type EstadoProyectoWorkflow =
   | 'aprobacion'
   | 'entregado'
   | 'cerrado'
+  | 'archivado'
 
 /**
  * ESTADO DE PROYECTO (para uso en la app)
