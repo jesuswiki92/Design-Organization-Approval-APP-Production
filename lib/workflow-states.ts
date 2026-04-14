@@ -43,8 +43,7 @@ export const QUOTATION_BOARD_STATES = {
   FORMULARIO_ENVIADO: 'formulario_enviado',       // Formulario enviado al cliente, esperando respuesta
   FORMULARIO_RECIBIDO: 'formulario_recibido',     // Formulario recibido del cliente, pendiente de revision
   DEFINIR_ALCANCE: 'definir_alcance',             // Se esta definiendo el alcance del trabajo (preliminar)
-  FORMULARIO_ESPECIFICO_ENVIADO: 'formulario_especifico_enviado', // Formulario tecnico especifico enviado al cliente
-  DEFINIR_ALCANCE_FINAL: 'definir_alcance_final', // Definicion final del alcance con toda la informacion
+  ESPERANDO_RESPUESTA_CLIENTE: 'esperando_respuesta_cliente', // Email enviado al cliente manualmente, esperando respuesta
   ALCANCE_DEFINIDO: 'alcance_definido',           // Alcance definido, preparar oferta comercial
   OFERTA_EN_REVISION: 'oferta_en_revision',       // Oferta preparada, en revision interna
   OFERTA_ENVIADA: 'oferta_enviada',               // Oferta enviada al cliente
@@ -108,23 +107,14 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  formulario_especifico_enviado: {
-    label: 'Formulario específico enviado. Esperando respuesta',
-    shortLabel: 'Form. específico enviado',
-    description: 'Formulario técnico específico enviado al cliente, esperando respuesta',
+  esperando_respuesta_cliente: {
+    label: 'Esperando respuesta del cliente',
+    shortLabel: 'Esperando cliente',
+    description: 'Email enviado al cliente, esperando respuesta. Se transiciona manualmente al enviar el correo.',
     color: 'text-cyan-700',
     bg: 'bg-cyan-50',
     border: 'border-cyan-200',
     dot: 'bg-cyan-500',
-  },
-  definir_alcance_final: {
-    label: 'Definir alcance',
-    shortLabel: 'Definir alcance',
-    description: 'Definición final del alcance del proyecto con toda la información disponible',
-    color: 'text-emerald-700',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    dot: 'bg-emerald-500',
   },
   alcance_definido: {
     label: 'Alcance definido. Preparar oferta',
