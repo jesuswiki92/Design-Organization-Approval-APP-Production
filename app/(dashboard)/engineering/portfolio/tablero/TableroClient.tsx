@@ -222,6 +222,7 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
                   key={stateCode}
                   stateCode={stateCode}
                   projects={byState.get(stateCode) ?? []}
+                  showStateSelector
                 />
               ))}
             </PhaseColumnGroup>

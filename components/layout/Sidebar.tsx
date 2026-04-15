@@ -10,9 +10,15 @@ import {
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/store/uiStore'
 
+// Decision sidebar (Sprint tablero-v2): Quotations expone una unica entrada
+// "Quotations" que abre /quotations, y dentro de la pagina hay un toggle
+// Lista/Tablero. Proyectos se alinea con el mismo patron: una sola entrada
+// "Proyectos" que abre /engineering/portfolio (Lista por defecto, toggle a
+// Tablero in-page). `/proyectos` queda como ruta legacy accesible directamente
+// pero ya no es el punto de entrada principal del sidebar.
 const navItems = [
   { href: '/home', icon: Home, label: 'Inicio' },
-  { href: '/proyectos', icon: Plane, label: 'Proyectos' },
+  { href: '/engineering/portfolio', icon: Plane, label: 'Proyectos' },
   { href: '/proyectos-historico', icon: Clock3, label: 'Proyectos Historico' },
   { href: '/quotations', icon: FileText, label: 'Quotations' },
   { href: '/tools', icon: Wrench, label: 'Tools' },

@@ -12,6 +12,11 @@
  *
  * Clic en la card abre el detalle del proyecto.
  *
+ * Si `showStateSelector` es true, se renderiza un dropdown en el footer que
+ * dispara transiciones via `/api/proyectos/[id]/transicion` (patron espejo
+ * de QuotationStateSelector). El Link padre sigue activo: los clicks/cambios
+ * del select usan stopPropagation para no navegar al detalle.
+ *
  * MATCH: mismo estilo visual que las cards de QuotationStatesBoard (BoardCard)
  * — border slate-200, bg white, sombra suave, hover con translate-y.
  * ============================================================================
@@ -23,12 +28,20 @@ import { Calendar, Plane, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Proyecto } from '@/types/database'
 
+import { ProjectStateSelector } from './ProjectStateSelector'
+
 export type ProjectCardData = Proyecto & {
   deliverables_total?: number
   deliverables_completados?: number
 }
 
-export function ProjectCard({ project }: { project: ProjectCardData }) {
+export function ProjectCard({
+  project,
+  showStateSelector = false,
+}: {
+  project: ProjectCardData
+  showStateSelector?: boolean
+}) {
   const aircraft = project.tcds_code_short ?? project.aeronave ?? null
   const client = project.cliente_nombre ?? null
   const owner = project.owner ?? null
@@ -96,6 +109,16 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
               {start}
             </span>
           ) : null}
+        </div>
+      ) : null}
+
+      {/* Selector de estado (opt-in) */}
+      {showStateSelector ? (
+        <div className="mt-3">
+          <ProjectStateSelector
+            proyectoId={project.id}
+            currentState={project.estado_v2 ?? null}
+          />
         </div>
       ) : null}
     </Link>

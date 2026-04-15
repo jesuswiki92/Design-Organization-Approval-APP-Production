@@ -22,9 +22,11 @@ import { ProjectCard, type ProjectCardData } from './ProjectCard'
 export function StateColumn({
   stateCode,
   projects,
+  showStateSelector = false,
 }: {
   stateCode: string
   projects: ProjectCardData[]
+  showStateSelector?: boolean
 }) {
   const meta = getProjectExecutionStateMeta(stateCode)
 
@@ -72,7 +74,11 @@ export function StateColumn({
           </div>
         ) : (
           projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard
+              key={project.id}
+              project={project}
+              showStateSelector={showStateSelector}
+            />
           ))
         )}
       </div>
