@@ -1,5 +1,28 @@
 # Estado actual de la aplicacion
 
+## Crear Proyecto Nuevo (manual) (2026-04-15)
+
+Alta manual de proyectos desde el Tablero (boton "Crear Proyecto Nuevo" arriba
+a la derecha). Es un flujo independiente del automatico de Quotations
+(`/api/consultas/[id]/abrir-proyecto`): se usa cuando un proyecto no nace de
+una consulta entrante.
+
+- Nuevo endpoint `POST /api/proyectos/crear-manual`: deriva numero_proyecto,
+  crea carpetas, inserta en `doa_proyectos` (con `consulta_id = null`) y
+  genera un `.docx` por cada plantilla G12/G18 seleccionada reemplazando
+  `project_code` y `document_code` en `word/document.xml` via `jszip`.
+- Nueva estructura de carpetas para estos proyectos:
+  `00. Project info / 01. Compliance documents / 02. Working documents /
+  03. Reference material / 04. Deliveries / 05. Correspondence`,
+  anidada bajo `{NEW_ROOT}/{cliente}/{avion}/{anio}/{numero_proyecto}`.
+- Nuevas variables de entorno en `.env.local.example`:
+  `DOA_PROJECTS_NEW_ROOT` (raiz de proyectos manuales) y
+  `DOA_PLANTILLAS_ROOT` (ruta de los `.dotx`).
+- Modulos nuevos: `lib/proyectos/plantillas-docx.ts`,
+  `lib/proyectos/crear-manual.ts`, `components/project/NewProjectModal.tsx`,
+  y endpoints soporte `/api/clientes`, `/api/aeronaves/fabricantes`,
+  `/api/aeronaves/modelos`. Requiere la dependencia `jszip`.
+
 ## Sprint 2 — Close-the-loop: Validacion DOH/DOS (2026-04-17)
 
 Sprint 2 cierra el bucle de validacion: un proyecto con todos los deliverables

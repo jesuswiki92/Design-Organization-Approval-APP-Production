@@ -38,8 +38,9 @@
  */
 
 import { useMemo, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 
+import { NewProjectModal } from '@/components/project/NewProjectModal'
 import { PhaseColumnGroup } from '@/components/project/PhaseColumn'
 import { StateColumn } from '@/components/project/StateColumn'
 import type { ProjectCardData } from '@/components/project/ProjectCard'
@@ -94,6 +95,7 @@ function resolveTableroState(project: ProjectCardData): string {
 
 export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
   const [search, setSearch] = useState('')
+  const [newProjectOpen, setNewProjectOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -162,6 +164,14 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setNewProjectOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[linear-gradient(135deg,#2563EB,#38BDF8)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95"
+          >
+            <Plus size={14} />
+            Crear Proyecto Nuevo
+          </button>
           <div className="rounded-xl border border-sky-200 bg-white/90 px-3 py-1.5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
               Columnas
@@ -176,6 +186,8 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
           </div>
         </div>
       </div>
+
+      <NewProjectModal open={newProjectOpen} onOpenChange={setNewProjectOpen} />
 
       {/* Hint scroll horizontal */}
       <div className="rounded-[18px] border border-sky-100 bg-white/85 px-4 py-2 text-xs text-slate-600 shadow-sm">
