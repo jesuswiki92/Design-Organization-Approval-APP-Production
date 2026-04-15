@@ -371,3 +371,45 @@ Ver `docs/07-auditoria-codigo.md` para el listado completo de 58 hallazgos. Resu
 - 12 altos (estabilidad y dead code)
 - 18 medios (rendimiento y UX)
 - 20 bajos (calidad de codigo)
+
+---
+
+## Sprint 3 — Close the loop (entrega al cliente)
+
+Sprint 3 cierra el flujo del proyecto desde `validado` hasta `confirmacion_cliente`. La decision aprobada de DOH/DOS pasa a generar un Statement of Compliance (SoC) en PDF firmado HMAC, se envia al cliente via n8n y queda pendiente de su confirmacion mediante un enlace publico.
+
+### Lo que landea
+
+- **Nueva tabla** `doa_project_deliveries` que registra cada dispatch (SoC + email) con state machine interno `pendiente -> enviando -> enviado -> confirmado_cliente` / `fallo`. Migracion en `supabase/migrations/202604180000_doa_project_deliveries.sql`.
+- **Renderer SoC PDF** (`lib/pdf/soc-renderer.tsx`) + builder de payload canonico determinista (`lib/pdf/canonical-payload.ts`). El mismo payload se firma HMAC y se renderiza como PDF.
+- **Endpoints nuevos** bajo `app/api/proyectos/[id]/`:
+  - `preparar-entrega` (POST) — genera y sube el SoC, transita `validado -> preparando_entrega`.
+  - `enviar-entrega` (POST) — firma `delivery_release`, llama al webhook n8n, transita `preparando_entrega -> entregado`.
+  - `confirmar-entrega` (POST y GET, PUBLICO sin auth) — recibe el token del enlace del email, marca la delivery como confirmada y transita a `confirmacion_cliente`.
+  - `deliveries` (GET) — lista de entregas del proyecto.
+  - `deliveries/[deliveryId]/soc-pdf` (GET) — redirect 302 a signed URL fresca del PDF.
+- **Pestana "Entrega"** (`app/(dashboard)/engineering/projects/[id]/DeliveryTab.tsx`) con deep link `?tab=entrega`. Adapta su UI al estado_v2: CTA "Preparar entrega" en `validado`, preview del PDF + form de envio en `preparando_entrega`, espera de confirmacion en `entregado`, confirmacion en `confirmacion_cliente`. Siempre muestra el timeline de entregas debajo.
+- **Runbook n8n** en `docs/n8n-workflows/DOA-Enviar-Entregables.md` con la forma del webhook, verificacion HMAC y respuesta esperada.
+
+### Variables de entorno
+
+- `DOA_SIGNATURE_HMAC_SECRET` (reusada de Sprint 2) — firma HMAC del release.
+- `N8N_DELIVERY_WEBHOOK_URL` (NUEVA, requerida) — URL del webhook n8n que envia el email.
+- `DOA_N8N_WEBHOOK_SECRET` (NUEVA, opcional) — si se define, la peticion al webhook incluye `x-doa-signature` (HMAC-SHA256 hex del raw body). Si no se define, la llamada sigue funcionando pero queda un TODO en logs.
+- `NEXT_PUBLIC_APP_URL` (NUEVA, requerida) — base URL publica usada para construir el `confirmation_link` del email.
+- `DOA_COMPANY_NAME` y `DOA_COMPANY_APPROVAL_NO` (opcionales) — aparecen como letterhead del SoC.
+
+### Pasos manuales (uno por entorno)
+
+1. Crear bucket `doa-deliverables` en Supabase Storage (privado, sin politicas publicas). Las URL firmadas se generan desde el endpoint con el admin client.
+2. Configurar las nuevas variables de entorno en `.env.local` (dev) y en el VPS (prod).
+3. Importar el workflow n8n descrito en `docs/n8n-workflows/DOA-Enviar-Entregables.md`, pegarle la URL publica en `N8N_DELIVERY_WEBHOOK_URL` y copiar el secreto en `DOA_N8N_WEBHOOK_SECRET`.
+4. Aplicar la migracion `202604180000_doa_project_deliveries.sql` (no se aplica automaticamente).
+
+### TODOs flagged
+
+- RLS por rol: hoy cualquier usuario autenticado puede disparar un release; deberia restringirse a DOH/DOS.
+- Retry automatico del webhook n8n en fallos transitorios.
+- Plantilla HTML mas rica para el email (MJML).
+- Rotacion de tokens de confirmacion (hoy el token vive indefinidamente hasta confirmar).
+- Mapear `subpart_easa` desde el catalogo de plantillas cuando exista (hoy viene del deliverable o null).

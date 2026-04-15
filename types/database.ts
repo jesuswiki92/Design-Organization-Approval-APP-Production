@@ -466,6 +466,95 @@ export interface ProjectSignature {
   created_at: string
 }
 
+// ─── doa_project_deliveries (Sprint 3) ──────────────────────────────────────
+
+/** Estado del dispatch de una entrega (Statement of Compliance). */
+export type DeliveryDispatchStatus =
+  | 'pendiente'
+  | 'enviando'
+  | 'enviado'
+  | 'fallo'
+  | 'confirmado_cliente'
+
+/** Fila de la tabla `doa_project_deliveries`. */
+export interface ProjectDelivery {
+  id: string
+  proyecto_id: string
+  validation_id: string | null
+  signature_id: string | null
+  sent_by_user_id: string
+  recipient_email: string
+  recipient_name: string | null
+  cc_emails: string[] | null
+  subject: string
+  body: string | null
+  soc_pdf_storage_path: string | null
+  soc_pdf_sha256: string | null
+  attachments: unknown
+  n8n_execution_id: string | null
+  dispatch_status: DeliveryDispatchStatus
+  dispatched_at: string | null
+  client_confirmed_at: string | null
+  client_confirmation_token: string | null
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Canonical payload that is both rendered into the Statement of Compliance
+ * PDF and signed via HMAC on the `delivery_release` signature. It MUST be
+ * deterministic: same inputs -> same serialization -> same hash.
+ *
+ * Rendered by: lib/pdf/soc-renderer.tsx
+ * Built by:    lib/pdf/canonical-payload.ts (buildSoCCanonicalPayload)
+ */
+export interface StatementOfCompliancePayload {
+  document: {
+    id: string // e.g. SoC-{numero_proyecto}-{ISO}
+    title: string
+    generated_at: string // ISO
+    company: {
+      name: string
+      approval_no: string
+    }
+  }
+  proyecto: {
+    id: string
+    numero_proyecto: string
+    titulo: string
+    descripcion: string | null
+    cliente_nombre: string | null
+  }
+  validation: {
+    id: string
+    role: ValidationRole
+    decision: ValidationDecision
+    validator_user_id: string
+    validator_email: string | null
+    decided_at: string
+  }
+  deliverables: Array<{
+    id: string
+    template_code: string | null
+    titulo: string
+    subpart_easa: string | null
+    version_actual: number
+    estado: DeliverableEstado
+  }>
+  compliance_reference: {
+    regulation: 'EASA Part 21 Subpart J'
+    clauses: string[]
+  }
+  signature: {
+    validation_signature_id: string
+    hmac_key_id: string
+    hmac_signature_first8: string
+    hmac_signature_last8: string
+    signed_by_user_id: string
+    signed_at: string
+  }
+}
+
 export interface ProyectoDocumento {
   // Identificador unico del documento
   id: string

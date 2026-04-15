@@ -41,6 +41,7 @@ import { ProjectTimerButton } from '@/app/(dashboard)/proyectos/ProjectTimerButt
 import { PrecedentesSection } from './PrecedentesSection'
 import { DeliverablesTab } from './DeliverablesTab'
 import { ValidationTab } from './ValidationTab'
+import { DeliveryTab } from './DeliveryTab'
 import { ProjectStateStepper } from '@/components/project/ProjectStateStepper'
 import {
   isProjectExecutionStateCode,
@@ -412,11 +413,17 @@ export function ProjectDetailClient({
   const executionState: ProjectExecutionState | null =
     estadoV2 && isProjectExecutionStateCode(estadoV2) ? estadoV2 : null
 
-  // Deep link ?tab=validacion (tambien acepta horas, deliverables).
+  // Deep link ?tab=validacion (tambien acepta horas, deliverables, entrega).
   const searchParams = useSearchParams()
   const initialTab = (() => {
     const t = searchParams.get('tab')
-    if (t === 'validacion' || t === 'deliverables' || t === 'horas') return t
+    if (
+      t === 'validacion' ||
+      t === 'deliverables' ||
+      t === 'horas' ||
+      t === 'entrega'
+    )
+      return t
     return 'horas'
   })()
   const [activeTab, setActiveTab] = useState(initialTab)
@@ -481,6 +488,7 @@ export function ProjectDetailClient({
           <TabsTrigger value="horas">Horas</TabsTrigger>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="validacion">Validacion</TabsTrigger>
+          <TabsTrigger value="entrega">Entrega</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deliverables">
@@ -494,6 +502,18 @@ export function ProjectDetailClient({
         <TabsContent value="validacion">
           <ValidationTab
             proyectoId={project.id}
+            currentState={estadoV2}
+            onStateChange={setEstadoV2}
+          />
+        </TabsContent>
+
+        <TabsContent value="entrega">
+          <DeliveryTab
+            proyectoId={project.id}
+            proyectoTitulo={project.titulo}
+            proyectoNumero={project.numero_proyecto}
+            defaultRecipientEmail={null}
+            defaultRecipientName={project.cliente_nombre ?? null}
             currentState={estadoV2}
             onStateChange={setEstadoV2}
           />
