@@ -50,6 +50,7 @@ export const QUOTATION_BOARD_STATES = {
   OFERTA_ACEPTADA: 'oferta_aceptada',             // El cliente acepto la oferta
   OFERTA_RECHAZADA: 'oferta_rechazada',           // El cliente rechazo la oferta
   REVISION_FINAL: 'revision_final',               // Revision final antes de abrir proyecto
+  PROYECTO_ABIERTO: 'proyecto_abierto',           // Proyecto ya creado desde la consulta (terminal en tablero)
 } as const
 
 // Tipo que representa cualquier estado valido del tablero de cotizaciones
@@ -170,6 +171,15 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
     border: 'border-rose-200',
     dot: 'bg-rose-500',
   },
+  proyecto_abierto: {
+    label: 'Proyecto abierto',
+    shortLabel: 'Abierto',
+    description: 'El proyecto de ingeniería ya fue creado desde esta consulta',
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    dot: 'bg-slate-500',
+  },
 }
 
 /**
@@ -288,15 +298,27 @@ export function getAllowedConsultaTransitions(current: string): EstadoConsulta[]
 // compatibilidad con proyectos que aun tienen esos estados en la base de datos.
 // ==========================================
 
+// Codigos de los estados de un proyecto de ingenieria.
+// Usar siempre estas constantes en lugar de hardcodear strings.
+export const PROJECT_STATES = {
+  NUEVO: 'nuevo',                // Proyecto recien creado
+  EN_PROGRESO: 'en_progreso',    // Trabajo de ingenieria en curso
+  REVISION: 'revision',          // En proceso de revision tecnica
+  APROBACION: 'aprobacion',      // Pendiente de aprobacion
+  ENTREGADO: 'entregado',        // Documentacion entregada al cliente
+  CERRADO: 'cerrado',            // Proyecto completado y cerrado
+  ARCHIVADO: 'archivado',        // Proyecto archivado (oculto del tablero, conservado en BD)
+} as const satisfies Record<string, EstadoProyectoWorkflow>
+
 // Lista ordenada de todos los estados de un proyecto (flujo simplificado).
 export const PROJECT_WORKFLOW_STATES = [
-  'nuevo',          // Proyecto recien creado
-  'en_progreso',    // Trabajo de ingenieria en curso
-  'revision',       // En proceso de revision tecnica
-  'aprobacion',     // Pendiente de aprobacion
-  'entregado',      // Documentacion entregada al cliente
-  'cerrado',        // Proyecto completado y cerrado
-  'archivado',      // Proyecto archivado (oculto del tablero, conservado en BD)
+  PROJECT_STATES.NUEVO,
+  PROJECT_STATES.EN_PROGRESO,
+  PROJECT_STATES.REVISION,
+  PROJECT_STATES.APROBACION,
+  PROJECT_STATES.ENTREGADO,
+  PROJECT_STATES.CERRADO,
+  PROJECT_STATES.ARCHIVADO,
 ] as const satisfies readonly EstadoProyectoWorkflow[]
 
 // Estados que se muestran en la vista de portafolio de proyectos

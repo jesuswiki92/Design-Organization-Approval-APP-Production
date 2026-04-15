@@ -12,6 +12,7 @@ import {
   deriveModelPrefix,
   formatProjectNumber,
 } from '@/lib/project-builder'
+import { PROJECT_STATES, QUOTATION_BOARD_STATES } from '@/lib/workflow-states'
 
 export const runtime = 'nodejs'
 
@@ -112,22 +113,17 @@ export async function POST(
       (consulta.asunto as string | null) ||
       'Proyecto sin titulo'
 
-    // 3. Crear carpetas fisicas
+    // 3. Insertar fila en doa_proyectos PRIMERO (antes de crear carpetas).
+    //    Asi, si el INSERT falla por unique_violation u otro motivo,
+    //    no dejamos carpetas huerfanas en disco que generen duplicados
+    //    en siguientes reintentos.
     const folderPath = buildProjectFolderPath(SIMULATION_BASE_PATH, numeroProyecto)
-    await mkdir(folderPath, { recursive: true })
-    await Promise.all(
-      PROJECT_FOLDER_STRUCTURE.map((sub) =>
-        mkdir(path.join(folderPath, sub), { recursive: true }),
-      ),
-    )
-
-    // 4. Insertar fila en doa_proyectos
     const { data: inserted, error: insertError } = await supabase
       .from('doa_proyectos')
       .insert({
         numero_proyecto: numeroProyecto,
         consulta_id: id,
-        estado: 'nuevo',
+        estado: PROJECT_STATES.NUEVO,
         aeronave: aeronaveLabel,
         modelo: model,
         msn,
@@ -167,6 +163,88 @@ export async function POST(
         })
       }
       return jsonResponse(500, { error: insertError.message })
+    }
+
+    // 4. Crear carpetas fisicas. Si falla, intentar rollback del INSERT.
+    try {
+      await mkdir(folderPath, { recursive: true })
+      await Promise.all(
+        PROJECT_FOLDER_STRUCTURE.map((sub) =>
+          mkdir(path.join(folderPath, sub), { recursive: true }),
+        ),
+      )
+    } catch (mkdirError) {
+      const mkdirMessage =
+        mkdirError instanceof Error ? mkdirError.message : 'Unknown mkdir error'
+      const { error: rollbackError } = await supabase
+        .from('doa_proyectos')
+        .delete()
+        .eq('id', inserted.id)
+
+      if (rollbackError) {
+        // Rollback fallo: queda inconsistencia entre BD y disco. Log con severity=error.
+        await logServerEvent({
+          eventName: 'project.open.inconsistent',
+          eventCategory: 'quotation',
+          outcome: 'failure',
+          actorUserId: user.id,
+          requestId: requestContext.requestId,
+          route: requestContext.route,
+          method: request.method,
+          entityType: 'proyecto',
+          entityId: inserted.id,
+          metadata: {
+            severity: 'error',
+            numero_proyecto: numeroProyecto,
+            folder_path: folderPath,
+            mkdir_error: mkdirMessage,
+            rollback_error: rollbackError.message,
+          },
+          userAgent: requestContext.userAgent,
+          ipAddress: requestContext.ipAddress,
+          referrer: requestContext.referrer,
+        })
+        return jsonResponse(500, {
+          error:
+            `Inconsistencia al abrir proyecto ${numeroProyecto}: fila creada pero carpetas fallaron y el rollback no pudo eliminar la fila. Requiere limpieza manual (proyecto_id=${inserted.id}).`,
+        })
+      }
+
+      return jsonResponse(500, {
+        error: `No se pudieron crear las carpetas del proyecto: ${mkdirMessage}`,
+      })
+    }
+
+    // 5. Cerrar la consulta marcandola como 'proyecto_abierto' para que
+    //    desaparezca del tablero de cotizaciones. Si falla, solo se loguea:
+    //    el proyecto ya existe y la carpeta tambien, no debemos romper la request.
+    const { error: consultaUpdateError } = await supabase
+      .from('doa_consultas_entrantes')
+      .update({ estado: QUOTATION_BOARD_STATES.PROYECTO_ABIERTO })
+      .eq('id', id)
+
+    if (consultaUpdateError) {
+      await logServerEvent({
+        eventName: 'quotation.abrir_proyecto',
+        eventCategory: 'quotation',
+        outcome: 'failure',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        metadata: {
+          severity: 'warning',
+          stage: 'close_consulta',
+          proyecto_id: inserted.id,
+          numero_proyecto: numeroProyecto,
+          consulta_update_error: consultaUpdateError.message,
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
     }
 
     await logServerEvent({

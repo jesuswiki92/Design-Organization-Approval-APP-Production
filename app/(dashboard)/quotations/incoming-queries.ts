@@ -72,7 +72,7 @@ export function normalizeIncomingStatus(
     return CONSULTA_ESTADOS.FORMULARIO_RECIBIDO as IncomingQueryStatus
   }
 
-  if (normalized === 'archivado' || normalized === 'archived') {
+  if (normalized === CONSULTA_ESTADOS.ARCHIVADO || normalized === 'archived') {
     return CONSULTA_ESTADOS.ARCHIVADO as IncomingQueryStatus
   }
 

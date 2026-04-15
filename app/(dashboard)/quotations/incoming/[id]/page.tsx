@@ -36,7 +36,7 @@ import { ensureConsultaFolder } from '@/lib/quotations/ensure-consulta-folder'
 import { syncConsultaEmails } from '@/lib/quotations/sync-consulta-emails'
 import { createClient } from '@/lib/supabase/server'
 import { escapeIlikePattern, escapeOrFilterLiteral } from '@/lib/supabase/escape-or-filter'
-import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
+import { CONSULTA_ESTADOS, QUOTATION_BOARD_STATES } from '@/lib/workflow-states'
 import {
   extractPhase4BaselineFromSummary,
 } from '@/lib/project-summary-phase4'
@@ -2027,7 +2027,7 @@ export default async function IncomingQuotationDetailPage({
                  Si la consulta esta en estado avanzado (oferta_aceptada /
                  revision_final) mostramos el panel "Abrir proyecto". En
                  caso contrario, mantenemos los botones originales. */}
-            {data.estado === 'oferta_aceptada' || data.estado === 'revision_final' ? (
+            {data.estado === QUOTATION_BOARD_STATES.OFERTA_ACEPTADA || data.estado === QUOTATION_BOARD_STATES.REVISION_FINAL ? (
               <PreparaProyectoPanel
                 consultaId={data.id}
                 currentState={data.estado ?? ''}

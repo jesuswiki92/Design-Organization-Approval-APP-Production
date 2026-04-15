@@ -64,6 +64,7 @@ import {
 import type { ResolvedWorkflowStateMeta } from '@/lib/workflow-state-config'
 import {
   getProjectOperationalState,
+  PROJECT_STATES,
   PROJECT_WORKFLOW_STATES,
 } from '@/lib/workflow-states'
 import type { EstadoProyectoPersistido, Proyecto, WorkflowStateConfigRow } from '@/types/database'
@@ -375,7 +376,7 @@ function BoardCard({
       </div>
 
       {/* Temporizador de horas (solo para estados activos, no nuevo ni cerrado) */}
-      {proyecto.estado !== 'nuevo' && proyecto.estado !== 'cerrado' ? (
+      {proyecto.estado !== PROJECT_STATES.NUEVO && proyecto.estado !== PROJECT_STATES.CERRADO ? (
         <div className="mt-2">
           <ProjectTimerButton
             proyectoId={proyecto.id}
@@ -672,7 +673,7 @@ function ListaView({
 
                     {/* Horas (temporizador) */}
                     <td className="px-4 py-3">
-                      {proyecto.estado !== 'nuevo' && proyecto.estado !== 'cerrado' ? (
+                      {proyecto.estado !== PROJECT_STATES.NUEVO && proyecto.estado !== PROJECT_STATES.CERRADO ? (
                         <ProjectTimerButton
                           proyectoId={proyecto.id}
                           numeroProyecto={proyecto.numero_proyecto}

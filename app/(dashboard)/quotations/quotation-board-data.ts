@@ -1,4 +1,5 @@
 import {
+  CONSULTA_ESTADOS,
   QUOTATION_BOARD_STATES,
   type QuotationBoardState,
 } from '@/lib/workflow-states'
@@ -16,7 +17,7 @@ import {
 } from './incoming-queries'
 
 function isArchivedIncomingState(state: string | null | undefined) {
-  return state?.trim().toLowerCase() === 'archivado'
+  return state?.trim().toLowerCase() === CONSULTA_ESTADOS.ARCHIVADO
 }
 
 /**
@@ -34,13 +35,13 @@ function mapIncomingStateToQuotationLane(state: string): QuotationBoardState {
 
   // Mapeo de estados legacy de consultas entrantes
   switch (state) {
-    case 'esperando_formulario':
-      return 'formulario_enviado'
-    case 'formulario_recibido':
-      return 'formulario_recibido'
-    case 'nuevo':
+    case CONSULTA_ESTADOS.ESPERANDO_FORMULARIO:
+      return QUOTATION_BOARD_STATES.FORMULARIO_ENVIADO
+    case CONSULTA_ESTADOS.FORMULARIO_RECIBIDO:
+      return QUOTATION_BOARD_STATES.FORMULARIO_RECIBIDO
+    case CONSULTA_ESTADOS.NUEVO:
     default:
-      return 'entrada_recibida'
+      return QUOTATION_BOARD_STATES.ENTRADA_RECIBIDA
   }
 }
 
@@ -153,6 +154,7 @@ const EMPTY_QUOTATION_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
   oferta_aceptada: [],
   oferta_rechazada: [],
   revision_final: [],
+  proyecto_abierto: [],
 }
 
 function createId(prefix: string) {

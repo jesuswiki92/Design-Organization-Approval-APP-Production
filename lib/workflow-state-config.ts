@@ -354,6 +354,17 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
     is_system: true,
     is_active: true,
   },
+  {
+    scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
+    state_code: QUOTATION_BOARD_STATES.PROYECTO_ABIERTO,
+    label: QUOTATION_BOARD_STATE_CONFIG.proyecto_abierto.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.proyecto_abierto.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.proyecto_abierto.description,
+    color_token: 'slate',
+    sort_order: 95,
+    is_system: true,
+    is_active: true,
+  },
 ]
 
 // VALORES POR DEFECTO PARA LOS ESTADOS DE CONSULTAS ENTRANTES
