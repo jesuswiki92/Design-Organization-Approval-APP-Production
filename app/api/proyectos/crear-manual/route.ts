@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
 import { crearProyectoManualCompleto } from '@/lib/proyectos/crear-manual'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export const runtime = 'nodejs'
 
@@ -47,7 +48,13 @@ function jsonResponse(status: number, data: unknown) {
 export async function POST(request: NextRequest) {
   const auth = await requireUserApi()
   if (auth instanceof Response) return auth
-  const { user, supabase } = auth
+  const { user } = auth
+
+  // RLS de doa_proyectos / doa_project_deliverables solo permite INSERT al
+  // service_role; el cliente ligado al usuario del cookie no puede escribir.
+  // Usamos el admin client aqui despues de que requireUserApi ha validado la
+  // sesion via cookie.
+  const supabase = createAdminClient()
 
   try {
     let body: Record<string, unknown>
