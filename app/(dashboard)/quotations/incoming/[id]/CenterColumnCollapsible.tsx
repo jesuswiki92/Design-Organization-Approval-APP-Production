@@ -174,14 +174,23 @@ function EmailCard({
   // contener scripts maliciosos. DOMPurify limpia cualquier tag/atributo
   // no incluido en las listas blancas. Se memoiza por `email.body` para
   // evitar re-sanitizar en cada render.
+  const looksLikeHtml = useMemo(
+    () => /<\/?[a-z][\s\S]*?>/i.test(email.body ?? ""),
+    [email.body],
+  )
+
+  const shouldRenderAsHtml = email.isHtml || looksLikeHtml
+
   const sanitizedBody = useMemo(() => {
-    if (!email.isHtml) return ""
-    return DOMPurify.sanitize(email.body ?? "", {
+    const raw = email.body ?? ""
+    if (!raw) return ""
+    const html = shouldRenderAsHtml ? raw : raw.replace(/\r?\n/g, "<br>")
+    return DOMPurify.sanitize(html, {
       ALLOWED_TAGS: [...EMAIL_ALLOWED_TAGS],
       ALLOWED_ATTR: [...EMAIL_ALLOWED_ATTR],
       ALLOWED_URI_REGEXP: EMAIL_ALLOWED_URI_REGEXP,
     })
-  }, [email.body, email.isHtml])
+  }, [email.body, shouldRenderAsHtml])
 
   return (
     <div className="flex flex-col">
@@ -288,16 +297,10 @@ function EmailCard({
               {formatDateSpanish(email.date)}
             </p>
           )}
-          {email.isHtml ? (
-            <div
-              className="prose prose-sm max-w-none text-slate-700 [overflow-wrap:break-word] [word-break:break-word] [&_a]:text-sky-600 [&_a]:underline"
-              dangerouslySetInnerHTML={{ __html: sanitizedBody }}
-            />
-          ) : (
-            <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
-              {email.body}
-            </p>
-          )}
+          <div
+            className="prose prose-sm max-w-none text-slate-700 [overflow-wrap:break-word] [word-break:break-word] [&_a]:text-sky-600 [&_a]:underline"
+            dangerouslySetInnerHTML={{ __html: sanitizedBody }}
+          />
         </div>
       )}
     </div>

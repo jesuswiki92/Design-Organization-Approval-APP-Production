@@ -27,6 +27,8 @@
 
 // Hook de React para manejar estados (email, password, error, carga)
 import { useState } from 'react'
+import { RouteViewTracker } from '@/components/observability/RouteViewTracker'
+import { trackUiEvent } from '@/lib/observability/client'
 // Conexion a Supabase desde el NAVEGADOR (no servidor)
 import { createClient } from '@/lib/supabase/client'
 // Hook de Next.js para navegar entre paginas
@@ -50,15 +52,37 @@ export default function LoginPage() {
     e.preventDefault()    // Evitar que el formulario recargue la pagina
     setLoading(true)      // Mostrar estado "cargando"
     setError(null)        // Limpiar errores anteriores
+    const emailDomain = email.includes('@') ? email.split('@').at(-1)?.toLowerCase() ?? null : null
 
     // Intentar autenticacion con Supabase
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
+      await trackUiEvent({
+        eventName: 'auth.login',
+        eventCategory: 'auth',
+        outcome: 'failure',
+        route: '/login',
+        metadata: {
+          provider: 'password',
+          email_domain: emailDomain,
+          error_name: error.name,
+        },
+      })
       // Si hay error: mostrar mensaje y permitir reintentar
       setError(error.message)
       setLoading(false)
     } else {
+      await trackUiEvent({
+        eventName: 'auth.login',
+        eventCategory: 'auth',
+        outcome: 'success',
+        route: '/login',
+        metadata: {
+          provider: 'password',
+          email_domain: emailDomain,
+        },
+      })
       // Si es exitoso: ir a la pagina de inicio
       router.push('/home')
       router.refresh()
@@ -68,6 +92,7 @@ export default function LoginPage() {
   return (
     /* Pantalla completa con fondo oscuro y formulario centrado */
     <div className="min-h-screen flex items-center justify-center bg-[#0F1117]">
+      <RouteViewTracker scope="auth" />
       <div className="w-full max-w-md">
         {/* === LOGO Y NOMBRE DE LA APLICACION === */}
         <div className="text-center mb-8">

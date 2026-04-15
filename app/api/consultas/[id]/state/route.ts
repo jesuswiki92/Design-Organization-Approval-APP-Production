@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { logServerEvent } from '@/lib/observability/server'
+import { buildRequestContext } from '@/lib/observability/shared'
 import { isMissingSchemaError } from '@/lib/supabase/errors'
 import { isIncomingQueryStateCode, isQuotationBoardStateCode } from '@/lib/workflow-state-config'
 
@@ -18,7 +20,8 @@ export async function PATCH(
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+    const { user, supabase } = auth
+    const requestContext = buildRequestContext(request)
 
     const { id } = await context.params
     const body = (await request.json()) as { estado?: unknown }
@@ -32,6 +35,12 @@ export async function PATCH(
       return jsonResponse(400, 'El estado solicitado no es válido.')
     }
 
+    const current = await supabase
+      .from('doa_consultas_entrantes')
+      .select('estado, codigo')
+      .eq('id', id)
+      .maybeSingle()
+
     const update = await supabase
       .from('doa_consultas_entrantes')
       .update({ estado })
@@ -40,6 +49,27 @@ export async function PATCH(
       .single()
 
     if (update.error) {
+      await logServerEvent({
+        eventName: 'quotation.state_change',
+        eventCategory: 'quotation',
+        outcome: 'failure',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        entityCode: current.data?.codigo ?? null,
+        metadata: {
+          previous_state: current.data?.estado ?? null,
+          next_state: estado,
+          error_message: update.error.message,
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
+
       if (isMissingSchemaError(update.error)) {
         return jsonResponse(
           409,
@@ -52,6 +82,26 @@ export async function PATCH(
         `No se pudo actualizar el estado de la consulta: ${update.error.message}`,
       )
     }
+
+    await logServerEvent({
+      eventName: 'quotation.state_change',
+      eventCategory: 'quotation',
+      outcome: 'success',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      entityType: 'consulta',
+      entityId: update.data.id,
+      entityCode: current.data?.codigo ?? null,
+      metadata: {
+        previous_state: current.data?.estado ?? null,
+        next_state: update.data.estado,
+      },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
 
     return Response.json({
       ok: true,

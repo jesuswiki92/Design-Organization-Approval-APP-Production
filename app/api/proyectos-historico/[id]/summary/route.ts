@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { extractPhase4BaselineFromSummary } from '@/lib/project-summary-phase4'
 
 export const runtime = 'nodejs'
 
@@ -44,6 +45,10 @@ export async function GET(
   }
 
   return Response.json({
+    phase4_baseline: extractPhase4BaselineFromSummary(data.summary_md, {
+      projectCode: data.numero_proyecto,
+      projectTitle: data.titulo,
+    }),
     summary_md: data.summary_md ?? null,
     numero_proyecto: data.numero_proyecto ?? '',
     titulo: data.titulo ?? '',

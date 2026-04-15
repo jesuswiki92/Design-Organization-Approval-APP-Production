@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { logServerEvent } from '@/lib/observability/server'
+import { buildRequestContext } from '@/lib/observability/shared'
 
 /**
  * Proxy autenticado al webhook de n8n que registra inicio/fin de sesiones
@@ -14,9 +16,25 @@ export const runtime = 'nodejs'
 export async function POST(request: Request) {
   const auth = await requireUserApi()
   if (auth instanceof Response) return auth
+  const { user } = auth
+  const requestContext = buildRequestContext(request)
 
   const url = process.env.DOA_CONTEO_HORAS_WEBHOOK_URL
   if (!url) {
+    await logServerEvent({
+      eventName: 'time_tracking.timer',
+      eventCategory: 'time_tracking',
+      outcome: 'failure',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      metadata: { reason: 'missing_webhook_url' },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
+
     return NextResponse.json(
       { error: 'Webhook not configured' },
       { status: 500 },
@@ -24,8 +42,13 @@ export async function POST(request: Request) {
   }
 
   let body: unknown
+  let parsedBody: Record<string, unknown> = {}
   try {
     body = await request.json()
+    parsedBody =
+      body && typeof body === 'object'
+        ? body as Record<string, unknown>
+        : {}
   } catch {
     return NextResponse.json(
       { error: 'Invalid JSON body' },
@@ -40,6 +63,31 @@ export async function POST(request: Request) {
       body: JSON.stringify(body),
     })
     const text = await upstream.text()
+
+    await logServerEvent({
+      eventName: 'time_tracking.timer',
+      eventCategory: 'time_tracking',
+      outcome: upstream.ok ? 'success' : 'failure',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      entityType: 'project',
+      entityId:
+        typeof parsedBody.proyecto_id === 'string' ? parsedBody.proyecto_id : null,
+      entityCode:
+        typeof parsedBody.numero_proyecto === 'string'
+          ? parsedBody.numero_proyecto
+          : null,
+      metadata: {
+        action: typeof parsedBody.tipo === 'string' ? parsedBody.tipo : null,
+        upstream_status: upstream.status,
+      },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
+
     return new NextResponse(text, {
       status: upstream.status,
       headers: {
@@ -49,6 +97,29 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     console.error('Error proxying conteo-horas webhook:', err)
+    await logServerEvent({
+      eventName: 'time_tracking.timer',
+      eventCategory: 'time_tracking',
+      outcome: 'failure',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      entityType: 'project',
+      entityId:
+        typeof parsedBody.proyecto_id === 'string' ? parsedBody.proyecto_id : null,
+      entityCode:
+        typeof parsedBody.numero_proyecto === 'string'
+          ? parsedBody.numero_proyecto
+          : null,
+      metadata: {
+        action: typeof parsedBody.tipo === 'string' ? parsedBody.tipo : null,
+        error_name: err instanceof Error ? err.name : 'UnknownError',
+      },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
     return NextResponse.json(
       { error: 'Upstream webhook failed' },
       { status: 502 },

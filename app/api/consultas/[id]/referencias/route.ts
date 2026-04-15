@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { logServerEvent } from '@/lib/observability/server'
+import { buildRequestContext } from '@/lib/observability/shared'
 
 export const runtime = 'nodejs'
 
@@ -19,7 +21,8 @@ export async function POST(
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+    const { user, supabase } = auth
+    const requestContext = buildRequestContext(request)
 
     const { id } = await context.params
     const body = (await request.json()) as { proyecto_id?: unknown }
@@ -45,6 +48,25 @@ export async function POST(
       : []
 
     if (refs.includes(proyectoId)) {
+      await logServerEvent({
+        eventName: 'quotation.reference_add',
+        eventCategory: 'quotation',
+        outcome: 'info',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        metadata: {
+          project_reference_id: proyectoId,
+          reference_count: refs.length,
+          action: 'already_exists',
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
       return jsonResponse(200, { ok: true, action: 'already_exists', proyectos_referencia: refs })
     }
 
@@ -56,8 +78,46 @@ export async function POST(
       .eq('id', id)
 
     if (updateError) {
+      await logServerEvent({
+        eventName: 'quotation.reference_add',
+        eventCategory: 'quotation',
+        outcome: 'failure',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        metadata: {
+          project_reference_id: proyectoId,
+          reference_count: refs.length,
+          error_message: updateError.message,
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
       return jsonResponse(500, { error: `Error al guardar referencia: ${updateError.message}` })
     }
+
+    await logServerEvent({
+      eventName: 'quotation.reference_add',
+      eventCategory: 'quotation',
+      outcome: 'success',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      entityType: 'consulta',
+      entityId: id,
+      metadata: {
+        project_reference_id: proyectoId,
+        reference_count: updatedRefs.length,
+      },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
 
     return jsonResponse(200, { ok: true, action: 'added', proyectos_referencia: updatedRefs })
   } catch (error) {
@@ -79,7 +139,8 @@ export async function DELETE(
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+    const { user, supabase } = auth
+    const requestContext = buildRequestContext(request)
 
     const { id } = await context.params
     const body = (await request.json()) as { proyecto_id?: unknown }
@@ -111,8 +172,46 @@ export async function DELETE(
       .eq('id', id)
 
     if (updateError) {
+      await logServerEvent({
+        eventName: 'quotation.reference_remove',
+        eventCategory: 'quotation',
+        outcome: 'failure',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        metadata: {
+          project_reference_id: proyectoId,
+          reference_count: refs.length,
+          error_message: updateError.message,
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
       return jsonResponse(500, { error: `Error al quitar referencia: ${updateError.message}` })
     }
+
+    await logServerEvent({
+      eventName: 'quotation.reference_remove',
+      eventCategory: 'quotation',
+      outcome: 'success',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      entityType: 'consulta',
+      entityId: id,
+      metadata: {
+        project_reference_id: proyectoId,
+        reference_count: updatedRefs.length,
+      },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
 
     return jsonResponse(200, { ok: true, action: 'removed', proyectos_referencia: updatedRefs })
   } catch (error) {

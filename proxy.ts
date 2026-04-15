@@ -23,7 +23,8 @@
  * 3. `/login` sin sesion -> deja pasar al login.
  *
  * 4. Rutas del dashboard (`/home`, `/engineering`, `/quotations`, `/clients`,
- *    `/databases`, `/tools`) sin sesion valida -> redirige 307 a `/login`.
+ *    `/databases`, `/tools`, `/settings`) sin sesion valida -> redirige 307
+ *    a `/login`.
  *
  * 5. Rutas del dashboard con sesion valida -> deja pasar (con las cookies
  *    refrescadas por Supabase SSR si aplica).
@@ -91,7 +92,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/quotations') ||
     pathname.startsWith('/clients') ||
     pathname.startsWith('/databases') ||
-    pathname.startsWith('/tools')
+    pathname.startsWith('/tools') ||
+    pathname.startsWith('/settings')
 
   // Rutas que no son ni login ni dashboard: pasan sin verificar.
   if (!isLogin && !isDashboard) {

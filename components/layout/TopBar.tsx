@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { Search, Bell, Bot, LogOut } from 'lucide-react'
+import { trackUiEvent } from '@/lib/observability/client'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface TopBarProps {
   title: string
@@ -11,13 +12,39 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, subtitle }: TopBarProps) {
+  const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+
+      await trackUiEvent({
+        eventName: 'auth.logout',
+        eventCategory: 'auth',
+        outcome: 'success',
+        route: pathname,
+        metadata: {
+          source: 'topbar',
+        },
+      })
+
+      router.push('/login')
+      router.refresh()
+    } catch (error) {
+      await trackUiEvent({
+        eventName: 'auth.logout',
+        eventCategory: 'auth',
+        outcome: 'failure',
+        route: pathname,
+        metadata: {
+          source: 'topbar',
+          error_name: error instanceof Error ? error.name : 'UnknownError',
+        },
+      })
+    }
   }
 
   return (

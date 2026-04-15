@@ -33,6 +33,7 @@ import {
   Briefcase,
 } from 'lucide-react'
 
+import { trackUiEvent } from '@/lib/observability/client'
 import { createClient } from '@/lib/supabase/client'
 import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
 import { ProjectTimerButton } from '@/app/(dashboard)/proyectos/ProjectTimerButton'
@@ -278,14 +279,46 @@ export function ProjectDetailClient({
         .eq('id', editingId)
 
       if (error) throw error
+
+      await trackUiEvent({
+        eventName: 'time_tracking.entry_update',
+        eventCategory: 'time_tracking',
+        outcome: 'success',
+        route: `/engineering/projects/${project.id}`,
+        entityType: 'project',
+        entityId: project.id,
+        entityCode: project.numero_proyecto,
+        metadata: {
+          entry_id: editingId,
+          duration_minutes: newDuracion,
+          has_end_time: Boolean(newFin),
+          source: 'browser_supabase',
+        },
+      })
     } catch (err) {
       console.error('Error al guardar edicion de hora:', err)
+      await trackUiEvent({
+        eventName: 'time_tracking.entry_update',
+        eventCategory: 'time_tracking',
+        outcome: 'failure',
+        route: `/engineering/projects/${project.id}`,
+        entityType: 'project',
+        entityId: project.id,
+        entityCode: project.numero_proyecto,
+        metadata: {
+          entry_id: editingId,
+          duration_minutes: newDuracion,
+          has_end_time: Boolean(newFin),
+          error_name: err instanceof Error ? err.name : 'UnknownError',
+          source: 'browser_supabase',
+        },
+      })
       // Revertir
       setEntries(prevEntries)
     }
 
     setSavingEdit(false)
-  }, [editingId, editInicio, editFin, entries])
+  }, [editingId, editInicio, editFin, entries, project.id, project.numero_proyecto])
 
   // --- Handler de borrado ---
   const handleDelete = useCallback(async (entryId: string) => {
@@ -303,14 +336,42 @@ export function ProjectDetailClient({
         .eq('id', entryId)
 
       if (error) throw error
+
+      await trackUiEvent({
+        eventName: 'time_tracking.entry_delete',
+        eventCategory: 'time_tracking',
+        outcome: 'success',
+        route: `/engineering/projects/${project.id}`,
+        entityType: 'project',
+        entityId: project.id,
+        entityCode: project.numero_proyecto,
+        metadata: {
+          entry_id: entryId,
+          source: 'browser_supabase',
+        },
+      })
     } catch (err) {
       console.error('Error al borrar entrada de hora:', err)
+      await trackUiEvent({
+        eventName: 'time_tracking.entry_delete',
+        eventCategory: 'time_tracking',
+        outcome: 'failure',
+        route: `/engineering/projects/${project.id}`,
+        entityType: 'project',
+        entityId: project.id,
+        entityCode: project.numero_proyecto,
+        metadata: {
+          entry_id: entryId,
+          error_name: err instanceof Error ? err.name : 'UnknownError',
+          source: 'browser_supabase',
+        },
+      })
       // Revertir
       setEntries(prevEntries)
     }
 
     setDeletingId(null)
-  }, [entries])
+  }, [entries, project.id, project.numero_proyecto])
 
   // --- Duracion para una fila (en vivo si abierta) ---
   function getRowDuration(entry: ConteoHorasProyecto): string {

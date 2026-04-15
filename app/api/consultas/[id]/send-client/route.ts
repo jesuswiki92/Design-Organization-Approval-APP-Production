@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { logServerEvent } from '@/lib/observability/server'
+import { buildRequestContext } from '@/lib/observability/shared'
 
 export const runtime = 'nodejs'
 
@@ -67,7 +69,8 @@ export async function POST(
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+    const { user, supabase } = auth
+    const requestContext = buildRequestContext(request)
 
     const { id } = await context.params
     const body = (await request.json()) as {
@@ -86,6 +89,22 @@ export async function POST(
 
     const webhookUrl = process.env.DOA_SEND_CLIENT_WEBHOOK_URL?.trim()
     if (!webhookUrl) {
+      await logServerEvent({
+        eventName: 'communication.send_client',
+        eventCategory: 'communication',
+        outcome: 'failure',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        entityCode: query.codigo ?? null,
+        metadata: { reason: 'missing_webhook_url' },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
       return jsonResponse(
         500,
         'DOA_SEND_CLIENT_WEBHOOK_URL no está configurada. Añádela en el entorno antes de enviar correos al cliente.',
@@ -162,6 +181,27 @@ export async function POST(
     const rawText = await webhookResponse.text()
 
     if (!webhookResponse.ok) {
+      await logServerEvent({
+        eventName: 'communication.send_client',
+        eventCategory: 'communication',
+        outcome: 'failure',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        entityCode: query.codigo ?? null,
+        metadata: {
+          has_form_url: Boolean(resolvedFormUrl),
+          message_length: message.length,
+          upstream_status: webhookResponse.status,
+          has_ai_draft: Boolean(query.respuestaIa),
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
       return Response.json(
         {
           error: `El webhook devolvió ${webhookResponse.status}.`,
@@ -187,6 +227,28 @@ export async function POST(
     } catch {
       responsePayload = rawText || null
     }
+
+    await logServerEvent({
+      eventName: 'communication.send_client',
+      eventCategory: 'communication',
+      outcome: 'success',
+      actorUserId: user.id,
+      requestId: requestContext.requestId,
+      route: requestContext.route,
+      method: request.method,
+      entityType: 'consulta',
+      entityId: id,
+      entityCode: query.codigo ?? null,
+      metadata: {
+        has_form_url: Boolean(resolvedFormUrl),
+        message_length: message.length,
+        has_ai_draft: Boolean(query.respuestaIa),
+        reply_body_persisted: !replyError,
+      },
+      userAgent: requestContext.userAgent,
+      ipAddress: requestContext.ipAddress,
+      referrer: requestContext.referrer,
+    })
 
     return Response.json({
       ok: true,

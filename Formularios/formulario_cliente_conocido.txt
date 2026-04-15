@@ -94,114 +94,221 @@
       </section>
 
       <section class="card section" id="section-technical">
-        <p class="kicker">Datos del proyecto</p>
-        <div class="title">Informaci&oacute;n T&eacute;cnica del Proyecto</div>
-        <p class="hintcopy">Complete la informaci&oacute;n t&eacute;cnica para que podamos evaluar el alcance del proyecto.</p>
+        <p class="kicker">Project Data</p>
+        <div class="title">Technical Project Information</div>
+        <p class="hintcopy">Complete the technical information so we can assess the project scope.</p>
+
+        <!-- WHAT -->
         <div class="grid cols2" style="margin-top:18px">
           <div class="field">
-            <label for="work_type">Tipo de trabajo <span style="color:#ef4444">*</span></label>
+            <label for="work_type">Work type <span style="color:#ef4444">*</span></label>
             <select id="work_type" name="work_type" required onchange="toggleWorkType()">
-              <option value="">Seleccione...</option>
-              <option value="proyecto_nuevo">Proyecto nuevo</option>
-              <option value="modificacion_existente">Modificaci&oacute;n a proyecto existente</option>
+              <option value="">Select...</option>
+              <option value="proyecto_nuevo">New project</option>
+              <option value="modificacion_existente">Modification to existing project</option>
             </select>
           </div>
           <div class="field hidden" id="field-existing-project">
-            <label for="existing_project_code">C&oacute;digo del proyecto existente</label>
-            <input id="existing_project_code" name="existing_project_code" type="text" placeholder="Ej: IM.A.226-0001" />
+            <label for="existing_project_code">Existing project code</label>
+            <input id="existing_project_code" name="existing_project_code" type="text" placeholder="e.g. IM.A.226-0001" />
           </div>
         </div>
         <div class="field" style="margin-top:16px">
-          <label for="modification_summary">Descripci&oacute;n de la modificaci&oacute;n <span style="color:#ef4444">*</span></label>
-          <textarea id="modification_summary" name="modification_summary" rows="3" required placeholder="Describa brevemente qu&eacute; modificaci&oacute;n necesita realizar..."></textarea>
+          <label for="modification_summary">Modification description <span style="color:#ef4444">*</span></label>
+          <textarea id="modification_summary" name="modification_summary" rows="3" required placeholder="Briefly describe the modification you need..."></textarea>
         </div>
         <div class="field" style="margin-top:16px">
-          <label for="operational_goal">Objetivo operativo <span style="color:#ef4444">*</span></label>
-          <textarea id="operational_goal" name="operational_goal" rows="2" required placeholder="&iquest;Cu&aacute;l es el objetivo operativo de esta modificaci&oacute;n?"></textarea>
+          <label for="operational_goal">Operational goal <span style="color:#ef4444">*</span></label>
+          <textarea id="operational_goal" name="operational_goal" rows="2" required placeholder="What is the operational goal of this modification?"></textarea>
+        </div>
+
+        <!-- WHERE ON THE AIRCRAFT -->
+        <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)">Where on the aircraft</p>
+        </div>
+        <div class="grid cols2">
+          <div class="field">
+            <label for="impact_location">Where on the aircraft will the modification take place? <span style="color:#ef4444">*</span></label>
+            <select id="impact_location" name="impact_location" required>
+              <option value="">Select...</option>
+              <option value="interior_cabin">Interior &mdash; Passenger cabin</option>
+              <option value="exterior_fuselage">Exterior &mdash; Fuselage / external surface</option>
+              <option value="cockpit">Cockpit / Flight deck</option>
+              <option value="cargo_hold">Cargo hold / Belly</option>
+              <option value="wing">Wing</option>
+              <option value="empennage">Empennage / Tail</option>
+              <option value="engine_area">Engine / Nacelle area</option>
+              <option value="landing_gear">Landing gear area</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="impact_structural_attachment">Does the modification attach to the aircraft structure? <span style="color:#ef4444">*</span></label>
+            <p class="hint">Drilling, cutouts, brackets, doublers, or any structural interface</p>
+            <select id="impact_structural_attachment" name="impact_structural_attachment" required onchange="toggleStructuralAttachment()">
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
+              <option value="no">No</option>
+              <option value="no_se">Not sure</option>
+            </select>
+          </div>
+        </div>
+        <div class="field hidden" id="field-structural-interface" style="margin-top:16px">
+          <label for="impact_structural_interface">Describe the structural interface</label>
+          <textarea id="impact_structural_interface" name="impact_structural_interface" rows="2" placeholder="e.g. External POD mounted on belly, fuselage skin panel, seat tracks..."></textarea>
+        </div>
+
+        <!-- WHAT DOES IT INVOLVE -->
+        <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)">What does it involve</p>
+        </div>
+        <div class="grid cols2">
+          <div class="field">
+            <label for="impact_electrical">Does the modification require electrical connections or wiring? <span style="color:#ef4444">*</span></label>
+            <select id="impact_electrical" name="impact_electrical" required>
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
+              <option value="no">No</option>
+              <option value="no_se">Not sure</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="impact_avionics">Does it involve avionics or communications equipment? <span style="color:#ef4444">*</span></label>
+            <p class="hint">Antennas, transponders, radios, sensors, displays, navigation equipment</p>
+            <select id="impact_avionics" name="impact_avionics" required>
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
+              <option value="no">No</option>
+              <option value="no_se">Not sure</option>
+            </select>
+          </div>
         </div>
         <div class="grid cols2" style="margin-top:16px">
           <div class="field">
-            <label for="has_equipment">&iquest;Dispone ya del equipo/componente a instalar? <span style="color:#ef4444">*</span></label>
+            <label for="impact_cabin_layout">Does the modification affect the passenger cabin layout? <span style="color:#ef4444">*</span></label>
+            <p class="hint">Seats, monuments, galleys, lavatories, stowage compartments</p>
+            <select id="impact_cabin_layout" name="impact_cabin_layout" required>
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="impact_pressurized">Is the installation zone pressurized? <span style="color:#ef4444">*</span></label>
+            <select id="impact_pressurized" name="impact_pressurized" required>
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
+              <option value="no">No</option>
+              <option value="no_se">Not sure</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label for="impact_operational_change">Will the modification change how the aircraft is operated? <span style="color:#ef4444">*</span></label>
+          <p class="hint">New limitations, new procedures, changed dispatch conditions</p>
+          <select id="impact_operational_change" name="impact_operational_change" required>
+            <option value="">Select...</option>
+            <option value="si">Yes</option>
+            <option value="no">No</option>
+            <option value="no_se">Not sure</option>
+          </select>
+        </div>
+
+        <!-- WHAT DO YOU HAVE -->
+        <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)">What do you have</p>
+        </div>
+        <div class="grid cols2">
+          <div class="field">
+            <label for="has_equipment">Do you already have the equipment/component to install? <span style="color:#ef4444">*</span></label>
             <select id="has_equipment" name="has_equipment" required onchange="toggleEquipment()">
-              <option value="">Seleccione...</option>
-              <option value="si">S&iacute;, ya lo tengo</option>
-              <option value="no">No, necesito asesoramiento</option>
-              <option value="no_aplica">No aplica</option>
+              <option value="">Select...</option>
+              <option value="si">Yes, I already have it</option>
+              <option value="no">No, I need guidance</option>
+              <option value="no_aplica">Not applicable</option>
             </select>
           </div>
           <div class="field hidden" id="field-equipment-details">
-            <label for="equipment_details">Detalles del equipo</label>
-            <textarea id="equipment_details" name="equipment_details" rows="2" placeholder="Fabricante, modelo, Part Number, certificaci&oacute;n (TSO/ETSO)..."></textarea>
+            <label for="equipment_details">Equipment details</label>
+            <textarea id="equipment_details" name="equipment_details" rows="2" placeholder="Manufacturer, model, Part Number, certification (TSO/ETSO)..."></textarea>
           </div>
         </div>
         <div class="grid cols2" style="margin-top:16px">
           <div class="field">
-            <label for="has_drawings">&iquest;Dispone de planos, esquemas o documentaci&oacute;n t&eacute;cnica? <span style="color:#ef4444">*</span></label>
+            <label for="has_drawings">Do you have drawings, schematics or technical documentation? <span style="color:#ef4444">*</span></label>
             <select id="has_drawings" name="has_drawings" required>
-              <option value="">Seleccione...</option>
-              <option value="si">S&iacute;</option>
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
               <option value="no">No</option>
             </select>
           </div>
           <div class="field">
-            <label for="has_previous_mod">&iquest;Existe una modificaci&oacute;n similar previa en esta aeronave u otra? <span style="color:#ef4444">*</span></label>
+            <label for="has_previous_mod">Is there a similar previous modification on this or another aircraft? <span style="color:#ef4444">*</span></label>
             <select id="has_previous_mod" name="has_previous_mod" required onchange="togglePreviousMod()">
-              <option value="">Seleccione...</option>
-              <option value="si">S&iacute;</option>
+              <option value="">Select...</option>
+              <option value="si">Yes</option>
               <option value="no">No</option>
-              <option value="no_seguro">No estoy seguro</option>
+              <option value="no_seguro">Not sure</option>
             </select>
           </div>
         </div>
         <div class="field hidden" id="field-previous-mod-ref" style="margin-top:16px">
-          <label for="previous_mod_ref">Referencia de la modificaci&oacute;n anterior</label>
-          <input id="previous_mod_ref" name="previous_mod_ref" type="text" placeholder="STC, SB, n&uacute;mero de proyecto..." />
+          <label for="previous_mod_ref">Previous modification reference</label>
+          <input id="previous_mod_ref" name="previous_mod_ref" type="text" placeholder="STC, SB, project number..." />
         </div>
-        <div class="grid cols2" style="margin-top:16px">
+        <div class="field" style="margin-top:16px">
+          <label for="has_manufacturer_docs">Do you have equipment manufacturer documentation? <span style="color:#ef4444">*</span></label>
+          <select id="has_manufacturer_docs" name="has_manufacturer_docs" required>
+            <option value="">Select...</option>
+            <option value="si">Yes (installation manuals, datasheets...)</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <!-- WHEN -->
+        <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)">When</p>
+        </div>
+        <div class="grid cols2">
           <div class="field">
-            <label for="has_manufacturer_docs">&iquest;Tiene documentaci&oacute;n del fabricante del equipo? <span style="color:#ef4444">*</span></label>
-            <select id="has_manufacturer_docs" name="has_manufacturer_docs" required>
-              <option value="">Seleccione...</option>
-              <option value="si">S&iacute; (manuales de instalaci&oacute;n, datasheets...)</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="target_date">Fecha deseada de finalizaci&oacute;n</label>
+            <label for="target_date">Desired completion date</label>
             <input id="target_date" name="target_date" type="date" />
           </div>
-        </div>
-        <div class="grid cols2" style="margin-top:16px">
           <div class="field">
-            <label for="is_aog">&iquest;Es una situaci&oacute;n AOG (Aircraft on Ground)? <span style="color:#ef4444">*</span></label>
+            <label for="is_aog">Is this an AOG (Aircraft on Ground) situation? <span style="color:#ef4444">*</span></label>
             <select id="is_aog" name="is_aog" required>
-              <option value="">Seleccione...</option>
-              <option value="si">S&iacute;, urgente</option>
+              <option value="">Select...</option>
+              <option value="si">Yes, urgent</option>
               <option value="no">No</option>
             </select>
-          </div>
-          <div class="field">
-            <label for="aircraft_location">Ubicaci&oacute;n actual de la aeronave</label>
-            <input id="aircraft_location" name="aircraft_location" type="text" placeholder="Aeropuerto, ciudad, pa&iacute;s" />
           </div>
         </div>
         <div class="field" style="margin-top:16px">
-          <label for="additional_notes">Informaci&oacute;n adicional</label>
-          <textarea id="additional_notes" name="additional_notes" rows="3" placeholder="Cualquier otra informaci&oacute;n relevante para valorar el proyecto..."></textarea>
+          <label for="aircraft_location">Current aircraft location</label>
+          <input id="aircraft_location" name="aircraft_location" type="text" placeholder="Airport, city, country" />
+        </div>
+
+        <!-- EXTRA -->
+        <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)">Extra</p>
+        </div>
+        <div class="field">
+          <label for="additional_notes">Additional information</label>
+          <textarea id="additional_notes" name="additional_notes" rows="3" placeholder="Any other relevant information for project assessment..."></textarea>
         </div>
         <div class="error-msg" id="error-technical"></div>
       </section>
 
       <section class="card submit" id="submit-all">
-        <div><p class="kicker">Paso final</p><p>Env&iacute;e toda la informaci&oacute;n para completar su solicitud.</p></div>
-        <button type="button" class="btn" id="btn-submit-all" onclick="submitAll()">Enviar formulario completo</button>
+        <div><p class="kicker">Final step</p><p>Submit all information to complete your request.</p></div>
+        <button type="button" class="btn" id="btn-submit-all" onclick="submitAll()">Submit complete form</button>
       </section>
     </div>
 
     <section class="card confirmation" id="confirmation" style="display:none;margin-top:26px">
       <div style="font-size:48px">&#10003;</div>
-      <h2>Formulario enviado correctamente</h2>
-      <p>Hemos recibido los datos de la aeronave y la informaci&oacute;n t&eacute;cnica del proyecto. Continuaremos con la evaluaci&oacute;n.</p>
+      <h2>Form submitted successfully</h2>
+      <p>We have received the aircraft and technical project data. We will continue with the evaluation.</p>
     </section>
   </div>
 
@@ -301,6 +408,11 @@
       var f=document.getElementById('field-equipment-details');
       f.classList.toggle('hidden',v!=='si');
     };
+    window.toggleStructuralAttachment=function(){
+      var v=document.getElementById('impact_structural_attachment').value;
+      var f=document.getElementById('field-structural-interface');
+      f.classList.toggle('hidden',v!=='si');
+    };
     window.togglePreviousMod=function(){
       var v=document.getElementById('has_previous_mod').value;
       var f=document.getElementById('field-previous-mod-ref');
@@ -321,11 +433,11 @@
         if(!el.value.trim()){el.focus();errAircraft.textContent='Please fill in all required aircraft fields.';errAircraft.style.display='block';return;}
       }
 
-      /* Validate technical fields */
-      var requiredTech=['work_type','modification_summary','operational_goal','has_equipment','has_drawings','has_previous_mod','has_manufacturer_docs','is_aog'];
+      /* Validate technical + impact fields (merged) */
+      var requiredTech=['work_type','modification_summary','operational_goal','impact_location','impact_structural_attachment','impact_electrical','impact_avionics','impact_cabin_layout','impact_pressurized','impact_operational_change','has_equipment','has_drawings','has_previous_mod','has_manufacturer_docs','is_aog'];
       for(var i=0;i<requiredTech.length;i++){
         var el=document.getElementById(requiredTech[i]);
-        if(!el.value.trim()){el.focus();errTech.textContent='Por favor complete todos los campos obligatorios.';errTech.style.display='block';return;}
+        if(!el.value.trim()){el.focus();errTech.textContent='Please fill in all required fields.';errTech.style.display='block';return;}
       }
 
       var consultaId=document.getElementById('consulta_id').value;
@@ -348,6 +460,14 @@
         existing_project_code:document.getElementById('existing_project_code').value.trim()||'',
         modification_summary:document.getElementById('modification_summary').value.trim(),
         operational_goal:document.getElementById('operational_goal').value.trim(),
+        impact_location:document.getElementById('impact_location').value,
+        impact_structural_attachment:document.getElementById('impact_structural_attachment').value,
+        impact_structural_interface:document.getElementById('impact_structural_interface').value.trim()||'',
+        impact_electrical:document.getElementById('impact_electrical').value,
+        impact_avionics:document.getElementById('impact_avionics').value,
+        impact_cabin_layout:document.getElementById('impact_cabin_layout').value,
+        impact_pressurized:document.getElementById('impact_pressurized').value,
+        impact_operational_change:document.getElementById('impact_operational_change').value,
         has_equipment:document.getElementById('has_equipment').value,
         equipment_details:document.getElementById('equipment_details').value.trim()||'',
         has_drawings:document.getElementById('has_drawings').value,
@@ -360,7 +480,7 @@
         additional_notes:document.getElementById('additional_notes').value.trim()||''
       };
 
-      btn.disabled=true;btn.textContent='Enviando...';
+      btn.disabled=true;btn.textContent='Submitting...';
       try{
         await postViaIframe(SUBMIT_URL,aircraftData);
         await new Promise(function(r){setTimeout(r,2000);});
@@ -370,7 +490,7 @@
         document.getElementById('confirmation').style.display='block';
       }catch(err){
         errTech.textContent='Error: '+err.message;errTech.style.display='block';
-        btn.disabled=false;btn.textContent='Enviar formulario completo';
+        btn.disabled=false;btn.textContent='Submit complete form';
       }
     };
   })();

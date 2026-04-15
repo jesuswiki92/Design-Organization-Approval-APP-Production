@@ -251,7 +251,9 @@ export function TcdsStatusBanner({
         {fallbackUsed && (
           <div className="border-t border-emerald-100 px-3 py-1.5">
             <p className="text-[10px] italic text-emerald-600">
-              Coincidencia encontrada por modelo/fabricante (el TCDS de la consulta no estaba registrado)
+              {tcdsNumber
+                ? 'Coincidencia encontrada por modelo/fabricante porque el TCDS reportado no estaba registrado'
+                : 'Coincidencia encontrada por modelo/fabricante aunque la consulta no incluia un TCDS'}
             </p>
           </div>
         )}
@@ -363,7 +365,7 @@ export function TcdsStatusBanner({
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-slate-900">
-            Este TCDS no esta en la base de datos
+            {tcdsNumber ? 'Este TCDS no esta en la base de datos' : 'Revision TCDS pendiente'}
           </p>
           <p className="mt-1 text-xs text-slate-500">
             {tcdsNumber ? (
