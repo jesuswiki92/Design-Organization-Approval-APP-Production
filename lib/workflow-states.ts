@@ -971,3 +971,57 @@ export const DELIVERABLE_VALIDATION_READY_STATES: readonly string[] = [
   'completado',
   'no_aplica',
 ]
+
+// ==========================================
+// CLOSURE OUTCOMES & LESSON TAXONOMY (Sprint 4)
+// Etiquetas legibles para la UI de cierre. Los codigos canonicos viven en
+// types/database.ts.
+// ==========================================
+
+export const CLOSURE_OUTCOMES = {
+  EXITOSO: 'exitoso',
+  EXITOSO_CON_RESERVAS: 'exitoso_con_reservas',
+  PROBLEMATICO: 'problematico',
+  ABORTADO: 'abortado',
+} as const
+
+export const CLOSURE_OUTCOME_LABELS: Record<
+  'exitoso' | 'exitoso_con_reservas' | 'problematico' | 'abortado',
+  string
+> = {
+  exitoso: 'Exitoso',
+  exitoso_con_reservas: 'Exitoso con reservas',
+  problematico: 'Problematico',
+  abortado: 'Abortado',
+}
+
+export const LESSON_CATEGORIA_LABELS: Record<
+  | 'tecnica'
+  | 'proceso'
+  | 'cliente'
+  | 'calidad'
+  | 'planificacion'
+  | 'herramientas'
+  | 'regulatoria'
+  | 'otro',
+  string
+> = {
+  tecnica: 'Tecnica',
+  proceso: 'Proceso',
+  cliente: 'Cliente',
+  calidad: 'Calidad',
+  planificacion: 'Planificacion',
+  herramientas: 'Herramientas',
+  regulatoria: 'Regulatoria',
+  otro: 'Otro',
+}
+
+export const LESSON_TIPO_LABELS: Record<
+  'positiva' | 'negativa' | 'mejora' | 'riesgo',
+  string
+> = {
+  positiva: 'Positiva',
+  negativa: 'Negativa',
+  mejora: 'Mejora',
+  riesgo: 'Riesgo',
+}

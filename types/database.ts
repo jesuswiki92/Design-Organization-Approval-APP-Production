@@ -927,6 +927,121 @@ export interface DoaEmail {
   created_at: string
 }
 
+// ─── doa_project_closures (Sprint 4) ────────────────────────────────────────
+
+/** Outcome del cierre de un proyecto. */
+export type ClosureOutcome =
+  | 'exitoso'
+  | 'exitoso_con_reservas'
+  | 'problematico'
+  | 'abortado'
+
+/** Snapshot jsonb de las metricas computadas al cierre. */
+export interface ClosureMetricsSnapshot {
+  horas_plan?: number | null
+  horas_real?: number | null
+  deliverables_total?: number
+  deliverables_completado?: number
+  deliverables_no_aplica?: number
+  deliverables_bloqueado?: number
+  validaciones_count?: number
+  validaciones_aprobadas?: number
+  devoluciones_count?: number
+  entregas_count?: number
+  entregas_enviadas?: number
+  entregas_confirmadas?: number
+  dias_total?: number | null
+  client_confirmation_days?: number | null
+  [key: string]: unknown
+}
+
+/** Fila de la tabla `doa_project_closures`. */
+export interface ProjectClosure {
+  id: string
+  proyecto_id: string
+  closer_user_id: string
+  signature_id: string | null
+  metrics: ClosureMetricsSnapshot
+  outcome: ClosureOutcome
+  notas_cierre: string | null
+  created_at: string
+}
+
+// ─── doa_project_lessons (Sprint 4) ─────────────────────────────────────────
+
+/** Categoria de una leccion aprendida. */
+export type LessonCategoria =
+  | 'tecnica'
+  | 'proceso'
+  | 'cliente'
+  | 'calidad'
+  | 'planificacion'
+  | 'herramientas'
+  | 'regulatoria'
+  | 'otro'
+
+/** Tipo de leccion aprendida. */
+export type LessonTipo = 'positiva' | 'negativa' | 'mejora' | 'riesgo'
+
+/** Fila de la tabla `doa_project_lessons`. */
+export interface ProjectLesson {
+  id: string
+  proyecto_id: string
+  closure_id: string | null
+  author_user_id: string
+  categoria: LessonCategoria
+  tipo: LessonTipo
+  titulo: string
+  descripcion: string
+  impacto: string | null
+  recomendacion: string | null
+  tags: string[] | null
+  created_at: string
+  updated_at: string
+}
+
+/** Input para crear una leccion via API. */
+export interface LessonInput {
+  categoria: LessonCategoria
+  tipo: LessonTipo
+  titulo: string
+  descripcion: string
+  impacto?: string | null
+  recomendacion?: string | null
+  tags?: string[] | null
+}
+
+// ─── doa_project_metrics_mv (Sprint 4) ──────────────────────────────────────
+
+/** Fila de la materialized view doa_project_metrics_mv. */
+export interface ProjectMetricsRow {
+  proyecto_id: string
+  titulo: string
+  cliente_id: string | null
+  estado_v2: string | null
+  fase_actual: string | null
+  created_at: string
+  estado_updated_at: string | null
+  deliverables_total: number
+  deliverables_completado: number
+  deliverables_no_aplica: number
+  deliverables_bloqueado: number
+  validaciones_total: number
+  validaciones_aprobadas: number
+  validaciones_devueltas: number
+  entregas_total: number
+  entregas_enviadas: number
+  entregas_confirmadas: number
+  horas_plan: number | null
+  horas_real: number | null
+  dias_en_ejecucion: number | null
+  dias_en_validacion: number | null
+  dias_en_entrega: number | null
+  dias_totales_cerrado_vs_abierto: number | null
+  closure_outcome: ClosureOutcome | null
+  lecciones_count: number
+}
+
 // ─── doa_proyectos_historico_archivos ────────────────────────────────────────
 
 /** Archivo individual dentro de una familia documental de un proyecto historico */

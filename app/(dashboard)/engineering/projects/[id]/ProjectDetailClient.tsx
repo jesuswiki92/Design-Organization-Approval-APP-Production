@@ -42,6 +42,7 @@ import { PrecedentesSection } from './PrecedentesSection'
 import { DeliverablesTab } from './DeliverablesTab'
 import { ValidationTab } from './ValidationTab'
 import { DeliveryTab } from './DeliveryTab'
+import { ClosureTab } from './ClosureTab'
 import { ProjectStateStepper } from '@/components/project/ProjectStateStepper'
 import {
   isProjectExecutionStateCode,
@@ -413,7 +414,7 @@ export function ProjectDetailClient({
   const executionState: ProjectExecutionState | null =
     estadoV2 && isProjectExecutionStateCode(estadoV2) ? estadoV2 : null
 
-  // Deep link ?tab=validacion (tambien acepta horas, deliverables, entrega).
+  // Deep link ?tab=validacion (tambien acepta horas, deliverables, entrega, cierre).
   const searchParams = useSearchParams()
   const initialTab = (() => {
     const t = searchParams.get('tab')
@@ -421,7 +422,8 @@ export function ProjectDetailClient({
       t === 'validacion' ||
       t === 'deliverables' ||
       t === 'horas' ||
-      t === 'entrega'
+      t === 'entrega' ||
+      t === 'cierre'
     )
       return t
     return 'horas'
@@ -489,6 +491,7 @@ export function ProjectDetailClient({
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="validacion">Validacion</TabsTrigger>
           <TabsTrigger value="entrega">Entrega</TabsTrigger>
+          <TabsTrigger value="cierre">Cierre</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deliverables">
@@ -514,6 +517,14 @@ export function ProjectDetailClient({
             proyectoNumero={project.numero_proyecto}
             defaultRecipientEmail={null}
             defaultRecipientName={project.cliente_nombre ?? null}
+            currentState={estadoV2}
+            onStateChange={setEstadoV2}
+          />
+        </TabsContent>
+
+        <TabsContent value="cierre">
+          <ClosureTab
+            proyectoId={project.id}
             currentState={estadoV2}
             onStateChange={setEstadoV2}
           />

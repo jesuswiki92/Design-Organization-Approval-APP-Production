@@ -413,3 +413,54 @@ Sprint 3 cierra el flujo del proyecto desde `validado` hasta `confirmacion_clien
 - Plantilla HTML mas rica para el email (MJML).
 - Rotacion de tokens de confirmacion (hoy el token vive indefinidamente hasta confirmar).
 - Mapear `subpart_easa` desde el catalogo de plantillas cuando exista (hoy viene del deliverable o null).
+
+## Sprint 4 — Cierre del proyecto y precedentes (close-the-loop)
+
+Sprint 4 cierra el bucle operativo. Un proyecto confirmado por el cliente pasa a `cerrado` (con outcome, lecciones aprendidas y snapshot firmado de metricas), y despues a `archivado_proyecto` (reindex del precedente en Pinecone + refresh de la MV de metricas). El expediente archivado alimenta el asistente de futuras cotizaciones y proyectos.
+
+### Lo que landea
+
+- **Nueva tabla** `doa_project_closures` (`supabase/migrations/202604190000_doa_project_closures.sql`): una fila por proyecto con outcome (`exitoso | exitoso_con_reservas | problematico | abortado`), snapshot jsonb de metricas computadas al cierre, firma HMAC (via `signature_id -> doa_project_signatures`) y notas de cierre.
+- **Nueva tabla** `doa_project_lessons` (`supabase/migrations/202604190010_doa_project_lessons.sql`): lecciones aprendidas con categoria (`tecnica | proceso | cliente | calidad | planificacion | herramientas | regulatoria | otro`), tipo (`positiva | negativa | mejora | riesgo`), impacto, recomendacion y `tags text[]` indexado con GIN. Pueden asociarse a un cierre (`closure_id`) o vivir sueltas (p.ej. retro tardia).
+- **Materialized view** `doa_project_metrics_mv` (`supabase/migrations/202604190020_doa_project_metrics_mv.sql`) con agregados por proyecto (deliverables/validaciones/entregas, outcome, lecciones, dias). Tiene indice unique en `proyecto_id` para soportar `REFRESH MATERIALIZED VIEW CONCURRENTLY`.
+- **Endpoints nuevos**:
+  - `POST /api/proyectos/[id]/cerrar` — valida outcome, computa snapshot, firma HMAC la decision de cierre (signer_role=`doh`, signature_type=`closure`), crea la closure row, inserta lecciones en batch y transiciona `confirmacion_cliente -> cerrado`.
+  - `POST /api/proyectos/[id]/archivar` — transiciona `cerrado -> archivado_proyecto`, dispara `reindexPrecedente(id)` (fail-soft) y `refresh_doa_project_metrics_mv` (fail-soft).
+  - `GET /api/proyectos/[id]/closure` — devuelve la closure row, resumen de firma y lista de lecciones.
+  - `GET|POST /api/proyectos/[id]/lessons` — listar y crear lecciones del proyecto, aunque no este en cierre.
+  - `POST /api/engineering/precedentes/reindex` — reindex manual de un proyecto concreto o de los ultimos 200 en `cerrado | archivado_proyecto` (fail-soft cuando Pinecone no esta configurado).
+- **Helper** `lib/rag/precedentes.ts` (`reindexPrecedente(proyectoId)`): compone un texto estructurado con outcome, deliverables, validaciones, entregas, lecciones y lo upserta al indice Pinecone via records API (integrated embedding, sin embedding local).
+- **Pestana "Cierre"** (`app/(dashboard)/engineering/projects/[id]/ClosureTab.tsx`) con deep link `?tab=cierre`. Muestra el formulario de cierre cuando el proyecto esta en `confirmacion_cliente`, vista read-only + CTA "Archivar" cuando esta `cerrado`, y vista read-only + CTA "Reindexar precedente" cuando ya esta `archivado_proyecto`. Siempre expone el bloque de metricas computadas y la lista de lecciones.
+- **Pagina de metricas** `app/(dashboard)/engineering/metrics/page.tsx` (+ `MetricsClient.tsx`). Intenta leer la MV y, si no existe, computa agregados en vivo desde tablas base mostrando un banner de modo fallback. Incluye KPIs, distribucion por fase/estado, outcomes de cierre y top-10 proyectos de mayor duracion.
+- **PrecedentesSection extendida** con badge de fuente (`historico` para el indice OpenAI legacy, `archivado` / `cerrado` para el nuevo indice Pinecone) y contador de lecciones aprendidas asociado cuando el endpoint lo provee.
+
+### Variables de entorno
+
+- `DOA_SIGNATURE_HMAC_SECRET` (reusada) — firma HMAC del cierre.
+- `PINECONE_API_KEY` (NUEVA, opcional) — si falta, el reindex de precedentes queda fail-soft con warn en el log; el cierre y el archivado siguen funcionando.
+- `PINECONE_INDEX_HOST` (NUEVA, opcional) — host del indice integrated-embedding (ej: `https://doa-precedentes-xxxx.svc.<region>.pinecone.io`). Se obtiene de la consola de Pinecone.
+- `PINECONE_INDEX_PRECEDENTES` (NUEVA, opcional) — nombre del indice (solo para logs).
+- `PINECONE_NAMESPACE` (NUEVA, opcional) — por defecto `__default__`.
+- `PINECONE_PRECEDENTES_TEXT_FIELD` (NUEVA, opcional) — por defecto `text`; debe coincidir con el fieldMap del indice.
+
+### Pasos manuales (uno por entorno)
+
+1. Aplicar las migraciones en orden: `202604190000_doa_project_closures.sql`, `202604190010_doa_project_lessons.sql`, `202604190020_doa_project_metrics_mv.sql`.
+2. Crear el indice Pinecone (integrated embedding, fieldMap `text`). Ejemplo: `doa-precedentes`, modelo `multilingual-e5-large` o equivalente.
+3. Completar las variables de entorno de Pinecone en `.env.local` (dev) y en el VPS (prod).
+4. Crear la funcion SQL `refresh_doa_project_metrics_mv()` SECURITY DEFINER (RPC) que ejecute `REFRESH MATERIALIZED VIEW CONCURRENTLY doa_project_metrics_mv;`. Mientras no exista, el archivado seguira funcionando pero anotara warn en `project.archivar.mv_refresh_failed`.
+5. (Opcional) Ejecutar `POST /api/engineering/precedentes/reindex` con body vacio para indexar los proyectos ya cerrados/archivados.
+
+### TODOs flagged
+
+- Enforzar `signer_role` real (hoy se fija a `doh` en el cierre). Requiere tabla/politica de roles.
+- Completar `horas_plan` y `horas_real` en la MV cuando existan los campos en `doa_proyectos` (hoy viene `NULL`).
+- Calcular dwell por fase a partir de un historial de transiciones (hoy `dias_en_ejecucion|validacion|entrega` son `NULL`). Requiere tabla `doa_project_state_history` o similar.
+- Crear la RPC `refresh_doa_project_metrics_mv()` mencionada arriba.
+- Unificar la carga de precedentes `historico` (legacy OpenAI) y `archivado` (Pinecone) en un solo endpoint rankeado; hoy `PrecedentesSection` solo consume el legacy y el badge `Historico` es por defecto.
+- RLS por rol para `cerrar` y `archivar` (hoy cualquier usuario autenticado puede disparar el cierre).
+- Visibilidad en sidebar/engineering de la pagina `/engineering/metrics` (hoy se accede por URL directa).
+
+## Bucle cerrado
+
+Con Sprint 4 el ciclo completo **consulta -> cotizacion -> proyecto -> validacion -> entrega -> cierre -> precedentes** queda implementado end-to-end. Los proyectos archivados alimentan el motor de busqueda vectorial, las lecciones aprendidas quedan indexadas y la MV agrega el estado operativo global del portafolio.

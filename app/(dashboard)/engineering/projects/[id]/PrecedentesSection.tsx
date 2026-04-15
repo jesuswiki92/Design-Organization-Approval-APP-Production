@@ -24,7 +24,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Sparkles, Copy, Check, RefreshCw, FolderTree } from 'lucide-react'
+import {
+  Sparkles,
+  Copy,
+  Check,
+  RefreshCw,
+  FolderTree,
+  Archive,
+  BookOpen,
+  Database,
+} from 'lucide-react'
 
 // --- TIPOS ---
 
@@ -38,6 +47,15 @@ type Precedente = {
   doc_pack: string[] | null
   source_path: string | null
   snippet: string | null
+  /**
+   * Sprint 4: origen del precedente.
+   *   - 'historico'  -> indice OpenAI (doa_proyectos_embeddings).
+   *   - 'archivado'  -> indice Pinecone doa-precedentes (proyectos archivados).
+   *   - 'cerrado'    -> Pinecone, proyecto cerrado pero no archivado.
+   */
+  fuente?: 'historico' | 'archivado' | 'cerrado'
+  /** Sprint 4: lecciones aprendidas asociadas al precedente. */
+  lecciones_count?: number
 }
 
 type Props = {
@@ -75,6 +93,33 @@ function classificationBadge(classification: string | null): {
 function scorePct(score: number): string {
   const n = Math.round(score * 100)
   return `${n}% similar`
+}
+
+/** Badge para la fuente del precedente (Sprint 4). */
+function fuenteBadge(fuente: Precedente['fuente']): {
+  label: string
+  cls: string
+  Icon: typeof Database
+} {
+  if (fuente === 'archivado') {
+    return {
+      label: 'Archivado',
+      cls: 'bg-violet-50 text-violet-700 border-violet-200',
+      Icon: Archive,
+    }
+  }
+  if (fuente === 'cerrado') {
+    return {
+      label: 'Cerrado',
+      cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      Icon: Archive,
+    }
+  }
+  return {
+    label: 'Historico',
+    cls: 'bg-slate-50 text-slate-600 border-slate-200',
+    Icon: Database,
+  }
 }
 
 // --- COMPONENTE ---
@@ -262,6 +307,8 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
           <ul className="space-y-3">
             {filtered.map((p) => {
               const badge = classificationBadge(p.classification)
+              const fuente = fuenteBadge(p.fuente)
+              const FuenteIcon = fuente.Icon
               const isCopied = copiedSource === p.source_path
               return (
                 <li
@@ -290,6 +337,22 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
                     >
                       {badge.label}
                     </span>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${fuente.cls}`}
+                      title={`Fuente: ${fuente.label}`}
+                    >
+                      <FuenteIcon className="h-3 w-3" />
+                      {fuente.label}
+                    </span>
+                    {typeof p.lecciones_count === 'number' && p.lecciones_count > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700"
+                        title="Lecciones aprendidas asociadas"
+                      >
+                        <BookOpen className="h-3 w-3" />
+                        {p.lecciones_count} lecciones
+                      </span>
+                    )}
                     {p.family && (
                       <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-600">
                         {p.family}
