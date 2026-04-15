@@ -1,5 +1,20 @@
 'use client'
 
+/**
+ * ============================================================================
+ * VISTA LISTA DEL PORTFOLIO DE PROYECTOS
+ * ============================================================================
+ *
+ * Tabla ligera con todos los proyectos y sus datos principales. Tiene un
+ * toggle en la cabecera para alternar con la vista Tablero (Kanban por fase
+ * y estado), que vive en /engineering/portfolio/tablero.
+ *
+ * NOTA: La vista Kanban antigua (agrupada por los 4 estados legacy
+ * PROJECT_PORTFOLIO_STATES) fue sustituida por el Tablero v2 en
+ * /engineering/portfolio/tablero, que agrupa por la maquina de 13 estados.
+ * ============================================================================
+ */
+
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import {
@@ -7,7 +22,6 @@ import {
   ChevronDown,
   LayoutGrid,
   List,
-  Plane,
   Plus,
   Search,
   User,
@@ -60,108 +74,6 @@ function StatusBadge({ estado }: { estado: string }) {
       <span className={cn('h-1.5 w-1.5 rounded-full', cfg.dot)} />
       {cfg.label}
     </span>
-  )
-}
-
-/**
- * Tarjeta individual del Kanban para un proyecto.
- * Usa los campos reales de la tabla doa_proyectos.
- */
-function KanbanCard({ project }: { project: Proyecto }) {
-  const aircraft = project.aeronave ?? '-'
-  const client = project.cliente_nombre ?? '-'
-  const owner = project.owner ?? '-'
-  const delivery = project.fecha_entrega_estimada ?? '-'
-
-  return (
-    <div className="rounded-[18px] border border-slate-200 bg-white p-3 shadow-[0_10px_24px_rgba(148,163,184,0.12)] transition-all hover:border-sky-300 hover:bg-sky-50/40">
-      <div className="mb-2 flex items-start justify-between gap-3">
-        <Link
-          href={`/engineering/projects/${project.id}`}
-          className="font-mono text-[11px] tracking-wide text-slate-500 hover:text-sky-700"
-        >
-          {project.numero_proyecto}
-        </Link>
-        <StatusBadge estado={resolveDisplayStateCode(project)} />
-      </div>
-
-      <Link href={`/engineering/projects/${project.id}`} className="block">
-        <p className="mb-2 line-clamp-2 text-sm font-medium leading-snug text-slate-950 transition-colors hover:text-sky-800">
-          {project.titulo}
-        </p>
-      </Link>
-
-      <div className="mb-3 flex items-center gap-1.5 text-[11px] text-slate-500">
-        <Plane size={11} />
-        <span>{aircraft}</span>
-        <span className="text-slate-300">·</span>
-        <span>{client}</span>
-      </div>
-
-      <div className="mt-2 flex items-center justify-between">
-        <div className="flex items-center gap-1 text-[11px] text-slate-500">
-          <User size={11} />
-          <span>{owner}</span>
-        </div>
-        {delivery !== '-' && (
-          <div className="flex items-center gap-1 text-[11px] text-slate-500">
-            <Calendar size={11} />
-            <span>{delivery}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/**
- * Vista Kanban: columnas por estado.
- */
-function KanbanView({
-  projects,
-  statuses,
-}: {
-  projects: Proyecto[]
-  statuses: EstadoProyecto[]
-}) {
-  return (
-    <div className="flex min-h-0 flex-row gap-4 overflow-x-auto pb-4">
-      {statuses.map((estado) => {
-        const cfg = getProjectStatusMeta(estado)
-        const cols = projects.filter(
-          (project) => getProjectOperationalState(project.estado) === estado,
-        )
-        return (
-          <div key={estado} className="min-w-[280px] flex-none">
-            <div className="mb-3 flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className={cn('h-2 w-2 rounded-full', cfg.dot)} />
-                <span className="text-sm font-medium text-slate-900">{cfg.label}</span>
-              </div>
-              <span
-                className={cn(
-                  'rounded-full border px-2 py-0.5 text-xs font-semibold',
-                  cfg.color,
-                  cfg.bg,
-                  cfg.border,
-                )}
-              >
-                {cols.length}
-              </span>
-            </div>
-            <div className="flex flex-col gap-2">
-              {cols.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-400">
-                  Sin proyectos
-                </div>
-              ) : (
-                cols.map((project) => <KanbanCard key={project.id} project={project} />)
-              )}
-            </div>
-          </div>
-        )
-      })}
-    </div>
   )
 }
 
@@ -259,7 +171,6 @@ function ListView({ projects }: { projects: Proyecto[] }) {
 }
 
 export function PortfolioClient({ projects }: { projects: Proyecto[] }) {
-  const [view, setView] = useState<'kanban' | 'list'>('kanban')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<EstadoProyecto | 'all'>('all')
 
@@ -290,31 +201,27 @@ export function PortfolioClient({ projects }: { projects: Proyecto[] }) {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 p-5 text-slate-900">
       <div className="flex flex-wrap items-center gap-3">
+        {/* Toggle Lista (activa) / Tablero (link) — espejo del patron Quotations */}
         <div className="flex items-center rounded-xl border border-slate-200 bg-white p-0.5 shadow-sm">
-          <button
-            onClick={() => setView('kanban')}
+          <span
             className={cn(
-              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
-              view === 'kanban'
-                ? 'bg-sky-600 text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-950',
-            )}
-          >
-            <LayoutGrid size={14} />
-            Kanban
-          </button>
-          <button
-            onClick={() => setView('list')}
-            className={cn(
-              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
-              view === 'list'
-                ? 'bg-sky-600 text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-950',
+              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium',
+              'bg-sky-600 text-white shadow-sm',
             )}
           >
             <List size={14} />
             Lista
-          </button>
+          </span>
+          <Link
+            href="/engineering/portfolio/tablero"
+            className={cn(
+              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
+              'text-slate-500 hover:text-slate-950',
+            )}
+          >
+            <LayoutGrid size={14} />
+            Tablero
+          </Link>
         </div>
 
         <div className="relative max-w-xs min-w-[200px] flex-1">
@@ -385,8 +292,6 @@ export function PortfolioClient({ projects }: { projects: Proyecto[] }) {
           <div className="flex h-48 flex-col items-center justify-center text-slate-400">
             <p className="text-sm">No se encontraron proyectos</p>
           </div>
-        ) : view === 'kanban' ? (
-          <KanbanView projects={filtered} statuses={availableStates} />
         ) : (
           <ListView projects={filtered} />
         )}
