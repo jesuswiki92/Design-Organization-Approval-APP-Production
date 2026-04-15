@@ -1,4 +1,47 @@
 /**
+ * ============================================================================
+ * WORKFLOW-STATE INVARIANTS (Block 5 / Item K)
+ * ============================================================================
+ *
+ * Namespaces defined here (must remain disjoint — do not cross-reference codes
+ * between them):
+ *
+ *   1. `consulta` (incoming queries)
+ *        - Constants: `CONSULTA_ESTADOS`
+ *        - DB table:  `doa_consultas_entrantes.estado`
+ *        - Check:     `doa_consultas_entrantes_estado_check`
+ *
+ *   2. `quotation_board`
+ *        - Constants: `QUOTATION_BOARD_STATES`
+ *        - DB table:  `doa_consultas_entrantes.estado` (shared column, but the
+ *                     valid codes for the Kanban view are a superset here —
+ *                     see audit doc 07 for the intentional overlap).
+ *
+ *   3. `project_execution` (machine v2)
+ *        - Constants: `PROJECT_EXECUTION_STATES`, `PROJECT_EXECUTION_PHASES`
+ *        - DB column: `doa_proyectos.estado_v2`, `doa_proyectos.fase_actual`
+ *        - Check:     `doa_proyectos_estado_v2_check`,
+ *                     `doa_proyectos_fase_actual_check`
+ *
+ * DAG guarantees that MUST hold for the app to be correct:
+ *   (a) Every transition invoked from server code (API routes / actions) must
+ *       be present in the DAG for its namespace. Hardcoded strings are
+ *       forbidden; always reference the constants.
+ *   (b) Every target of every DAG edge must be a valid code in the same
+ *       namespace's enumeration.
+ *   (c) The DB CHECK constraints must mirror the TypeScript enumerations
+ *       exactly — drift between the two is a P0 bug (the app will silently
+ *       reject transitions the DAG considers valid, or accept transitions
+ *       the DB rejects).
+ *
+ * Test hint (not implemented yet — follow-up):
+ *   A drift-detection script should SELECT the CHECK constraint definitions
+ *   from `pg_constraint` and parse the enumerated strings, then compare them
+ *   against `Object.values(CONSULTA_ESTADOS)`, `Object.values(QUOTATION_BOARD_STATES)`,
+ *   `Object.values(PROJECT_EXECUTION_STATES)`, and `Object.values(PROJECT_EXECUTION_PHASES)`.
+ *   Any symmetric difference is a drift. Fail the script on non-empty diff.
+ * ============================================================================
+ *
  * ESTADOS DE FLUJOS DE TRABAJO DE LA APLICACION
  *
  * Este es uno de los archivos mas importantes de la app. Define TODOS los estados

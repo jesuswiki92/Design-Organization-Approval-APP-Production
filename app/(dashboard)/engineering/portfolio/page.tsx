@@ -31,7 +31,9 @@ export default async function EngineeringPortfolioPage() {
     console.error('Portfolio: error leyendo doa_proyectos:', error)
   }
 
-  const projects = (data ?? []) as Proyecto[]
+  // Supabase helper returns a `GenericStringError[]` shape when RLS/types can't
+  // be inferred on this query; cast through `unknown` to our domain type.
+  const projects = (data ?? []) as unknown as Proyecto[]
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">

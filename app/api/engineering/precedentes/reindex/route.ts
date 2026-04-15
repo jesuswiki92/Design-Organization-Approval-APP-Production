@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
       : 'precedentes.reindex.failed',
     eventCategory: 'precedentes',
     outcome: anyUpserted ? 'success' : 'failure',
+    severity: anyUpserted ? 'info' : 'warn',
     actorUserId: user.id,
     requestId: requestContext.requestId,
     route: requestContext.route,
@@ -111,7 +112,6 @@ export async function POST(request: NextRequest) {
     entityType: proyectoId ? 'proyecto' : null,
     entityId: proyectoId ?? null,
     metadata: {
-      severity: anyUpserted ? 'info' : 'warn',
       targets_count: targets.length,
       upserted_count: records.filter((r) => r.upserted).length,
       skipped_count: records.filter((r) => !r.upserted).length,

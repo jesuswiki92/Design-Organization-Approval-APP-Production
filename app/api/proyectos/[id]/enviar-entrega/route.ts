@@ -218,6 +218,7 @@ export async function POST(
         eventName: 'project.delivery.send_failed',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -225,7 +226,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'insert_signature',
           delivery_id: delivery.id,
           error_message: sigErr?.message ?? 'insert_signature_failed',
@@ -316,9 +316,37 @@ export async function POST(
     if (n8nSecret) {
       const sig = createHmac('sha256', n8nSecret).update(webhookBodyStr).digest('hex')
       headers['x-doa-signature'] = sig
+    } else if (process.env.NODE_ENV === 'production') {
+      // Block 5 / Item G: en produccion la firma es obligatoria. Si falta el
+      // secreto, no despachamos al webhook — registramos severity=error y
+      // devolvemos 500 con mensaje claro.
+      await logServerEvent({
+        eventName: 'project.delivery.send_failed',
+        eventCategory: 'project',
+        outcome: 'failure',
+        severity: 'error',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'proyecto',
+        entityId: id,
+        metadata: {
+          stage: 'hmac_secret_missing',
+          reason: 'DOA_N8N_WEBHOOK_SECRET no definido en produccion',
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
+      return jsonResponse(500, {
+        error:
+          'Configuracion invalida: DOA_N8N_WEBHOOK_SECRET es obligatorio en produccion. ' +
+          'Define el secreto compartido antes de despachar entregas.',
+      })
     } else {
       console.warn(
-        'enviar-entrega: DOA_N8N_WEBHOOK_SECRET no definido, llamada al webhook n8n sin firma. TODO: configurar secreto compartido.',
+        'enviar-entrega: DOA_N8N_WEBHOOK_SECRET no definido (modo dev), llamada sin firma. En produccion esta ruta devolvera 500.',
       )
     }
 
@@ -365,6 +393,7 @@ export async function POST(
         eventName: 'project.delivery.send_failed',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -372,7 +401,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           delivery_id: delivery.id,
           signature_id: signatureId,
           n8n_status: n8nStatus,
@@ -430,6 +458,7 @@ export async function POST(
         eventName: 'project.delivery.sent',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -437,7 +466,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'transition_state',
           delivery_id: delivery.id,
           intended_state: PROJECT_EXECUTION_STATES.ENTREGADO,
@@ -488,6 +516,7 @@ export async function POST(
       eventName: 'project.delivery.send_failed',
       eventCategory: 'project',
       outcome: 'failure',
+      severity: 'error',
       actorUserId: user.id,
       requestId: requestContext.requestId,
       route: requestContext.route,
@@ -495,7 +524,6 @@ export async function POST(
       entityType: 'proyecto',
       entityId: id,
       metadata: {
-        severity: 'error',
         error_message:
           error instanceof Error ? error.message : 'Unknown error',
       },

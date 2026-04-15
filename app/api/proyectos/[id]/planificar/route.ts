@@ -89,29 +89,29 @@ export async function POST(
     let deliverablesInput: DeliverableInput[] = []
 
     if (Array.isArray(body.deliverables) && body.deliverables.length > 0) {
-      deliverablesInput = (body.deliverables as unknown[])
-        .map((raw) => {
-          if (!raw || typeof raw !== 'object') return null
-          const r = raw as Record<string, unknown>
-          const titulo = typeof r.titulo === 'string' ? r.titulo.trim() : ''
-          if (!titulo) return null
-          return {
-            template_code:
-              typeof r.template_code === 'string' && r.template_code.trim()
-                ? r.template_code.trim()
-                : null,
-            titulo,
-            subpart_easa:
-              typeof r.subpart_easa === 'string' && r.subpart_easa.trim()
-                ? r.subpart_easa.trim()
-                : null,
-            descripcion:
-              typeof r.descripcion === 'string' && r.descripcion.trim()
-                ? r.descripcion.trim()
-                : null,
-          } satisfies DeliverableInput
-        })
-        .filter((d): d is DeliverableInput => d !== null)
+      const parsed: (DeliverableInput | null)[] = (body.deliverables as unknown[]).map((raw) => {
+        if (!raw || typeof raw !== 'object') return null
+        const r = raw as Record<string, unknown>
+        const titulo = typeof r.titulo === 'string' ? r.titulo.trim() : ''
+        if (!titulo) return null
+        const entry: DeliverableInput = {
+          template_code:
+            typeof r.template_code === 'string' && r.template_code.trim()
+              ? r.template_code.trim()
+              : null,
+          titulo,
+          subpart_easa:
+            typeof r.subpart_easa === 'string' && r.subpart_easa.trim()
+              ? r.subpart_easa.trim()
+              : null,
+          descripcion:
+            typeof r.descripcion === 'string' && r.descripcion.trim()
+              ? r.descripcion.trim()
+              : null,
+        }
+        return entry
+      })
+      deliverablesInput = parsed.filter((d): d is DeliverableInput => d !== null)
     } else {
       // Derivar desde la consulta: booleanos doc_g12_xx
       const consultaId = (proyecto as { consulta_id?: string | null }).consulta_id ?? null
@@ -137,7 +137,7 @@ export async function POST(
         })
       }
 
-      const consultaRow = consulta as Record<string, unknown>
+      const consultaRow = consulta as unknown as Record<string, unknown>
       const selectedCodes = ALL_DOC_COLUMNS
         .filter((col) => consultaRow[col] === true)
         .map((col) => columnToCode(col))
@@ -151,17 +151,41 @@ export async function POST(
       }
 
       // Resolver titulos desde doa_plantillas_compliance
+      // subpart_easa se agrego en migration 202604200010 — puede seguir siendo null
+      // si el mapeo no se ha rellenado para esa plantilla.
       const { data: plantillas, error: plantillasError } = await supabase
         .from('doa_plantillas_compliance')
-        .select('code, name, category, sort_order')
+        .select('code, name, category, sort_order, subpart_easa')
         .in('code', selectedCodes)
 
       if (plantillasError) return jsonResponse(500, { error: plantillasError.message })
 
-      const plantillasMap = new Map<string, { name: string; category: string | null; sort_order: number | null }>(
+      const plantillasMap = new Map<
+        string,
+        {
+          name: string
+          category: string | null
+          sort_order: number | null
+          subpart_easa: string | null
+        }
+      >(
         (plantillas ?? []).map((p) => {
-          const row = p as { code: string; name: string; category: string | null; sort_order: number | null }
-          return [row.code, { name: row.name, category: row.category, sort_order: row.sort_order }]
+          const row = p as {
+            code: string
+            name: string
+            category: string | null
+            sort_order: number | null
+            subpart_easa: string | null
+          }
+          return [
+            row.code,
+            {
+              name: row.name,
+              category: row.category,
+              sort_order: row.sort_order,
+              subpart_easa: row.subpart_easa,
+            },
+          ]
         }),
       )
 
@@ -170,7 +194,7 @@ export async function POST(
         return {
           template_code: code,
           titulo: meta?.name?.trim() || code,
-          subpart_easa: null, // TODO: mapear plantilla -> subparte EASA cuando se defina el catalogo.
+          subpart_easa: meta?.subpart_easa?.trim() || null,
           descripcion: meta?.category ? `Categoria: ${meta.category}` : null,
         }
       })
@@ -240,6 +264,7 @@ export async function POST(
         eventName: 'project.planificar.inconsistent',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -247,7 +272,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           deliverables_inserted: inserted?.length ?? 0,
           update_error: updateError.message,
         },

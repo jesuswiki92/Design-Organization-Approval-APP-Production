@@ -256,6 +256,7 @@ export async function POST(
         eventName: 'project.delivery.prepared',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -263,7 +264,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'storage_upload',
           storage_path: storagePath,
           error_message: msg,
@@ -325,6 +325,7 @@ export async function POST(
         eventName: 'project.delivery.prepared',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -332,7 +333,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'insert_delivery',
           storage_path: storagePath,
           error_message: insertErr?.message ?? 'insert_delivery_failed',
@@ -369,6 +369,7 @@ export async function POST(
         eventName: 'project.delivery.prepared',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -376,7 +377,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'transition_state',
           delivery_id: delivery.id,
           intended_state: PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA,

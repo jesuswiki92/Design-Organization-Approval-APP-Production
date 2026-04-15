@@ -13,6 +13,9 @@ function jsonResponse(status: number, error: string) {
 }
 
 // TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
+// doa_consultas_entrantes no tiene columna owner_user_id; hasta que exista una
+// tabla de roles, registramos un evento severity=warn cuando un non-admin muta
+// el estado (abajo) para dejar trazabilidad.
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> },
@@ -33,6 +36,24 @@ export async function PATCH(
 
     if (!estado || (!isIncomingQueryStateCode(estado) && !isQuotationBoardStateCode(estado))) {
       return jsonResponse(400, 'El estado solicitado no es válido.')
+    }
+
+    const isAdmin =
+      (user.user_metadata as { role?: unknown } | null)?.role === 'admin'
+    if (!isAdmin) {
+      await logServerEvent({
+        eventName: 'consulta.state_change.non_admin',
+        eventCategory: 'security',
+        outcome: 'info',
+        severity: 'warn',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        metadata: { reason: 'rls_pending', intended_state: estado },
+      })
     }
 
     const current = await supabase

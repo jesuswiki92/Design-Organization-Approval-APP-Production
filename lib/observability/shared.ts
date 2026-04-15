@@ -3,12 +3,19 @@ type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
 
 export type AppEventSource = 'server' | 'client'
 export type AppEventOutcome = 'attempt' | 'success' | 'failure' | 'info'
+export type AppEventSeverity = 'info' | 'warn' | 'error' | 'critical'
 
 export type AppEventInput = {
   eventName: string
   eventCategory: string
   source?: AppEventSource
   outcome?: AppEventOutcome
+  /**
+   * First-class severity field (Block 5 / Item A).
+   * Prefer this over `metadata.severity`. If both are provided, this wins.
+   * Legacy value 'warning' from metadata is mapped to 'warn' for back-compat.
+   */
+  severity?: AppEventSeverity
   actorUserId?: string | null
   requestId?: string | null
   sessionId?: string | null
@@ -133,12 +140,40 @@ export function buildRequestContext(request: Pick<Request, 'headers' | 'url'> | 
   }
 }
 
+const VALID_SEVERITIES: readonly AppEventSeverity[] = [
+  'info',
+  'warn',
+  'error',
+  'critical',
+]
+
+function normalizeLegacySeverity(value: unknown): AppEventSeverity | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim().toLowerCase()
+  if (trimmed === 'warning') return 'warn'
+  return (VALID_SEVERITIES as readonly string[]).includes(trimmed)
+    ? (trimmed as AppEventSeverity)
+    : null
+}
+
+/**
+ * Resolve the effective severity for an event.
+ * Priority: first-class `severity` field > `metadata.severity` (back-compat) > 'info'.
+ * Exposed as a helper so callers (and tests) can follow the same rule.
+ */
+export function resolveSeverity(input: AppEventInput): AppEventSeverity {
+  if (input.severity) return input.severity
+  const legacy = normalizeLegacySeverity(input.metadata?.severity)
+  return legacy ?? 'info'
+}
+
 export function toEventRow(input: AppEventInput) {
   return {
     event_name: input.eventName.trim(),
     event_category: input.eventCategory.trim(),
     event_source: input.source ?? 'server',
     outcome: input.outcome ?? 'info',
+    severity: resolveSeverity(input),
     actor_user_id: normalizeText(input.actorUserId),
     request_id: normalizeText(input.requestId),
     session_id: normalizeText(input.sessionId),

@@ -14,9 +14,14 @@
 import { NextResponse } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { logServerEvent } from '@/lib/observability/server'
+import { buildRequestContext } from '@/lib/observability/shared'
 import { isProjectWorkflowState } from '@/lib/workflow-states'
 
 // TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
+// doa_proyectos.owner es texto libre (no FK a auth.users), asi que no se puede
+// enforcear ownership server-side. Hasta que exista una tabla de roles +
+// owner_user_id, emitimos un severity=warn cuando un non-admin muta el estado.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -24,7 +29,7 @@ export async function PATCH(
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+    const { user, supabase } = auth
 
     const { id } = await params
     const body = (await request.json()) as { estado?: string }
@@ -44,6 +49,25 @@ export async function PATCH(
         { error: `Estado "${nextState}" no es un codigo de estado de proyecto valido.` },
         { status: 422 },
       )
+    }
+
+    const isAdmin =
+      (user.user_metadata as { role?: unknown } | null)?.role === 'admin'
+    if (!isAdmin) {
+      const ctx = buildRequestContext(request)
+      await logServerEvent({
+        eventName: 'proyecto.state_change.non_admin',
+        eventCategory: 'security',
+        outcome: 'info',
+        severity: 'warn',
+        actorUserId: user.id,
+        requestId: ctx.requestId,
+        route: ctx.route,
+        method: request.method,
+        entityType: 'proyecto',
+        entityId: id,
+        metadata: { reason: 'rls_pending', intended_state: nextState },
+      })
     }
 
     // Actualizar el estado en la base de datos sin restriccion de transicion

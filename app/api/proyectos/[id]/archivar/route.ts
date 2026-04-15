@@ -101,6 +101,7 @@ export async function POST(
         eventName: 'project.archivar.reindex_failed',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'warn',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -108,7 +109,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'warn',
           reason: reindexReason,
         },
         userAgent: requestContext.userAgent,
@@ -137,6 +137,7 @@ export async function POST(
         eventName: 'project.archivar.mv_refresh_failed',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'warn',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -144,7 +145,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'warn',
           error_message: mvError,
           // TODO(sprint-4+): create rpc refresh_doa_project_metrics_mv() SECURITY DEFINER
           //   that runs REFRESH MATERIALIZED VIEW CONCURRENTLY doa_project_metrics_mv;

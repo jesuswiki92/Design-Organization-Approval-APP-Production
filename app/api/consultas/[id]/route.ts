@@ -1,4 +1,6 @@
 import { requireUserApi } from '@/lib/auth/require-user'
+import { logServerEvent } from '@/lib/observability/server'
+import { buildRequestContext } from '@/lib/observability/shared'
 import { isMissingSchemaError } from '@/lib/supabase/errors'
 
 export const runtime = 'nodejs'
@@ -8,19 +10,43 @@ function jsonResponse(status: number, error: string) {
 }
 
 // TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
+// doa_consultas_entrantes no tiene columna de ownership (no owner_user_id). Hasta
+// que se introduzca una tabla de roles + columna owner, cualquier usuario
+// autenticado puede borrar cualquier consulta. Se emite un evento severity=warn
+// cuando el actor no es admin para que quede trazable en la auditoria.
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
     const auth = await requireUserApi()
     if (auth instanceof Response) return auth
-    const { supabase } = auth
+    const { user, supabase } = auth
 
     const { id } = await context.params
 
     if (!id) {
       return jsonResponse(400, 'Consulta no válida.')
+    }
+
+    // Registrar acciones destructivas hechas por no-admin hasta que haya RLS real.
+    const isAdmin =
+      (user.user_metadata as { role?: unknown } | null)?.role === 'admin'
+    if (!isAdmin) {
+      const ctx = buildRequestContext(request)
+      await logServerEvent({
+        eventName: 'consulta.delete.non_admin',
+        eventCategory: 'security',
+        outcome: 'info',
+        severity: 'warn',
+        actorUserId: user.id,
+        requestId: ctx.requestId,
+        route: ctx.route,
+        method: request.method,
+        entityType: 'consulta',
+        entityId: id,
+        metadata: { reason: 'rls_pending' },
+      })
     }
 
     const deletion = await supabase

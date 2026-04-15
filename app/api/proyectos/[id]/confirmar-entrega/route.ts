@@ -210,6 +210,7 @@ async function handle(
         eventName: 'project.delivery.confirmed',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: null,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -217,7 +218,6 @@ async function handle(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'transition_state',
           delivery_id: delivery.id,
           intended_state: PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE,

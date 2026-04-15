@@ -216,6 +216,7 @@ export async function POST(
         eventName: 'project.validar.signature_inconsistent',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -223,7 +224,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'compute_signature',
           validation_id: validation.id,
           error_message: error instanceof Error ? error.message : String(error),
@@ -265,6 +265,7 @@ export async function POST(
         eventName: 'project.validar.signature_inconsistent',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -272,7 +273,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           stage: 'insert_signature',
           validation_id: validation.id,
           error_message: sigErr?.message ?? 'insert_signature_failed',
@@ -313,6 +313,7 @@ export async function POST(
         eventName: 'project.validar.state_inconsistent',
         eventCategory: 'project',
         outcome: 'failure',
+        severity: 'error',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -320,7 +321,6 @@ export async function POST(
         entityType: 'proyecto',
         entityId: id,
         metadata: {
-          severity: 'error',
           validation_id: validation.id,
           signature_id: (sigRow as { id?: string }).id ?? null,
           update_error: updateError.message,

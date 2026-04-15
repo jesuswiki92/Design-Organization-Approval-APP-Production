@@ -187,6 +187,7 @@ export async function POST(
           eventName: 'project.open.inconsistent',
           eventCategory: 'quotation',
           outcome: 'failure',
+          severity: 'error',
           actorUserId: user.id,
           requestId: requestContext.requestId,
           route: requestContext.route,
@@ -194,7 +195,6 @@ export async function POST(
           entityType: 'proyecto',
           entityId: inserted.id,
           metadata: {
-            severity: 'error',
             numero_proyecto: numeroProyecto,
             folder_path: folderPath,
             mkdir_error: mkdirMessage,
@@ -228,6 +228,7 @@ export async function POST(
         eventName: 'quotation.abrir_proyecto',
         eventCategory: 'quotation',
         outcome: 'failure',
+        severity: 'warn',
         actorUserId: user.id,
         requestId: requestContext.requestId,
         route: requestContext.route,
@@ -235,7 +236,6 @@ export async function POST(
         entityType: 'consulta',
         entityId: id,
         metadata: {
-          severity: 'warning',
           stage: 'close_consulta',
           proyecto_id: inserted.id,
           numero_proyecto: numeroProyecto,
