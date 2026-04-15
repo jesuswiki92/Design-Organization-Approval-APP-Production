@@ -29,7 +29,16 @@ import {
 } from '@/lib/compliance-templates'
 
 type ClienteOption = { id: string; nombre: string }
-type ModeloOption = { id: string; fabricante: string; familia: string; modelo: string }
+type ModeloOption = {
+  id: string
+  fabricante: string
+  familia: string
+  modelo: string
+  tcds_code: string
+  tcds_code_short: string
+  tcds_issue: string
+  tcds_date: string
+}
 
 type Props = {
   open: boolean
@@ -335,7 +344,14 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
               <label className="text-xs font-medium text-slate-600">Modelo</label>
               <select
                 value={modelo}
-                onChange={(e) => setModelo(e.target.value)}
+                onChange={(e) => {
+                  const nextModelo = e.target.value
+                  setModelo(nextModelo)
+                  // Auto-rellenar TCDS desde la fila del catalogo doa_aeronaves.
+                  const match = modelos.find((m) => m.modelo === nextModelo)
+                  setTcdsCode(match?.tcds_code ?? '')
+                  setTcdsCodeShort(match?.tcds_code_short ?? '')
+                }}
                 disabled={!fabricante || loadingModelos}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
               >
@@ -369,20 +385,36 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
           {/* TCDS */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">TCDS code</label>
+              <label className="text-xs font-medium text-slate-600">
+                TCDS code
+                {modelo ? (
+                  <span className="ml-2 text-[10px] font-normal uppercase tracking-wider text-emerald-600">
+                    auto
+                  </span>
+                ) : null}
+              </label>
               <input
                 type="text"
                 value={tcdsCode}
                 onChange={(e) => setTcdsCode(e.target.value)}
+                placeholder="Se rellena al elegir modelo"
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">TCDS short</label>
+              <label className="text-xs font-medium text-slate-600">
+                TCDS short
+                {modelo ? (
+                  <span className="ml-2 text-[10px] font-normal uppercase tracking-wider text-emerald-600">
+                    auto
+                  </span>
+                ) : null}
+              </label>
               <input
                 type="text"
                 value={tcdsCodeShort}
                 onChange={(e) => setTcdsCodeShort(e.target.value)}
+                placeholder="Se rellena al elegir modelo"
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               />
             </div>

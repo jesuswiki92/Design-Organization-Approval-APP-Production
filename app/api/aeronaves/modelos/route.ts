@@ -12,8 +12,10 @@ export const runtime = 'nodejs'
  * en types/database.ts y no existe). No hay columna `familia` en BD; la
  * devolvemos como cadena vacia para conservar el contrato del modal.
  *
- * Respuesta: `{ modelos: { id, fabricante, familia, modelo }[] }` sin
- * duplicados por (modelo).
+ * Respuesta: `{ modelos: { id, fabricante, familia, modelo, tcds_code,
+ * tcds_code_short, tcds_issue, tcds_date }[] }` sin duplicados por
+ * (modelo). El front usa los campos TCDS para auto-rellenar cuando el
+ * usuario selecciona un modelo.
  */
 export async function GET(request: NextRequest) {
   const auth = await requireUserApi()
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
   try {
     const { data, error } = await supabase
       .from('doa_aeronaves')
-      .select('id, fabricante, modelo')
+      .select('id, fabricante, modelo, tcds_code, tcds_code_short, tcds_issue, tcds_date')
       .eq('fabricante', fabricante)
 
     if (error) {
@@ -38,10 +40,30 @@ export async function GET(request: NextRequest) {
     }
 
     // Deduplicar por `modelo` — `doa_aeronaves` tiene una fila por TCDS/MSN,
-    // asi que el mismo modelo aparece varias veces.
-    const seen = new Map<string, { id: string; fabricante: string; familia: string; modelo: string }>()
+    // asi que el mismo modelo aparece varias veces. Aqui la relacion
+    // modelo -> TCDS es 1:1 (verificado en BD), asi que la primera ocurrencia
+    // sirve.
+    type ModeloRow = {
+      id: string
+      fabricante: string
+      familia: string
+      modelo: string
+      tcds_code: string
+      tcds_code_short: string
+      tcds_issue: string
+      tcds_date: string
+    }
+    const seen = new Map<string, ModeloRow>()
     for (const r of data ?? []) {
-      const row = r as { id?: unknown; fabricante?: unknown; modelo?: unknown }
+      const row = r as {
+        id?: unknown
+        fabricante?: unknown
+        modelo?: unknown
+        tcds_code?: unknown
+        tcds_code_short?: unknown
+        tcds_issue?: unknown
+        tcds_date?: unknown
+      }
       if (typeof row.id !== 'string' || typeof row.fabricante !== 'string') continue
       const modelo = typeof row.modelo === 'string' ? row.modelo.trim() : ''
       if (!modelo || seen.has(modelo)) continue
@@ -50,6 +72,10 @@ export async function GET(request: NextRequest) {
         fabricante: row.fabricante,
         familia: '',
         modelo,
+        tcds_code: typeof row.tcds_code === 'string' ? row.tcds_code : '',
+        tcds_code_short: typeof row.tcds_code_short === 'string' ? row.tcds_code_short : '',
+        tcds_issue: typeof row.tcds_issue === 'string' ? row.tcds_issue : '',
+        tcds_date: typeof row.tcds_date === 'string' ? row.tcds_date : '',
       })
     }
     const modelos = Array.from(seen.values()).sort((a, b) => a.modelo.localeCompare(b.modelo))
