@@ -7,12 +7,13 @@ export const runtime = 'nodejs'
 /**
  * GET /api/aeronaves/modelos?fabricante={name}
  *
- * Devuelve los modelos activos de `doa_aeronaves_modelos` para el fabricante
- * dado. Usamos `doa_aeronaves_modelos` porque tiene columnas `familia`,
- * `modelo` y `activo` (mientras que `doa_aeronaves` modela aeronaves reales
- * con TCDS/MSN).
+ * Devuelve los modelos de `doa_aeronaves` para el fabricante dado.
+ * La tabla real es `doa_aeronaves` (no `doa_aeronaves_modelos` que aparecia
+ * en types/database.ts y no existe). No hay columna `familia` en BD; la
+ * devolvemos como cadena vacia para conservar el contrato del modal.
  *
- * Respuesta: `{ modelos: { id, fabricante, familia, modelo }[] }`.
+ * Respuesta: `{ modelos: { id, fabricante, familia, modelo }[] }` sin
+ * duplicados por (modelo).
  */
 export async function GET(request: NextRequest) {
   const auth = await requireUserApi()
@@ -27,9 +28,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const { data, error } = await supabase
-      .from('doa_aeronaves_modelos')
-      .select('id, fabricante, familia, modelo')
-      .eq('activo', true)
+      .from('doa_aeronaves')
+      .select('id, fabricante, modelo')
       .eq('fabricante', fabricante)
 
     if (error) {
@@ -37,24 +37,22 @@ export async function GET(request: NextRequest) {
       return Response.json({ modelos: [] })
     }
 
-    const modelos = (data ?? [])
-      .map((r) => {
-        const row = r as {
-          id?: unknown
-          fabricante?: unknown
-          familia?: unknown
-          modelo?: unknown
-        }
-        if (typeof row.id !== 'string' || typeof row.fabricante !== 'string') return null
-        return {
-          id: row.id,
-          fabricante: row.fabricante,
-          familia: typeof row.familia === 'string' ? row.familia : '',
-          modelo: typeof row.modelo === 'string' ? row.modelo : '',
-        }
+    // Deduplicar por `modelo` — `doa_aeronaves` tiene una fila por TCDS/MSN,
+    // asi que el mismo modelo aparece varias veces.
+    const seen = new Map<string, { id: string; fabricante: string; familia: string; modelo: string }>()
+    for (const r of data ?? []) {
+      const row = r as { id?: unknown; fabricante?: unknown; modelo?: unknown }
+      if (typeof row.id !== 'string' || typeof row.fabricante !== 'string') continue
+      const modelo = typeof row.modelo === 'string' ? row.modelo.trim() : ''
+      if (!modelo || seen.has(modelo)) continue
+      seen.set(modelo, {
+        id: row.id,
+        fabricante: row.fabricante,
+        familia: '',
+        modelo,
       })
-      .filter((r): r is { id: string; fabricante: string; familia: string; modelo: string } => r !== null)
-      .sort((a, b) => a.modelo.localeCompare(b.modelo))
+    }
+    const modelos = Array.from(seen.values()).sort((a, b) => a.modelo.localeCompare(b.modelo))
 
     return Response.json({ modelos })
   } catch (err) {

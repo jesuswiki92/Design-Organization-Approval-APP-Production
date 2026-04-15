@@ -5,9 +5,10 @@ export const runtime = 'nodejs'
 /**
  * GET /api/aeronaves/fabricantes
  *
- * Devuelve la lista distinta de fabricantes activos en `doa_aeronaves_modelos`
- * (tabla que SI tiene columna `activo`; `doa_aeronaves` no la tiene).
- * Se usa para poblar el primer select del modal "Crear Proyecto Nuevo".
+ * Devuelve la lista distinta de fabricantes en `doa_aeronaves` (la tabla
+ * catalogo real; `doa_aeronaves_modelos` que declaraba types/database.ts no
+ * existe en BD). No hay columna `activo` — devolvemos todos los fabricantes
+ * con `fabricante` no-vacio.
  *
  * Respuesta: `{ fabricantes: string[] }` (ordenada alfabeticamente).
  */
@@ -18,9 +19,8 @@ export async function GET() {
 
   try {
     const { data, error } = await supabase
-      .from('doa_aeronaves_modelos')
+      .from('doa_aeronaves')
       .select('fabricante')
-      .eq('activo', true)
 
     if (error) {
       console.warn('[api/aeronaves/fabricantes] error:', error.message)
