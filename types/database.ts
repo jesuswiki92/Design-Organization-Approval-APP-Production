@@ -393,6 +393,79 @@ export interface ProjectDeliverable {
   updated_at: string
 }
 
+// ─── doa_project_validations (Sprint 2) ─────────────────────────────────────
+
+/** Capacidad en la que un usuario toma una decision de validacion. */
+export type ValidationRole = 'doh' | 'dos' | 'reviewer'
+
+/** Decision tomada sobre un proyecto que esta en validacion. */
+export type ValidationDecision = 'aprobado' | 'devuelto' | 'pendiente'
+
+/** Severidad de una observacion puntual sobre un deliverable. */
+export type ObservationSeverity = 'info' | 'warn' | 'blocker'
+
+/**
+ * Observacion estructurada dentro del array `observaciones` de
+ * `doa_project_validations`. `deliverable_id` es opcional; si se omite, la
+ * observacion aplica al proyecto completo.
+ */
+export interface ValidationObservation {
+  deliverable_id?: string | null
+  texto: string
+  severidad?: ObservationSeverity
+}
+
+/**
+ * Snapshot mínimo de cada deliverable en el momento de la decision, guardado
+ * dentro de `doa_project_validations.deliverables_snapshot`.
+ */
+export interface DeliverableSnapshot {
+  id: string
+  titulo: string
+  estado: DeliverableEstado
+  version_actual: number
+}
+
+/** Fila de la tabla `doa_project_validations`. */
+export interface ProjectValidation {
+  id: string
+  proyecto_id: string
+  validator_user_id: string
+  role: ValidationRole
+  decision: ValidationDecision
+  comentarios: string | null
+  observaciones: ValidationObservation[]
+  deliverables_snapshot: DeliverableSnapshot[] | null
+  created_at: string
+}
+
+// ─── doa_project_signatures (Sprint 2) ──────────────────────────────────────
+
+/** Rol en la firma (mas amplio que ValidationRole). */
+export type SignerRole = 'doh' | 'dos' | 'staff' | 'manager' | 'cvc'
+
+/** Evento al que corresponde la firma. */
+export type SignatureType =
+  | 'validation_approval'
+  | 'validation_return'
+  | 'delivery_release'
+  | 'closure'
+
+/** Fila de la tabla `doa_project_signatures`. */
+export interface ProjectSignature {
+  id: string
+  proyecto_id: string
+  validation_id: string | null
+  signer_user_id: string
+  signer_role: SignerRole
+  signature_type: SignatureType
+  payload_hash: string
+  hmac_signature: string
+  hmac_key_id: string
+  signed_payload: Record<string, unknown>
+  created_at: string
+}
+
 export interface ProyectoDocumento {
   // Identificador unico del documento
   id: string

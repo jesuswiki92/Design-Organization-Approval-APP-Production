@@ -937,3 +937,37 @@ export function getProjectExecutionPhase(code: string): ProjectExecutionPhase | 
   }
   return null
 }
+
+// ==========================================
+// VALIDATION ROLES & DECISIONS (Sprint 2)
+// Etiquetas legibles para la UI de validacion. Los codigos canonicos viven en
+// types/database.ts como `ValidationRole` / `ValidationDecision`.
+// ==========================================
+
+export const VALIDATION_ROLE_LABELS: Record<'doh' | 'dos' | 'reviewer', string> = {
+  doh: 'DOH (Design Organisation Head)',
+  dos: 'DOS (Design Office Signatory)',
+  reviewer: 'Reviewer',
+}
+
+export const VALIDATION_DECISION_LABELS: Record<'aprobado' | 'devuelto' | 'pendiente', string> = {
+  aprobado: 'Aprobado',
+  devuelto: 'Devuelto a ejecucion',
+  pendiente: 'Pendiente',
+}
+
+export const OBSERVATION_SEVERITY_LABELS: Record<'info' | 'warn' | 'blocker', string> = {
+  info: 'Informativa',
+  warn: 'Advertencia',
+  blocker: 'Bloqueante',
+}
+
+/**
+ * Estados de deliverable considerados "listos" para validacion. Si un
+ * deliverable esta en cualquier otro estado, el proyecto no puede transicionar
+ * a `en_validacion`.
+ */
+export const DELIVERABLE_VALIDATION_READY_STATES: readonly string[] = [
+  'completado',
+  'no_aplica',
+]

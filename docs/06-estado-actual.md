@@ -1,5 +1,80 @@
 # Estado actual de la aplicacion
 
+## Sprint 2 — Close-the-loop: Validacion DOH/DOS (2026-04-17)
+
+Sprint 2 cierra el bucle de validacion: un proyecto con todos los deliverables
+listos ya puede ser enviado a validacion, recibir decision firmada por DOH/DOS
+con HMAC-SHA256 y volver a ejecucion con observaciones estructuradas.
+
+### Que ha aterrizado
+
+- Nueva tabla `doa_project_validations` — registro inmutable de cada decision
+  de validacion (migracion `202604170000_doa_project_validations.sql`).
+- Nueva tabla `doa_project_signatures` — firmas de no repudio Part 21J con
+  HMAC-SHA256 sobre el canonical JSON del payload firmado
+  (migracion `202604170010_doa_project_signatures.sql`).
+- Helper de firma en `lib/signatures/hmac.ts`: `canonicalJSON`,
+  `computeSignature`, `verifySignature`. Lee `DOA_SIGNATURE_HMAC_SECRET` y
+  soporta rotacion por `hmac_key_id` (actualmente `v1`).
+- Endpoints nuevos:
+  - `POST /api/proyectos/[id]/enviar-a-validacion` — transiciona desde
+    `en_ejecucion | revision_interna | listo_para_validacion` a `en_validacion`
+    tras comprobar que todos los deliverables estan en `completado` o
+    `no_aplica`.
+  - `POST /api/proyectos/[id]/validar` — registra la decision (`aprobado` o
+    `devuelto`), firma HMAC y transiciona a `validado` o
+    `devuelto_a_ejecucion`. Maneja inconsistencias con
+    `project.validar.signature_inconsistent` y `project.validar.state_inconsistent`.
+  - `POST /api/proyectos/[id]/retomar` — transiciona de
+    `devuelto_a_ejecucion` a `en_ejecucion`.
+  - `GET /api/proyectos/[id]/validations` — lista validaciones enriquecidas con
+    el email del validador.
+- Pagina nueva `/engineering/validations` — cola de proyectos en `en_validacion`
+  con cards, progreso de deliverables y tiempo en cola.
+- `ValidationTab.tsx` en el detalle de proyecto: timeline de decisiones,
+  formulario DOH/DOS con observaciones por deliverable y CTAs segun estado.
+- Deep link `?tab=validacion` en el detalle de proyecto.
+- En `DeliverablesTab` ahora aparece un CTA "Enviar a validacion" cuando todos
+  los deliverables estan listos y el proyecto esta en
+  `en_ejecucion | revision_interna | listo_para_validacion`.
+- Constantes de UI para validacion en `lib/workflow-states.ts`:
+  `VALIDATION_ROLE_LABELS`, `VALIDATION_DECISION_LABELS`,
+  `OBSERVATION_SEVERITY_LABELS`, `DELIVERABLE_VALIDATION_READY_STATES`.
+- Tipos `ProjectValidation`, `ProjectSignature`, `ValidationRole`,
+  `ValidationDecision`, `ObservationSeverity`, `ValidationObservation`,
+  `DeliverableSnapshot`, `SignerRole`, `SignatureType` en
+  `types/database.ts`.
+
+### Variables de entorno requeridas
+
+- `DOA_SIGNATURE_HMAC_SECRET` — obligatoria en cualquier entorno que firme
+  decisiones (dev/stage/prod). Si falta, `POST /validar` devuelve 500 con
+  mensaje claro. Anadida a `.env.example`.
+
+### Eventos de observabilidad emitidos
+
+- `project.validation.submitted` (success/failure)
+- `project.validation.decided` (success/failure)
+- `project.validation.resumed` (success)
+- `project.validar.signature_inconsistent` (failure, severity=error)
+- `project.validar.state_inconsistent` (failure, severity=error)
+
+### TODOs / follow-ups
+
+- **TODO(RLS)**: hoy cualquier usuario autenticado puede registrar una
+  decision de validacion. Falta gating por rol (solo DOH/DOS para
+  `validation_approval`) — implementar cuando exista tabla de roles.
+- **TODO(nav)**: anadir entrada "Validaciones" en `components/layout/Sidebar.tsx`.
+  El sidebar actual solo lista rutas top-level (`/proyectos`, `/quotations`,
+  etc.), no subrutas de `/engineering/*`, asi que la entrada requiere decidir
+  la taxonomia de navegacion primero.
+- **TODO(HMAC rotation)**: politica formal de rotacion del secreto.
+  Actualmente solo soporta `v1`; rotar requiere anadir `v2` a
+  `getSecretForKeyId` y un proceso de re-firma opcional para registros
+  historicos.
+- **TODO(sprint-3/4)**: reutilizar `doa_project_signatures` para
+  `delivery_release` y `closure` cuando se construyan esas fases.
+
 ## Sprint 1 — Close-the-loop (2026-04-16)
 
 Sprint 1 landed: un proyecto recien abierto ya puede vivir dentro de la app. Entregables principales:

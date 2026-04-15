@@ -19,6 +19,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   ArrowLeft,
   Calendar,
@@ -39,6 +40,7 @@ import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
 import { ProjectTimerButton } from '@/app/(dashboard)/proyectos/ProjectTimerButton'
 import { PrecedentesSection } from './PrecedentesSection'
 import { DeliverablesTab } from './DeliverablesTab'
+import { ValidationTab } from './ValidationTab'
 import { ProjectStateStepper } from '@/components/project/ProjectStateStepper'
 import {
   isProjectExecutionStateCode,
@@ -404,12 +406,20 @@ export function ProjectDetailClient({
   const estadoColor = ESTADO_COLORS[project.estado] ?? 'bg-slate-100 text-slate-600 border-slate-200'
   const estadoLabel = ESTADO_LABELS[project.estado] ?? project.estado
 
-  // Sprint 1: si el proyecto tiene estado_v2 valido, montar el stepper de la
-  // maquina de ejecucion. Caso contrario, se oculta silenciosamente.
+  // Sprint 1/2: el estado_v2 se mantiene en local para reflejar transiciones
+  // disparadas desde ValidationTab sin recargar la pagina.
+  const [estadoV2, setEstadoV2] = useState<string | null>(project.estado_v2 ?? null)
   const executionState: ProjectExecutionState | null =
-    project.estado_v2 && isProjectExecutionStateCode(project.estado_v2)
-      ? project.estado_v2
-      : null
+    estadoV2 && isProjectExecutionStateCode(estadoV2) ? estadoV2 : null
+
+  // Deep link ?tab=validacion (tambien acepta horas, deliverables).
+  const searchParams = useSearchParams()
+  const initialTab = (() => {
+    const t = searchParams.get('tab')
+    if (t === 'validacion' || t === 'deliverables' || t === 'horas') return t
+    return 'horas'
+  })()
+  const [activeTab, setActiveTab] = useState(initialTab)
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
@@ -465,17 +475,27 @@ export function ProjectDetailClient({
       {/* Stepper de la maquina de ejecucion v2 (solo si el proyecto ya migro a estado_v2) */}
       {executionState && <ProjectStateStepper currentState={executionState} />}
 
-      {/* Tabs: Registro de Horas (existente) + Deliverables (Sprint 1) */}
-      <Tabs defaultValue="horas" className="w-full">
+      {/* Tabs: Horas + Deliverables (Sprint 1) + Validacion (Sprint 2) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList variant="line" className="mb-3 border-b border-slate-200">
           <TabsTrigger value="horas">Horas</TabsTrigger>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
+          <TabsTrigger value="validacion">Validacion</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deliverables">
           <DeliverablesTab
             proyectoId={project.id}
-            currentState={project.estado_v2 ?? null}
+            currentState={estadoV2}
+            onStateChange={setEstadoV2}
+          />
+        </TabsContent>
+
+        <TabsContent value="validacion">
+          <ValidationTab
+            proyectoId={project.id}
+            currentState={estadoV2}
+            onStateChange={setEstadoV2}
           />
         </TabsContent>
 
