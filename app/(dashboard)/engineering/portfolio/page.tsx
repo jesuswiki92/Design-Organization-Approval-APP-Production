@@ -1,44 +1,13 @@
 /**
- * Portfolio de proyectos (engineering). Server component.
+ * Portfolio de proyectos (engineering).
  *
- * Sprint 1: lectura real de `doa_proyectos` via el cliente Supabase SSR.
- * Los estados se muestran en el cliente usando `getProjectExecutionStateMeta`
- * (maquina v2) cuando `estado_v2` esta presente, y como fallback legacy
- * cuando no.
+ * La vista Lista quedo deprecada (filtraba vacio por desajuste entre `estado`
+ * legacy y `estado_v2`). La unica vista soportada es el Tablero, que agrupa
+ * proyectos por los 13 estados v2 en 4 fases. Esta ruta redirige al tablero
+ * para preservar enlaces existentes.
  */
-import { TopBar } from '@/components/layout/TopBar'
-import { createClient } from '@/lib/supabase/server'
-import type { Proyecto } from '@/types/database'
+import { redirect } from 'next/navigation'
 
-import { PortfolioClient } from './PortfolioClient'
-
-export const dynamic = 'force-dynamic'
-
-export default async function EngineeringPortfolioPage() {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('doa_proyectos')
-    .select(
-      'id, numero_proyecto, titulo, descripcion, aeronave, modelo, cliente_nombre, ' +
-        'estado, estado_v2, fase_actual, estado_updated_at, ruta_proyecto, consulta_id, ' +
-        'owner, checker, approval, cve, fecha_inicio, fecha_entrega_estimada, fecha_cierre, ' +
-        'prioridad, anio, notas, tcds_code, tcds_code_short, msn, client_id, created_at, updated_at',
-    )
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Portfolio: error leyendo doa_proyectos:', error)
-  }
-
-  // Supabase helper returns a `GenericStringError[]` shape when RLS/types can't
-  // be inferred on this query; cast through `unknown` to our domain type.
-  const projects = (data ?? []) as unknown as Proyecto[]
-
-  return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
-      <TopBar title="Proyectos" subtitle="Portfolio de proyectos" />
-      <PortfolioClient projects={projects} />
-    </div>
-  )
+export default function EngineeringPortfolioPage() {
+  redirect('/engineering/portfolio/tablero')
 }

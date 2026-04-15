@@ -37,9 +37,8 @@
  * ============================================================================
  */
 
-import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { LayoutGrid, List, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 import { PhaseColumnGroup } from '@/components/project/PhaseColumn'
 import { StateColumn } from '@/components/project/StateColumn'
@@ -51,7 +50,6 @@ import {
   type ProjectExecutionPhase,
   type ProjectExecutionState,
 } from '@/lib/workflow-states'
-import { cn } from '@/lib/utils'
 
 /** Agrupacion canonica de estados por fase (misma que en workflow-states.ts) */
 const PHASE_TO_STATES: Record<ProjectExecutionPhase, ProjectExecutionState[]> = {
@@ -145,30 +143,8 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 p-5 text-slate-900">
-      {/* Cabecera + toggle Lista/Tablero */}
+      {/* Cabecera */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center rounded-xl border border-slate-200 bg-white p-0.5 shadow-sm">
-          <Link
-            href="/engineering/portfolio"
-            className={cn(
-              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all',
-              'text-slate-500 hover:text-slate-950',
-            )}
-          >
-            <List size={14} />
-            Lista
-          </Link>
-          <span
-            className={cn(
-              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium',
-              'bg-sky-600 text-white shadow-sm',
-            )}
-          >
-            <LayoutGrid size={14} />
-            Tablero
-          </span>
-        </div>
-
         <div className="relative max-w-xs min-w-[200px] flex-1">
           <Search
             size={14}
