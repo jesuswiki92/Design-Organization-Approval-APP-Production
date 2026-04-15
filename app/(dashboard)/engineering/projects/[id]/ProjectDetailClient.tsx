@@ -38,6 +38,13 @@ import { createClient } from '@/lib/supabase/client'
 import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
 import { ProjectTimerButton } from '@/app/(dashboard)/proyectos/ProjectTimerButton'
 import { PrecedentesSection } from './PrecedentesSection'
+import { DeliverablesTab } from './DeliverablesTab'
+import { ProjectStateStepper } from '@/components/project/ProjectStateStepper'
+import {
+  isProjectExecutionStateCode,
+  type ProjectExecutionState,
+} from '@/lib/workflow-states'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // --- UTILIDADES ---
 
@@ -397,6 +404,13 @@ export function ProjectDetailClient({
   const estadoColor = ESTADO_COLORS[project.estado] ?? 'bg-slate-100 text-slate-600 border-slate-200'
   const estadoLabel = ESTADO_LABELS[project.estado] ?? project.estado
 
+  // Sprint 1: si el proyecto tiene estado_v2 valido, montar el stepper de la
+  // maquina de ejecucion. Caso contrario, se oculta silenciosamente.
+  const executionState: ProjectExecutionState | null =
+    project.estado_v2 && isProjectExecutionStateCode(project.estado_v2)
+      ? project.estado_v2
+      : null
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
       {/* Boton volver */}
@@ -448,6 +462,24 @@ export function ProjectDetailClient({
         </div>
       </section>
 
+      {/* Stepper de la maquina de ejecucion v2 (solo si el proyecto ya migro a estado_v2) */}
+      {executionState && <ProjectStateStepper currentState={executionState} />}
+
+      {/* Tabs: Registro de Horas (existente) + Deliverables (Sprint 1) */}
+      <Tabs defaultValue="horas" className="w-full">
+        <TabsList variant="line" className="mb-3 border-b border-slate-200">
+          <TabsTrigger value="horas">Horas</TabsTrigger>
+          <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="deliverables">
+          <DeliverablesTab
+            proyectoId={project.id}
+            currentState={project.estado_v2 ?? null}
+          />
+        </TabsContent>
+
+        <TabsContent value="horas">
       {/* Seccion Registro de Horas */}
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         {/* Header de la seccion */}
@@ -639,6 +671,8 @@ export function ProjectDetailClient({
 
       {/* Seccion Proyectos similares (precedentes) */}
       <PrecedentesSection projectId={project.id} projectNumber={project.numero_proyecto} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

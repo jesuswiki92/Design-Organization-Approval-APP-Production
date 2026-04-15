@@ -642,3 +642,298 @@ export function getProjectOperationalState(status: string): EstadoProyecto | nul
 export function isProjectStatePersisted(value: string): value is EstadoProyectoPersistido {
   return isProjectWorkflowState(value) || isProjectLegacyState(value)
 }
+
+// ==========================================
+// PROJECT EXECUTION STATES (Sprint 1 — nueva maquina de estados v2)
+// Maquina de 13 estados que rige el ciclo de vida operativo de un proyecto
+// desde que se abre tras una oferta aceptada hasta que se archiva.
+// Se persiste en doa_proyectos.estado_v2 (columna nueva, paralela a legacy.estado).
+// ==========================================
+
+// Codigos de los 13 estados de ejecucion de un proyecto.
+// Cada constante representa una fase concreta del ciclo de vida.
+export const PROJECT_EXECUTION_STATES = {
+  PROYECTO_ABIERTO: 'proyecto_abierto',               // Recien creado tras oferta aceptada, pendiente de planificar
+  PLANIFICACION: 'planificacion',                     // Definicion de deliverables y asignacion de owners
+  EN_EJECUCION: 'en_ejecucion',                       // Trabajo tecnico en curso
+  REVISION_INTERNA: 'revision_interna',               // Check independiente por segundo ingeniero
+  LISTO_PARA_VALIDACION: 'listo_para_validacion',     // Todos los deliverables completados, pendiente validar
+  EN_VALIDACION: 'en_validacion',                     // DOH/DOS revisando y firmando
+  VALIDADO: 'validado',                               // Aprobado por DOH/DOS
+  DEVUELTO_A_EJECUCION: 'devuelto_a_ejecucion',       // Rechazado en validacion, vuelve a ejecucion
+  PREPARANDO_ENTREGA: 'preparando_entrega',           // Generando SoC y documentos de release
+  ENTREGADO: 'entregado',                             // SoC enviado al cliente
+  CONFIRMACION_CLIENTE: 'confirmacion_cliente',       // Cliente acuso recibo
+  CERRADO: 'cerrado',                                 // Lecciones y metricas capturadas
+  ARCHIVADO_PROYECTO: 'archivado_proyecto',           // Movido a historico, alimenta precedentes
+} as const
+
+// Tipo que representa cualquier estado valido de la maquina de ejecucion v2.
+export type ProjectExecutionState =
+  typeof PROJECT_EXECUTION_STATES[keyof typeof PROJECT_EXECUTION_STATES]
+
+// Lista ordenada de los 13 estados (orden canonico del flujo).
+export const PROJECT_EXECUTION_STATE_LIST = [
+  PROJECT_EXECUTION_STATES.PROYECTO_ABIERTO,
+  PROJECT_EXECUTION_STATES.PLANIFICACION,
+  PROJECT_EXECUTION_STATES.EN_EJECUCION,
+  PROJECT_EXECUTION_STATES.REVISION_INTERNA,
+  PROJECT_EXECUTION_STATES.LISTO_PARA_VALIDACION,
+  PROJECT_EXECUTION_STATES.EN_VALIDACION,
+  PROJECT_EXECUTION_STATES.VALIDADO,
+  PROJECT_EXECUTION_STATES.DEVUELTO_A_EJECUCION,
+  PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA,
+  PROJECT_EXECUTION_STATES.ENTREGADO,
+  PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE,
+  PROJECT_EXECUTION_STATES.CERRADO,
+  PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO,
+] as const satisfies readonly ProjectExecutionState[]
+
+// Fases agregadas (agrupan los 13 estados en 4 bloques).
+// Se persiste en doa_proyectos.fase_actual para permitir agrupaciones en Kanban/dashboards.
+export const PROJECT_EXECUTION_PHASES = {
+  EJECUCION: 'ejecucion',     // proyecto_abierto | planificacion | en_ejecucion | revision_interna | listo_para_validacion
+  VALIDACION: 'validacion',   // en_validacion | validado | devuelto_a_ejecucion
+  ENTREGA: 'entrega',         // preparando_entrega | entregado | confirmacion_cliente
+  CIERRE: 'cierre',           // cerrado | archivado_proyecto
+} as const
+
+export type ProjectExecutionPhase =
+  typeof PROJECT_EXECUTION_PHASES[keyof typeof PROJECT_EXECUTION_PHASES]
+
+// Mapeo inverso: dado un estado, devuelve la fase a la que pertenece.
+export const PROJECT_EXECUTION_STATE_TO_PHASE: Record<ProjectExecutionState, ProjectExecutionPhase> = {
+  proyecto_abierto: PROJECT_EXECUTION_PHASES.EJECUCION,
+  planificacion: PROJECT_EXECUTION_PHASES.EJECUCION,
+  en_ejecucion: PROJECT_EXECUTION_PHASES.EJECUCION,
+  revision_interna: PROJECT_EXECUTION_PHASES.EJECUCION,
+  listo_para_validacion: PROJECT_EXECUTION_PHASES.EJECUCION,
+  en_validacion: PROJECT_EXECUTION_PHASES.VALIDACION,
+  validado: PROJECT_EXECUTION_PHASES.VALIDACION,
+  devuelto_a_ejecucion: PROJECT_EXECUTION_PHASES.VALIDACION,
+  preparando_entrega: PROJECT_EXECUTION_PHASES.ENTREGA,
+  entregado: PROJECT_EXECUTION_PHASES.ENTREGA,
+  confirmacion_cliente: PROJECT_EXECUTION_PHASES.ENTREGA,
+  cerrado: PROJECT_EXECUTION_PHASES.CIERRE,
+  archivado_proyecto: PROJECT_EXECUTION_PHASES.CIERRE,
+}
+
+// Grafo de transiciones permitidas (DAG de la maquina v2).
+// Desde cada estado, lista los estados a los que se puede pasar.
+// archivado_proyecto es terminal.
+export const PROJECT_EXECUTION_TRANSITIONS: Record<ProjectExecutionState, ProjectExecutionState[]> = {
+  proyecto_abierto: [PROJECT_EXECUTION_STATES.PLANIFICACION],
+  planificacion: [PROJECT_EXECUTION_STATES.EN_EJECUCION],
+  en_ejecucion: [PROJECT_EXECUTION_STATES.REVISION_INTERNA],
+  revision_interna: [
+    PROJECT_EXECUTION_STATES.EN_EJECUCION,           // rework
+    PROJECT_EXECUTION_STATES.LISTO_PARA_VALIDACION,
+  ],
+  listo_para_validacion: [PROJECT_EXECUTION_STATES.EN_VALIDACION],
+  en_validacion: [
+    PROJECT_EXECUTION_STATES.VALIDADO,
+    PROJECT_EXECUTION_STATES.DEVUELTO_A_EJECUCION,
+  ],
+  validado: [PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA],
+  devuelto_a_ejecucion: [PROJECT_EXECUTION_STATES.EN_EJECUCION],
+  preparando_entrega: [PROJECT_EXECUTION_STATES.ENTREGADO],
+  entregado: [PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE],
+  confirmacion_cliente: [PROJECT_EXECUTION_STATES.CERRADO],
+  cerrado: [PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO],
+  archivado_proyecto: [], // terminal
+}
+
+/**
+ * Verifica si un texto es un codigo valido de la maquina de ejecucion v2.
+ */
+export function isProjectExecutionStateCode(value: string): value is ProjectExecutionState {
+  return (PROJECT_EXECUTION_STATE_LIST as readonly string[]).includes(value)
+}
+
+/**
+ * Devuelve la lista de estados a los que se puede transicionar desde el estado actual.
+ * La interfaz usa esta funcion para mostrar solo las opciones validas al usuario.
+ */
+export function getAllowedProjectExecutionTransitions(
+  current: ProjectExecutionState,
+): ProjectExecutionState[] {
+  return PROJECT_EXECUTION_TRANSITIONS[current] ?? []
+}
+
+// Configuracion visual de cada estado de ejecucion v2 (flujo de 13 estados).
+// Sigue la misma forma que QUOTATION_BOARD_STATE_CONFIG para reusar componentes.
+type ProjectExecutionConfig = {
+  label: string
+  shortLabel: string
+  description: string
+  accent: string       // Tailwind color family (sky, cyan, indigo, ...)
+  color: string        // text-*-700
+  bg: string           // bg-*-50
+  border: string       // border-*-200
+  dot: string          // bg-*-500
+}
+
+export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, ProjectExecutionConfig> = {
+  proyecto_abierto: {
+    label: 'Proyecto abierto',
+    shortLabel: 'Abierto',
+    description: 'Recien creado tras oferta aceptada, pendiente de planificar',
+    accent: 'slate',
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    dot: 'bg-slate-500',
+  },
+  planificacion: {
+    label: 'Planificacion',
+    shortLabel: 'Planificacion',
+    description: 'Definicion de deliverables y asignacion de owners',
+    accent: 'sky',
+    color: 'text-sky-700',
+    bg: 'bg-sky-50',
+    border: 'border-sky-200',
+    dot: 'bg-sky-500',
+  },
+  en_ejecucion: {
+    label: 'En ejecucion',
+    shortLabel: 'En ejecucion',
+    description: 'Trabajo tecnico en curso',
+    accent: 'cyan',
+    color: 'text-cyan-700',
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-200',
+    dot: 'bg-cyan-500',
+  },
+  revision_interna: {
+    label: 'Revision interna',
+    shortLabel: 'Revision',
+    description: 'Check independiente por segundo ingeniero',
+    accent: 'indigo',
+    color: 'text-indigo-700',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    dot: 'bg-indigo-500',
+  },
+  listo_para_validacion: {
+    label: 'Listo para validacion',
+    shortLabel: 'Listo',
+    description: 'Todos los deliverables completados, pendiente validar',
+    accent: 'violet',
+    color: 'text-violet-700',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    dot: 'bg-violet-500',
+  },
+  en_validacion: {
+    label: 'En validacion',
+    shortLabel: 'Validacion',
+    description: 'DOH/DOS revisando y firmando',
+    accent: 'amber',
+    color: 'text-amber-700',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    dot: 'bg-amber-500',
+  },
+  validado: {
+    label: 'Validado',
+    shortLabel: 'Validado',
+    description: 'Aprobado por DOH/DOS',
+    accent: 'lime',
+    color: 'text-lime-700',
+    bg: 'bg-lime-50',
+    border: 'border-lime-200',
+    dot: 'bg-lime-500',
+  },
+  devuelto_a_ejecucion: {
+    label: 'Devuelto a ejecucion',
+    shortLabel: 'Devuelto',
+    description: 'Rechazado en validacion, vuelve a ejecucion',
+    accent: 'rose',
+    color: 'text-rose-700',
+    bg: 'bg-rose-50',
+    border: 'border-rose-200',
+    dot: 'bg-rose-500',
+  },
+  preparando_entrega: {
+    label: 'Preparando entrega',
+    shortLabel: 'Entrega prep',
+    description: 'Generando SoC y documentos de release',
+    accent: 'teal',
+    color: 'text-teal-700',
+    bg: 'bg-teal-50',
+    border: 'border-teal-200',
+    dot: 'bg-teal-500',
+  },
+  entregado: {
+    label: 'Entregado',
+    shortLabel: 'Entregado',
+    description: 'SoC enviado al cliente',
+    accent: 'emerald',
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    dot: 'bg-emerald-500',
+  },
+  confirmacion_cliente: {
+    label: 'Confirmacion cliente',
+    shortLabel: 'Confirmado',
+    description: 'Cliente acuso recibo',
+    accent: 'green',
+    color: 'text-green-700',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    dot: 'bg-green-500',
+  },
+  cerrado: {
+    label: 'Cerrado',
+    shortLabel: 'Cerrado',
+    description: 'Lecciones y metricas capturadas',
+    accent: 'emerald',
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    dot: 'bg-emerald-500',
+  },
+  archivado_proyecto: {
+    label: 'Archivado',
+    shortLabel: 'Archivado',
+    description: 'Movido a historico, alimenta precedentes',
+    accent: 'slate',
+    color: 'text-slate-700',
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    dot: 'bg-slate-500',
+  },
+}
+
+/**
+ * Obtiene la informacion visual de un estado de la maquina de ejecucion v2.
+ * Si el codigo no se reconoce, devuelve configuracion por defecto en gris.
+ */
+export function getProjectExecutionStateMeta(code: string) {
+  if (isProjectExecutionStateCode(code)) {
+    return PROJECT_EXECUTION_STATE_CONFIG[code]
+  }
+
+  return {
+    label: code,
+    shortLabel: code,
+    description: 'Estado de ejecucion desconocido',
+    accent: 'slate',
+    color: 'text-slate-600',
+    bg: 'bg-slate-100',
+    border: 'border-slate-200',
+    dot: 'bg-slate-400',
+  }
+}
+
+/**
+ * Devuelve la fase agregada (ejecucion | validacion | entrega | cierre) a la
+ * que pertenece un estado de ejecucion v2.
+ */
+export function getProjectExecutionPhase(code: string): ProjectExecutionPhase | null {
+  if (isProjectExecutionStateCode(code)) {
+    return PROJECT_EXECUTION_STATE_TO_PHASE[code]
+  }
+  return null
+}

@@ -286,8 +286,17 @@ export interface Proyecto {
   tcds_code_short: string | null
 
   // --- Estado (workflow) ---
-  // Estado actual del proyecto dentro del flujo simplificado
+  // Estado actual del proyecto dentro del flujo simplificado (legacy)
   estado: EstadoProyectoPersistido
+  // Estado actual segun la maquina de ejecucion v2 (13 estados, Sprint 1+).
+  // Paralelo a `estado`; se considera el nuevo campo autoritativo del ciclo de vida.
+  estado_v2: string | null
+  // Fase agregada: 'ejecucion' | 'validacion' | 'entrega' | 'cierre'.
+  fase_actual: string | null
+  // Marca temporal de la ultima transicion de `estado_v2`.
+  estado_updated_at: string | null
+  // Usuario que ejecuto la ultima transicion (auth.users.id).
+  estado_updated_by: string | null
 
   // --- Equipo asignado (texto por ahora) ---
   // Ingeniero responsable del proyecto (el "dueno")
@@ -348,6 +357,42 @@ export interface ProyectoConRelaciones extends Proyecto {
  * un flujo de aprobacion propio.
  * Corresponde a la tabla "doa_proyectos_documentos" en la base de datos.
  */
+// ─── doa_project_deliverables ─────────────────────────────────────────────────
+
+/**
+ * DELIVERABLE DE PROYECTO (Sprint 1+)
+ * Fila de la tabla `doa_project_deliverables`. Cada fila representa un
+ * documento/trabajo concreto que el proyecto debe entregar (por ejemplo, cada
+ * plantilla G12-xx seleccionada durante la consulta se convierte en un
+ * deliverable). Se puebla automaticamente al planificar el proyecto
+ * (POST /api/proyectos/[id]/planificar) a partir de las selecciones de
+ * compliance de la consulta origen.
+ */
+export type DeliverableEstado =
+  | 'pendiente'
+  | 'en_curso'
+  | 'en_revision'
+  | 'completado'
+  | 'bloqueado'
+  | 'no_aplica'
+
+export interface ProjectDeliverable {
+  id: string
+  proyecto_id: string
+  template_code: string | null
+  subpart_easa: string | null
+  titulo: string
+  descripcion: string | null
+  owner_user_id: string | null
+  estado: DeliverableEstado
+  storage_path: string | null
+  version_actual: number
+  orden: number
+  metadata: Record<string, unknown> | null
+  created_at: string
+  updated_at: string
+}
+
 export interface ProyectoDocumento {
   // Identificador unico del documento
   id: string

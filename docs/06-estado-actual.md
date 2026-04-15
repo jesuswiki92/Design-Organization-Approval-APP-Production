@@ -1,5 +1,17 @@
 # Estado actual de la aplicacion
 
+## Sprint 1 — Close-the-loop (2026-04-16)
+
+Sprint 1 landed: un proyecto recien abierto ya puede vivir dentro de la app. Entregables principales:
+
+- Nueva maquina de estados de ejecucion de proyecto (13 estados + 4 fases) en `lib/workflow-states.ts` bajo `PROJECT_EXECUTION_STATES`, persistida en `doa_proyectos.estado_v2` y `doa_proyectos.fase_actual` (migracion `202604161000_proyectos_estado_v2.sql`).
+- Registro de deliverables por proyecto en la nueva tabla `doa_project_deliverables` (migracion `202604161010_doa_project_deliverables.sql`), sembrada desde las selecciones de compliance de la consulta origen al llamar a `POST /api/proyectos/[id]/planificar`.
+- Configuracion visual de los 13 estados sembrada en `doa_workflow_state_config` (scope `project_execution`, migracion `202604161020_doa_workflow_state_config_project_execution_seed.sql`).
+- Endpoint `GET/POST /api/proyectos/[id]/deliverables` para listar y dar de alta deliverables sueltos.
+- Portfolio `/engineering/portfolio` ya no usa array vacio: lee `doa_proyectos` real y muestra badge resuelto con la maquina v2 cuando el proyecto tiene `estado_v2`.
+- Detalle de proyecto estrena un stepper horizontal (`components/project/ProjectStateStepper.tsx`) con las 4 fases y 13 estados, y un tab "Deliverables" read-only con CTA "Planificar proyecto" cuando `estado_v2 === 'proyecto_abierto'`.
+- Nota: la agrupacion del Kanban del portfolio sigue usando el flujo legacy (`getProjectOperationalState`). Reagrupar por `fase_actual` queda pendiente para Sprint 2.
+
 ## Resumen
 
 La aplicacion DOA Operations Hub ya tiene una base estable para seguir iterando por lotes pequenos. La superficie visible esta concentrada en:

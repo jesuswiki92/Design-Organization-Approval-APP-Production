@@ -15,17 +15,39 @@ import {
 
 import {
   PROJECT_PORTFOLIO_STATES,
+  getProjectExecutionStateMeta,
   getProjectOperationalState,
   getProjectStatusMeta,
+  isProjectExecutionStateCode,
 } from '@/lib/workflow-states'
 import { cn } from '@/lib/utils'
 import type { EstadoProyecto, Proyecto } from '@/types/database'
 
 /**
+ * Devuelve el codigo de estado a mostrar para un proyecto.
+ * Prioriza `estado_v2` (maquina de ejecucion Sprint 1) si esta presente;
+ * si no, cae al flujo legacy `estado`.
+ */
+function resolveDisplayStateCode(project: Proyecto): string {
+  return project.estado_v2 ?? project.estado
+}
+
+/**
+ * Metadatos visuales unificados para un estado: si es de la maquina v2 usa
+ * `getProjectExecutionStateMeta`, si no usa `getProjectStatusMeta` (legacy).
+ */
+function getDisplayStateMeta(code: string) {
+  if (isProjectExecutionStateCode(code)) {
+    return getProjectExecutionStateMeta(code)
+  }
+  return getProjectStatusMeta(code)
+}
+
+/**
  * Badge visual del estado de un proyecto.
  */
 function StatusBadge({ estado }: { estado: string }) {
-  const cfg = getProjectStatusMeta(estado)
+  const cfg = getDisplayStateMeta(estado)
   return (
     <span
       className={cn(
@@ -60,7 +82,7 @@ function KanbanCard({ project }: { project: Proyecto }) {
         >
           {project.numero_proyecto}
         </Link>
-        <StatusBadge estado={project.estado} />
+        <StatusBadge estado={resolveDisplayStateCode(project)} />
       </div>
 
       <Link href={`/engineering/projects/${project.id}`} className="block">
@@ -210,7 +232,7 @@ function ListView({ projects }: { projects: Proyecto[] }) {
                 <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">{client}</td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">{aircraft}</td>
                 <td className="min-w-[220px] px-3 py-2.5">
-                  <StatusBadge estado={project.estado} />
+                  <StatusBadge estado={resolveDisplayStateCode(project)} />
                 </td>
                 <td className="px-3 py-2.5">
                   <span className="text-xs text-slate-600">{prioridad}</span>
