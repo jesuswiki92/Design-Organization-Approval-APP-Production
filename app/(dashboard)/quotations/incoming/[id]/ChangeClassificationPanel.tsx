@@ -275,13 +275,16 @@ export default function ChangeClassificationPanel({
   const criticalYes = answers.filter((a) => a.question_number <= 3 && a.answer === 'yes').length
 
   return (
-    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
+    <div className="doa-section doa-section--umber">
       {/* Header - clickable to toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
+          <span className="doa-section-icon">
+            <Shield className="h-3.5 w-3.5" />
+          </span>
           <h4 className="text-sm font-semibold text-[color:var(--ink)]">
             G12-01 Change Classification
           </h4>

@@ -83,6 +83,20 @@
   --warn:       #a85425;
   --err:        #9a3834;
 
+  /* ---- Warm Executive EXTENDED — section identity accents ----
+     Used to tint per-section icon circles, labels and tick marks so that
+     Cliente / Aeronave / Tecnico / Alcance don't all collapse into the
+     same beige-washed card. All chosen to sit harmoniously on paper with
+     AA contrast when used as 600-series accent on --paper / --paper-2. */
+  --sage:            #6f7d5a;   /* cliente */
+  --sage-soft:       #e8ece0;
+  --terracotta:      #a76342;   /* aeronave */
+  --terracotta-soft: #f1e2d8;
+  --parchment-gold:  #8a7438;   /* tecnico */
+  --parchment-soft:  #ece5d0;
+  --slate-warm:      #5f6b77;   /* neutral tint when needed */
+  --slate-warm-soft: #e2e5ea;
+
   /* ---- shadcn mapping → Warm Executive ---- */
   --background: var(--paper);
   --foreground: var(--ink);
@@ -237,17 +251,39 @@
   }
 
   .doa-kanban-card {
-    /* Warm white, slightly brighter than --paper-2 so cards stand proud of the
-       --paper column background. Previous gradient faded into --paper at the
-       bottom which killed contrast (user feedback 2026-04-19). */
-    background: #fdfcf8;
+    /* Use --paper-2 (#fbfaf7) so cards sit warmly on the --paper column
+       background without going pure white. User rejected #fdfcf8 as
+       "too cold / inverted" (2026-04-19). Sub-sections now use colored
+       tints derived from Warm Executive palette, not pure white. */
+    background: var(--paper-2);
     border: 1px solid var(--line-strong);
     border-radius: 12px;
     padding: 12px 14px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset,
       0 1px 2px rgba(36, 34, 32, 0.04),
       0 4px 12px -6px rgba(74, 60, 36, 0.14);
     transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+
+  /* Optional per-stage tint — very subtle warm wash so the board reads as
+     "warm section identity" rather than "all beige". Applied via
+     data-stage="..." on the card element. */
+  .doa-kanban-card[data-stage="entrada"],
+  .doa-kanban-card[data-stage="formulario"],
+  .doa-kanban-card[data-stage="alcance"] {
+    background:
+      linear-gradient(0deg, rgba(47, 74, 168, 0.025), rgba(47, 74, 168, 0.025)),
+      var(--paper-2);
+  }
+  .doa-kanban-card[data-stage="oferta"] {
+    background:
+      linear-gradient(0deg, rgba(138, 90, 43, 0.03), rgba(138, 90, 43, 0.03)),
+      var(--paper-2);
+  }
+  .doa-kanban-card[data-stage="aprobada"] {
+    background:
+      linear-gradient(0deg, rgba(79, 117, 72, 0.03), rgba(79, 117, 72, 0.03)),
+      var(--paper-2);
   }
 
   .doa-kanban-card:hover {
@@ -275,8 +311,11 @@
   }
 
   .doa-kanban-card-meta {
+    /* Promoted ink-3 → ink-2 for AA+ contrast on body text at 12px.
+       ink-3 (#777470) is 4.2:1 on paper which is below 7:1 AAA for small
+       text — the user called this out as "cuesta leer las cosas". */
     font-size: 12px;
-    color: var(--ink-3);
+    color: var(--ink-2);
     font-family: var(--font-sans);
   }
 
@@ -324,5 +363,92 @@
     text-transform: uppercase;
     font-weight: 600;
     color: var(--ink-3);
+  }
+
+  /* ============================================================
+     SECTION IDENTITY — per-section accent system.
+     Used across /quotations/incoming/[id] and similar review
+     routes so each section (Cliente, Aeronave, Tecnico, etc.)
+     has a distinct but warm accent without ever going pure white.
+     Usage:
+       <section class="doa-section doa-section--sage">
+         <div class="doa-section-head">
+           <div class="doa-section-icon"><Icon /></div>
+           <span class="doa-section-label">Cliente</span>
+         </div>
+       </section>
+     The CSS variable --accent is set per-variant and consumed by
+     the icon circle, label, and corner tick. This keeps a single
+     source of truth for the accent colour per section.
+     ============================================================ */
+  .doa-section {
+    position: relative;
+    background: var(--paper-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  /* Top-left corner tick (24×3px) — elegant section identity without
+     border-left heaviness. */
+  .doa-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 28px;
+    height: 3px;
+    background: var(--accent, var(--ink-3));
+    border-radius: 0 0 3px 0;
+    opacity: 0.9;
+  }
+
+  .doa-section--cobalt      { --accent: var(--cobalt); --accent-soft: var(--cobalt-soft); }
+  .doa-section--umber       { --accent: var(--umber); --accent-soft: rgba(138, 90, 43, 0.10); }
+  .doa-section--sage        { --accent: var(--sage); --accent-soft: var(--sage-soft); }
+  .doa-section--terracotta  { --accent: var(--terracotta); --accent-soft: var(--terracotta-soft); }
+  .doa-section--parchment   { --accent: var(--parchment-gold); --accent-soft: var(--parchment-soft); }
+  .doa-section--slate       { --accent: var(--slate-warm); --accent-soft: var(--slate-warm-soft); }
+
+  .doa-section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--accent-soft, var(--paper-3));
+    color: var(--accent, var(--ink-2));
+    flex: none;
+  }
+
+  .doa-section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent, var(--ink-2));
+  }
+
+  /* Sub-card label — used inside review summary grid where each cell
+     identifies a specific datum (Cliente, Aeronave, etc.). Same mono
+     11px but the colour comes from the sub-card's own --accent. */
+  .doa-sub-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent, var(--ink-3));
+  }
+
+  /* Body text inside .doa-section — enforce AAA-friendly ink/ink-2,
+     never ink-3 which failed AA for 13px body. */
+  .doa-section-body {
+    color: var(--ink);
+  }
+  .doa-section-body--muted {
+    color: var(--ink-2);
   }
 }

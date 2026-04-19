@@ -262,23 +262,30 @@ function ReviewSummarySection({
   referencesLabel: string
   scopeSummary: string
 }) {
-  const cards = [
-    { label: 'Cliente', value: clientLabel },
-    { label: 'Aeronave', value: aircraftLabel },
-    { label: 'Tipo de trabajo', value: workTypeLabel },
-    { label: 'Plazo y prioridad', value: scheduleLabel },
-    { label: 'Soporte disponible', value: documentLabel },
-    { label: 'Referencias', value: referencesLabel },
+  // Per-card accent — each datum gets a distinct warm tint so the grid
+  // doesn't collapse into one beige wash. See globals.css → section identity.
+  const cards: { label: string; value: string; accent: string; soft: string }[] = [
+    { label: 'Cliente',           value: clientLabel,     accent: 'var(--sage)',           soft: 'var(--sage-soft)' },
+    { label: 'Aeronave',          value: aircraftLabel,   accent: 'var(--terracotta)',     soft: 'var(--terracotta-soft)' },
+    { label: 'Tipo de trabajo',   value: workTypeLabel,   accent: 'var(--parchment-gold)', soft: 'var(--parchment-soft)' },
+    { label: 'Plazo y prioridad', value: scheduleLabel,   accent: 'var(--cobalt)',         soft: 'var(--cobalt-soft)' },
+    { label: 'Soporte disponible',value: documentLabel,   accent: 'var(--umber)',          soft: 'rgba(138, 90, 43, 0.10)' },
+    { label: 'Referencias',       value: referencesLabel, accent: 'var(--slate-warm)',     soft: 'var(--slate-warm-soft)' },
   ]
 
   return (
-    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-[color:var(--ink-4)] px-5 py-3">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-[color:var(--ink-3)]" />
-          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Resumen de revision</h2>
+    <section className="doa-section doa-section--cobalt shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="border-b border-[color:var(--line-strong)] px-5 py-3">
+        <div className="flex items-center gap-2.5">
+          <span className="doa-section-icon">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+          </span>
+          <span className="doa-section-label">Resumen de revision</span>
         </div>
-        <p className="mt-1 text-xs text-[color:var(--ink-3)]">
+        <h2 className="mt-2 text-base font-semibold text-[color:var(--ink)]">
+          Datos clave de la consulta
+        </h2>
+        <p className="mt-1 text-xs text-[color:var(--ink-2)]">
           Vista rapida de los datos clave para decidir esta consulta en fase 3.
         </p>
       </div>
@@ -287,11 +294,15 @@ function ReviewSummarySection({
           {cards.map((card) => (
             <div
               key={card.label}
-              className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-2.5"
+              className="relative overflow-hidden rounded-xl border border-[color:var(--line-strong)] bg-[color:var(--paper)] px-3 py-2.5"
+              style={{ ['--accent' as string]: card.accent, ['--accent-soft' as string]: card.soft }}
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
-                {card.label}
-              </p>
+              <span
+                aria-hidden
+                className="absolute left-0 top-0 h-[3px] w-7"
+                style={{ background: card.accent, opacity: 0.9 }}
+              />
+              <p className="doa-sub-label">{card.label}</p>
               <p className="mt-1 text-sm font-medium leading-6 text-[color:var(--ink)]">
                 {card.value}
               </p>
@@ -299,11 +310,17 @@ function ReviewSummarySection({
           ))}
         </div>
 
-        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
-            Alcance enviado
-          </p>
-          <p className="mt-1 text-sm leading-6 text-[color:var(--ink-2)]">{scopeSummary}</p>
+        <div
+          className="relative overflow-hidden rounded-xl border border-[color:var(--line-strong)] bg-[color:var(--paper)] px-4 py-3"
+          style={{ ['--accent' as string]: 'var(--cobalt)' }}
+        >
+          <span
+            aria-hidden
+            className="absolute left-0 top-0 h-[3px] w-7"
+            style={{ background: 'var(--cobalt)', opacity: 0.9 }}
+          />
+          <p className="doa-sub-label">Alcance enviado</p>
+          <p className="mt-1 text-sm leading-6 text-[color:var(--ink)]">{scopeSummary}</p>
         </div>
       </div>
     </section>
@@ -800,11 +817,11 @@ export default async function IncomingQuotationDetailPage({
         <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
-              <p className="font-mono text-xs text-[color:var(--ink-3)]">{query.codigo}</p>
+              <p className="font-mono text-xs font-semibold tracking-[0.12em] text-[color:var(--umber)]">{query.codigo}</p>
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 {query.asunto}
               </h1>
-              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
+              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-2)]">
                 {data.estado === CONSULTA_ESTADOS.NUEVO
                   ? 'Consulta recien recibida. Revisa el email y prepara la respuesta al cliente.'
                   : data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO
@@ -1087,15 +1104,17 @@ export default async function IncomingQuotationDetailPage({
             />
 
             {/* --- Comunicaciones (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
+            <section className="doa-section doa-section--umber shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <Mail className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Comunicaciones</span>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver hilo de emails
                 </summary>
@@ -1125,15 +1144,17 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos del cliente (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <UserRound className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
+            <section className="doa-section doa-section--sage shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <UserRound className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Datos del cliente</span>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos del cliente
                 </summary>
@@ -1232,15 +1253,17 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
+            <section className="doa-section doa-section--terracotta shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <Plane className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Datos de aeronave</span>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos de aeronave
                 </summary>
@@ -1405,15 +1428,17 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
+            <section className="doa-section doa-section--parchment shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <ClipboardList className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Datos tecnicos del proyecto</span>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos técnicos
                 </summary>
@@ -1454,12 +1479,12 @@ export default async function IncomingQuotationDetailPage({
                           {data.additional_notes && (
                             <div>
                               <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Notas adicionales</span>
-                              <p className="mt-0.5 text-sm text-[color:var(--ink-3)]">{data.additional_notes}</p>
+                              <p className="mt-0.5 text-sm text-[color:var(--ink-2)]">{data.additional_notes}</p>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1793,11 +1818,13 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir alcance preliminar (ancho completo) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
+            <section className="doa-section doa-section--cobalt shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Definir alcance preliminar</span>
                 </div>
               </div>
               <div className="px-5 py-4 space-y-4">
@@ -1980,15 +2007,17 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir documentacion (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion</h2>
+            <section className="doa-section doa-section--slate shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <FileText className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Definir documentacion</span>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Seleccionar documentos de compliance
                 </summary>
@@ -2005,11 +2034,13 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Informacion de Quotation (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-[color:var(--umber)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Oferta / Quotation</h2>
+            <section className="doa-section doa-section--umber shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
+              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="doa-section-icon">
+                    <Receipt className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="doa-section-label">Oferta / Quotation</span>
                 </div>
               </div>
               <details className="group">
