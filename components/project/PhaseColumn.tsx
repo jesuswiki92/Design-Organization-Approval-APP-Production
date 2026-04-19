@@ -24,44 +24,34 @@ import { cn } from '@/lib/utils'
 type PhaseStyle = {
   label: string
   accent: string
-  bg: string
-  border: string
-  text: string
   dot: string
 }
 
+/**
+ * Phase color is expressed ONLY via the small accent dot now — the group
+ * container uses Warm Executive neutrals. This keeps Projects visually unified
+ * with Quotations (where color only lives in the state dot).
+ */
 const PHASE_STYLES: Record<ProjectExecutionPhase, PhaseStyle> = {
   ejecucion: {
     label: 'Ejecucion',
     accent: 'cyan',
-    bg: 'bg-cyan-50/60',
-    border: 'border-cyan-200',
-    text: 'text-cyan-800',
     dot: 'bg-cyan-500',
   },
   validacion: {
     label: 'Validacion',
     accent: 'amber',
-    bg: 'bg-amber-50/60',
-    border: 'border-amber-200',
-    text: 'text-amber-800',
     dot: 'bg-amber-500',
   },
   entrega: {
     label: 'Entrega',
     accent: 'emerald',
-    bg: 'bg-emerald-50/60',
-    border: 'border-emerald-200',
-    text: 'text-emerald-800',
     dot: 'bg-emerald-500',
   },
   cierre: {
     label: 'Cierre',
     accent: 'slate',
-    bg: 'bg-slate-50/60',
-    border: 'border-slate-200',
-    text: 'text-slate-800',
-    dot: 'bg-slate-500',
+    dot: 'bg-[color:var(--ink-3)]',
   },
 }
 
@@ -85,33 +75,16 @@ export function PhaseColumnGroup({
   const style = PHASE_STYLES[phase]
 
   return (
-    <div
-      className={cn(
-        'flex flex-none flex-col rounded-[28px] border p-3',
-        style.bg,
-        style.border,
-      )}
-    >
+    <div className="flex flex-none flex-col rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper)]/40 p-3">
       {/* Cabecera de la fase */}
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-2">
           <span className={cn('h-2.5 w-2.5 rounded-full', style.dot)} />
-          <h2
-            className={cn(
-              'text-[11px] font-semibold uppercase tracking-[0.18em]',
-              style.text,
-            )}
-          >
+          <h2 className="doa-label-mono text-[color:var(--ink-2)]">
             {style.label}
           </h2>
         </div>
-        <span
-          className={cn(
-            'rounded-full border bg-white/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]',
-            style.text,
-            style.border,
-          )}
-        >
+        <span className="doa-kanban-chip">
           {projectCount} proyectos
         </span>
       </div>

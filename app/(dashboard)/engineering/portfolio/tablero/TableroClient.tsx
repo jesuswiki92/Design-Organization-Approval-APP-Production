@@ -144,20 +144,20 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
   const totalColumns = PROJECT_EXECUTION_STATE_LIST.length
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 p-5 text-slate-900">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 p-5 text-[color:var(--ink)]">
       {/* Cabecera */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative max-w-xs min-w-[200px] flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-4)]"
           />
           <input
             type="text"
             placeholder="Buscar proyectos..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-950 placeholder-slate-400 transition-colors focus:border-sky-300 focus:outline-none"
+            className="w-full rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] py-2 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-4)] transition-colors focus:border-[color:var(--umber)] focus:outline-none focus:ring-2 focus:ring-[color:var(--umber)]/20"
           />
         </div>
 
@@ -167,22 +167,18 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
           <button
             type="button"
             onClick={() => setNewProjectOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[linear-gradient(135deg,#2563EB,#38BDF8)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[color:var(--ink)] px-4 py-2 text-sm font-medium text-[color:var(--paper)] shadow-sm transition-colors hover:bg-[color:var(--ink-2)]"
           >
             <Plus size={14} />
             Crear Proyecto Nuevo
           </button>
-          <div className="rounded-xl border border-sky-200 bg-white/90 px-3 py-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Columnas
-            </p>
-            <p className="text-sm font-semibold text-slate-950">{totalColumns}</p>
+          <div className="rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-3 py-1.5">
+            <p className="doa-label-mono">Columnas</p>
+            <p className="text-sm font-semibold text-[color:var(--ink)]">{totalColumns}</p>
           </div>
-          <div className="rounded-xl border border-sky-200 bg-white/90 px-3 py-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Proyectos
-            </p>
-            <p className="text-sm font-semibold text-slate-950">{totalCards}</p>
+          <div className="rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-3 py-1.5">
+            <p className="doa-label-mono">Proyectos</p>
+            <p className="text-sm font-semibold text-[color:var(--ink)]">{totalCards}</p>
           </div>
         </div>
       </div>
@@ -190,7 +186,7 @@ export function TableroClient({ projects }: { projects: ProjectCardData[] }) {
       <NewProjectModal open={newProjectOpen} onOpenChange={setNewProjectOpen} />
 
       {/* Hint scroll horizontal */}
-      <div className="rounded-[18px] border border-sky-100 bg-white/85 px-4 py-2 text-xs text-slate-600 shadow-sm">
+      <div className="rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-4 py-2 text-xs text-[color:var(--ink-3)]">
         Scroll horizontal habilitado. Las columnas estan agrupadas por fase
         (Ejecucion, Validacion, Entrega, Cierre). Clic en una card para abrir
         el proyecto.

@@ -32,45 +32,21 @@ export function StateColumn({
 
   return (
     <section
-      className={cn(
-        'flex h-full w-[260px] flex-none flex-col rounded-[24px] border bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-3 shadow-[0_14px_32px_rgba(148,163,184,0.12)]',
-        meta.border,
-      )}
+      className="doa-kanban-column flex h-full w-[260px] flex-none flex-col"
+      title={meta.description}
     >
-      {/* Cabecera */}
-      <div
-        className={cn(
-          'rounded-[18px] border px-3 py-2.5',
-          meta.bg,
-          meta.border,
-        )}
-        title={meta.description}
-      >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className={cn('h-2 w-2 flex-none rounded-full', meta.dot)} />
-            <h3 className={cn('truncate text-xs font-semibold', meta.color)}>
-              {meta.label}
-            </h3>
-          </div>
-          <span
-            className={cn(
-              'rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]',
-              meta.color,
-              meta.border,
-              'bg-white/70',
-            )}
-          >
-            {projects.length}
-          </span>
-        </div>
+      {/* Cabecera — unified kanban lane head (Warm Executive) */}
+      <div className="doa-kanban-lane-head">
+        <span className={cn('doa-kanban-dot', meta.dot)} />
+        <h3 className="doa-kanban-lane-title truncate">{meta.label}</h3>
+        <span className="doa-kanban-lane-count">{projects.length}</span>
       </div>
 
       {/* Lista de cards */}
-      <div className="mt-3 flex-1 space-y-2">
+      <div className="mt-3 flex-1 space-y-3">
         {projects.length === 0 ? (
-          <div className="rounded-[16px] border border-dashed border-slate-200 bg-white/80 px-3 py-4 text-center">
-            <p className="text-[11px] text-slate-400">Sin proyectos</p>
+          <div className="doa-kanban-empty">
+            <p>Sin proyectos</p>
           </div>
         ) : (
           projects.map((project) => (

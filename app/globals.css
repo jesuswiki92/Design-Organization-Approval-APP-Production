@@ -166,14 +166,158 @@
   }
   html {
     font-family: var(--font-sans);
+    /* Bumped 14→15px base for legibility (user feedback: "las letras no se ven
+       demasiado bien"). Ref: standalone DOA Redesign Warm Executive. */
+    font-size: 15px;
   }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
     font-weight: 400;
     letter-spacing: -0.01em;
+  }
+}
+
+/* ============================================================================
+   KANBAN PRIMITIVES — unified board pattern across Quotations + Projects.
+   Port of `.wm-lane` / `.wm-card-q` from DOA Redesign Standalone (Warm Executive).
+   Any kanban column/card in the app should use these classes so both boards
+   share the same look. Color accents are layered via Tailwind bg/border utilities
+   on top (e.g. `bg-sky-50`, `border-sky-200`).
+   ========================================================================== */
+@layer components {
+  .doa-kanban-column {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 12px;
+    box-shadow: 0 2px 0 rgba(255, 255, 255, 0.5) inset,
+      0 4px 14px -6px rgba(74, 60, 36, 0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .doa-kanban-lane-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 4px 10px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .doa-kanban-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .doa-kanban-lane-title {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1.2;
+    color: var(--ink);
+    letter-spacing: -0.2px;
+  }
+
+  .doa-kanban-lane-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--paper);
+    color: var(--ink-3);
+    padding: 2px 9px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+
+  .doa-kanban-card {
+    background: linear-gradient(180deg, var(--paper-2) 0%, var(--paper) 100%);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+      0 2px 8px -4px rgba(74, 60, 36, 0.1);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+
+  .doa-kanban-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--line-strong);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+      0 6px 18px -6px rgba(74, 60, 36, 0.2);
+  }
+
+  .doa-kanban-card-code {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--umber);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .doa-kanban-card-title {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    line-height: 1.3;
+    color: var(--ink);
+    letter-spacing: -0.2px;
+  }
+
+  .doa-kanban-card-meta {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: var(--font-sans);
+  }
+
+  .doa-kanban-card-foot {
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+
+  .doa-kanban-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .doa-kanban-empty {
+    border: 1px dashed var(--line-strong);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    color: var(--ink-3);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 13px;
+    background: transparent;
+  }
+
+  /* Label mono uppercase — used for meta/labels. Slightly larger than before
+     (11→11.5px) + proper tracking for legibility. */
+  .doa-label-mono {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-3);
   }
 }
