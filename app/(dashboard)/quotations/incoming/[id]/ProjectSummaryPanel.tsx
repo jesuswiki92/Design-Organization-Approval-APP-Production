@@ -59,8 +59,8 @@ type DeltaGroup = {
 const STATUS_STYLES: Record<DeltaStatus, string> = {
   igual: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   delta: 'border-amber-200 bg-amber-50 text-amber-700',
-  desconocido: 'border-slate-200 bg-slate-100 text-slate-600',
-  'no comparable': 'border-sky-200 bg-sky-50 text-sky-700',
+  desconocido: 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)]',
+  'no comparable': 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]',
 }
 
 const STOPWORDS = new Set([
@@ -520,11 +520,11 @@ function TagList({
       : tone === 'amber'
         ? 'border-amber-200 bg-amber-50 text-amber-700'
         : tone === 'sky'
-          ? 'border-sky-200 bg-sky-50 text-sky-700'
-          : 'border-slate-200 bg-slate-100 text-slate-600'
+          ? 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]'
+          : 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
 
   if (values.length === 0) {
-    return <p className="text-xs text-slate-400">{emptyLabel}</p>
+    return <p className="text-xs text-[color:var(--ink-3)]">{emptyLabel}</p>
   }
 
   return (
@@ -551,15 +551,15 @@ function escapeHtml(text: string): string {
 
 function parseInline(text: string): string {
   let result = escapeHtml(text)
-  result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-[color:var(--ink)]">$1</strong>')
   result = result.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  result = result.replace(/`(.+?)`/g, '<code class="rounded bg-slate-100 px-1 py-0.5 text-[11px] font-mono text-slate-700">$1</code>')
+  result = result.replace(/`(.+?)`/g, '<code class="rounded bg-[color:var(--paper-2)] px-1 py-0.5 text-[11px] font-mono text-[color:var(--ink-2)]">$1</code>')
   return result
 }
 
 function renderTable(lines: string[]): string {
   if (lines.length < 2) {
-    return lines.map((line) => `<p class="text-xs text-slate-700">${escapeHtml(line)}</p>`).join('')
+    return lines.map((line) => `<p class="text-xs text-[color:var(--ink-2)]">${escapeHtml(line)}</p>`).join('')
   }
 
   const parseRow = (line: string) =>
@@ -574,19 +574,19 @@ function renderTable(lines: string[]): string {
   const dataRows = lines.slice(dataStartIdx).map(parseRow)
 
   const ths = headerCells
-    .map((cell) => `<th class="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-500">${parseInline(cell)}</th>`)
+    .map((cell) => `<th class="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">${parseInline(cell)}</th>`)
     .join('')
 
   const trs = dataRows
     .map((cells) => {
       const tds = cells
-        .map((cell) => `<td class="px-2 py-1 text-xs text-slate-700">${parseInline(cell)}</td>`)
+        .map((cell) => `<td class="px-2 py-1 text-xs text-[color:var(--ink-2)]">${parseInline(cell)}</td>`)
         .join('')
-      return `<tr class="border-t border-slate-100">${tds}</tr>`
+      return `<tr class="border-t border-[color:var(--ink-4)]">${tds}</tr>`
     })
     .join('')
 
-  return `<div class="my-2 overflow-x-auto rounded-lg border border-slate-200"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50">${ths}</tr></thead><tbody>${trs}</tbody></table></div>`
+  return `<div class="my-2 overflow-x-auto rounded-lg border border-[color:var(--ink-4)]"><table class="w-full text-left text-xs"><thead><tr class="bg-[color:var(--paper-2)]">${ths}</tr></thead><tbody>${trs}</tbody></table></div>`
 }
 
 function parseMarkdown(markdown: string): string {
@@ -604,13 +604,13 @@ function parseMarkdown(markdown: string): string {
     }
 
     if (trimmed.startsWith('###')) {
-      htmlParts.push(`<h4 class="mb-1 mt-3 text-xs font-bold text-slate-700">${parseInline(trimmed.replace(/^###\s*/, ''))}</h4>`)
+      htmlParts.push(`<h4 class="mb-1 mt-3 text-xs font-bold text-[color:var(--ink-2)]">${parseInline(trimmed.replace(/^###\s*/, ''))}</h4>`)
       index += 1
       continue
     }
 
     if (trimmed.startsWith('##') || trimmed.startsWith('#')) {
-      htmlParts.push(`<h3 class="mb-1.5 mt-4 border-b border-slate-100 pb-1 text-sm font-bold text-slate-900">${parseInline(trimmed.replace(/^#+\s*/, ''))}</h3>`)
+      htmlParts.push(`<h3 class="mb-1.5 mt-4 border-b border-[color:var(--ink-4)] pb-1 text-sm font-bold text-[color:var(--ink)]">${parseInline(trimmed.replace(/^#+\s*/, ''))}</h3>`)
       index += 1
       continue
     }
@@ -633,7 +633,7 @@ function parseMarkdown(markdown: string): string {
       }
       htmlParts.push(
         `<ul class="my-1.5 ml-4 list-disc space-y-0.5">${listItems
-          .map((item) => `<li class="text-xs leading-relaxed text-slate-700">${parseInline(item)}</li>`)
+          .map((item) => `<li class="text-xs leading-relaxed text-[color:var(--ink-2)]">${parseInline(item)}</li>`)
           .join('')}</ul>`,
       )
       continue
@@ -647,13 +647,13 @@ function parseMarkdown(markdown: string): string {
       }
       htmlParts.push(
         `<ol class="my-1.5 ml-4 list-decimal space-y-0.5">${listItems
-          .map((item) => `<li class="text-xs leading-relaxed text-slate-700">${parseInline(item)}</li>`)
+          .map((item) => `<li class="text-xs leading-relaxed text-[color:var(--ink-2)]">${parseInline(item)}</li>`)
           .join('')}</ol>`,
       )
       continue
     }
 
-    htmlParts.push(`<p class="my-1 text-xs leading-relaxed text-slate-700">${parseInline(trimmed)}</p>`)
+    htmlParts.push(`<p class="my-1 text-xs leading-relaxed text-[color:var(--ink-2)]">${parseInline(trimmed)}</p>`)
     index += 1
   }
 
@@ -714,7 +714,7 @@ export function ProjectSummaryPanel({
   }
 
   return (
-    <div className="mt-3 rounded-[20px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 shadow-[0_10px_24px_rgba(148,163,184,0.08)]">
+    <div className="mt-3 rounded-[20px] border border-[color:var(--ink-4)] bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 shadow-[0_10px_24px_rgba(148,163,184,0.08)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
@@ -730,14 +730,14 @@ export function ProjectSummaryPanel({
               {baseline.baselineTitle ?? projectTitle ?? 'Precedente sin titulo visible'}
             </h3>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             Vista resumida para fase 4: baseline reutilizable, deltas visibles y huecos por confirmar.
           </p>
         </div>
 
         <Link
           href={`/proyectos-historico/${projectId}`}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition-colors hover:bg-sky-100"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-semibold text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
         >
           Abrir ficha historica
           <ExternalLink className="h-3.5 w-3.5" />
@@ -745,7 +745,7 @@ export function ProjectSummaryPanel({
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.45fr_0.95fr]">
-        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-emerald-600" />
             <h4 className="text-sm font-semibold text-slate-950">Baseline reutilizable</h4>
@@ -753,37 +753,37 @@ export function ProjectSummaryPanel({
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Identificacion
               </p>
-              <p className="text-sm leading-6 text-slate-900">
+              <p className="text-sm leading-6 text-[color:var(--ink)]">
                 {joinList(baseline.identification, 'Identificacion no visible en PROJECT_SUMMARY')}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Clasificacion / base
               </p>
-              <p className="text-sm leading-6 text-slate-900">
+              <p className="text-sm leading-6 text-[color:var(--ink)]">
                 {baseline.classificationBaseline ?? 'Clasificacion no visible'}
               </p>
-              <p className="text-xs leading-5 text-slate-500">
+              <p className="text-xs leading-5 text-[color:var(--ink-3)]">
                 {baseline.certificationBasisBaseline ?? 'Base de certificacion no visible'}
               </p>
             </div>
 
             <div className="space-y-1.5 md:col-span-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Scope baseline
               </p>
-              <p className="text-sm leading-6 text-slate-900">
+              <p className="text-sm leading-6 text-[color:var(--ink)]">
                 {baseline.scopeBaseline ?? 'No se ve una descripcion de alcance reutilizable en PROJECT_SUMMARY.'}
               </p>
             </div>
 
             <div className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Impact areas
               </p>
               <TagList
@@ -794,7 +794,7 @@ export function ProjectSummaryPanel({
             </div>
 
             <div className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Document package baseline
               </p>
               <TagList
@@ -805,7 +805,7 @@ export function ProjectSummaryPanel({
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Limitaciones / condiciones visibles
               </p>
               <TagList
@@ -817,10 +817,10 @@ export function ProjectSummaryPanel({
           </div>
         </section>
 
-        <section className="rounded-2xl border border-emerald-200 bg-[linear-gradient(180deg,#f0fdf4_0%,#ffffff_100%)] p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-center gap-2">
-            <ArrowRightLeft className="h-4 w-4 text-emerald-600" />
-            <h4 className="text-sm font-semibold text-slate-950">Encaje del precedente</h4>
+            <ArrowRightLeft className="h-4 w-4 text-[color:var(--umber)]" />
+            <h4 className="text-sm font-semibold text-[color:var(--ink)]">Encaje del precedente</h4>
           </div>
 
           <div className="mt-4 flex items-center gap-3">
@@ -830,12 +830,12 @@ export function ProjectSummaryPanel({
                   ? 'bg-emerald-100 text-emerald-700'
                   : fit.level === 'medio'
                     ? 'bg-amber-100 text-amber-700'
-                    : 'bg-slate-200 text-slate-700'
+                    : 'bg-[color:var(--paper-3)] text-[color:var(--ink-2)]'
               }`}
             >
               {fit.label}
             </span>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[color:var(--ink-3)]">
               Basado en coincidencias visibles y deltas detectados en esta fase preliminar.
             </p>
           </div>
@@ -844,7 +844,7 @@ export function ProjectSummaryPanel({
             {fit.reasons.map((reason) => (
               <div
                 key={reason}
-                className="rounded-xl border border-emerald-100 bg-white/80 px-3 py-2 text-xs leading-5 text-slate-700"
+                className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-3 py-2 text-xs leading-5 text-[color:var(--ink-2)]"
               >
                 {reason}
               </div>
@@ -855,16 +855,16 @@ export function ProjectSummaryPanel({
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         {groups.map((group) => (
-          <section key={group.title} className="rounded-2xl border border-slate-200 bg-white p-4">
-            <h4 className="text-sm font-semibold text-slate-950">{group.title}</h4>
+          <section key={group.title} className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
+            <h4 className="text-sm font-semibold text-[color:var(--ink)]">{group.title}</h4>
             <div className="mt-3 space-y-3">
               {group.items.map((item) => (
                 <div
                   key={`${group.title}-${item.label}`}
-                  className="rounded-xl border border-slate-100 bg-slate-50/70 p-3"
+                  className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/70 p-3"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                       {item.label}
                     </p>
                     <StatusBadge status={item.status} />
@@ -872,21 +872,21 @@ export function ProjectSummaryPanel({
 
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-600">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--umber)]">
                         Consulta actual
                       </p>
-                      <p className="mt-1 text-sm leading-6 text-slate-900">{item.actual}</p>
+                      <p className="mt-1 text-sm leading-6 text-[color:var(--ink)]">{item.actual}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-600">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                         Baseline precedente
                       </p>
-                      <p className="mt-1 text-sm leading-6 text-slate-900">{item.baseline}</p>
+                      <p className="mt-1 text-sm leading-6 text-[color:var(--ink)]">{item.baseline}</p>
                     </div>
                   </div>
 
                   {item.note ? (
-                    <p className="mt-2 text-xs leading-5 text-slate-500">{item.note}</p>
+                    <p className="mt-2 text-xs leading-5 text-[color:var(--ink-3)]">{item.note}</p>
                   ) : null}
                 </div>
               ))}
@@ -895,10 +895,10 @@ export function ProjectSummaryPanel({
         ))}
       </div>
 
-      <section className="mt-4 rounded-2xl border border-amber-200 bg-[linear-gradient(180deg,#fffaf0_0%,#ffffff_100%)] p-4">
+      <section className="mt-4 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <h4 className="text-sm font-semibold text-slate-950">Vacios a confirmar</h4>
+          <h4 className="text-sm font-semibold text-[color:var(--ink)]">Vacios a confirmar</h4>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -906,20 +906,20 @@ export function ProjectSummaryPanel({
             vacios.map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-medium text-amber-700"
+                className="rounded-full border border-amber-200 bg-[color:var(--paper)] px-3 py-1 text-xs font-medium text-amber-700"
               >
                 {item}
               </span>
             ))
           ) : (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[color:var(--ink-3)]">
               No se detectan vacios criticos adicionales para esta comparacion preliminar.
             </p>
           )}
         </div>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <div className="mt-4 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
             Preguntas que este precedente sugiere cerrar
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -927,13 +927,13 @@ export function ProjectSummaryPanel({
               baseline.formQuestionCandidates.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700"
+                  className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1 text-xs font-medium text-[color:var(--ink-2)]"
                 >
                   {item}
                 </span>
               ))
             ) : (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[color:var(--ink-3)]">
                 El precedente no fuerza preguntas extra claras mas alla del baseline visible.
               </p>
             )}
@@ -941,31 +941,31 @@ export function ProjectSummaryPanel({
         </div>
       </section>
 
-      <div className="mt-4 rounded-2xl border border-slate-200 bg-white">
+      <div className="mt-4 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
         <button
           type="button"
           onClick={handleToggleRaw}
-          className="flex w-full items-center gap-2 px-4 py-3 text-left transition-colors hover:bg-slate-50"
+          className="flex w-full items-center gap-2 px-4 py-3 text-left transition-colors hover:bg-[color:var(--paper-3)]"
         >
-          <FileText className="h-4 w-4 text-slate-500" />
+          <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-900">Ver PROJECT_SUMMARY completo</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm font-medium text-[color:var(--ink)]">Ver PROJECT_SUMMARY completo</p>
+            <p className="text-xs text-[color:var(--ink-3)]">
               Acceso secundario al markdown original del precedente.
             </p>
           </div>
-          {loadingRaw ? <Loader2 className="h-4 w-4 animate-spin text-slate-400" /> : null}
+          {loadingRaw ? <Loader2 className="h-4 w-4 animate-spin text-[color:var(--ink-3)]" /> : null}
           <ChevronDown
-            className={`h-4 w-4 text-slate-400 transition-transform ${expandedRaw ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 text-[color:var(--ink-3)] transition-transform ${expandedRaw ? 'rotate-180' : ''}`}
           />
         </button>
 
         {expandedRaw ? (
-          <div className="border-t border-slate-100 px-4 py-4">
+          <div className="border-t border-[color:var(--ink-4)] px-4 py-4">
             {loadingRaw ? (
               <div className="flex items-center gap-2 py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-                <span className="text-xs text-slate-400">Cargando PROJECT_SUMMARY...</span>
+                <Loader2 className="h-4 w-4 animate-spin text-[color:var(--ink-3)]" />
+                <span className="text-xs text-[color:var(--ink-3)]">Cargando PROJECT_SUMMARY...</span>
               </div>
             ) : null}
 
@@ -976,8 +976,8 @@ export function ProjectSummaryPanel({
             ) : null}
 
             {rawFetched && !rawError && summaryHtml === null ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-3 py-3">
-                <p className="text-xs italic text-slate-400">
+              <div className="rounded-lg border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-3 py-3">
+                <p className="text-xs italic text-[color:var(--ink-3)]">
                   No hay PROJECT_SUMMARY disponible para este precedente.
                 </p>
               </div>

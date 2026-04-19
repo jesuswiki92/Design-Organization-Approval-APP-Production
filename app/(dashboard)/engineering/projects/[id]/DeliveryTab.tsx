@@ -58,12 +58,12 @@ function formatDateTime(iso: string): string {
 const DISPATCH_STATUS_LABEL: Record<string, { label: string; cls: string; icon: typeof Clock }> = {
   pendiente: {
     label: 'Pendiente',
-    cls: 'bg-slate-50 text-slate-700 border-slate-200',
+    cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
     icon: Clock,
   },
   enviando: {
     label: 'Enviando',
-    cls: 'bg-sky-50 text-sky-700 border-sky-200',
+    cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
     icon: Loader2,
   },
   enviado: {
@@ -281,8 +281,8 @@ export function DeliveryTab({
   return (
     <div className="flex flex-col gap-5">
       <header className="flex items-center gap-2">
-        <Truck className="h-4 w-4 text-slate-400" />
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <Truck className="h-4 w-4 text-[color:var(--ink-3)]" />
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           Entrega al cliente
         </h2>
       </header>
@@ -295,13 +295,13 @@ export function DeliveryTab({
 
       {/* CTA preparar */}
       {canPrepare && !pdfPreviewUrl && (
-        <section className="rounded-2xl border border-lime-200 bg-lime-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-lime-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Listo para preparar la entrega
               </h3>
-              <p className="mt-1 text-xs text-lime-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                 Se generara el Statement of Compliance en PDF firmado (HMAC) y
                 se subira a Storage. No se envia ningun email todavia.
               </p>
@@ -327,8 +327,8 @@ export function DeliveryTab({
       {(canSend || (canPrepare && pdfPreviewUrl)) && (
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           {/* Preview PDF */}
-          <div className="lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-            <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <div className="lg:col-span-3 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3 shadow-sm">
+            <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               <FileText className="h-3.5 w-3.5" />
               Statement of Compliance
             </h3>
@@ -336,73 +336,73 @@ export function DeliveryTab({
               <iframe
                 title="SoC PDF preview"
                 src={pdfPreviewUrl}
-                className="h-[560px] w-full rounded-lg border border-slate-200 bg-slate-50"
+                className="h-[560px] w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]"
               />
             ) : (
-              <div className="flex h-[560px] items-center justify-center text-sm text-slate-500">
+              <div className="flex h-[560px] items-center justify-center text-sm text-[color:var(--ink-3)]">
                 PDF no disponible.
               </div>
             )}
           </div>
 
           {/* Form envio */}
-          <div className="lg:col-span-2 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+          <div className="lg:col-span-2 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[color:var(--ink)]">
               <Send className="h-4 w-4" />
               Enviar al cliente
             </h3>
-            <p className="mt-1 text-xs text-amber-700">
+            <p className="mt-1 text-xs text-[color:var(--ink-3)]">
               Al enviar se firma HMAC la liberacion, se dispara el workflow n8n
               que manda el email y se transita el proyecto a &quot;entregado&quot;.
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-xs font-medium text-[color:var(--ink-2)]">
                 Destinatario (email)
                 <input
                   type="email"
                   value={formRecipientEmail}
                   onChange={(e) => setFormRecipientEmail(e.target.value)}
                   placeholder="cliente@empresa.com"
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </label>
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-xs font-medium text-[color:var(--ink-2)]">
                 Nombre del destinatario
                 <input
                   type="text"
                   value={formRecipientName}
                   onChange={(e) => setFormRecipientName(e.target.value)}
                   placeholder="Nombre (opcional)"
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </label>
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-xs font-medium text-[color:var(--ink-2)]">
                 CC (separados por coma)
                 <input
                   type="text"
                   value={formCcEmails}
                   onChange={(e) => setFormCcEmails(e.target.value)}
                   placeholder="a@x.com, b@y.com"
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </label>
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-xs font-medium text-[color:var(--ink-2)]">
                 Asunto
                 <input
                   type="text"
                   value={formSubject}
                   onChange={(e) => setFormSubject(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </label>
-              <label className="block text-xs font-medium text-slate-700">
+              <label className="block text-xs font-medium text-[color:var(--ink-2)]">
                 Mensaje
                 <Textarea
                   value={formBody}
                   onChange={(e) => setFormBody(e.target.value)}
                   rows={6}
-                  className="mt-1 bg-white"
+                  className="mt-1 bg-[color:var(--paper)]"
                 />
               </label>
 
@@ -429,14 +429,14 @@ export function DeliveryTab({
 
       {/* Esperando cliente */}
       {isAwaitingClient && (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start gap-3">
-            <Clock className="mt-0.5 h-4 w-4 text-amber-500" />
+            <Clock className="mt-0.5 h-4 w-4 text-amber-600" />
             <div>
-              <h3 className="text-sm font-semibold text-amber-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Esperando confirmacion del cliente
               </h3>
-              <p className="mt-1 text-xs text-amber-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                 El Statement of Compliance ya se envio. Cuando el cliente pulse
                 el enlace de confirmacion en el email, el proyecto avanzara a
                 &quot;confirmacion cliente&quot;.
@@ -448,14 +448,14 @@ export function DeliveryTab({
 
       {/* Confirmado */}
       {isConfirmed && (
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
             <div>
-              <h3 className="text-sm font-semibold text-emerald-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Cliente confirmo recepcion
               </h3>
-              <p className="mt-1 text-xs text-emerald-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                 La evidencia no repudiable queda archivada. El proyecto puede
                 pasar a cierre en el siguiente paso.
               </p>
@@ -465,18 +465,18 @@ export function DeliveryTab({
       )}
 
       {/* Timeline de entregas */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           <Box className="h-3.5 w-3.5" />
           Historial de entregas
         </h3>
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
             <Loader2 className="h-4 w-4 animate-spin" />
             Cargando...
           </div>
         ) : deliveries.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[color:var(--ink-3)]">
             Aun no hay entregas registradas para este proyecto.
           </p>
         ) : (
@@ -484,14 +484,14 @@ export function DeliveryTab({
             {deliveries.map((d) => {
               const cfg = DISPATCH_STATUS_LABEL[d.dispatch_status] ?? {
                 label: d.dispatch_status,
-                cls: 'bg-slate-50 text-slate-700 border-slate-200',
+                cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
                 icon: Clock,
               }
               const Icon = cfg.icon
               return (
                 <li
                   key={d.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50/40 p-3"
+                  className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 p-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span
@@ -500,33 +500,33 @@ export function DeliveryTab({
                       <Icon className="h-3 w-3" />
                       {cfg.label}
                     </span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[color:var(--ink-3)]">
                       {formatDateTime(d.created_at)}
                     </span>
                   </div>
-                  <div className="mt-1 grid grid-cols-1 gap-1 text-xs text-slate-600 md:grid-cols-2">
+                  <div className="mt-1 grid grid-cols-1 gap-1 text-xs text-[color:var(--ink-3)] md:grid-cols-2">
                     <div>
-                      <strong className="text-slate-500">Destinatario:</strong>{' '}
+                      <strong className="text-[color:var(--ink-3)]">Destinatario:</strong>{' '}
                       {d.recipient_email}
                     </div>
                     <div>
-                      <strong className="text-slate-500">Asunto:</strong>{' '}
+                      <strong className="text-[color:var(--ink-3)]">Asunto:</strong>{' '}
                       {d.subject}
                     </div>
                     {d.dispatched_at && (
                       <div>
-                        <strong className="text-slate-500">Enviado:</strong>{' '}
+                        <strong className="text-[color:var(--ink-3)]">Enviado:</strong>{' '}
                         {formatDateTime(d.dispatched_at)}
                       </div>
                     )}
                     {d.client_confirmed_at && (
                       <div>
-                        <strong className="text-slate-500">Confirmado:</strong>{' '}
+                        <strong className="text-[color:var(--ink-3)]">Confirmado:</strong>{' '}
                         {formatDateTime(d.client_confirmed_at)}
                       </div>
                     )}
                     {d.soc_pdf_sha256 && (
-                      <div className="md:col-span-2 truncate font-mono text-[10px] text-slate-500">
+                      <div className="md:col-span-2 truncate font-mono text-[10px] text-[color:var(--ink-3)]">
                         SHA-256: {d.soc_pdf_sha256}
                       </div>
                     )}
@@ -536,7 +536,7 @@ export function DeliveryTab({
                       href={`/api/proyectos/${proyectoId}/deliveries/${d.id}/soc-pdf`}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-sky-700 hover:text-sky-600"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink-2)]"
                     >
                       <FileText className="h-3 w-3" />
                       Abrir PDF

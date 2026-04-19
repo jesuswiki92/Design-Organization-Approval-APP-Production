@@ -73,17 +73,17 @@ export default async function SettingsLogsPage() {
         subtitle="Superficie operativa para revisar observabilidad reciente de la aplicacion"
       />
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-slate-900">
-        <section className="rounded-[24px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
+        <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)]">
                 Observabilidad
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                 Logs operativos recientes
               </h2>
-              <p className="mt-2 text-sm leading-7 text-slate-600">
+              <p className="mt-2 text-sm leading-7 text-[color:var(--ink-3)]">
                 Esta vista lee <code>doa_app_events</code> en servidor con el patron
                 autenticado y privilegiado ya usado por la app. El objetivo es soporte:
                 detectar fallos recientes, entender que flujo esta activo y revisar el
@@ -92,21 +92,21 @@ export default async function SettingsLogsPage() {
             </div>
 
             <div className="flex shrink-0 items-center gap-3">
-              <div className="rounded-[18px] border border-sky-200 bg-white px-4 py-3 text-right shadow-sm">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+              <div className="rounded-[18px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3 text-right shadow-sm">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                   Muestra cargada
                 </p>
                 <p className="mt-1 text-lg font-semibold text-slate-950">
                   {analysis.sampleSize} eventos
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[color:var(--ink-3)]">
                   Ultimos {RECENT_EVENTS_LIMIT} registros como maximo
                 </p>
               </div>
 
               <Link
                 href="/settings"
-                className="inline-flex h-11 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-sky-200 hover:text-sky-700"
+                className="inline-flex h-11 items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 text-sm font-medium text-[color:var(--ink-2)] shadow-sm transition-colors hover:border-[color:var(--ink-4)] hover:text-[color:var(--ink-2)]"
               >
                 Volver a Settings
               </Link>

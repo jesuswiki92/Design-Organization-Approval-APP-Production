@@ -275,14 +275,14 @@ export default function ChangeClassificationPanel({
   const criticalYes = answers.filter((a) => a.question_number <= 3 && a.answer === 'yes').length
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
       {/* Header - clickable to toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
-          <h4 className="text-sm font-semibold text-slate-900">
+          <h4 className="text-sm font-semibold text-[color:var(--ink)]">
             G12-01 Change Classification
           </h4>
 
@@ -294,7 +294,7 @@ export default function ChangeClassificationPanel({
                   ? 'bg-red-50 text-red-700'
                   : result === 'minor'
                     ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-slate-100 text-slate-500'
+                    : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
               }`}
             >
               {result === 'major' ? 'MAJOR' : result === 'minor' ? 'MINOR' : `${answeredCount}/16`}
@@ -310,19 +310,19 @@ export default function ChangeClassificationPanel({
         </div>
 
         <ChevronDown
-          className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 text-[color:var(--ink-3)] transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Collapsible content */}
       {isOpen && (
-        <div className="border-t border-slate-100 px-5 pb-5 pt-4">
+        <div className="border-t border-[color:var(--ink-4)] px-5 pb-5 pt-4">
               {/* Actions bar */}
               <div className="mb-4 flex items-center justify-between">
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="flex items-center gap-1.5 rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-md bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {analyzing ? (
                     <>
@@ -384,12 +384,12 @@ export default function ChangeClassificationPanel({
               </div>
 
               {/* Divider */}
-              <div className="my-4 border-t border-slate-100" />
+              <div className="my-4 border-t border-[color:var(--ink-4)]" />
 
               {/* Standard questions */}
               <div>
                 <div className="mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Classification -- Any YES = Major
                   </span>
                 </div>
@@ -410,9 +410,9 @@ export default function ChangeClassificationPanel({
               </div>
 
               {/* Summary */}
-              <div className="mt-5 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="mt-5 flex items-center justify-between rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-[color:var(--ink-3)]">
                     {answeredCount}/16 respondidas · {yesCount} YES · {answeredCount - yesCount} NO
                   </span>
                 </div>
@@ -422,7 +422,7 @@ export default function ChangeClassificationPanel({
                       ? 'bg-red-100 text-red-700'
                       : result === 'minor'
                         ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-slate-200 text-slate-500'
+                        : 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
                   }`}
                 >
                   {result === 'major'
@@ -443,7 +443,7 @@ export default function ChangeClassificationPanel({
 // -----------------------------------------------------------
 
 function formatYesNoUnknown(value: string | null | undefined): { label: string; color: string } {
-  if (!value) return { label: '—', color: 'text-slate-400' }
+  if (!value) return { label: '—', color: 'text-[color:var(--ink-3)]' }
   switch (value.toLowerCase()) {
     case 'si':
     case 'yes':
@@ -454,7 +454,7 @@ function formatYesNoUnknown(value: string | null | undefined): { label: string; 
     case 'unknown':
       return { label: 'Unknown / No seguro', color: 'text-amber-600' }
     default:
-      return { label: value, color: 'text-slate-700' }
+      return { label: value, color: 'text-[color:var(--ink-2)]' }
   }
 }
 
@@ -503,27 +503,27 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
   if (!hasWeightData && !hasLocationData && !hasStructuralData && !hasAdData) return null
 
   return (
-    <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50/30">
-      <div className="border-b border-indigo-100 px-3.5 py-2.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">
+    <div className="mb-4 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/30">
+      <div className="border-b border-[color:var(--ink-4)] px-3.5 py-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--ink-3)]">
           Datos para clasificacion / Classification Data
         </span>
       </div>
 
-      <div className="space-y-0 divide-y divide-indigo-100">
+      <div className="space-y-0 divide-y divide-[color:var(--ink-4)]">
         {/* Row 1 — WEIGHT */}
         {hasWeightData && (
           <div className="px-3.5 py-2.5">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <Scale className="h-3 w-3 text-slate-400" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <Scale className="h-3 w-3 text-[color:var(--ink-3)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 Weight / Peso
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {estimatedWeight != null ? (
                 <>
-                  <span className="text-xs font-medium text-slate-900">
+                  <span className="text-xs font-medium text-[color:var(--ink)]">
                     {estimatedWeight.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
                   </span>
                   {data.mtow_kg != null ? (
@@ -538,13 +538,13 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                       ) : null
                     })()
                   ) : (
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-[color:var(--ink-3)]">
                       MTOW no disponible para calculo de %
                     </span>
                   )}
                 </>
               ) : (
-                <span className="text-xs text-slate-400">Sin peso total estimado</span>
+                <span className="text-xs text-[color:var(--ink-3)]">Sin peso total estimado</span>
               )}
             </div>
 
@@ -553,7 +553,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
               <div className="mt-2">
                 <button
                   onClick={() => setWeightItemsOpen(!weightItemsOpen)}
-                  className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 hover:text-indigo-700"
+                  className="flex items-center gap-1 text-[10px] font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]"
                 >
                   {weightItemsOpen ? (
                     <ChevronDown className="h-3 w-3" />
@@ -563,10 +563,10 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                   {itemsList.length} item{itemsList.length !== 1 ? 's' : ''} detallado{itemsList.length !== 1 ? 's' : ''}
                 </button>
                 {weightItemsOpen && (
-                  <div className="mt-1.5 rounded border border-slate-200 bg-white">
+                  <div className="mt-1.5 rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
                     <table className="w-full text-[11px]">
                       <thead>
-                        <tr className="border-b border-slate-100 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        <tr className="border-b border-[color:var(--ink-4)] text-left text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                           <th className="px-2.5 py-1.5">Item</th>
                           <th className="px-2.5 py-1.5 text-right">Added (kg)</th>
                           <th className="px-2.5 py-1.5 text-right">Removed (kg)</th>
@@ -577,7 +577,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                         {itemsList.map((item, idx) => {
                           const net = (item.weight_added_kg ?? 0) - (item.weight_removed_kg ?? 0)
                           return (
-                            <tr key={idx} className="text-slate-700">
+                            <tr key={idx} className="text-[color:var(--ink-2)]">
                               <td className="px-2.5 py-1.5">{item.item || '—'}</td>
                               <td className="px-2.5 py-1.5 text-right text-emerald-600">
                                 +{(item.weight_added_kg ?? 0).toFixed(2)}
@@ -587,7 +587,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                               </td>
                               <td
                                 className={`px-2.5 py-1.5 text-right font-medium ${
-                                  net > 0 ? 'text-amber-600' : net < 0 ? 'text-emerald-600' : 'text-slate-500'
+                                  net > 0 ? 'text-amber-600' : net < 0 ? 'text-emerald-600' : 'text-[color:var(--ink-3)]'
                                 }`}
                               >
                                 {net >= 0 ? '+' : ''}{net.toFixed(2)}
@@ -608,27 +608,27 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
         {hasLocationData && (
           <div className="px-3.5 py-2.5">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <MapPin className="h-3 w-3 text-slate-400" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <MapPin className="h-3 w-3 text-[color:var(--ink-3)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 Location / Ubicacion
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
               {data.impact_location && (
-                <span className="text-slate-700">
-                  <span className="text-slate-400">Zone: </span>
+                <span className="text-[color:var(--ink-2)]">
+                  <span className="text-[color:var(--ink-3)]">Zone: </span>
                   {data.impact_location}
                 </span>
               )}
               {data.fuselage_position && (
-                <span className="text-slate-700">
-                  <span className="text-slate-400">Position: </span>
+                <span className="text-[color:var(--ink-2)]">
+                  <span className="text-[color:var(--ink-3)]">Position: </span>
                   {formatFuselagePosition(data.fuselage_position)}
                 </span>
               )}
               {data.sta_location && (
-                <span className="text-slate-700">
-                  <span className="text-slate-400">STA: </span>
+                <span className="text-[color:var(--ink-2)]">
+                  <span className="text-[color:var(--ink-3)]">STA: </span>
                   {data.sta_location}
                 </span>
               )}
@@ -640,21 +640,21 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
         {hasStructuralData && (
           <div className="px-3.5 py-2.5">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <Shield className="h-3 w-3 text-slate-400" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <Shield className="h-3 w-3 text-[color:var(--ink-3)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 Structure / Estructura
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
               {data.impact_structural_attachment && (
-                <span className="text-slate-700">
-                  <span className="text-slate-400">Structural attachment: </span>
+                <span className="text-[color:var(--ink-2)]">
+                  <span className="text-[color:var(--ink-3)]">Structural attachment: </span>
                   <span className={structural.color}>{structural.label}</span>
                 </span>
               )}
               {data.affects_primary_structure && (
-                <span className="text-slate-700">
-                  <span className="text-slate-400">PSE: </span>
+                <span className="text-[color:var(--ink-2)]">
+                  <span className="text-[color:var(--ink-3)]">PSE: </span>
                   <span className={pse.color}>{pse.label}</span>
                   {data.affects_primary_structure.toLowerCase() === 'si' && (
                     <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">
@@ -672,14 +672,14 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
         {hasAdData && (
           <div className="px-3.5 py-2.5">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <AlertTriangle className="h-3 w-3 text-slate-400" />
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <AlertTriangle className="h-3 w-3 text-[color:var(--ink-3)]" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 Airworthiness Directive / AD
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-              <span className="text-slate-700">
-                <span className="text-slate-400">Motivated by AD: </span>
+              <span className="text-[color:var(--ink-2)]">
+                <span className="text-[color:var(--ink-3)]">Motivated by AD: </span>
                 <span className={ad.color}>{ad.label}</span>
                 {data.related_to_ad?.toLowerCase() === 'si' && (
                   <span className="ml-1.5 inline-flex rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-600">
@@ -688,8 +688,8 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                 )}
               </span>
               {data.ad_reference && (
-                <span className="text-slate-700">
-                  <span className="text-slate-400">Reference: </span>
+                <span className="text-[color:var(--ink-2)]">
+                  <span className="text-[color:var(--ink-3)]">Reference: </span>
                   {data.ad_reference}
                 </span>
               )}
@@ -729,18 +729,18 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
             : 'border-red-200 bg-red-50/30'
           : answer.answer === 'no'
             ? 'border-emerald-200 bg-emerald-50/30'
-            : 'border-slate-150 bg-white'
+            : 'border-slate-150 bg-[color:var(--paper)]'
       }`}
     >
       <div className="flex items-start gap-3">
         {/* Question number */}
-        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--paper-2)] text-[10px] font-bold text-[color:var(--ink-3)]">
           {question.n}
         </span>
 
         {/* Question text */}
         <div className="min-w-0 flex-1">
-          <p className="text-xs leading-relaxed text-slate-700">{question.q}</p>
+          <p className="text-xs leading-relaxed text-[color:var(--ink-2)]">{question.q}</p>
 
           {/* Justification */}
           {showJustification && (
@@ -749,7 +749,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
               onChange={(e) => onSetJustification(question.n, e.target.value)}
               placeholder="Justification..."
               rows={2}
-              className="mt-1.5 w-full resize-none rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 placeholder-slate-300 focus:border-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-200"
+              className="mt-1.5 w-full resize-none rounded border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-1.5 text-xs text-[color:var(--ink-2)] placeholder-slate-300 focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
             />
           )}
 
@@ -761,7 +761,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
                   ? 'bg-emerald-50 text-emerald-600'
                   : answer.confidence === 'medium'
                     ? 'bg-amber-50 text-amber-600'
-                    : 'bg-slate-100 text-slate-400'
+                    : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
               }`}
             >
               {answer.confidence} confidence
@@ -781,7 +781,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
                 ? isCritical
                   ? 'bg-amber-500 text-white'
                   : 'bg-red-500 text-white'
-                : 'bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500'
+                : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] hover:bg-red-50 hover:text-red-500'
             }`}
           >
             <XCircle className="h-3 w-3" />
@@ -796,7 +796,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
             className={`flex items-center gap-0.5 rounded px-2 py-1 text-[10px] font-semibold transition-colors ${
               answer.answer === 'no'
                 ? 'bg-emerald-500 text-white'
-                : 'bg-slate-100 text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'
+                : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] hover:bg-emerald-50 hover:text-emerald-500'
             }`}
           >
             <CheckCircle2 className="h-3 w-3" />
@@ -806,7 +806,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
           {!showJustification && (
             <button
               onClick={() => setShowJustification(true)}
-              className="ml-1 rounded p-1 text-slate-300 hover:text-slate-500"
+              className="ml-1 rounded p-1 text-[color:var(--ink-4)] hover:text-[color:var(--ink-2)]"
               title="Add justification"
             >
               <HelpCircle className="h-3 w-3" />

@@ -235,8 +235,8 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
   if (timerState === null) {
     return (
       <div className="flex items-center gap-1.5">
-        <div className="h-7 w-16 animate-pulse rounded-full bg-slate-100" />
-        <div className="h-7 w-16 animate-pulse rounded-full bg-slate-100" />
+        <div className="h-7 w-16 animate-pulse rounded-full bg-[color:var(--paper-2)]" />
+        <div className="h-7 w-16 animate-pulse rounded-full bg-[color:var(--paper-2)]" />
       </div>
     )
   }
@@ -271,7 +271,7 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
 
       {/* TIEMPO TRANSCURRIDO (solo visible cuando esta corriendo) */}
       {isRunning && (
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600">
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[color:var(--ink-3)]">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           {elapsedText}
         </span>

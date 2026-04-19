@@ -124,7 +124,7 @@ export default async function QuotationsPage() {
       <div className="px-5 pb-0 pt-5">
         <Link
           href="/quotations/forms"
-          className="inline-flex items-center rounded-xl border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-700 shadow-sm transition-colors hover:bg-sky-50"
+          className="inline-flex items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm font-semibold text-[color:var(--ink-2)] shadow-sm transition-colors hover:bg-[color:var(--paper-3)]"
         >
           <FileText className="mr-2 h-4 w-4" />
           Formularios

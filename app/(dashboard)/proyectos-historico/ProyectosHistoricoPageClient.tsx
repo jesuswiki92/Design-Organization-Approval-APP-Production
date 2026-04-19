@@ -122,24 +122,24 @@ export default function ProyectosHistoricoPageClient({
       {/* Barra superior con titulo y subtitulo de la pagina */}
       <TopBar title="Proyectos Historico" subtitle="Base historica de proyectos" />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-5 text-slate-900">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 p-5 text-[color:var(--ink)]">
         {/* === SECCION CABECERA: titulo, descripcion, contador y buscador === */}
-        <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             {/* Titulo y texto explicativo */}
             <div className="space-y-2">
               <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
                 Proyectos Historico
               </h2>
-              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
                 Listado historico base. Pulsa `+` en cada fila para abrir la ficha de entrada y
                 empezar a completar la informacion del proyecto.
               </p>
             </div>
 
             {/* Contador: muestra cuantos proyectos hay visibles (segun la busqueda) */}
-            <div className="rounded-[22px] border border-sky-200 bg-white/90 px-4 py-3 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                 Proyectos
               </p>
               <p className="mt-2 text-2xl font-semibold text-slate-950">{filtered.length}</p>
@@ -151,34 +151,34 @@ export default function ProyectosHistoricoPageClient({
             <div className="relative max-w-lg flex-1">
               <Search
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]"
               />
               <input
                 type="text"
                 placeholder="Buscar por codigo, titulo o cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-950 shadow-sm transition-colors placeholder:text-slate-400 focus:border-sky-300 focus:outline-none"
+                className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] py-2 pl-9 pr-3 text-sm text-slate-950 shadow-sm transition-colors placeholder:text-[color:var(--ink-3)] focus:border-[color:var(--ink-4)] focus:outline-none"
               />
             </div>
 
-            <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <div className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
               Usa el `+` para abrir la ficha
             </div>
           </div>
         </section>
 
         {/* === TABLA DE PROYECTOS: muestra cada proyecto en una fila === */}
-        <div className="min-h-0 flex-1 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <div className="overflow-x-auto">
           <table className="min-w-[900px] w-full text-sm">
             {/* Cabecera de la tabla con los nombres de las columnas */}
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
+              <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
                 {['Codigo', 'Titulo', 'Cliente', 'Accion'].map((col) => (
                   <th
                     key={col}
-                    className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                    className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]"
                   >
                     {col}
                   </th>
@@ -190,22 +190,22 @@ export default function ProyectosHistoricoPageClient({
               {filtered.map((project) => (
                 <tr
                   key={project.id}
-                  className="border-b border-slate-200/60 transition-colors hover:bg-sky-50/40"
+                  className="border-b border-[color:var(--ink-4)]/60 transition-colors hover:bg-[color:var(--paper-3)]/40"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-[linear-gradient(135deg,#DBEAFE,#E0F2FE)] text-xs font-bold text-sky-700">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#DBEAFE,#E0F2FE)] text-xs font-bold text-[color:var(--ink-2)]">
                         {getBadgeLabel(project.numero_proyecto)}
                       </div>
                       <div>
                         <p className="font-medium text-slate-950">{project.numero_proyecto}</p>
-                        <p className="font-mono text-xs text-slate-500">
+                        <p className="font-mono text-xs text-[color:var(--ink-3)]">
                           {project.anio ?? '2021'}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-[color:var(--ink-3)]">
                     <div className="space-y-1">
                       <p className="font-medium text-slate-950">{project.titulo}</p>
                       {(project.aeronave || project.msn) ? (
@@ -213,7 +213,7 @@ export default function ProyectosHistoricoPageClient({
                           {project.aeronave ? (
                             <span
                               title={project.aeronave}
-                              className="inline-block max-w-[180px] truncate rounded-full bg-sky-50 px-2 py-0.5 text-sky-700"
+                              className="inline-block max-w-[180px] truncate rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[color:var(--ink-2)]"
                             >
                               {project.aeronave}
                             </span>
@@ -221,7 +221,7 @@ export default function ProyectosHistoricoPageClient({
                           {project.msn ? (
                             <span
                               title={project.msn}
-                              className="inline-block max-w-[260px] truncate rounded-full bg-slate-100 px-2 py-0.5 text-slate-600"
+                              className="inline-block max-w-[260px] truncate rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[color:var(--ink-3)]"
                             >
                               MSN {project.msn}
                             </span>
@@ -230,13 +230,13 @@ export default function ProyectosHistoricoPageClient({
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{project.cliente_nombre ?? '-'}</td>
+                  <td className="px-4 py-3 text-[color:var(--ink-3)]">{project.cliente_nombre ?? '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {/* Boton para abrir la ficha detallada del proyecto */}
                       <Link
                         href={`/proyectos-historico/${project.id}`}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                         title="Abrir ficha"
                         aria-label={`Abrir ficha de ${project.numero_proyecto}`}
                       >
@@ -261,7 +261,7 @@ export default function ProyectosHistoricoPageClient({
               {/* Mensaje cuando no hay resultados (tabla vacia o busqueda sin coincidencias) */}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-[color:var(--ink-3)]">
                     {search
                       ? `No se encontraron proyectos historicos para "${search}"`
                       : 'No hay proyectos historicos registrados.'}

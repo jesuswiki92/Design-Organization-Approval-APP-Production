@@ -66,12 +66,12 @@ export default function ToolsPage() {
           {/* Tarjeta: TCDS RAG Engine */}
           <Link
             href="/tools/tcds-rag"
-            className="group block rounded-[24px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-6 shadow-[0_18px_45px_rgba(148,163,184,0.16)] transition-all hover:border-sky-300 hover:shadow-[0_20px_50px_rgba(148,163,184,0.22)]"
+            className="group block rounded-[24px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-6 shadow-[0_18px_45px_rgba(148,163,184,0.16)] transition-all hover:border-[color:var(--ink-4)] hover:shadow-[0_20px_50px_rgba(148,163,184,0.22)]"
           >
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               {/* Icono, titulo y descripcion */}
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-200 bg-[linear-gradient(135deg,#2563EB,#38BDF8)] shadow-sm">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#2563EB,#38BDF8)] shadow-sm">
                   <BrainCircuit className="h-7 w-7 text-white" />
                 </div>
 
@@ -84,7 +84,7 @@ export default function ToolsPage() {
 
                     {/* Badge dinamico segun estado de conexion */}
                     {ragConnected === null ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                         <Loader2 className="h-3 w-3 animate-spin" />
                         Verificando
                       </span>
@@ -102,7 +102,7 @@ export default function ToolsPage() {
                   </div>
 
                   {/* Subtitulo descriptivo */}
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink-3)]">
                     Motor de indexacion y busqueda semantica para Type
                     Certificate Data Sheets
                   </p>
@@ -120,12 +120,12 @@ export default function ToolsPage() {
           {/* Tarjeta: Part-21 Classification RAG */}
           <Link
             href="/tools/part21-rag"
-            className="group block rounded-[24px] border border-violet-200 bg-[linear-gradient(135deg,#ffffff_0%,#f3eeff_55%,#ede9fe_100%)] px-6 py-6 shadow-[0_18px_45px_rgba(148,163,184,0.16)] transition-all hover:border-violet-300 hover:shadow-[0_20px_50px_rgba(148,163,184,0.22)]"
+            className="group block rounded-[24px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f3eeff_55%,#ede9fe_100%)] px-6 py-6 shadow-[0_18px_45px_rgba(148,163,184,0.16)] transition-all hover:border-[color:var(--ink-4)] hover:shadow-[0_20px_50px_rgba(148,163,184,0.22)]"
           >
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
               {/* Icono, titulo y descripcion */}
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-violet-200 bg-[linear-gradient(135deg,#7C3AED,#A78BFA)] shadow-sm">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#7C3AED,#A78BFA)] shadow-sm">
                   <Scale className="h-7 w-7 text-white" />
                 </div>
 
@@ -138,7 +138,7 @@ export default function ToolsPage() {
 
                     {/* Badge dinamico segun estado de la tabla en Supabase */}
                     {part21Status === null ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                         <Loader2 className="h-3 w-3 animate-spin" />
                         Verificando
                       </span>
@@ -156,7 +156,7 @@ export default function ToolsPage() {
                   </div>
 
                   {/* Subtitulo descriptivo */}
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink-3)]">
                     Base de conocimiento para clasificacion de cambios
                     aeronauticos (AMC-GM Part-21, G12-01)
                   </p>

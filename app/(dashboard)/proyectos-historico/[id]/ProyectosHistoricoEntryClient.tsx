@@ -124,15 +124,15 @@ function DataField({
   return (
     // Tarjeta con bordes redondeados y fondo gris claro
     // Si "wide" es verdadero, ocupa dos columnas en pantallas medianas o mayores
-    <div className={`rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 ${wide ? 'md:col-span-2' : ''}`}>
+    <div className={`rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-3.5 ${wide ? 'md:col-span-2' : ''}`}>
       {/* Etiqueta superior: muestra el icono y el nombre del campo en mayusculas */}
-      <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
         {icon}
         {label}
       </span>
       {/* Valor del campo: si no hay dato, muestra un guion gris en cursiva */}
-      <p className="mt-1.5 text-sm leading-6 text-slate-900">
-        {value || <span className="italic text-slate-400">-</span>}
+      <p className="mt-1.5 text-sm leading-6 text-[color:var(--ink)]">
+        {value || <span className="italic text-[color:var(--ink-3)]">-</span>}
       </p>
     </div>
   )
@@ -158,7 +158,7 @@ function ShortcutButton({ label, targetId }: { label: string; targetId: string }
       onClick={() =>
         document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-colors hover:border-sky-200 hover:text-sky-600"
+      className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] shadow-sm transition-colors hover:border-[color:var(--ink-4)] hover:text-[color:var(--ink-2)]"
     >
       {label}
     </button>
@@ -181,7 +181,7 @@ function MdlDocumentList({ docs }: { docs: MdlDocumento[] }) {
   })
 
   return (
-    <div className="divide-y divide-slate-100">
+    <div className="divide-y divide-[color:var(--ink-4)]">
       {sorted.map((doc, idx) => {
         const isSuperseded = doc.estado === 'Superseded'
         return (
@@ -190,22 +190,22 @@ function MdlDocumentList({ docs }: { docs: MdlDocumento[] }) {
             className={`flex items-center gap-3 px-4 py-2 ${isSuperseded ? 'opacity-60' : ''}`}
           >
             {/* Badge de referencia */}
-            <span className="shrink-0 rounded bg-sky-50 px-2 py-0.5 font-mono text-[11px] font-medium text-sky-800">
+            <span className="shrink-0 rounded bg-[color:var(--paper-2)] px-2 py-0.5 font-mono text-[11px] font-medium text-[color:var(--ink-2)]">
               {doc.ref}
             </span>
 
             {/* Titulo del documento */}
-            <span className={`min-w-0 flex-1 truncate text-sm text-slate-800 ${isSuperseded ? 'line-through' : ''}`}>
+            <span className={`min-w-0 flex-1 truncate text-sm text-[color:var(--ink-2)] ${isSuperseded ? 'line-through' : ''}`}>
               {doc.titulo}
             </span>
 
             {/* Badge de edicion */}
-            <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 sm:inline-block">
+            <span className="hidden shrink-0 rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)] sm:inline-block">
               Ed {doc.edicion}
             </span>
 
             {/* Fecha */}
-            <span className="hidden shrink-0 text-[11px] text-slate-400 md:inline-block">
+            <span className="hidden shrink-0 text-[11px] text-[color:var(--ink-3)] md:inline-block">
               {doc.fecha}
             </span>
 
@@ -245,15 +245,15 @@ function escapeHtml(text: string): string {
 /** Parsea markdown inline: **negrita**, *cursiva*, `codigo` */
 function parseInline(text: string): string {
   let result = escapeHtml(text)
-  result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-[color:var(--ink)]">$1</strong>')
   result = result.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  result = result.replace(/`(.+?)`/g, '<code class="rounded bg-slate-100 px-1 py-0.5 text-[11px] font-mono text-slate-700">$1</code>')
+  result = result.replace(/`(.+?)`/g, '<code class="rounded bg-[color:var(--paper-2)] px-1 py-0.5 text-[11px] font-mono text-[color:var(--ink-2)]">$1</code>')
   return result
 }
 
 /** Renderiza una tabla markdown (delimitada por pipes) a HTML */
 function renderMdTable(lines: string[]): string {
-  if (lines.length < 2) return lines.map((l) => `<p class="text-xs text-slate-700">${escapeHtml(l)}</p>`).join('')
+  if (lines.length < 2) return lines.map((l) => `<p class="text-xs text-[color:var(--ink-2)]">${escapeHtml(l)}</p>`).join('')
 
   const parseRow = (line: string) =>
     line.split('|').map((c) => c.trim()).filter((c) => c.length > 0)
@@ -264,17 +264,17 @@ function renderMdTable(lines: string[]): string {
   const dataRows = lines.slice(dataStartIdx).map(parseRow)
 
   const ths = headerCells
-    .map((h) => `<th class="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-500">${parseInline(h)}</th>`)
+    .map((h) => `<th class="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">${parseInline(h)}</th>`)
     .join('')
 
   const trs = dataRows
     .map((cells) => {
-      const tds = cells.map((c) => `<td class="px-2 py-1 text-xs text-slate-700">${parseInline(c)}</td>`).join('')
-      return `<tr class="border-t border-slate-100">${tds}</tr>`
+      const tds = cells.map((c) => `<td class="px-2 py-1 text-xs text-[color:var(--ink-2)]">${parseInline(c)}</td>`).join('')
+      return `<tr class="border-t border-[color:var(--ink-4)]">${tds}</tr>`
     })
     .join('')
 
-  return `<div class="overflow-x-auto rounded-lg border border-slate-200 my-2"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50">${ths}</tr></thead><tbody>${trs}</tbody></table></div>`
+  return `<div class="overflow-x-auto rounded-lg border border-[color:var(--ink-4)] my-2"><table class="w-full text-left text-xs"><thead><tr class="bg-[color:var(--paper-2)]">${ths}</tr></thead><tbody>${trs}</tbody></table></div>`
 }
 
 /** Convierte un string markdown completo a HTML */
@@ -289,15 +289,15 @@ function parseMarkdown(md: string): string {
     if (trimmed === '') { i++; continue }
 
     if (trimmed.startsWith('###')) {
-      htmlParts.push(`<h4 class="mt-3 mb-1 text-xs font-bold text-slate-700">${parseInline(trimmed.replace(/^###\s*/, ''))}</h4>`)
+      htmlParts.push(`<h4 class="mt-3 mb-1 text-xs font-bold text-[color:var(--ink-2)]">${parseInline(trimmed.replace(/^###\s*/, ''))}</h4>`)
       i++; continue
     }
     if (trimmed.startsWith('##')) {
-      htmlParts.push(`<h3 class="mt-4 mb-1.5 text-sm font-bold text-slate-900 border-b border-slate-100 pb-1">${parseInline(trimmed.replace(/^##\s*/, ''))}</h3>`)
+      htmlParts.push(`<h3 class="mt-4 mb-1.5 text-sm font-bold text-[color:var(--ink)] border-b border-[color:var(--ink-4)] pb-1">${parseInline(trimmed.replace(/^##\s*/, ''))}</h3>`)
       i++; continue
     }
     if (trimmed.startsWith('#')) {
-      htmlParts.push(`<h3 class="mt-4 mb-1.5 text-sm font-bold text-slate-900 border-b border-slate-100 pb-1">${parseInline(trimmed.replace(/^#\s*/, ''))}</h3>`)
+      htmlParts.push(`<h3 class="mt-4 mb-1.5 text-sm font-bold text-[color:var(--ink)] border-b border-[color:var(--ink-4)] pb-1">${parseInline(trimmed.replace(/^#\s*/, ''))}</h3>`)
       i++; continue
     }
 
@@ -311,18 +311,18 @@ function parseMarkdown(md: string): string {
     if (/^[-*]\s/.test(trimmed)) {
       const items: string[] = []
       while (i < lines.length && /^[-*]\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^[-*]\s/, '')); i++ }
-      htmlParts.push(`<ul class="my-1.5 ml-4 list-disc space-y-0.5">${items.map((t) => `<li class="text-xs text-slate-700 leading-relaxed">${parseInline(t)}</li>`).join('')}</ul>`)
+      htmlParts.push(`<ul class="my-1.5 ml-4 list-disc space-y-0.5">${items.map((t) => `<li class="text-xs text-[color:var(--ink-2)] leading-relaxed">${parseInline(t)}</li>`).join('')}</ul>`)
       continue
     }
 
     if (/^\d+\.\s/.test(trimmed)) {
       const items: string[] = []
       while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^\d+\.\s/, '')); i++ }
-      htmlParts.push(`<ol class="my-1.5 ml-4 list-decimal space-y-0.5">${items.map((t) => `<li class="text-xs text-slate-700 leading-relaxed">${parseInline(t)}</li>`).join('')}</ol>`)
+      htmlParts.push(`<ol class="my-1.5 ml-4 list-decimal space-y-0.5">${items.map((t) => `<li class="text-xs text-[color:var(--ink-2)] leading-relaxed">${parseInline(t)}</li>`).join('')}</ol>`)
       continue
     }
 
-    htmlParts.push(`<p class="text-xs text-slate-700 leading-relaxed my-1">${parseInline(trimmed)}</p>`)
+    htmlParts.push(`<p class="text-xs text-[color:var(--ink-2)] leading-relaxed my-1">${parseInline(trimmed)}</p>`)
     i++
   }
 
@@ -463,14 +463,14 @@ export default function ProyectosHistoricoEntryClient({
         {/* Boton azul para volver a la lista de proyectos historicos */}
         <Link
           href="/proyectos-historico"
-          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
+          className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver a Proyectos Historico
         </Link>
 
         {/* Etiqueta decorativa que indica que esta pagina es una ficha de proyecto */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-sm">
+        <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)] shadow-sm">
           Ficha de proyecto
         </div>
       </div>
@@ -483,31 +483,31 @@ export default function ProyectosHistoricoEntryClient({
       {/*   - Texto explicativo                                              */}
       {/*   - Etiquetas resumen: cliente, anio y carpeta de origen           */}
       {/* ------------------------------------------------------------------ */}
-      <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+      <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
         {/* Codigo del proyecto mostrado en estilo "monoespaciado" (como texto tecnico) */}
-        <span className="inline-block rounded-lg border border-slate-200 bg-white/90 px-3 py-1 font-mono text-xs font-medium text-slate-500">
+        <span className="inline-block rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-1 font-mono text-xs font-medium text-[color:var(--ink-3)]">
           {project.numero_proyecto}
         </span>
         {/* Titulo grande del proyecto */}
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">{project.titulo}</h1>
         {/* Texto informativo que explica que esta es una ficha de solo consulta */}
-        <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+        <p className="mt-2 max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
           Ficha de consulta del proyecto historico. Toda la informacion mostrada proviene de la base de datos.
         </p>
 
         {/* Etiquetas resumen: muestran el cliente, anio y carpeta de origen de un vistazo */}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {/* Nombre del cliente (o "Sin cliente" si no hay dato) */}
-          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+          <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1 text-xs text-[color:var(--ink-3)]">
             {project.cliente_nombre || 'Sin cliente'}
           </span>
           {/* Anio del proyecto (o "Sin anio" si no hay dato) */}
-          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+          <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1 text-xs text-[color:var(--ink-3)]">
             {anio || 'Sin anio'}
           </span>
           {/* Nombre de la carpeta de origen (solo se muestra si existe) */}
           {project.nombre_carpeta_origen && (
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+            <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1 text-xs text-[color:var(--ink-3)]">
               {project.nombre_carpeta_origen}
             </span>
           )}
@@ -519,7 +519,7 @@ export default function ProyectosHistoricoEntryClient({
       {/* Fila de botones que permiten saltar directamente a cada seccion     */}
       {/* de la pagina sin necesidad de hacer scroll manualmente.             */}
       {/* ------------------------------------------------------------------ */}
-      <section className="rounded-[28px] border border-slate-200 bg-white/90 p-4 shadow-[0_12px_28px_rgba(148,163,184,0.10)]">
+      <section className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 p-4 shadow-[0_12px_28px_rgba(148,163,184,0.10)]">
         <div className="flex flex-wrap gap-2">
           <ShortcutButton label="Datos basicos" targetId="datos-basicos" />
           <ShortcutButton label="Origen" targetId="origen" />
@@ -546,9 +546,9 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="datos-basicos"
-            className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Bloque 01
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Datos del proyecto</h2>
@@ -570,9 +570,9 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="origen"
-            className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Bloque 02
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Origen</h2>
@@ -586,9 +586,9 @@ export default function ProyectosHistoricoEntryClient({
               />
               {/* Ruta completa en el servidor donde estaba almacenado el proyecto */}
               {/* Se oculta la ruta larga y se muestra un boton azul para copiarla */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
+              <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                     <FileText className="h-3.5 w-3.5" />
                     Ruta de origen
                   </span>
@@ -601,7 +601,7 @@ export default function ProyectosHistoricoEntryClient({
                       className={`rounded-lg p-1.5 transition-colors ${
                         copiedField === 'ruta_origen'
                           ? 'bg-emerald-100 text-emerald-600'
-                          : 'bg-sky-100 text-sky-600 hover:bg-sky-200'
+                          : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] hover:bg-[color:var(--paper-3)]'
                       }`}
                     >
                       {copiedField === 'ruta_origen' ? (
@@ -623,18 +623,18 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="descripcion"
-            className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Bloque 03
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Descripcion</h2>
 
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+            <div className="mt-5 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4">
               {/* Texto de la descripcion. Si no hay descripcion guardada, muestra
                   "Sin descripcion registrada." en gris y cursiva */}
-              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-900">
-                {project.descripcion || <span className="italic text-slate-400">Sin descripcion registrada.</span>}
+              <p className="whitespace-pre-wrap text-sm leading-7 text-[color:var(--ink)]">
+                {project.descripcion || <span className="italic text-[color:var(--ink-3)]">Sin descripcion registrada.</span>}
               </p>
             </div>
           </section>
@@ -646,9 +646,9 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="documentacion-doa"
-            className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Bloque 04
             </p>
 
@@ -658,10 +658,10 @@ export default function ProyectosHistoricoEntryClient({
               <div className="flex items-center gap-2">
                 {project.mdl_contenido && (
                   <>
-                    <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-medium text-sky-700">
+                    <span className="rounded-full bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[11px] font-medium text-[color:var(--ink-2)]">
                       {project.mdl_contenido.entregables.length} Entregables
                     </span>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600">
+                    <span className="rounded-full bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[11px] font-medium text-[color:var(--ink-3)]">
                       {project.mdl_contenido.no_entregables.length} No entregables
                     </span>
                   </>
@@ -681,15 +681,15 @@ export default function ProyectosHistoricoEntryClient({
               <button
                 type="button"
                 onClick={() => setMdlOpen(prev => !prev)}
-                className="flex w-full items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50/60 px-5 py-3 text-left transition-colors hover:bg-sky-100/60"
+                className="flex w-full items-center gap-2 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/60 px-5 py-3 text-left transition-colors hover:bg-[color:var(--paper-3)]/60"
               >
                 {mdlOpen ? (
-                  <ChevronDown className="h-4 w-4 shrink-0 text-sky-500" />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-[color:var(--ink-3)]" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 shrink-0 text-sky-500" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[color:var(--ink-3)]" />
                 )}
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-sky-900">
-                  <FileText className="h-4 w-4 text-sky-600" />
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--ink)]">
+                  <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
                   Master Document List
                 </span>
               </button>
@@ -699,36 +699,36 @@ export default function ProyectosHistoricoEntryClient({
                 <div className="mt-3 space-y-3">
                   {!project.mdl_contenido ? (
                     // Sin MDL cargado: mensaje sutil
-                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm italic text-slate-400">
+                    <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4 text-sm italic text-[color:var(--ink-3)]">
                       No se ha cargado el Master Document List para este proyecto
                     </div>
                   ) : (
                     <>
                       {/* ── Seccion 4.1 - Documentos Entregables (default OPEN) ── */}
-                      <div className="rounded-xl border border-slate-200">
+                      <div className="rounded-xl border border-[color:var(--ink-4)]">
                         <button
                           type="button"
                           onClick={() => setEntregablesOpen(prev => !prev)}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-slate-50/80"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-[color:var(--paper-3)]/80"
                         >
                           {entregablesOpen ? (
-                            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-sky-500" />
+                            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[color:var(--ink-3)]" />
                           ) : (
-                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[color:var(--ink-3)]" />
                           )}
-                          <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                          <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-3)]">
                             4.1 Documentos Entregables
                           </span>
-                          <span className="ml-auto rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700">
+                          <span className="ml-auto rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-medium text-[color:var(--ink-2)]">
                             {project.mdl_contenido.entregables.length}
                           </span>
                         </button>
 
                         {/* Filas de documentos entregables */}
                         {entregablesOpen && (
-                          <div className="border-t border-slate-100">
+                          <div className="border-t border-[color:var(--ink-4)]">
                             {project.mdl_contenido.entregables.length === 0 ? (
-                              <p className="px-4 py-3 text-xs italic text-slate-400">Sin documentos entregables.</p>
+                              <p className="px-4 py-3 text-xs italic text-[color:var(--ink-3)]">Sin documentos entregables.</p>
                             ) : (
                               <MdlDocumentList docs={project.mdl_contenido.entregables} />
                             )}
@@ -737,30 +737,30 @@ export default function ProyectosHistoricoEntryClient({
                       </div>
 
                       {/* ── Seccion 4.2 - Documentos No Entregables (default CLOSED) ── */}
-                      <div className="rounded-xl border border-slate-200">
+                      <div className="rounded-xl border border-[color:var(--ink-4)]">
                         <button
                           type="button"
                           onClick={() => setNoEntregablesOpen(prev => !prev)}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-slate-50/80"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors hover:bg-[color:var(--paper-3)]/80"
                         >
                           {noEntregablesOpen ? (
-                            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-sky-500" />
+                            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[color:var(--ink-3)]" />
                           ) : (
-                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[color:var(--ink-3)]" />
                           )}
-                          <span className="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                          <span className="text-xs font-semibold uppercase tracking-wide text-[color:var(--ink-3)]">
                             4.2 Documentos No Entregables
                           </span>
-                          <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                          <span className="ml-auto rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]">
                             {project.mdl_contenido.no_entregables.length}
                           </span>
                         </button>
 
                         {/* Filas de documentos no entregables */}
                         {noEntregablesOpen && (
-                          <div className="border-t border-slate-100">
+                          <div className="border-t border-[color:var(--ink-4)]">
                             {project.mdl_contenido.no_entregables.length === 0 ? (
-                              <p className="px-4 py-3 text-xs italic text-slate-400">Sin documentos no entregables.</p>
+                              <p className="px-4 py-3 text-xs italic text-[color:var(--ink-3)]">Sin documentos no entregables.</p>
                             ) : (
                               <MdlDocumentList docs={project.mdl_contenido.no_entregables} />
                             )}
@@ -800,12 +800,12 @@ export default function ProyectosHistoricoEntryClient({
               {summaryOpen && (
                 <div className="mt-3">
                   {summaryHtml === null ? (
-                    <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm italic text-slate-400">
+                    <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4 text-sm italic text-[color:var(--ink-3)]">
                       No hay resumen disponible para este proyecto
                     </div>
                   ) : (
                     <div
-                      className="max-h-[600px] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4"
+                      className="max-h-[600px] overflow-y-auto rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4"
                       dangerouslySetInnerHTML={{ __html: summaryHtml }}
                     />
                   )}
@@ -818,15 +818,15 @@ export default function ProyectosHistoricoEntryClient({
             {/* ============================================================ */}
             <div className="mt-6">
               <div className="mb-3 flex items-center gap-3">
-                <div className="h-px flex-1 bg-slate-200" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                <div className="h-px flex-1 bg-[color:var(--paper-3)]" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                   Familias Documentales
                 </span>
-                <div className="h-px flex-1 bg-slate-200" />
+                <div className="h-px flex-1 bg-[color:var(--paper-3)]" />
               </div>
 
               {documentos.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-4 text-sm italic text-slate-400">
+                <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4 text-sm italic text-[color:var(--ink-3)]">
                   No se han registrado familias documentales para este proyecto
                 </div>
               ) : (
@@ -834,33 +834,33 @@ export default function ProyectosHistoricoEntryClient({
                   {documentos.map((doc) => (
                     <div
                       key={doc.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 transition-colors hover:border-slate-300"
+                      className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-3.5 transition-colors hover:border-[color:var(--ink-4)]"
                     >
                       {/* Cabecera: nombre de familia + badge de orden */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          <FolderOpen className="h-4 w-4 shrink-0 text-sky-500" />
-                          <span className="text-sm font-semibold text-slate-900">
+                          <FolderOpen className="h-4 w-4 shrink-0 text-[color:var(--ink-3)]" />
+                          <span className="text-sm font-semibold text-[color:var(--ink)]">
                             {doc.familia_documental}
                           </span>
                         </div>
                         {doc.orden_documental != null && (
-                          <span className="shrink-0 rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-bold text-sky-700">
+                          <span className="shrink-0 rounded-full bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[10px] font-bold text-[color:var(--ink-2)]">
                             Orden {doc.orden_documental}
                           </span>
                         )}
                       </div>
 
                       {/* Carpeta de origen */}
-                      <p className="mt-1.5 text-xs text-slate-500">
-                        <span className="font-medium text-slate-400">Carpeta:</span>{' '}
+                      <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">
+                        <span className="font-medium text-[color:var(--ink-3)]">Carpeta:</span>{' '}
                         {doc.carpeta_origen}
                       </p>
 
                       {/* Archivo de referencia (si existe) */}
                       {doc.archivo_referencia && (
-                        <p className="mt-1 truncate text-xs text-slate-500">
-                          <span className="font-medium text-slate-400">Ref:</span>{' '}
+                        <p className="mt-1 truncate text-xs text-[color:var(--ink-3)]">
+                          <span className="font-medium text-[color:var(--ink-3)]">Ref:</span>{' '}
                           <span className="font-mono">{doc.archivo_referencia}</span>
                         </p>
                       )}
@@ -868,7 +868,7 @@ export default function ProyectosHistoricoEntryClient({
                       {/* Fila inferior: conteo de archivos, formatos y boton copiar */}
                       <div className="mt-2.5 flex flex-wrap items-center gap-2">
                         {/* Conteo de archivos */}
-                        <span className="rounded-full bg-slate-200/80 px-2.5 py-0.5 text-[10px] font-medium text-slate-600">
+                        <span className="rounded-full bg-[color:var(--paper-3)]/80 px-2.5 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]">
                           {doc.total_archivos} {doc.total_archivos === 1 ? 'archivo' : 'archivos'}
                         </span>
 
@@ -876,7 +876,7 @@ export default function ProyectosHistoricoEntryClient({
                         {doc.formatos_disponibles.map((fmt) => (
                           <span
                             key={fmt}
-                            className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500"
+                            className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]"
                           >
                             {fmt}
                           </span>
@@ -890,7 +890,7 @@ export default function ProyectosHistoricoEntryClient({
                           className={`ml-auto rounded-lg p-1.5 transition-colors ${
                             copiedField === `doc-${doc.id}`
                               ? 'bg-emerald-100 text-emerald-600'
-                              : 'bg-sky-100 text-sky-600 hover:bg-sky-200'
+                              : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] hover:bg-[color:var(--paper-3)]'
                           }`}
                         >
                           {copiedField === `doc-${doc.id}` ? (
@@ -914,22 +914,22 @@ export default function ProyectosHistoricoEntryClient({
                                   <button
                                     type="button"
                                     onClick={() => toggleDocFamily(cDoc.ref)}
-                                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:border-sky-200 hover:text-sky-600"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--ink-3)] transition-colors hover:border-[color:var(--ink-4)] hover:text-[color:var(--ink-2)]"
                                   >
                                     {isExpanded ? (
-                                      <ChevronDown className="h-3 w-3 text-sky-500" />
+                                      <ChevronDown className="h-3 w-3 text-[color:var(--ink-3)]" />
                                     ) : (
-                                      <ChevronRight className="h-3 w-3 text-slate-400" />
+                                      <ChevronRight className="h-3 w-3 text-[color:var(--ink-3)]" />
                                     )}
                                     <FileText className="h-3 w-3" />
                                     Ver contenido: {cDoc.title}
-                                    <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[9px] text-slate-500">
+                                    <span className="rounded bg-[color:var(--paper-2)] px-1.5 py-0.5 font-mono text-[9px] text-[color:var(--ink-3)]">
                                       {cDoc.ref}
                                     </span>
                                   </button>
                                   {isExpanded && (
                                     <div
-                                      className="mt-2 max-h-[400px] overflow-y-auto rounded-xl border border-slate-200 bg-white px-4 py-3"
+                                      className="mt-2 max-h-[400px] overflow-y-auto rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3"
                                       dangerouslySetInnerHTML={{ __html: parseMarkdown(cDoc.content_md) }}
                                     />
                                   )}
@@ -959,26 +959,26 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="metadata"
-            className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Metadata
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Informacion del registro</h2>
             <div className="mt-4 space-y-3">
               {/* Fecha en que se creo el proyecto en el sistema */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-3.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                   Fecha de creacion
                 </span>
-                <p className="mt-1.5 text-sm text-slate-900">{fechaCreacion || '-'}</p>
+                <p className="mt-1.5 text-sm text-[color:var(--ink)]">{fechaCreacion || '-'}</p>
               </div>
               {/* Fecha de la ultima modificacion del proyecto */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-3.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                   Ultima actualizacion
                 </span>
-                <p className="mt-1.5 text-sm text-slate-900">{fechaActualizacion || '-'}</p>
+                <p className="mt-1.5 text-sm text-[color:var(--ink)]">{fechaActualizacion || '-'}</p>
               </div>
             </div>
           </section>
@@ -992,21 +992,21 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="siguiente-paso"
-            className="rounded-[28px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_46%,#f8fafc_100%)] p-6 shadow-[0_18px_40px_rgba(14,165,233,0.08)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_46%,#f8fafc_100%)] p-6 shadow-[0_18px_40px_rgba(14,165,233,0.08)]"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Siguiente paso
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">Bloques pendientes</h2>
             {/* Lista de bloques que se anadiran en el futuro */}
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-              <li className="rounded-2xl border border-sky-100 bg-white/80 px-4 py-3">
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-[color:var(--ink-3)]">
+              <li className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-3">
                 Aeronave, familia y variante.
               </li>
-              <li className="rounded-2xl border border-sky-100 bg-white/80 px-4 py-3">
+              <li className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-3">
                 Tipo de trabajo y clasificacion tecnica.
               </li>
-              <li className="rounded-2xl border border-sky-100 bg-white/80 px-4 py-3">
+              <li className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-3">
                 Notas y trazabilidad adicional.
               </li>
             </ul>

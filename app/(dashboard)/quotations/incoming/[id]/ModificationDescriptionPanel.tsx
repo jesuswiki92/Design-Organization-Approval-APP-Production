@@ -371,13 +371,13 @@ function StatusDot({ status }: { status: SectionStatus }) {
   const config = {
     filled: { bg: 'bg-emerald-400', label: 'Auto-filled' },
     partial: { bg: 'bg-amber-400', label: 'Partial' },
-    empty: { bg: 'bg-slate-300', label: 'Empty' },
+    empty: { bg: 'bg-[color:var(--paper-3)]', label: 'Empty' },
   }
   const { bg, label } = config[status]
   return (
     <span className="inline-flex items-center gap-1.5" title={label}>
       <span className={`inline-block h-2 w-2 rounded-full ${bg}`} />
-      <span className="text-[10px] text-slate-400">{label}</span>
+      <span className="text-[10px] text-[color:var(--ink-3)]">{label}</span>
     </span>
   )
 }
@@ -462,15 +462,15 @@ export default function ModificationDescriptionPanel({
   }, [consultationId, consultationData])
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
       {/* Header - clickable to toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
-          <FileText className="h-4 w-4 text-teal-600" />
-          <h4 className="text-sm font-semibold text-slate-900">
+          <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
+          <h4 className="text-sm font-semibold text-[color:var(--ink)]">
             G12-17 Modification Description
           </h4>
 
@@ -481,7 +481,7 @@ export default function ModificationDescriptionPanel({
                 ? 'bg-emerald-50 text-emerald-700'
                 : filledCount > 0
                   ? 'bg-amber-50 text-amber-700'
-                  : 'bg-slate-100 text-slate-500'
+                  : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
             }`}
           >
             {filledCount}/{totalCount} secciones
@@ -489,19 +489,19 @@ export default function ModificationDescriptionPanel({
         </div>
 
         <ChevronDown
-          className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 text-[color:var(--ink-3)] transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Collapsible content */}
       {isOpen && (
-        <div className="border-t border-slate-100 px-5 pb-5 pt-4">
+        <div className="border-t border-[color:var(--ink-4)] px-5 pb-5 pt-4">
           {/* Actions bar */}
           <div className="mb-4 flex items-center justify-between">
             <button
               onClick={handleAIAnalyze}
               disabled={analyzing}
-              className="flex items-center gap-1.5 rounded-md bg-teal-50 px-3 py-1.5 text-xs font-medium text-teal-600 transition-colors hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-md bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {analyzing ? (
                 <>
@@ -518,7 +518,7 @@ export default function ModificationDescriptionPanel({
 
             <button
               disabled
-              className="flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed"
+              className="flex items-center gap-1.5 rounded-md bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] cursor-not-allowed"
               title="Proximamente"
             >
               <Download className="h-3.5 w-3.5" />
@@ -543,19 +543,19 @@ export default function ModificationDescriptionPanel({
           </div>
 
           {/* Summary */}
-          <div className="mt-5 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-            <span className="text-xs text-slate-500">
+          <div className="mt-5 flex items-center justify-between rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+            <span className="text-xs text-[color:var(--ink-3)]">
               {filledCount}/{totalCount} secciones con contenido
             </span>
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1.5 text-[10px] text-[color:var(--ink-3)]">
                 <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" /> Auto-filled
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1.5 text-[10px] text-[color:var(--ink-3)]">
                 <span className="inline-block h-2 w-2 rounded-full bg-amber-400" /> Partial
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                <span className="inline-block h-2 w-2 rounded-full bg-slate-300" /> Empty
+              <span className="flex items-center gap-1.5 text-[10px] text-[color:var(--ink-3)]">
+                <span className="inline-block h-2 w-2 rounded-full bg-[color:var(--paper-3)]" /> Empty
               </span>
             </div>
           </div>
@@ -586,13 +586,13 @@ function SectionCardWithStatus({
     .replace(/^DEFINITION OF DESIGN -- /, '')
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-100 px-3.5 py-2.5">
+    <div className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
+      <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] px-3.5 py-2.5">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-teal-50 px-1.5 text-[10px] font-bold text-teal-700">
+          <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded bg-[color:var(--paper-2)] px-1.5 text-[10px] font-bold text-[color:var(--ink-2)]">
             {sectionLabel}
           </span>
-          <span className="text-xs font-semibold text-slate-800">{titleClean}</span>
+          <span className="text-xs font-semibold text-[color:var(--ink-2)]">{titleClean}</span>
         </div>
         <StatusDot status={status} />
       </div>
@@ -602,11 +602,11 @@ function SectionCardWithStatus({
             value={content}
             onChange={(e) => onChange(e.target.value)}
             rows={Math.max(2, content.split('\n').length + 1)}
-            className="w-full resize-y rounded-md border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs leading-relaxed text-slate-700 placeholder-slate-400 focus:border-teal-300 focus:outline-none focus:ring-1 focus:ring-teal-200"
+            className="w-full resize-y rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-3 py-2 text-xs leading-relaxed text-[color:var(--ink-2)] placeholder-[color:var(--ink-4)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
           />
         ) : (
-          <div className="flex items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/30 py-4">
-            <p className="text-xs italic text-slate-400">
+          <div className="flex items-center justify-center rounded-md border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/30 py-4">
+            <p className="text-xs italic text-[color:var(--ink-3)]">
               Pendiente de datos / Requires engineering input
             </p>
           </div>

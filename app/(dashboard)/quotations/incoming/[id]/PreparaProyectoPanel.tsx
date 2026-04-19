@@ -105,27 +105,27 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
   // ---------- Estado: exito ----------
   if (created) {
     return (
-      <section className="rounded-[22px] border border-emerald-200 bg-[linear-gradient(135deg,#ecfdf5_0%,#ffffff_100%)] p-5 shadow-[0_10px_24px_rgba(16,185,129,0.15)]">
+      <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
         <div className="flex items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100">
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
           </div>
           <div className="flex-1">
-            <h2 className="text-sm font-semibold text-slate-950">
+            <h2 className="text-sm font-semibold text-[color:var(--ink)]">
               Proyecto abierto correctamente
             </h2>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-[color:var(--ink-3)]">
               Se ha creado el proyecto{' '}
               <span className="font-mono font-semibold text-emerald-700">
                 {created.numero_proyecto}
               </span>{' '}
               y la carpeta en disco.
             </p>
-            <div className="mt-3 rounded-xl border border-emerald-200 bg-white/70 p-3">
-              <p className="text-[11px] uppercase tracking-wider text-slate-500">
+            <div className="mt-3 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/70 p-3">
+              <p className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
                 Carpeta
               </p>
-              <p className="mt-1 break-all font-mono text-xs text-slate-700">
+              <p className="mt-1 break-all font-mono text-xs text-[color:var(--ink-2)]">
                 {created.folder_path}
               </p>
             </div>
@@ -147,8 +147,8 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
   // ---------- Estado: cargando preview ----------
   if (loadingPreview) {
     return (
-      <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+      <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
           <Loader2 className="h-4 w-4 animate-spin" />
           Calculando propuesta de proyecto...
         </div>
@@ -159,20 +159,20 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
   // ---------- Estado: error preview ----------
   if (previewError || !preview) {
     return (
-      <section className="rounded-[22px] border border-red-200 bg-red-50 p-5">
+      <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
           <div>
-            <h2 className="text-sm font-semibold text-red-900">
+            <h2 className="text-sm font-semibold text-[color:var(--ink)]">
               No se pudo cargar la vista previa
             </h2>
-            <p className="mt-1 text-xs text-red-700">
+            <p className="mt-1 text-xs text-[color:var(--ink-3)]">
               {previewError ?? 'Respuesta vacia del servidor.'}
             </p>
             <button
               type="button"
               onClick={loadPreview}
-              className="mt-3 inline-flex items-center gap-2 rounded-xl border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm hover:bg-red-50"
+              className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 text-xs font-semibold text-[color:var(--ink-2)] shadow-sm hover:bg-[color:var(--paper-3)]"
             >
               Reintentar
             </button>
@@ -184,15 +184,15 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
 
   // ---------- Estado: preview cargada ----------
   return (
-    <section className="overflow-hidden rounded-[22px] border border-emerald-200 bg-white shadow-[0_10px_24px_rgba(16,185,129,0.12)]">
-      <div className="border-b border-emerald-200 bg-[linear-gradient(135deg,#ecfdf5_0%,#ffffff_60%,#f0fdf4_100%)] px-5 py-4">
+    <section className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-emerald-600" />
-          <h2 className="text-sm font-semibold text-slate-950">
+          <Sparkles className="h-4 w-4 text-[color:var(--umber)]" />
+          <h2 className="text-sm font-semibold text-[color:var(--ink)]">
             Abrir proyecto
           </h2>
         </div>
-        <p className="mt-1 text-xs text-slate-600">
+        <p className="mt-1 text-xs text-[color:var(--ink-3)]">
           Confirma la informacion y abre el proyecto. Se creara la fila en la
           base de datos y la carpeta fisica con sus subcarpetas estandar.
         </p>
@@ -201,14 +201,14 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
       <div className="grid gap-5 px-5 py-5 md:grid-cols-2">
         {/* Columna izquierda: datos del proyecto */}
         <div className="space-y-3">
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
-            <p className="text-[11px] uppercase tracking-wider text-emerald-700">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3">
+            <p className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
               Numero de proyecto sugerido
             </p>
-            <p className="mt-1 font-mono text-xl font-semibold text-emerald-800">
+            <p className="mt-1 font-mono text-xl font-semibold text-[color:var(--ink)]">
               {preview.numero_proyecto_sugerido}
             </p>
-            <p className="mt-1 text-[11px] text-slate-500">
+            <p className="mt-1 text-[11px] text-[color:var(--ink-3)]">
               Prefijo {preview.modelo_prefijo} - secuencia{' '}
               {preview.secuencia_sugerida} (existentes:{' '}
               {preview.existentes_mismo_prefijo})
@@ -216,33 +216,33 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
           </div>
 
           <dl className="grid grid-cols-1 gap-2 text-xs">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-              <dt className="text-[11px] uppercase tracking-wider text-slate-500">
+            <div className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-2.5">
+              <dt className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
                 Titulo
               </dt>
-              <dd className="mt-0.5 text-slate-800">{preview.titulo_sugerido}</dd>
+              <dd className="mt-0.5 text-[color:var(--ink-2)]">{preview.titulo_sugerido}</dd>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-              <dt className="text-[11px] uppercase tracking-wider text-slate-500">
+            <div className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-2.5">
+              <dt className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
                 Aeronave
               </dt>
-              <dd className="mt-0.5 text-slate-800">
+              <dd className="mt-0.5 text-[color:var(--ink-2)]">
                 {preview.aeronave ?? '—'}
               </dd>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-              <dt className="text-[11px] uppercase tracking-wider text-slate-500">
+            <div className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-2.5">
+              <dt className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
                 Cliente
               </dt>
-              <dd className="mt-0.5 text-slate-800">
+              <dd className="mt-0.5 text-[color:var(--ink-2)]">
                 {preview.cliente ?? '—'}
               </dd>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-              <dt className="text-[11px] uppercase tracking-wider text-slate-500">
+            <div className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-2.5">
+              <dt className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
                 TCDS
               </dt>
-              <dd className="mt-0.5 font-mono text-slate-800">
+              <dd className="mt-0.5 font-mono text-[color:var(--ink-2)]">
                 {preview.tcds_code ?? '—'}
                 {preview.tcds_code_short ? ` (${preview.tcds_code_short})` : ''}
               </dd>
@@ -252,23 +252,23 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
 
         {/* Columna derecha: estructura de carpetas */}
         <div className="space-y-3">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-wider text-slate-500">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3">
+            <p className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
               Carpeta a crear
             </p>
-            <p className="mt-1 break-all font-mono text-xs text-slate-700">
+            <p className="mt-1 break-all font-mono text-xs text-[color:var(--ink-2)]">
               {preview.folder_path}
             </p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-3">
-            <p className="text-[11px] uppercase tracking-wider text-slate-500">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3">
+            <p className="text-[11px] uppercase tracking-wider text-[color:var(--ink-3)]">
               Subcarpetas estandar
             </p>
             <ul className="mt-2 space-y-1">
               {preview.folder_structure.map((folder) => (
                 <li
                   key={folder}
-                  className="flex items-center gap-2 rounded-md bg-slate-50 px-2 py-1.5 text-xs text-slate-700"
+                  className="flex items-center gap-2 rounded-md bg-[color:var(--paper-2)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                 >
                   <FolderPlus className="h-3.5 w-3.5 text-emerald-600" />
                   <span className="font-mono">{folder}</span>
@@ -280,7 +280,7 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
       </div>
 
       {submitError && (
-        <div className="mx-5 mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="mx-5 mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
           <div className="flex items-start gap-2">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>{submitError}</span>
@@ -288,7 +288,7 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-5 py-4">
         <button
           type="button"
           onClick={handleAbrirProyecto}

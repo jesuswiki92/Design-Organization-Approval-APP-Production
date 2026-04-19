@@ -148,18 +148,18 @@ export function ComplianceDocumentsSection({
 
   if (blocked) {
     return (
-      <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/40 px-5 py-5">
+      <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 px-5 py-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-violet-200 bg-white">
-            <FileText className="h-4 w-4 text-violet-600" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
+            <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900">Definir documentacion bloqueado en esta fase</p>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
+            <p className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion bloqueado en esta fase</p>
+            <p className="mt-1 text-sm leading-6 text-[color:var(--ink-3)]">
               Esta vista permanece visible como placeholder, pero la edicion de oferta sigue desactivada
               mientras la consulta esta en modo revision y decision.
             </p>
-            <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-400">
+            <p className="mt-3 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
               La configuracion de compliance se activara cuando la consulta salga de revision.
             </p>
           </div>
@@ -171,8 +171,8 @@ export function ComplianceDocumentsSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-500">
-          <span className="font-semibold text-slate-700">{selected.size}</span>/{templates.length} seleccionados
+        <p className="text-xs text-[color:var(--ink-3)]">
+          <span className="font-semibold text-[color:var(--ink-2)]">{selected.size}</span>/{templates.length} seleccionados
           {preselectedCodes.length > 0 && (
             <span className="ml-1 text-emerald-600">
               ({preselectedCodes.length} sugeridos)
@@ -196,7 +196,7 @@ export function ComplianceDocumentsSection({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-100 disabled:cursor-wait disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-semibold text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-60"
           >
             {saving && <Loader2 className="h-3 w-3 animate-spin" />}
             {saving ? 'Guardando...' : 'Guardar seleccion'}
@@ -214,9 +214,9 @@ export function ComplianceDocumentsSection({
         <details
           open={aiPanelOpen}
           onToggle={(e) => setAiPanelOpen((e.target as HTMLDetailsElement).open)}
-          className="group rounded-xl border border-violet-200 bg-violet-50/50"
+          className="group rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50"
         >
-          <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-semibold text-violet-700">
+          <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-semibold text-[color:var(--ink-2)]">
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="h-3 w-3" />
               {aiSuggestions.length} sugerencias de IA
@@ -235,19 +235,19 @@ export function ComplianceDocumentsSection({
             {aiSuggestions.map((s) => (
               <div
                 key={s.code}
-                className="flex items-start gap-2 rounded-lg border border-violet-100 bg-white px-2.5 py-2"
+                className="flex items-start gap-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2"
               >
-                <span className="font-mono text-[10px] font-semibold text-violet-600 w-[52px] shrink-0 pt-0.5">
+                <span className="font-mono text-[10px] font-semibold text-[color:var(--ink-3)] w-[52px] shrink-0 pt-0.5">
                   {s.code}
                 </span>
-                <p className="flex-1 text-[11px] leading-snug text-slate-600">{s.justification}</p>
+                <p className="flex-1 text-[11px] leading-snug text-[color:var(--ink-3)]">{s.justification}</p>
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase ${
                     s.confidence === 'high'
                       ? 'bg-emerald-100 text-emerald-700'
                       : s.confidence === 'medium'
                         ? 'bg-amber-100 text-amber-700'
-                        : 'bg-slate-100 text-slate-600'
+                        : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
                   }`}
                 >
                   {s.confidence}
@@ -267,20 +267,20 @@ export function ComplianceDocumentsSection({
           const allOn = count === items.length
 
           return (
-            <div key={category} className="rounded-xl border border-slate-200">
-              <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+            <div key={category} className="rounded-xl border border-[color:var(--ink-4)]">
+              <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] px-3 py-2">
                 <label className="flex items-center gap-2 text-left cursor-pointer">
                   <input
                     type="checkbox"
                     checked={allOn}
                     onChange={() => toggleAll(category)}
-                    className="h-3.5 w-3.5 rounded border-slate-300 accent-violet-600"
+                    className="h-3.5 w-3.5 rounded border-[color:var(--ink-4)] accent-violet-600"
                   />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     {CATEGORY_LABELS[category as ComplianceTemplate['category']]}
                   </span>
                 </label>
-                <span className="text-[10px] text-slate-400">{count}/{items.length}</span>
+                <span className="text-[10px] text-[color:var(--ink-3)]">{count}/{items.length}</span>
               </div>
 
               <div className="px-2 py-1">
@@ -289,20 +289,20 @@ export function ComplianceDocumentsSection({
                   return (
                     <label
                       key={t.code}
-                      className={`flex items-start gap-2 rounded px-1 py-1 cursor-pointer hover:bg-slate-50 ${
-                        suggestion ? 'bg-violet-50/40' : ''
+                      className={`flex items-start gap-2 rounded px-1 py-1 cursor-pointer hover:bg-[color:var(--paper-3)] ${
+                        suggestion ? 'bg-[color:var(--paper-2)]/40' : ''
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={selected.has(t.code)}
                         onChange={() => toggle(t.code)}
-                        className="h-3.5 w-3.5 mt-0.5 rounded border-slate-300 accent-violet-600"
+                        className="h-3.5 w-3.5 mt-0.5 rounded border-[color:var(--ink-4)] accent-violet-600"
                       />
-                      <span className="font-mono text-[10px] text-slate-400 w-[50px] shrink-0 pt-0.5">{t.code}</span>
+                      <span className="font-mono text-[10px] text-[color:var(--ink-3)] w-[50px] shrink-0 pt-0.5">{t.code}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-slate-700">{t.name}</span>
+                          <span className="text-xs text-[color:var(--ink-2)]">{t.name}</span>
                           {preselectedSet.has(t.code) && (
                             <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
                               REF
@@ -315,7 +315,7 @@ export function ComplianceDocumentsSection({
                                   ? 'bg-emerald-100 text-emerald-700'
                                   : suggestion.confidence === 'medium'
                                     ? 'bg-amber-100 text-amber-700'
-                                    : 'bg-slate-100 text-slate-600'
+                                    : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
                               }`}
                             >
                               <Sparkles className="h-2.5 w-2.5" />
@@ -324,7 +324,7 @@ export function ComplianceDocumentsSection({
                           )}
                         </div>
                         {suggestion && (
-                          <p className="mt-0.5 text-[10.5px] leading-snug text-violet-700/80 italic">
+                          <p className="mt-0.5 text-[10.5px] leading-snug text-[color:var(--ink-2)]/80 italic">
                             {suggestion.justification}
                           </p>
                         )}

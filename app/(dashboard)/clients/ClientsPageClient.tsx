@@ -99,25 +99,25 @@ export default function ClientsPageClient({ clients }: { clients: ClienteWithCon
     <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
       <TopBar title="Clientes" subtitle="Base de datos de clientes" />
 
-      <div className="flex min-h-0 flex-1 gap-5 p-5 text-slate-900">
+      <div className="flex min-h-0 flex-1 gap-5 p-5 text-[color:var(--ink)]">
         <div className="flex min-h-0 basis-2/3 flex-col gap-4">
           <div className="flex items-center gap-3">
             <div className="relative max-w-lg flex-1">
               <Search
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]"
               />
               <input
                 type="text"
                 placeholder="Buscar por nombre, dirección o teléfono..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-950 shadow-sm transition-colors placeholder:text-slate-400 focus:border-sky-300 focus:outline-none"
+                className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] py-2 pl-9 pr-3 text-sm text-slate-950 shadow-sm transition-colors placeholder:text-[color:var(--ink-3)] focus:border-[color:var(--ink-4)] focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-4 text-xs text-[color:var(--ink-3)]">
             <span>
               <span className="font-semibold text-slate-950">{filtered.length}</span> clientes
             </span>
@@ -129,14 +129,14 @@ export default function ClientsPageClient({ clients }: { clients: ClienteWithCon
             </span>
           </div>
 
-          <div className="min-h-0 overflow-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <div className="min-h-0 overflow-auto rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
+                <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
                   {['Nombre', 'Dirección', 'Teléfono', 'Estado'].map((col) => (
                     <th
                       key={col}
-                      className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                      className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]"
                     >
                       {col}
                     </th>
@@ -153,25 +153,25 @@ export default function ClientsPageClient({ clients }: { clients: ClienteWithCon
                       key={client.id}
                       onClick={() => setSelectedClient(isSelected ? null : client)}
                       className={cn(
-                        'cursor-pointer border-b border-slate-200/60 transition-colors',
-                        isSelected ? 'bg-sky-50/70' : 'hover:bg-sky-50/40'
+                        'cursor-pointer border-b border-[color:var(--ink-4)]/60 transition-colors',
+                        isSelected ? 'bg-[color:var(--paper-2)]/70' : 'hover:bg-[color:var(--paper-3)]/40'
                       )}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-[linear-gradient(135deg,#DBEAFE,#E0F2FE)] text-xs font-bold text-sky-700">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#DBEAFE,#E0F2FE)] text-xs font-bold text-[color:var(--ink-2)]">
                             {getInitials(client.nombre)}
                           </div>
                           <div>
                             <p className="font-medium text-slate-950">{client.nombre}</p>
                             {client.cif_vat ? (
-                              <p className="font-mono text-xs text-slate-500">{client.cif_vat}</p>
+                              <p className="font-mono text-xs text-[color:var(--ink-3)]">{client.cif_vat}</p>
                             ) : null}
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600">{address || '—'}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-slate-600">
+                      <td className="px-4 py-3 text-[color:var(--ink-3)]">{address || '—'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-[color:var(--ink-3)]">
                         {client.telefono ?? '—'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -180,7 +180,7 @@ export default function ClientsPageClient({ clients }: { clients: ClienteWithCon
                             'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
                             client.activo
                               ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-slate-100 text-slate-500'
+                              : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
                           )}
                         >
                           {client.activo ? 'Activo' : 'Inactivo'}
@@ -192,7 +192,7 @@ export default function ClientsPageClient({ clients }: { clients: ClienteWithCon
 
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-400">
+                    <td colSpan={4} className="px-4 py-10 text-center text-sm text-[color:var(--ink-3)]">
                       {search
                         ? `No se encontraron clientes para "${search}"`
                         : 'No hay clientes registrados.'}

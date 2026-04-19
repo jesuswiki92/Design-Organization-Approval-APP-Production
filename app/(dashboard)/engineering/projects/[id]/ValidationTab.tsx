@@ -258,8 +258,8 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
   return (
     <div className="flex flex-col gap-5">
       <header className="flex items-center gap-2">
-        <ShieldCheck className="h-4 w-4 text-slate-400" />
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <ShieldCheck className="h-4 w-4 text-[color:var(--ink-3)]" />
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           Validacion DOH/DOS
         </h2>
       </header>
@@ -272,13 +272,13 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
 
       {/* CTA: Enviar a validacion */}
       {canSend && (
-        <section className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-violet-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Listo para validacion
               </h3>
-              <p className="mt-1 text-xs text-violet-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                 Todos los deliverables estan completos. Envia el proyecto a
                 DOH/DOS para que firmen la aprobacion.
               </p>
@@ -302,14 +302,14 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
 
       {/* CTA: Retomar ejecucion + mostrar ultimo return */}
       {canResume && (
-        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-rose-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Devuelto a ejecucion
               </h3>
               {lastReturn ? (
-                <div className="mt-2 space-y-2 text-xs text-rose-800">
+                <div className="mt-2 space-y-2 text-xs text-[color:var(--ink-2)]">
                   <p>
                     <strong>Decidido por:</strong>{' '}
                     {lastReturn.validator_email ?? lastReturn.validator_user_id.slice(0, 8)}{' '}
@@ -333,7 +333,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                   )}
                 </div>
               ) : (
-                <p className="mt-1 text-xs text-rose-700">
+                <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                   Atiende las observaciones y retoma cuando esten resueltas.
                 </p>
               )}
@@ -357,22 +357,22 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
 
       {/* Formulario de decision */}
       {canDecide && (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-          <h3 className="text-sm font-semibold text-amber-900">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+          <h3 className="text-sm font-semibold text-[color:var(--ink)]">
             Registrar decision
           </h3>
-          <p className="mt-1 text-xs text-amber-700">
+          <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             Al aprobar o devolver se firma HMAC la decision y se registra en el
             historial de auditoria.
           </p>
 
           <div className="mt-4 grid grid-cols-1 gap-3">
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-[color:var(--ink-2)]">
               Capacidad
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as ValidationRole)}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
               >
                 {(Object.keys(VALIDATION_ROLE_LABELS) as ValidationRole[]).map(
                   (r) => (
@@ -384,32 +384,32 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
               </select>
             </label>
 
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-[color:var(--ink-2)]">
               Comentarios
               <Textarea
                 value={comentarios}
                 onChange={(e) => setComentarios(e.target.value)}
                 placeholder="Resumen de la revision..."
-                className="mt-1 bg-white"
+                className="mt-1 bg-[color:var(--paper)]"
               />
             </label>
 
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-700">
+                <span className="text-xs font-medium text-[color:var(--ink-2)]">
                   Observaciones ({observations.length})
                 </span>
                 <button
                   type="button"
                   onClick={addObservation}
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] hover:bg-[color:var(--paper-3)]"
                 >
                   <Plus className="h-3 w-3" />
                   Anadir
                 </button>
               </div>
               {observations.length === 0 && (
-                <p className="mt-1 text-[11px] text-slate-500">
+                <p className="mt-1 text-[11px] text-[color:var(--ink-3)]">
                   Para devolver a ejecucion hace falta al menos una observacion.
                 </p>
               )}
@@ -417,14 +417,14 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                 {observations.map((o, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-white p-2 md:grid-cols-12"
+                    className="grid grid-cols-1 gap-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-2 md:grid-cols-12"
                   >
                     <select
                       value={o.deliverable_id}
                       onChange={(e) =>
                         updateObservation(idx, { deliverable_id: e.target.value })
                       }
-                      className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 md:col-span-4"
+                      className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] md:col-span-4"
                     >
                       <option value="">(Proyecto completo)</option>
                       {deliverables.map((d) => (
@@ -441,7 +441,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                           severidad: e.target.value as ObservationSeverity,
                         })
                       }
-                      className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 md:col-span-2"
+                      className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] md:col-span-2"
                     >
                       {(
                         Object.keys(OBSERVATION_SEVERITY_LABELS) as ObservationSeverity[]
@@ -458,12 +458,12 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                         updateObservation(idx, { texto: e.target.value })
                       }
                       placeholder="Describe la observacion"
-                      className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 md:col-span-5"
+                      className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] md:col-span-5"
                     />
                     <button
                       type="button"
                       onClick={() => removeObservation(idx)}
-                      className="inline-flex items-center justify-center rounded border border-slate-200 bg-white p-1 text-slate-400 hover:text-rose-600 md:col-span-1"
+                      className="inline-flex items-center justify-center rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-1 text-[color:var(--ink-3)] hover:text-rose-600 md:col-span-1"
                       title="Eliminar"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -506,17 +506,17 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
       )}
 
       {/* Timeline */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           Historial de validaciones
         </h3>
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
             <Loader2 className="h-4 w-4 animate-spin" />
             Cargando...
           </div>
         ) : validations.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[color:var(--ink-3)]">
             Aun no hay decisiones registradas para este proyecto.
           </p>
         ) : (
@@ -527,11 +527,11 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   : v.decision === 'devuelto'
                     ? 'bg-rose-50 text-rose-700 border-rose-200'
-                    : 'bg-slate-50 text-slate-700 border-slate-200'
+                    : 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]'
               return (
                 <li
                   key={v.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50/40 p-3"
+                  className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 p-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -543,26 +543,26 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                       >
                         {VALIDATION_DECISION_LABELS[v.decision]}
                       </span>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-[color:var(--ink-3)]">
                         {VALIDATION_ROLE_LABELS[v.role]}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[color:var(--ink-3)]">
                       {formatDateTime(v.created_at)}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-600">
+                  <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                     <ChevronRight className="mr-1 inline h-3 w-3" />
                     {v.validator_email ?? v.validator_user_id.slice(0, 8)}
                   </p>
                   {v.comentarios && (
-                    <p className="mt-1 text-sm text-slate-700">{v.comentarios}</p>
+                    <p className="mt-1 text-sm text-[color:var(--ink-2)]">{v.comentarios}</p>
                   )}
                   {Array.isArray(v.observaciones) && v.observaciones.length > 0 && (
-                    <ul className="mt-2 space-y-0.5 text-xs text-slate-600">
+                    <ul className="mt-2 space-y-0.5 text-xs text-[color:var(--ink-3)]">
                       {v.observaciones.map((o, i) => (
                         <li key={i}>
-                          <span className="mr-1 font-mono text-[10px] uppercase text-slate-500">
+                          <span className="mr-1 font-mono text-[10px] uppercase text-[color:var(--ink-3)]">
                             [{o.severidad ?? 'info'}]
                           </span>
                           {o.texto}

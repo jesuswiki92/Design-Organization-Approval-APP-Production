@@ -397,8 +397,8 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
   return (
     <div className="flex flex-col gap-5">
       <header className="flex items-center gap-2">
-        <Flag className="h-4 w-4 text-slate-400" />
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <Flag className="h-4 w-4 text-[color:var(--ink-3)]" />
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           Cierre del proyecto
         </h2>
       </header>
@@ -410,13 +410,13 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
       )}
 
       {reindexMsg && (
-        <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-700">
+        <div className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 text-sm text-[color:var(--ink-2)]">
           {reindexMsg}
         </div>
       )}
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+        <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
           <Loader2 className="h-4 w-4 animate-spin" />
           Cargando cierre...
         </div>
@@ -424,8 +424,8 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
       {/* Metricas (si hay closure) */}
       {!loading && closure && metrics && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <Sparkles className="h-3.5 w-3.5" />
             Metricas del cierre
           </h3>
@@ -465,24 +465,24 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
             />
           </div>
           {closure.notas_cierre && (
-            <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-3 text-sm text-slate-700">
-              <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <div className="mt-3 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3 text-sm text-[color:var(--ink-2)]">
+              <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 Notas de cierre
               </span>
               {closure.notas_cierre}
             </div>
           )}
           {signature && (
-            <div className="mt-3 flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50 p-3 text-xs text-slate-600">
+            <div className="mt-3 flex items-start gap-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3 text-xs text-[color:var(--ink-3)]">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 text-emerald-600" />
               <div className="min-w-0">
-                <div className="font-semibold text-slate-700">
+                <div className="font-semibold text-[color:var(--ink-2)]">
                   Firma HMAC ({signature.hmac_key_id})
                 </div>
-                <div className="truncate font-mono text-[10px] text-slate-500">
+                <div className="truncate font-mono text-[10px] text-[color:var(--ink-3)]">
                   hash: {signature.payload_hash}
                 </div>
-                <div className="text-slate-500">
+                <div className="text-[color:var(--ink-3)]">
                   Firmado por {signature.signer_role} el{' '}
                   {formatDateTime(signature.created_at)}
                 </div>
@@ -494,13 +494,13 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
       {/* Formulario de cierre (solo confirmacion_cliente y sin closure) */}
       {!loading && canCerrar && !closure && (
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-emerald-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Cerrar proyecto
               </h3>
-              <p className="mt-1 text-xs text-emerald-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                 Se computara un snapshot de metricas, se firmara HMAC el cierre y
                 el proyecto pasara al estado &quot;cerrado&quot;. Podras archivarlo
                 despues para reindexar el precedente.
@@ -509,12 +509,12 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
           </div>
 
           <div className="mt-4 grid gap-3 lg:grid-cols-2">
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="block text-xs font-medium text-[color:var(--ink-2)]">
               Outcome del proyecto
               <select
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value as ClosureOutcome)}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-800 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
               >
                 {OUTCOME_OPTIONS.map((o) => (
                   <option key={o} value={o}>
@@ -525,27 +525,27 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
             </label>
           </div>
 
-          <label className="mt-3 block text-xs font-medium text-slate-700">
+          <label className="mt-3 block text-xs font-medium text-[color:var(--ink-2)]">
             Notas de cierre (opcional)
             <Textarea
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
               rows={3}
-              className="mt-1 bg-white"
+              className="mt-1 bg-[color:var(--paper)]"
               placeholder="Resumen breve, aspectos clave..."
             />
           </label>
 
           <div className="mt-5">
             <div className="mb-2 flex items-center justify-between">
-              <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-900">
+              <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink)]">
                 <BookOpen className="h-3.5 w-3.5" />
                 Lecciones aprendidas ({drafts.length})
               </h4>
               <button
                 type="button"
                 onClick={addDraft}
-                className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-white px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-[color:var(--paper)] px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
               >
                 <Plus className="h-3 w-3" />
                 Anadir leccion
@@ -553,7 +553,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
             </div>
 
             {drafts.length === 0 ? (
-              <p className="rounded-md border border-dashed border-emerald-200 bg-white/40 px-3 py-4 text-center text-xs text-emerald-700">
+              <p className="rounded-md border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)]/40 px-3 py-4 text-center text-xs text-[color:var(--ink-3)]">
                 No hay lecciones capturadas todavia. Puedes anadirlas aqui o
                 despues del cierre.
               </p>
@@ -562,7 +562,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                 {drafts.map((d) => (
                   <li
                     key={d.key}
-                    className="rounded-xl border border-emerald-200 bg-white p-3"
+                    className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap gap-2">
@@ -575,7 +575,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                               e.target.value as LessonCategoria,
                             )
                           }
-                          className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700"
+                          className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                         >
                           {CATEGORIA_OPTIONS.map((c) => (
                             <option key={c} value={c}>
@@ -592,7 +592,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                               e.target.value as LessonTipo,
                             )
                           }
-                          className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700"
+                          className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                         >
                           {TIPO_OPTIONS.map((t) => (
                             <option key={t} value={t}>
@@ -605,7 +605,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                         type="button"
                         onClick={() => removeDraft(d.key)}
                         title="Quitar"
-                        className="rounded-md border border-slate-200 bg-white p-1 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                        className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-1 text-[color:var(--ink-3)] hover:bg-rose-50 hover:text-rose-600"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -615,7 +615,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                       value={d.titulo}
                       onChange={(e) => updateDraft(d.key, 'titulo', e.target.value)}
                       placeholder="Titulo"
-                      className="mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800"
+                      className="mt-2 w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-sm text-[color:var(--ink-2)]"
                     />
                     <Textarea
                       value={d.descripcion}
@@ -624,7 +624,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                       }
                       rows={2}
                       placeholder="Descripcion"
-                      className="mt-2 bg-white"
+                      className="mt-2 bg-[color:var(--paper)]"
                     />
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
                       <input
@@ -634,7 +634,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                           updateDraft(d.key, 'impacto', e.target.value)
                         }
                         placeholder="Impacto (opcional)"
-                        className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+                        className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                       />
                       <input
                         type="text"
@@ -643,7 +643,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                           updateDraft(d.key, 'recomendacion', e.target.value)
                         }
                         placeholder="Recomendacion (opcional)"
-                        className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+                        className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                       />
                     </div>
                     <input
@@ -653,7 +653,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                         updateDraft(d.key, 'tagsRaw', e.target.value)
                       }
                       placeholder="Tags (separados por coma)"
-                      className="mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+                      className="mt-2 w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                     />
                   </li>
                 ))}
@@ -681,13 +681,13 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
       {/* Cerrado: CTA archivar */}
       {!loading && isCerrado && closure && (
-        <section className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-sky-900">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Proyecto cerrado
               </h3>
-              <p className="mt-1 text-xs text-sky-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                 Puedes archivarlo para congelar el expediente y reindexar el
                 precedente en el motor de busqueda (Pinecone).
               </p>
@@ -711,14 +711,14 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
       {/* Archivado: CTA reindex */}
       {!loading && isArchivado && closure && (
-        <section className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-violet-900">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[color:var(--ink)]">
                 <Lock className="h-4 w-4" />
                 Proyecto archivado
               </h3>
-              <p className="mt-1 text-xs text-violet-700">
+              <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                 El expediente es de solo lectura. Puedes forzar un reindex del
                 precedente si cambio el contexto (lecciones anadidas, etc.).
               </p>
@@ -742,7 +742,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
       {/* Estado no admitido */}
       {!loading && !canCerrar && !isCerrado && !isArchivado && !closure && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 text-sm text-[color:var(--ink-3)] shadow-sm">
           El proyecto no esta en un estado que admita cierre. Para cerrarlo debe
           llegar primero a &quot;confirmacion cliente&quot;.
         </section>
@@ -750,9 +750,9 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
       {/* Lista de lecciones (si hay closure o lessons cargadas) */}
       {!loading && (closure || lessons.length > 0) && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               <ClipboardList className="h-3.5 w-3.5" />
               Lecciones aprendidas ({lessons.length})
             </h3>
@@ -760,7 +760,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
               <button
                 type="button"
                 onClick={() => setShowAddLesson(true)}
-                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center gap-1 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-1 text-xs font-medium text-[color:var(--ink-2)] hover:bg-[color:var(--paper-3)]"
               >
                 <Plus className="h-3 w-3" />
                 Anadir leccion
@@ -769,7 +769,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
           </div>
 
           {showAddLesson && (
-            <div className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+            <div className="mb-3 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-wrap gap-2">
                   <select
@@ -780,7 +780,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                         categoria: e.target.value as LessonCategoria,
                       }))
                     }
-                    className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700"
+                    className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                   >
                     {CATEGORIA_OPTIONS.map((c) => (
                       <option key={c} value={c}>
@@ -796,7 +796,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                         tipo: e.target.value as LessonTipo,
                       }))
                     }
-                    className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700"
+                    className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                   >
                     {TIPO_OPTIONS.map((t) => (
                       <option key={t} value={t}>
@@ -812,7 +812,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                     setNewLesson(makeDraft())
                   }}
                   title="Cancelar"
-                  className="rounded-md border border-slate-200 bg-white p-1 text-slate-500 hover:bg-slate-50"
+                  className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-1 text-[color:var(--ink-3)] hover:bg-[color:var(--paper-3)]"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -824,7 +824,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                   setNewLesson((l) => ({ ...l, titulo: e.target.value }))
                 }
                 placeholder="Titulo"
-                className="mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-800"
+                className="mt-2 w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-sm text-[color:var(--ink-2)]"
               />
               <Textarea
                 value={newLesson.descripcion}
@@ -833,7 +833,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                 }
                 rows={2}
                 placeholder="Descripcion"
-                className="mt-2 bg-white"
+                className="mt-2 bg-[color:var(--paper)]"
               />
               <div className="mt-2 grid gap-2 md:grid-cols-2">
                 <input
@@ -843,7 +843,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                     setNewLesson((l) => ({ ...l, impacto: e.target.value }))
                   }
                   placeholder="Impacto (opcional)"
-                  className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+                  className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                 />
                 <input
                   type="text"
@@ -852,7 +852,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                     setNewLesson((l) => ({ ...l, recomendacion: e.target.value }))
                   }
                   placeholder="Recomendacion (opcional)"
-                  className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+                  className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                 />
               </div>
               <input
@@ -862,7 +862,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                   setNewLesson((l) => ({ ...l, tagsRaw: e.target.value }))
                 }
                 placeholder="Tags (separados por coma)"
-                className="mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700"
+                className="mt-2 w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
               />
               <div className="mt-2 flex justify-end">
                 <button
@@ -883,7 +883,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
           )}
 
           {lessons.length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[color:var(--ink-3)]">
               Aun no hay lecciones registradas para este proyecto.
             </p>
           ) : (
@@ -891,40 +891,40 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
               {lessons.map((l) => (
                 <li
                   key={l.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50/40 p-3"
+                  className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 p-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                      <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--ink-2)]">
                         {LESSON_CATEGORIA_LABELS[l.categoria]}
                       </span>
-                      <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-700">
+                      <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--ink-2)]">
                         {LESSON_TIPO_LABELS[l.tipo]}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[color:var(--ink-3)]">
                       {formatDateTime(l.created_at)}
                     </span>
                   </div>
-                  <h4 className="mt-2 text-sm font-semibold text-slate-800">
+                  <h4 className="mt-2 text-sm font-semibold text-[color:var(--ink-2)]">
                     {l.titulo}
                   </h4>
-                  <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">
+                  <p className="mt-1 whitespace-pre-wrap text-xs text-[color:var(--ink-3)]">
                     {l.descripcion}
                   </p>
                   {(l.impacto || l.recomendacion) && (
                     <div className="mt-2 grid gap-2 text-xs md:grid-cols-2">
                       {l.impacto && (
-                        <div className="rounded-md border border-slate-100 bg-white p-2">
-                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        <div className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-2">
+                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                             Impacto
                           </span>
                           {l.impacto}
                         </div>
                       )}
                       {l.recomendacion && (
-                        <div className="rounded-md border border-slate-100 bg-white p-2">
-                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                        <div className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-2">
+                          <span className="block text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                             Recomendacion
                           </span>
                           {l.recomendacion}
@@ -937,7 +937,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                       {l.tags.map((t) => (
                         <span
                           key={t}
-                          className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-500"
+                          className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[10px] text-[color:var(--ink-3)]"
                         >
                           #{t}
                         </span>
@@ -966,10 +966,10 @@ function MetricCard({
   const valueCls =
     accent === 'emerald'
       ? 'text-emerald-700'
-      : 'text-slate-900'
+      : 'text-[color:var(--ink)]'
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
         {label}
       </p>
       <p className={`mt-0.5 text-sm font-semibold ${valueCls}`}>{value}</p>

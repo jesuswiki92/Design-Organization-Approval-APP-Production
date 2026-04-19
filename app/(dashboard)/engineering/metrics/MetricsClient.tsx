@@ -189,8 +189,8 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
       </section>
 
       {/* Breakdown por fase */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           <ClipboardCheck className="h-3.5 w-3.5" />
           Proyectos por fase
         </h3>
@@ -198,12 +198,12 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
           {PHASE_ORDER.map((phase) => (
             <div
               key={phase}
-              className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2"
+              className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 {PHASE_LABELS[phase] ?? phase}
               </p>
-              <p className="mt-0.5 text-lg font-semibold text-slate-900">
+              <p className="mt-0.5 text-lg font-semibold text-[color:var(--ink)]">
                 {summary.phaseCounts[phase] ?? 0}
               </p>
             </div>
@@ -213,13 +213,13 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
 
       {/* Outcomes de cierre + estados */}
       <section className="grid gap-3 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <Flag className="h-3.5 w-3.5" />
             Outcomes de cierre
           </h3>
           {Object.keys(summary.outcomeCounts).length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[color:var(--ink-3)]">
               Aun no hay proyectos cerrados con outcome registrado.
             </p>
           ) : (
@@ -231,10 +231,10 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
                 return (
                   <li
                     key={outcome}
-                    className="flex items-center justify-between rounded-md border border-slate-100 bg-slate-50 px-3 py-1.5 text-sm"
+                    className="flex items-center justify-between rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-sm"
                   >
-                    <span className="text-slate-700">{label}</span>
-                    <span className="font-semibold text-slate-900">{count}</span>
+                    <span className="text-[color:var(--ink-2)]">{label}</span>
+                    <span className="font-semibold text-[color:var(--ink)]">{count}</span>
                   </li>
                 )
               })}
@@ -242,13 +242,13 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+          <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <ClipboardCheck className="h-3.5 w-3.5" />
             Distribucion por estado_v2
           </h3>
           {Object.keys(summary.stateCounts).length === 0 ? (
-            <p className="text-sm text-slate-500">Sin datos.</p>
+            <p className="text-sm text-[color:var(--ink-3)]">Sin datos.</p>
           ) : (
             <ul className="space-y-1.5">
               {Object.entries(summary.stateCounts)
@@ -256,10 +256,10 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
                 .map(([state, count]) => (
                   <li
                     key={state}
-                    className="flex items-center justify-between rounded-md border border-slate-100 bg-slate-50 px-3 py-1.5 text-sm"
+                    className="flex items-center justify-between rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-sm"
                   >
-                    <span className="text-slate-700">{state}</span>
-                    <span className="font-semibold text-slate-900">{count}</span>
+                    <span className="text-[color:var(--ink-2)]">{state}</span>
+                    <span className="font-semibold text-[color:var(--ink)]">{count}</span>
                   </li>
                 ))}
             </ul>
@@ -268,34 +268,34 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
       </section>
 
       {/* Top 10 mayor duracion */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           <PlayCircle className="h-3.5 w-3.5" />
           Top 10 proyectos de mayor duracion
         </h3>
         {topLongest.length === 0 ? (
-          <p className="text-sm text-slate-500">Sin datos de duracion.</p>
+          <p className="text-sm text-[color:var(--ink-3)]">Sin datos de duracion.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-left">
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-[color:var(--ink-4)] text-left">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Proyecto
                   </th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Estado
                   </th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Dias
                   </th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Entregas
                   </th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Devoluciones
                   </th>
-                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Lecciones
                   </th>
                   <th className="px-3 py-2" />
@@ -305,30 +305,30 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
                 {topLongest.map((r, idx) => (
                   <tr
                     key={r.proyecto_id}
-                    className={`border-b border-slate-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}
+                    className={`border-b border-slate-50 ${idx % 2 === 0 ? 'bg-[color:var(--paper)]' : 'bg-[color:var(--paper-2)]'}`}
                   >
-                    <td className="px-3 py-2 text-sm font-medium text-slate-800">
+                    <td className="px-3 py-2 text-sm font-medium text-[color:var(--ink-2)]">
                       {r.titulo}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
+                    <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
                       {r.estado_v2 ?? '—'}
                     </td>
-                    <td className="px-3 py-2 text-sm font-semibold text-slate-900">
+                    <td className="px-3 py-2 text-sm font-semibold text-[color:var(--ink)]">
                       {r.dias_totales_cerrado_vs_abierto?.toFixed(1) ?? '—'} d
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
+                    <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
                       {r.entregas_confirmadas}/{r.entregas_total}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
+                    <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
                       {r.validaciones_devueltas}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-600">
+                    <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
                       {r.lecciones_count}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <Link
                         href={`/engineering/projects/${r.proyecto_id}`}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-sky-700 hover:text-sky-600"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink-2)]"
                       >
                         <ExternalLink className="h-3 w-3" />
                         Abrir
@@ -343,7 +343,7 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
       </section>
 
       {summary.devoluciones > 0 && (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-[color:var(--ink-3)]">
           Total de devoluciones en validacion registradas: {summary.devoluciones}.
         </p>
       )}
@@ -363,10 +363,10 @@ function Kpi({
   tint: 'slate' | 'sky' | 'emerald' | 'violet' | 'amber' | 'rose'
 }) {
   const tintCls: Record<typeof tint, string> = {
-    slate: 'border-slate-200 bg-slate-50 text-slate-700',
-    sky: 'border-sky-200 bg-sky-50 text-sky-700',
+    slate: 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]',
+    sky: 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]',
     emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    violet: 'border-violet-200 bg-violet-50 text-violet-700',
+    violet: 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]',
     amber: 'border-amber-200 bg-amber-50 text-amber-700',
     rose: 'border-rose-200 bg-rose-50 text-rose-700',
   }

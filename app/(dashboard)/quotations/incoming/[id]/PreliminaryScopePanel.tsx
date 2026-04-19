@@ -18,18 +18,18 @@ export function PreliminaryScopePanel({
   model: PreliminaryScopeModel
 }) {
   return (
-    <section className="overflow-hidden rounded-[28px] border border-emerald-200 bg-white shadow-[0_18px_40px_rgba(148,163,184,0.14)]">
-      <div className="border-b border-emerald-100 bg-[linear-gradient(135deg,#ffffff_0%,#ecfdf5_45%,#f8fafc_100%)] px-6 py-6">
+    <section className="overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_40px_rgba(74,60,36,0.08)]">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--umber)]">
               <Crosshair className="h-3.5 w-3.5" />
               Definir alcance. Preliminar
             </div>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--ink)]">
               Alcance preliminar propuesto
             </h2>
-            <p className="mt-3 text-sm leading-7 text-slate-600">{model.proposedScope.summary}</p>
+            <p className="mt-3 text-sm leading-7 text-[color:var(--ink-3)]">{model.proposedScope.summary}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -43,25 +43,25 @@ export function PreliminaryScopePanel({
           {model.proposedScope.metrics.map((metric) => (
             <div
               key={metric.label}
-              className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3"
+              className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3"
             >
-              <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 {metric.label}
               </div>
-              <div className="mt-2 text-sm font-semibold text-slate-950">{metric.value}</div>
+              <div className="mt-2 text-sm font-semibold text-[color:var(--ink)]">{metric.value}</div>
             </div>
           ))}
         </div>
 
         {model.confidence.reasons.length > 0 && (
-          <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
-              <ShieldCheck className="h-3.5 w-3.5" />
+          <div className="mt-5 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-2)]">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
               Porque esta confianza
             </div>
             <ul className="mt-3 space-y-2">
               {model.confidence.reasons.map((reason) => (
-                <li key={reason} className="flex items-start gap-2 text-sm leading-6 text-emerald-900">
+                <li key={reason} className="flex items-start gap-2 text-sm leading-6 text-[color:var(--ink-2)]">
                   <span className="mt-2 h-1.5 w-1.5 rounded-full bg-emerald-600" />
                   <span>{reason}</span>
                 </li>
@@ -79,11 +79,11 @@ export function PreliminaryScopePanel({
         >
           <div className="grid gap-3 md:grid-cols-2">
             {model.clientProvided.map((fact) => (
-              <div key={fact.label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              <div key={fact.label} className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+                <div className="text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                   {fact.label}
                 </div>
-                <div className="mt-2 text-sm leading-6 text-slate-900">{fact.value}</div>
+                <div className="mt-2 text-sm leading-6 text-[color:var(--ink)]">{fact.value}</div>
               </div>
             ))}
           </div>
@@ -110,13 +110,13 @@ export function PreliminaryScopePanel({
             {model.impacts.map((impact) => (
               <div
                 key={impact.discipline}
-                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="text-sm font-semibold text-slate-950">{impact.discipline}</div>
+                  <div className="text-sm font-semibold text-[color:var(--ink)]">{impact.discipline}</div>
                   <ImpactStatusBadge status={impact.status} />
                 </div>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{impact.rationale}</p>
+                <p className="mt-3 text-sm leading-6 text-[color:var(--ink-3)]">{impact.rationale}</p>
               </div>
             ))}
           </div>
@@ -129,7 +129,7 @@ export function PreliminaryScopePanel({
         >
           <ul className="space-y-3">
             {model.baseContribution.map((item) => (
-              <li key={item} className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50/60 px-4 py-3 text-sm leading-6 text-slate-800">
+              <li key={item} className="flex items-start gap-3 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3 text-sm leading-6 text-[color:var(--ink-2)]">
                 <span className="mt-2 h-1.5 w-1.5 rounded-full bg-amber-500" />
                 <span>{item}</span>
               </li>
@@ -164,11 +164,11 @@ export function PreliminaryScopePanel({
             title="Evidencia secundaria"
             tone="slate"
           >
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+            <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                 Precedente seleccionado
               </div>
-              <div className="mt-2 text-sm font-semibold text-slate-950">
+              <div className="mt-2 text-sm font-semibold text-[color:var(--ink)]">
                 {model.context.chosenReferenceLabel}
               </div>
               {model.evidence.tcdsNotes.length > 0 && (
@@ -176,7 +176,7 @@ export function PreliminaryScopePanel({
                   {model.evidence.tcdsNotes.map((note) => (
                     <span
                       key={note}
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600"
+                      className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1 text-xs text-[color:var(--ink-3)]"
                     >
                       {note}
                     </span>
@@ -186,15 +186,15 @@ export function PreliminaryScopePanel({
             </div>
 
             {model.evidence.precedentUnknowns.length > 0 && (
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              <div className="mt-4 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                   <AlertCircle className="h-3.5 w-3.5" />
                   Lagunas visibles del precedente
                 </div>
                 <ul className="mt-3 space-y-2">
                   {model.evidence.precedentUnknowns.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm leading-6 text-slate-600">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-slate-300" />
+                    <li key={item} className="flex items-start gap-2 text-sm leading-6 text-[color:var(--ink-3)]">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[color:var(--paper-3)]" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -202,17 +202,17 @@ export function PreliminaryScopePanel({
               </div>
             )}
 
-            <details className="mt-4 rounded-2xl border border-slate-200 bg-white">
-              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-slate-900">
+            <details className="mt-4 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-[color:var(--ink)]">
                 Ver PROJECT_SUMMARY / evidencia cruda
               </summary>
-              <div className="border-t border-slate-200 px-4 py-4">
+              <div className="border-t border-[color:var(--ink-4)] px-4 py-4">
                 {model.evidence.rawSummaryMd ? (
                   <pre className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-6 text-slate-100">
                     {model.evidence.rawSummaryMd}
                   </pre>
                 ) : (
-                  <p className="text-sm leading-6 text-slate-500">
+                  <p className="text-sm leading-6 text-[color:var(--ink-3)]">
                     No hay PROJECT_SUMMARY cargado para este precedente.
                   </p>
                 )}
@@ -244,11 +244,11 @@ function SectionCard({
         : tone === 'rose'
           ? 'border-rose-100 bg-rose-50/40 text-rose-700'
           : tone === 'sky'
-            ? 'border-sky-100 bg-sky-50/40 text-sky-700'
-            : 'border-slate-200 bg-slate-50/60 text-slate-700'
+            ? 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 text-[color:var(--ink-2)]'
+            : 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/60 text-[color:var(--ink-2)]'
 
   return (
-    <section className="rounded-[24px] border border-slate-200 bg-white p-5">
+    <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5">
       <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${toneClass}`}>
         {icon}
         {title}
@@ -260,11 +260,11 @@ function SectionCard({
 
 function InferenceCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-4">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+    <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
         {label}
       </div>
-      <p className="mt-3 text-sm leading-6 text-slate-800">{value}</p>
+      <p className="mt-3 text-sm leading-6 text-[color:var(--ink-2)]">{value}</p>
     </div>
   )
 }
@@ -279,7 +279,7 @@ function ImpactStatusBadge({
       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
       : status === 'possible'
         ? 'border-amber-200 bg-amber-50 text-amber-700'
-        : 'border-slate-200 bg-white text-slate-500'
+        : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]'
 
   return (
     <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${className}`}>
@@ -293,8 +293,8 @@ function Badge({ label, tone }: { label: string; tone: 'emerald' | 'sky' | 'slat
     tone === 'emerald'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
       : tone === 'sky'
-        ? 'border-sky-200 bg-sky-50 text-sky-700'
-        : 'border-slate-200 bg-white text-slate-600'
+        ? 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]'
+        : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]'
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-medium ${className}`}>
@@ -316,23 +316,23 @@ function MissingBlock({
 }) {
   const toneClass =
     tone === 'sky'
-      ? 'border-sky-100 bg-sky-50/60'
-      : 'border-slate-200 bg-slate-50'
+      ? 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/60'
+      : 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)]'
 
   return (
     <div className={`rounded-2xl border p-4 ${toneClass}`}>
-      <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{title}</div>
+      <div className="text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">{title}</div>
       {items.length > 0 ? (
         <ul className="mt-3 space-y-2">
           {items.map((item) => (
-            <li key={item} className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+            <li key={item} className="flex items-start gap-2 text-sm leading-6 text-[color:var(--ink-2)]">
               <span className="mt-2 h-1.5 w-1.5 rounded-full bg-slate-400" />
               <span>{item}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-3 text-sm leading-6 text-slate-500">{emptyLabel}</p>
+        <p className="mt-3 text-sm leading-6 text-[color:var(--ink-3)]">{emptyLabel}</p>
       )}
     </div>
   )

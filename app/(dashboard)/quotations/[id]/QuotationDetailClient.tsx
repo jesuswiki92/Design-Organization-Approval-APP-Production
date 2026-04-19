@@ -78,17 +78,17 @@ function DetailBlock({
   items: string[]
 }) {
   return (
-    <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+    <section className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
         {eyebrow}
       </p>
       <h2 className="mt-2 text-lg font-semibold text-slate-950">{title}</h2>
-      <p className="mt-3 text-sm leading-7 text-slate-600">{body}</p>
+      <p className="mt-3 text-sm leading-7 text-[color:var(--ink-3)]">{body}</p>
       <ul className="mt-4 space-y-2">
         {items.map((item) => (
           <li
             key={item}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
+            className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3 text-sm text-[color:var(--ink-2)]"
           >
             {item}
           </li>
@@ -139,18 +139,18 @@ export function QuotationDetailClient({
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
         <Link
           href="/quotations"
-          className="inline-flex items-center gap-2 self-start rounded-full border border-sky-200 bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
+          className="inline-flex items-center gap-2 self-start rounded-full border border-[color:var(--ink-4)] bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver a Quotations
         </Link>
 
-        <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
               Quotation no encontrada
             </h1>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600">
+            <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
               No hemos encontrado una quotation con ese identificador en la capa visual
               actual. Cuando conectemos backend, esta página leerá el detalle real.
             </p>
@@ -167,7 +167,7 @@ export function QuotationDetailClient({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/quotations"
-          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
+          className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver a Quotations
@@ -175,7 +175,7 @@ export function QuotationDetailClient({
 
         <div
           className={cn(
-            'inline-flex items-center gap-2 rounded-full border bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] shadow-sm',
+            'inline-flex items-center gap-2 rounded-full border bg-[color:var(--paper)]/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] shadow-sm',
             lane.accent.border,
             lane.accent.text,
           )}
@@ -185,14 +185,14 @@ export function QuotationDetailClient({
         </div>
       </div>
 
-      <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+      <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="space-y-3">
-            <p className="font-mono text-xs text-slate-500">{card.code}</p>
+            <p className="font-mono text-xs text-[color:var(--ink-3)]">{card.code}</p>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
               {card.title}
             </h1>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600">{card.note}</p>
+            <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">{card.note}</p>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
               {[
@@ -203,7 +203,7 @@ export function QuotationDetailClient({
               ].map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600"
+                  className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1 text-xs text-[color:var(--ink-3)]"
                 >
                   {item}
                 </span>
@@ -239,9 +239,9 @@ export function QuotationDetailClient({
               return (
                 <div
                   key={metric.label}
-                  className="rounded-[22px] border border-sky-200 bg-white/90 px-4 py-4 shadow-sm"
+                  className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-4 shadow-sm"
                 >
-                  <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                     <Icon className="h-3.5 w-3.5" />
                     {metric.label}
                   </div>
@@ -290,8 +290,8 @@ export function QuotationDetailClient({
         </div>
 
         <div className="space-y-5">
-          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+          <section className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-6 shadow-[0_18px_40px_rgba(148,163,184,0.12)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Snapshot
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">
@@ -309,13 +309,13 @@ export function QuotationDetailClient({
                 return (
                   <div
                     key={item.label}
-                    className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-4"
+                    className="rounded-3xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-4"
                   >
-                    <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                       <Icon className="h-3.5 w-3.5" />
                       {item.label}
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{item.value}</p>
+                    <p className="mt-2 text-sm leading-6 text-[color:var(--ink-2)]">{item.value}</p>
                   </div>
                 )
               })}

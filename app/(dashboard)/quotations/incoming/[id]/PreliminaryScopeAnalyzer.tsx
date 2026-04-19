@@ -85,7 +85,7 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
   // No reference projects selected
   if (!primaryRef) {
     return (
-      <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 text-sm text-slate-400">
+      <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-[color:var(--ink-4)] text-sm text-[color:var(--ink-3)]">
         Marca un proyecto de referencia en &quot;Proyectos similares&quot; para analizar el alcance
       </div>
     )
@@ -109,22 +109,22 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
   return (
     <div className="space-y-4">
       {/* Contexto: qué proyecto de referencia se usa */}
-      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="flex items-center justify-between rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3">
         <div className="text-sm">
-          <span className="text-slate-500">Precedente: </span>
-          <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-medium text-slate-600">
+          <span className="text-[color:var(--ink-3)]">Precedente: </span>
+          <span className="rounded bg-[color:var(--paper-2)] px-1.5 py-0.5 font-mono text-xs font-medium text-[color:var(--ink-3)]">
             {primaryRef.numero_proyecto}
           </span>
-          <span className="ml-1.5 text-slate-700">{primaryRef.titulo}</span>
+          <span className="ml-1.5 text-[color:var(--ink-2)]">{primaryRef.titulo}</span>
           {primaryRef.aeronave && (
-            <span className="ml-1.5 text-slate-400">({primaryRef.aeronave})</span>
+            <span className="ml-1.5 text-[color:var(--ink-3)]">({primaryRef.aeronave})</span>
           )}
         </div>
 
         <button
           onClick={handleAnalyze}
           disabled={loading}
-          className="flex items-center gap-1.5 rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-md bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -155,7 +155,7 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
 
       {/* Resultado del análisis */}
       {result && (
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-5">
+        <div className="space-y-4 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5">
           {/* Clasificación + Base de certificación */}
           <div>
             <div className="flex items-center gap-3">
@@ -164,19 +164,19 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
                   ? 'bg-red-50 text-red-700 ring-1 ring-red-200'
                   : result.analysis.classification === 'minor'
                     ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-                    : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'
+                    : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] ring-1 ring-[color:var(--ink-4)]'
               }`}>
                 {result.analysis.classification === 'major' ? 'MAJOR' : result.analysis.classification === 'minor' ? 'MINOR' : 'NO DETERMINADO'}
               </div>
               {result.analysis.certification_basis && (
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2.5 py-0.5 text-xs font-medium text-[color:var(--ink-3)]">
                   {result.analysis.certification_basis}
                 </span>
               )}
             </div>
 
             {result.analysis.classification_rationale && (
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+              <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink-3)]">
                 {result.analysis.classification_rationale}
               </p>
             )}
@@ -184,8 +184,8 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
 
           {/* Áreas de impacto */}
           {result.analysis.impact_areas && result.analysis.impact_areas.length > 0 && (
-            <div className="border-t border-slate-100 pt-4">
-              <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-slate-400">
+            <div className="border-t border-[color:var(--ink-4)] pt-4">
+              <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">
                 Áreas de impacto estimadas
               </h4>
               <div className="grid grid-cols-2 gap-2">
@@ -194,19 +194,19 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
                   .map((area) => (
                     <div
                       key={area.discipline}
-                      className="flex items-start gap-2 rounded-md border border-slate-100 bg-slate-50/50 px-3 py-2.5"
+                      className="flex items-start gap-2 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-3 py-2.5"
                     >
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium text-slate-700">{area.discipline}</span>
+                          <span className="text-sm font-medium text-[color:var(--ink-2)]">{area.discipline}</span>
                           {area.from_reference && (
-                            <span className="rounded bg-blue-50 px-1 py-0.5 text-[10px] font-medium text-blue-500">
+                            <span className="rounded bg-[color:var(--paper-2)] px-1 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]">
                               ref
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 text-xs leading-relaxed text-slate-400">{area.rationale}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-[color:var(--ink-3)]">{area.rationale}</p>
                       </div>
                     </div>
                   ))}
@@ -215,8 +215,8 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
           )}
 
           {/* Modelo usado */}
-          <div className="border-t border-slate-100 pt-3 text-right">
-            <span className="text-[10px] text-slate-300">
+          <div className="border-t border-[color:var(--ink-4)] pt-3 text-right">
+            <span className="text-[10px] text-[color:var(--ink-4)]">
               Analizado con {result.model} · Basado en {result.referenceProject.numero_proyecto}
             </span>
           </div>

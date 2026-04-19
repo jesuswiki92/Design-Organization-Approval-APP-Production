@@ -70,7 +70,7 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-left text-xs">
         <thead>
-          <tr className="border-b border-emerald-200 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <tr className="border-b border-[color:var(--ink-4)] text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <th className="pb-1.5 pr-3">Modelo</th>
             <th className="pb-1.5 pr-3">Motor</th>
             <th className="pb-1.5 pr-3 text-right">MTOW (kg)</th>
@@ -80,19 +80,19 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
             <th className="pb-1.5">MSN Elegibles</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-emerald-100">
+        <tbody className="divide-y divide-[color:var(--ink-4)]">
           {variants.map((v, idx) => (
-            <tr key={`${v.modelo}-${idx}`} className="hover:bg-emerald-100/30">
-              <td className="py-1.5 pr-3 font-medium text-slate-900">
+            <tr key={`${v.modelo}-${idx}`} className="hover:bg-[color:var(--paper-3)]">
+              <td className="py-1.5 pr-3 font-medium text-[color:var(--ink)]">
                 {v.modelo || '—'}
               </td>
-              <td className="py-1.5 pr-3 text-slate-700">
+              <td className="py-1.5 pr-3 text-[color:var(--ink-2)]">
                 {v.motor || '—'}
               </td>
-              <td className="py-1.5 pr-3 text-right font-mono text-slate-700">
+              <td className="py-1.5 pr-3 text-right font-mono text-[color:var(--ink-2)]">
                 {v.mtow_kg != null ? v.mtow_kg.toLocaleString() : '—'}
               </td>
-              <td className="py-1.5 pr-3 text-right font-mono text-slate-700">
+              <td className="py-1.5 pr-3 text-right font-mono text-[color:var(--ink-2)]">
                 {v.mlw_kg != null ? v.mlw_kg.toLocaleString() : '—'}
               </td>
               <td className="py-1.5 pr-3">
@@ -101,13 +101,13 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
                     {v.regulacion_base}
                   </span>
                 ) : (
-                  <span className="text-slate-400">—</span>
+                  <span className="text-[color:var(--ink-3)]">—</span>
                 )}
               </td>
-              <td className="py-1.5 pr-3 text-slate-700">
+              <td className="py-1.5 pr-3 text-[color:var(--ink-2)]">
                 {v.categoria || '—'}
               </td>
-              <td className="max-w-[140px] truncate py-1.5 text-slate-500" title={v.msn_elegibles || ''}>
+              <td className="max-w-[140px] truncate py-1.5 text-[color:var(--ink-3)]" title={v.msn_elegibles || ''}>
                 {v.msn_elegibles || '—'}
               </td>
             </tr>
@@ -123,25 +123,25 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
  */
 function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
   return (
-    <div className="space-y-2 rounded-lg border border-emerald-200 bg-white/80 px-3 py-2.5">
+    <div className="space-y-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-3 py-2.5">
       {/* Motor */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Motor</span>
-        <span className="text-sm font-medium text-slate-900">{variant.motor || '—'}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">Motor</span>
+        <span className="text-sm font-medium text-[color:var(--ink)]">{variant.motor || '—'}</span>
       </div>
 
       {/* MTOW y MLW en la misma fila */}
       <div className="flex items-baseline gap-4">
         <div className="flex items-baseline gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">MTOW</span>
-          <span className="font-mono text-sm font-medium text-slate-900">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">MTOW</span>
+          <span className="font-mono text-sm font-medium text-[color:var(--ink)]">
             {variant.mtow_kg != null ? `${variant.mtow_kg.toLocaleString()} kg` : '—'}
           </span>
         </div>
-        <span className="text-slate-300">|</span>
+        <span className="text-[color:var(--ink-4)]">|</span>
         <div className="flex items-baseline gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">MLW</span>
-          <span className="font-mono text-sm font-medium text-slate-900">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">MLW</span>
+          <span className="font-mono text-sm font-medium text-[color:var(--ink)]">
             {variant.mlw_kg != null ? `${variant.mlw_kg.toLocaleString()} kg` : '—'}
           </span>
         </div>
@@ -149,26 +149,26 @@ function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
 
       {/* Regulacion base — resaltada en ambar porque es critica */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Regulacion Base</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">Regulacion Base</span>
         {variant.regulacion_base ? (
           <span className="inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
             {variant.regulacion_base}
           </span>
         ) : (
-          <span className="text-sm text-slate-400">—</span>
+          <span className="text-sm text-[color:var(--ink-3)]">—</span>
         )}
       </div>
 
       {/* Categoria */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Categoria</span>
-        <span className="text-sm font-medium text-slate-700">{variant.categoria || '—'}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">Categoria</span>
+        <span className="text-sm font-medium text-[color:var(--ink-2)]">{variant.categoria || '—'}</span>
       </div>
 
       {/* MSN Elegibles */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">MSN Elegibles</span>
-        <span className="text-sm text-slate-500">{variant.msn_elegibles || '—'}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">MSN Elegibles</span>
+        <span className="text-sm text-[color:var(--ink-3)]">{variant.msn_elegibles || '—'}</span>
       </div>
     </div>
   )
@@ -206,7 +206,7 @@ export function TcdsStatusBanner({
     const hasExactMatch = matchedVariant != null
 
     return (
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50/60">
+      <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
         {/* === CABECERA: Badge de verificado + codigo TCDS + issue/fecha === */}
         <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -217,13 +217,13 @@ export function TcdsStatusBanner({
           </span>
 
           {/* Codigo TCDS completo (ej: EASA.A.089) */}
-          <span className="font-mono text-sm font-semibold text-slate-900">
+          <span className="font-mono text-sm font-semibold text-[color:var(--ink)]">
             {first.tcds_code}
           </span>
 
           {/* Badge celeste: codigo corto (ej: A.089), mismo estilo que en la tab de extraccion */}
           {first.tcds_code_short && (
-            <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+            <span className="inline-flex items-center rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
               {first.tcds_code_short}
             </span>
           )}
@@ -239,7 +239,7 @@ export function TcdsStatusBanner({
 
           {/* Fabricante y pais */}
           {first.fabricante && (
-            <span className="ml-auto flex items-center gap-1 text-xs text-slate-500">
+            <span className="ml-auto flex items-center gap-1 text-xs text-[color:var(--ink-3)]">
               <Plane className="h-3 w-3" />
               {first.fabricante}
               {first.pais ? ` (${first.pais})` : ''}
@@ -249,7 +249,7 @@ export function TcdsStatusBanner({
 
         {/* Indicador de fallback si se uso busqueda alternativa */}
         {fallbackUsed && (
-          <div className="border-t border-emerald-100 px-3 py-1.5">
+          <div className="border-t border-[color:var(--ink-4)] px-3 py-1.5">
             <p className="text-[10px] italic text-emerald-600">
               {tcdsNumber
                 ? 'Coincidencia encontrada por modelo/fabricante porque el TCDS reportado no estaba registrado'
@@ -260,7 +260,7 @@ export function TcdsStatusBanner({
 
         {/* === MODO A: Variante exacta identificada === */}
         {hasModelFilter && hasExactMatch && (
-          <div className="border-t border-emerald-100">
+          <div className="border-t border-[color:var(--ink-4)]">
             {/* Cabecera de variante identificada */}
             <div className="flex items-center gap-2 px-3 py-2">
               <span className="text-xs font-semibold text-emerald-700">
@@ -278,11 +278,11 @@ export function TcdsStatusBanner({
 
             {/* Seccion colapsable con todas las variantes */}
             {variants.length > 1 && (
-              <div className="border-t border-emerald-100">
+              <div className="border-t border-[color:var(--ink-4)]">
                 <button
                   type="button"
                   onClick={() => setAllVariantsExpanded(!allVariantsExpanded)}
-                  className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100/50"
+                  className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                 >
                   <ChevronDown
                     className={`h-3.5 w-3.5 transition-transform ${allVariantsExpanded ? 'rotate-180' : ''}`}
@@ -302,7 +302,7 @@ export function TcdsStatusBanner({
 
         {/* === MODO B: Modelo proporcionado pero sin coincidencia exacta === */}
         {hasModelFilter && !hasExactMatch && (
-          <div className="border-t border-emerald-100">
+          <div className="border-t border-[color:var(--ink-4)]">
             {/* Aviso de que no se encontro coincidencia exacta */}
             <div className="flex items-center gap-2 px-3 py-2">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
@@ -312,11 +312,11 @@ export function TcdsStatusBanner({
             </div>
 
             {/* Tabla expandible con todas las variantes */}
-            <div className="border-t border-emerald-100">
+            <div className="border-t border-[color:var(--ink-4)]">
               <button
                 type="button"
                 onClick={() => setNoMatchExpanded(!noMatchExpanded)}
-                className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100/50"
+                className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
               >
                 <ChevronDown
                   className={`h-3.5 w-3.5 transition-transform ${noMatchExpanded ? 'rotate-180' : ''}`}
@@ -335,11 +335,11 @@ export function TcdsStatusBanner({
 
         {/* === MODO C: Sin modelo proporcionado — comportamiento original === */}
         {!hasModelFilter && (
-          <div className="border-t border-emerald-100">
+          <div className="border-t border-[color:var(--ink-4)]">
             <button
               type="button"
               onClick={() => setNoMatchExpanded(!noMatchExpanded)}
-              className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100/50"
+              className="flex w-full items-center gap-1.5 px-3 py-2 text-xs font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
             >
               <ChevronDown
                 className={`h-3.5 w-3.5 transition-transform ${noMatchExpanded ? 'rotate-180' : ''}`}
@@ -360,17 +360,17 @@ export function TcdsStatusBanner({
 
   // --- CASO 2: TCDS NO encontrado en la base de datos ---
   return (
-    <div className="rounded-xl border border-amber-200 bg-[linear-gradient(180deg,#fffaf0_0%,#fff7ed_100%)] px-3 py-3">
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-3">
       <div className="flex items-start gap-2.5">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-[color:var(--ink)]">
             {tcdsNumber ? 'Este TCDS no esta en la base de datos' : 'Revision TCDS pendiente'}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             {tcdsNumber ? (
               <>
-                El codigo <span className="font-mono font-medium text-slate-700">{tcdsNumber}</span> no
+                El codigo <span className="font-mono font-medium text-[color:var(--ink-2)]">{tcdsNumber}</span> no
                 se encontro en <span className="font-medium">doa_aeronaves</span>.
               </>
             ) : (
@@ -389,13 +389,13 @@ export function TcdsStatusBanner({
 
           {/* Mostrar URL del PDF como contexto adicional si esta disponible */}
           {tcdsPdfUrl && (
-            <p className="mt-1.5 text-xs text-slate-400">
+            <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">
               PDF disponible:{' '}
               <a
                 href={tcdsPdfUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium text-sky-600 underline hover:text-sky-700"
+                className="font-medium text-[color:var(--ink-3)] underline hover:text-[color:var(--ink-2)]"
               >
                 Ver TCDS PDF
               </a>

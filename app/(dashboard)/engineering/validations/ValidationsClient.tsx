@@ -50,12 +50,12 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
   if (items.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center px-5 pb-8 pt-5">
-        <div className="max-w-md rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center shadow-sm">
-          <ClipboardCheck className="mx-auto h-10 w-10 text-slate-300" />
-          <h2 className="mt-4 text-sm font-semibold text-slate-800">
+        <div className="max-w-md rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] p-10 text-center shadow-sm">
+          <ClipboardCheck className="mx-auto h-10 w-10 text-[color:var(--ink-4)]" />
+          <h2 className="mt-4 text-sm font-semibold text-[color:var(--ink-2)]">
             No hay proyectos pendientes de validacion
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             Cuando un ingeniero envia un proyecto a validacion, aparecera aqui
             para que DOH/DOS lo revise y firme.
           </p>
@@ -67,7 +67,7 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
   return (
     <div className="flex flex-1 flex-col gap-4 overflow-auto px-5 pb-8 pt-5">
       <header className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-900">
+        <h1 className="text-lg font-semibold text-[color:var(--ink)]">
           Cola de validacion
         </h1>
         <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
@@ -89,24 +89,24 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
               <Link
                 href={`/engineering/projects/${item.id}?tab=validacion`}
                 className={cn(
-                  'flex h-full flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition',
+                  'flex h-full flex-col justify-between gap-3 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm transition',
                   'hover:border-amber-300 hover:shadow-md',
                 )}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs text-slate-500">
+                    <span className="font-mono text-xs text-[color:var(--ink-3)]">
                       {item.numero_proyecto}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
                       En validacion
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                     {item.titulo}
                   </h3>
                   {item.cliente_nombre && (
-                    <p className="inline-flex items-center gap-1 text-xs text-slate-500">
+                    <p className="inline-flex items-center gap-1 text-xs text-[color:var(--ink-3)]">
                       <User className="h-3 w-3" />
                       {item.cliente_nombre}
                     </p>
@@ -114,13 +114,13 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
                 </div>
 
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs text-slate-600">
+                  <div className="flex items-center justify-between text-xs text-[color:var(--ink-3)]">
                     <span>Deliverables</span>
                     <span className="font-medium">
                       {item.deliverables_completed}/{item.deliverables_total} listos
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-slate-100">
+                  <div className="h-1.5 w-full rounded-full bg-[color:var(--paper-2)]">
                     <div
                       className="h-1.5 rounded-full bg-emerald-500 transition-all"
                       style={{ width: `${pct}%` }}
@@ -128,7 +128,7 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[color:var(--ink-4)] pt-2 text-[11px] text-[color:var(--ink-3)]">
                   <span>Recibido: {formatDateTime(item.received_at)}</span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />

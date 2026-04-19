@@ -57,7 +57,7 @@ export function ReferenceProjectButton({
       <button
         type="button"
         disabled
-        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-300"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-4)]"
         aria-label="Guardando..."
       >
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -83,7 +83,7 @@ export function ReferenceProjectButton({
     <button
       type="button"
       onClick={handleToggle}
-      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600"
+      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)] transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600"
       title="Usar como referencia"
       aria-label="Marcar proyecto como referencia"
     >

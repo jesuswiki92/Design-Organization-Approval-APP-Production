@@ -105,7 +105,7 @@ function PrioridadBadge({ prioridad }: { prioridad: string | null }) {
   if (!prioridad) return null
 
   const colorClass =
-    PRIORIDAD_COLORS[prioridad] ?? 'text-slate-600 bg-slate-100 border-slate-200'
+    PRIORIDAD_COLORS[prioridad] ?? 'text-[color:var(--ink-3)] bg-[color:var(--paper-2)] border-[color:var(--ink-4)]'
 
   return (
     <span
@@ -210,7 +210,7 @@ function ProjectStateControl({
         value={proyecto.estado}
         disabled={status === 'saving'}
         onChange={(event) => void handleChange(event.target.value)}
-        className="h-8 min-w-[140px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
+        className="h-8 min-w-[140px] rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[color:var(--ink-3)] outline-none transition-colors hover:border-[color:var(--ink-4)] focus:border-[color:var(--ink-4)] focus:ring-4 focus:ring-[color:var(--ink-4)] disabled:cursor-wait disabled:opacity-70"
       >
         {allOptions.map((option) => (
           <option
@@ -222,7 +222,7 @@ function ProjectStateControl({
         ))}
       </select>
       {status === 'saving' ? (
-        <p className="text-[11px] text-slate-500">Guardando...</p>
+        <p className="text-[11px] text-[color:var(--ink-3)]">Guardando...</p>
       ) : null}
       {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
     </div>
@@ -287,7 +287,7 @@ function ProjectDeleteControl({ proyecto }: { proyecto: Proyecto }) {
         <Trash2 className="h-3.5 w-3.5" />
       </button>
       {status === 'deleting' ? (
-        <p className="text-[11px] text-slate-500">Borrando proyecto...</p>
+        <p className="text-[11px] text-[color:var(--ink-3)]">Borrando proyecto...</p>
       ) : null}
       {message ? <p className="text-[11px] text-rose-600 mt-1">{message}</p> : null}
     </div>
@@ -321,17 +321,17 @@ function BoardCard({
   onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
   return (
-    <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-sky-300">
+    <article className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-[color:var(--ink-4)]">
       {/* Cabecera: codigo de proyecto */}
       <div className="space-y-1">
-        <p className="font-mono text-[10px] tracking-[0.2em] text-slate-500">
+        <p className="font-mono text-[10px] tracking-[0.2em] text-[color:var(--ink-3)]">
           {proyecto.numero_proyecto}
         </p>
         <Link
           href={`/engineering/projects/${proyecto.id}`}
           className="block"
         >
-          <h4 className="text-sm font-semibold leading-5 text-slate-950 transition-colors hover:text-sky-800">
+          <h4 className="text-sm font-semibold leading-5 text-[color:var(--ink)] transition-colors hover:text-[color:var(--ink-2)]">
             {proyecto.titulo}
           </h4>
         </Link>
@@ -339,7 +339,7 @@ function BoardCard({
 
       {/* Descripcion preview */}
       {proyecto.descripcion ? (
-        <p className="mt-2 text-xs italic text-slate-400 line-clamp-1">
+        <p className="mt-2 text-xs italic text-[color:var(--ink-3)] line-clamp-1">
           {proyecto.descripcion}
         </p>
       ) : null}
@@ -350,7 +350,7 @@ function BoardCard({
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
             Cliente
           </p>
-          <p className="mt-1 text-sm font-semibold text-slate-950">
+          <p className="mt-1 text-sm font-semibold text-[color:var(--ink)]">
             {proyecto.cliente_nombre}
           </p>
         </div>
@@ -358,7 +358,7 @@ function BoardCard({
 
       {/* Aeronave info */}
       {proyecto.aeronave ? (
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[color:var(--ink-3)]">
           <Plane size={11} />
           <span className="truncate">{proyecto.aeronave}</span>
         </div>
@@ -367,7 +367,7 @@ function BoardCard({
       {/* Owner + Prioridad badges */}
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         {proyecto.owner ? (
-          <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+          <span className="inline-flex items-center gap-1 rounded border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
             <User size={10} />
             <span className="max-w-[80px] truncate">{proyecto.owner}</span>
           </span>
@@ -387,7 +387,7 @@ function BoardCard({
 
       {/* Fecha inicio alineada a la derecha */}
       {proyecto.fecha_inicio ? (
-        <p className="mt-2 text-right text-[11px] text-slate-400">
+        <p className="mt-2 text-right text-[11px] text-[color:var(--ink-3)]">
           {proyecto.fecha_inicio}
         </p>
       ) : null}
@@ -399,7 +399,7 @@ function BoardCard({
           <ProjectDeleteControl proyecto={proyecto} />
           <Link
             href={`/engineering/projects/${proyecto.id}`}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition-colors hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)] transition-colors hover:border-[color:var(--ink-4)] hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink-2)]"
             title="Ver detalle"
           >
             <Plus className="h-4 w-4" />
@@ -482,9 +482,9 @@ function BoardLane({
         ))}
 
         {laneProyectos.length === 0 ? (
-          <div className="rounded-[22px] border border-dashed border-slate-200 bg-white/80 px-4 py-5 text-center">
-            <p className="text-sm font-medium text-slate-900">Sin proyectos</p>
-            <p className="mt-1 text-sm text-slate-500">
+          <div className="rounded-[22px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-5 text-center">
+            <p className="text-sm font-medium text-[color:var(--ink)]">Sin proyectos</p>
+            <p className="mt-1 text-sm text-[color:var(--ink-3)]">
               Esta columna queda preparada para recibir proyectos.
             </p>
           </div>
@@ -511,7 +511,7 @@ function TableroView({
 }) {
   return (
     <div className="px-5 py-5">
-      <div className="mb-4 rounded-[28px] border border-sky-100 bg-white/85 px-4 py-3 text-sm text-slate-600 shadow-sm">
+      <div className="mb-4 rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/85 px-4 py-3 text-sm text-[color:var(--ink-3)] shadow-sm">
         El tablero usa scroll horizontal. Usa la barra de desplazamiento o el trackpad para navegar entre columnas.
       </div>
 
@@ -550,20 +550,20 @@ function ListaView({
 }) {
   return (
     <div className="px-5 py-5">
-      <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
-        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-          <h3 className="text-base font-semibold text-slate-950">
+      <div className="overflow-hidden rounded-[30px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
+        <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
+          <h3 className="text-base font-semibold text-[color:var(--ink)]">
             Lista de proyectos
           </h3>
-          <p className="mt-1 text-sm leading-6 text-slate-600">
+          <p className="mt-1 text-sm leading-6 text-[color:var(--ink-3)]">
             Vista compacta de todos los proyectos activos con sus datos operativos.
           </p>
         </div>
 
         <div className="overflow-auto">
           <table className="min-w-[1060px] w-full border-separate border-spacing-0 text-left">
-            <thead className="sticky top-0 z-10 bg-white">
-              <tr className="border-b border-slate-200 bg-slate-50">
+            <thead className="sticky top-0 z-10 bg-[color:var(--paper)]">
+              <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
                 {[
                   'Codigo',
                   'Titulo',
@@ -577,7 +577,7 @@ function ListaView({
                 ].map((label) => (
                   <th
                     key={label}
-                    className="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
+                    className="whitespace-nowrap border-b border-[color:var(--ink-4)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]"
                   >
                     {label}
                   </th>
@@ -591,15 +591,15 @@ function ListaView({
                   <tr
                     key={proyecto.id}
                     className={cn(
-                      'border-b border-slate-200/60 align-top transition-colors hover:bg-sky-50/60',
-                      idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40',
+                      'border-b border-[color:var(--ink-4)]/60 align-top transition-colors hover:bg-[color:var(--paper-3)]/60',
+                      idx % 2 === 0 ? 'bg-[color:var(--paper)]' : 'bg-[color:var(--paper-2)]/40',
                     )}
                   >
                     {/* Codigo / Numero de proyecto */}
                     <td className="px-4 py-3">
                       <Link
                         href={`/engineering/projects/${proyecto.id}`}
-                        className="block font-mono text-xs text-slate-500 hover:text-sky-700"
+                        className="block font-mono text-xs text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]"
                       >
                         {proyecto.numero_proyecto}
                       </Link>
@@ -611,11 +611,11 @@ function ListaView({
                         href={`/engineering/projects/${proyecto.id}`}
                         className="block"
                       >
-                        <span className="block truncate text-sm font-medium text-slate-950 hover:text-sky-800">
+                        <span className="block truncate text-sm font-medium text-[color:var(--ink)] hover:text-[color:var(--ink-2)]">
                           {proyecto.titulo}
                         </span>
                         {proyecto.descripcion ? (
-                          <span className="block truncate text-[11px] italic text-slate-500">
+                          <span className="block truncate text-[11px] italic text-[color:var(--ink-3)]">
                             {proyecto.descripcion}
                           </span>
                         ) : null}
@@ -623,7 +623,7 @@ function ListaView({
                     </td>
 
                     {/* Cliente */}
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-[color:var(--ink-3)]">
                       {proyecto.cliente_nombre ?? '-'}
                     </td>
 
@@ -643,21 +643,21 @@ function ListaView({
                     </td>
 
                     {/* Aeronave */}
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-[color:var(--ink-3)]">
                       {proyecto.aeronave ?? '-'}
                     </td>
 
                     {/* Owner */}
                     <td className="whitespace-nowrap px-4 py-3">
                       {proyecto.owner ? (
-                        <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                        <div className="flex items-center gap-1.5 text-sm text-[color:var(--ink-3)]">
                           <User size={12} />
                           <span className="max-w-[100px] truncate">
                             {proyecto.owner}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-slate-400">-</span>
+                        <span className="text-sm text-[color:var(--ink-3)]">-</span>
                       )}
                     </td>
 
@@ -667,7 +667,7 @@ function ListaView({
                     </td>
 
                     {/* Fecha inicio */}
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-[color:var(--ink-3)]">
                       {proyecto.fecha_inicio ?? '-'}
                     </td>
 
@@ -679,7 +679,7 @@ function ListaView({
                           numeroProyecto={proyecto.numero_proyecto}
                         />
                       ) : (
-                        <span className="text-sm text-slate-400">-</span>
+                        <span className="text-sm text-[color:var(--ink-3)]">-</span>
                       )}
                     </td>
                   </tr>
@@ -847,24 +847,24 @@ export function ProyectosClient({
     <Tabs
       value={view}
       onValueChange={(nextValue) => setView(nextValue as BoardView)}
-      className="flex min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden p-5 text-slate-900"
+      className="flex min-h-0 min-w-0 flex-1 flex-col gap-0 overflow-hidden p-5 text-[color:var(--ink)]"
     >
       {/* Seccion principal con borde redondeado */}
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[34px] border border-sky-100 bg-[radial-gradient(circle_at_top_left,#eff8ff_0%,#ffffff_45%,#f8fafc_100%)] shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[34px] border border-[color:var(--ink-4)] bg-[radial-gradient(circle_at_top_left,#eff8ff_0%,#ffffff_45%,#f8fafc_100%)] shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
         {/* Cabecera con titulo, metricas y controles */}
-        <div className="border-b border-sky-100 px-5 py-5">
+        <div className="border-b border-[color:var(--ink-4)] px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             {/* Titulo e indicador */}
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)]">
                 <LayoutGrid className="h-3.5 w-3.5" />
                 Proyectos activos
               </div>
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+                <h2 className="text-xl font-semibold tracking-tight text-[color:var(--ink)]">
                   Tablero de proyectos de ingenieria
                 </h2>
-                <p className="max-w-3xl text-sm leading-6 text-slate-600">
+                <p className="max-w-3xl text-sm leading-6 text-[color:var(--ink-3)]">
                   Seguimiento operativo de los proyectos agrupados por fase del
                   workflow. Usa las columnas del tablero o la vista lista para
                   gestionar el avance.
@@ -874,11 +874,11 @@ export function ProyectosClient({
 
             {/* Metricas de resumen */}
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <div className="rounded-[22px] border border-sky-200 bg-white/90 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                   Proyectos
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-slate-950">
+                <p className="mt-2 text-2xl font-semibold text-[color:var(--ink)]">
                   {metrics.total}
                 </p>
               </div>
@@ -887,12 +887,12 @@ export function ProyectosClient({
                 .map((col) => (
                   <div
                     key={col.stateCode}
-                    className="rounded-[22px] border border-sky-200 bg-white/90 px-4 py-3"
+                    className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3"
                   >
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                       {col.title}
                     </p>
-                    <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    <p className="mt-2 text-2xl font-semibold text-[color:var(--ink)]">
                       {col.count}
                     </p>
                   </div>
@@ -905,7 +905,7 @@ export function ProyectosClient({
             {/* Toggle Tablero / Lista */}
             <TabsList
               variant="default"
-              className="flex w-auto gap-2 rounded-[24px] border border-slate-200 bg-slate-50 p-2"
+              className="flex w-auto gap-2 rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-2"
             >
               {VIEW_OPTIONS.map((option) => {
                 const Icon = option.icon
@@ -913,7 +913,7 @@ export function ProyectosClient({
                   <TabsTrigger
                     key={option.value}
                     value={option.value}
-                    className="rounded-[18px] px-4 py-2.5 text-sm font-semibold text-slate-500 transition-all data-active:bg-white data-active:text-slate-950 data-active:shadow-sm"
+                    className="rounded-[18px] px-4 py-2.5 text-sm font-semibold text-[color:var(--ink-3)] transition-all data-active:bg-[color:var(--paper)] data-active:text-[color:var(--ink)] data-active:shadow-sm"
                   >
                     <Icon className="h-4 w-4" />
                     {option.label}
@@ -926,14 +926,14 @@ export function ProyectosClient({
             <div className="relative max-w-xs min-w-[200px] flex-1">
               <Search
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]"
               />
               <input
                 type="text"
                 placeholder="Buscar proyectos..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-950 placeholder-slate-400 transition-colors focus:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] py-2 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder-[color:var(--ink-4)] transition-colors focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-4 focus:ring-[color:var(--ink-4)]"
               />
             </div>
 
@@ -942,7 +942,7 @@ export function ProyectosClient({
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-950 transition-colors focus:border-sky-300 focus:outline-none focus:ring-4 focus:ring-sky-100"
+                className="cursor-pointer appearance-none rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] py-2 pl-3 pr-8 text-sm text-[color:var(--ink)] transition-colors focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-4 focus:ring-[color:var(--ink-4)]"
               >
                 <option value="all">Todos los estados</option>
                 {availableStates.map((meta) => (
@@ -953,7 +953,7 @@ export function ProyectosClient({
               </select>
               <ChevronDown
                 size={14}
-                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]"
               />
             </div>
           </div>
@@ -963,7 +963,7 @@ export function ProyectosClient({
         <div className="min-h-0 flex-1 overflow-auto">
           {filtered.length === 0 ? (
             /* Estado vacio */
-            <div className="flex h-64 flex-col items-center justify-center gap-3 text-slate-400">
+            <div className="flex h-64 flex-col items-center justify-center gap-3 text-[color:var(--ink-3)]">
               <Inbox className="h-10 w-10" />
               <p className="text-sm">
                 No hay proyectos activos. Los proyectos se crean desde las

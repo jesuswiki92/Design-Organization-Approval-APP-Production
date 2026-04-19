@@ -102,7 +102,7 @@ export function QuotationStateSelector({
         value={selectedState}
         disabled={status === 'saving'}
         onChange={(event) => void handleChange(event.target.value)}
-        className="h-7 w-full truncate rounded-md border border-slate-200 bg-slate-50 px-1.5 text-[10px] font-medium uppercase tracking-wide text-slate-500 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-2 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
+        className="h-7 w-full truncate rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-1.5 text-[10px] font-medium uppercase tracking-wide text-[color:var(--ink-3)] outline-none transition-colors hover:border-[color:var(--ink-4)] focus:border-[color:var(--ink-4)] focus:ring-2 focus:ring-[color:var(--ink-4)] disabled:cursor-wait disabled:opacity-70"
       >
         {BOARD_STATE_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -111,7 +111,7 @@ export function QuotationStateSelector({
         ))}
       </select>
       {status === 'saving' ? (
-        <p className="text-[10px] text-slate-400">Guardando...</p>
+        <p className="text-[10px] text-[color:var(--ink-3)]">Guardando...</p>
       ) : null}
       {message ? (
         <p className="text-[10px] text-rose-500 line-clamp-1">{message}</p>

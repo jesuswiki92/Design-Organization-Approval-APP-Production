@@ -124,7 +124,7 @@ export function TcdsRagClient() {
       {/* === BARRA SUPERIOR: PESTANAS + ESTADO DE CONEXION === */}
       <div className="flex items-center justify-between gap-4">
         {/* Selector de pestanas */}
-        <div className="flex gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+        <div className="flex gap-1 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-1 shadow-sm">
           {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -135,7 +135,7 @@ export function TcdsRagClient() {
                 className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-sky-600 text-white shadow-sm'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-950'
+                    : 'text-[color:var(--ink-3)] hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink)]'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -148,13 +148,13 @@ export function TcdsRagClient() {
         {/* Indicador de conexion */}
         <div className="flex items-center gap-2">
           {isConnected === null ? (
-            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-[color:var(--ink-3)]" />
           ) : isConnected ? (
             <Wifi className="h-4 w-4 text-emerald-500" />
           ) : (
             <WifiOff className="h-4 w-4 text-rose-500" />
           )}
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-[color:var(--ink-3)]">
             {isConnected === null
               ? 'Verificando...'
               : isConnected
@@ -251,15 +251,15 @@ function DashboardTab({ token }: { token: string }) {
       label: 'Total Chunks',
       value: loading ? '...' : dashData ? String(dashData.documents) : '--',
       icon: Layers3,
-      color: dashData ? 'text-sky-600' : 'text-slate-400',
-      bg: dashData ? 'bg-sky-50' : 'bg-slate-50',
+      color: dashData ? 'text-[color:var(--ink-3)]' : 'text-[color:var(--ink-3)]',
+      bg: dashData ? 'bg-[color:var(--paper-2)]' : 'bg-[color:var(--paper-2)]',
     },
     {
       label: 'Documentos Unicos',
       value: loading ? '...' : dashData ? String(dashData.uniqueDocuments) : '--',
       icon: FileStack,
-      color: dashData ? 'text-violet-600' : 'text-slate-400',
-      bg: dashData ? 'bg-violet-50' : 'bg-slate-50',
+      color: dashData ? 'text-[color:var(--ink-3)]' : 'text-[color:var(--ink-3)]',
+      bg: dashData ? 'bg-[color:var(--paper-2)]' : 'bg-[color:var(--paper-2)]',
     },
     {
       label: 'Python API',
@@ -276,8 +276,8 @@ function DashboardTab({ token }: { token: string }) {
       label: 'Mode',
       value: 'Hybrid',
       icon: Cpu,
-      color: 'text-sky-600',
-      bg: 'bg-sky-50',
+      color: 'text-[color:var(--ink-3)]',
+      bg: 'bg-[color:var(--paper-2)]',
     },
   ]
 
@@ -330,7 +330,7 @@ function DashboardTab({ token }: { token: string }) {
           </div>
           <button
             onClick={loadDashboard}
-            className="flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50"
+            className="flex items-center gap-1 rounded-lg border border-rose-200 bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50"
           >
             <RefreshCw className="h-3 w-3" />
             Reintentar
@@ -345,10 +345,10 @@ function DashboardTab({ token }: { token: string }) {
           return (
             <div
               key={s.label}
-              className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]"
+              className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                   {s.label}
                 </span>
                 <div
@@ -372,16 +372,16 @@ function DashboardTab({ token }: { token: string }) {
       {/* --- Paneles informativos: stack tecnologico y estado operativo --- */}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         {/* Panel izquierdo: Vision general del sistema */}
-        <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
               <Database className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-950">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Vision general del sistema
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[color:var(--ink-3)]">
                 Stack tecnologico del motor RAG
               </p>
             </div>
@@ -391,10 +391,10 @@ function DashboardTab({ token }: { token: string }) {
             {techStack.map((t) => (
               <div
                 key={t.label}
-                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5"
+                className="flex items-center justify-between rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2.5"
               >
-                <span className="text-sm text-slate-600">{t.label}</span>
-                <span className="text-sm font-medium text-slate-950">
+                <span className="text-sm text-[color:var(--ink-3)]">{t.label}</span>
+                <span className="text-sm font-medium text-[color:var(--ink)]">
                   {t.value}
                 </span>
               </div>
@@ -403,16 +403,16 @@ function DashboardTab({ token }: { token: string }) {
         </div>
 
         {/* Panel derecho: Estado operativo */}
-        <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 text-amber-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--umber)]">
               <Cpu className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-950">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Estado operativo
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[color:var(--ink-3)]">
                 Componentes del pipeline RAG
               </p>
             </div>
@@ -420,7 +420,7 @@ function DashboardTab({ token }: { token: string }) {
             <button
               onClick={loadDashboard}
               disabled={loading}
-              className="ml-auto flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 disabled:opacity-50"
+              className="ml-auto flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:opacity-50"
             >
               <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
@@ -431,16 +431,16 @@ function DashboardTab({ token }: { token: string }) {
             {operationalStatus.map((item) => (
               <div
                 key={item.label}
-                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5"
+                className="flex items-center justify-between rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2.5"
               >
-                <span className="text-sm text-slate-600">{item.label}</span>
+                <span className="text-sm text-[color:var(--ink-3)]">{item.label}</span>
                 {item.status === 'ok' ? (
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
                     <CheckCircle2 className="h-3 w-3" />
                     Activo
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[color:var(--ink-3)]">
                     <Clock className="h-3 w-3" />
                     Pendiente
                   </span>
@@ -645,15 +645,15 @@ function IngestTab({
   return (
     <div className="space-y-6">
       {/* --- Zona de carga de archivos --- */}
-      <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-950">
+          <h3 className="text-sm font-semibold text-[color:var(--ink)]">
             Cargar documento PDF
           </h3>
           {stage === 'saved' && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1 rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-medium text-sky-600 transition-colors hover:bg-sky-100"
+              className="flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
             >
               <RefreshCw className="h-3 w-3" />
               Nuevo documento
@@ -663,7 +663,7 @@ function IngestTab({
 
         {/* Zona de drag & drop */}
         <div
-          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 transition-colors hover:border-sky-400 hover:bg-sky-50/30"
+          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-10 transition-colors hover:border-sky-400 hover:bg-[color:var(--paper-3)]/30"
           onClick={() => fileInputRef.current?.click()}
           onDragOver={(e) => {
             e.preventDefault()
@@ -676,11 +676,11 @@ function IngestTab({
             handleFileChange(file)
           }}
         >
-          <FileUp className="h-8 w-8 text-slate-400" />
-          <p className="text-sm text-slate-600">
+          <FileUp className="h-8 w-8 text-[color:var(--ink-3)]" />
+          <p className="text-sm text-[color:var(--ink-3)]">
             Arrastra un PDF aqui o haz clic para seleccionar
           </p>
-          <p className="text-xs text-slate-400">Solo archivos .pdf</p>
+          <p className="text-xs text-[color:var(--ink-3)]">Solo archivos .pdf</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -694,13 +694,13 @@ function IngestTab({
 
         {/* Informacion del archivo seleccionado */}
         {selectedFile && (
-          <div className="mt-4 flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
-            <FileText className="h-5 w-5 text-sky-600" />
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+            <FileText className="h-5 w-5 text-[color:var(--ink-3)]" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-950">
+              <p className="truncate text-sm font-medium text-[color:var(--ink)]">
                 {selectedFile.name}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[color:var(--ink-3)]">
                 {formatSize(selectedFile.size)}
                 {analysis && (
                   <> &middot; {analysis.doc_info.num_pages} paginas &middot; {analysis.classification.agency} &middot; {analysis.classification.standard_code}</>
@@ -713,7 +713,7 @@ function IngestTab({
                   setSelectedFile(null)
                   setLogs(['// Esperando documento para procesar...'])
                 }}
-                className="text-xs text-slate-400 transition-colors hover:text-rose-600"
+                className="text-xs text-[color:var(--ink-3)] transition-colors hover:text-rose-600"
               >
                 Quitar
               </button>
@@ -732,12 +732,12 @@ function IngestTab({
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+                className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                   {item.label}
                 </p>
-                <p className="truncate text-sm font-medium text-slate-800">
+                <p className="truncate text-sm font-medium text-[color:var(--ink-2)]">
                   {item.value}
                 </p>
               </div>
@@ -761,8 +761,8 @@ function IngestTab({
             disabled={!canAnalyze || isAnalyzing}
             className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${
               canAnalyze
-                ? 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
-                : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+                ? 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] hover:bg-[color:var(--paper-3)]'
+                : 'cursor-not-allowed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
             }`}
           >
             {isAnalyzing ? (
@@ -780,7 +780,7 @@ function IngestTab({
             className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${
               canProcess
                 ? 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+                : 'cursor-not-allowed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
             }`}
           >
             {isProcessing ? (
@@ -798,7 +798,7 @@ function IngestTab({
             className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors ${
               canSave
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+                : 'cursor-not-allowed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
             }`}
           >
             {isSaving ? (
@@ -820,10 +820,10 @@ function IngestTab({
 
         {/* Sugerencia para extraer datos de aeronave despues de guardar */}
         {isSaved && (
-          <div className="mt-4 flex items-center justify-between rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+          <div className="mt-4 flex items-center justify-between rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
             <div className="flex items-center gap-2">
-              <Plane className="h-4 w-4 text-sky-600" />
-              <span className="text-sm text-sky-800">
+              <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
+              <span className="text-sm text-[color:var(--ink-2)]">
                 Documento procesado. ¿Extraer datos de aeronave?
               </span>
             </div>
@@ -839,8 +839,8 @@ function IngestTab({
       </div>
 
       {/* --- Log de procesamiento (terminal) --- */}
-      <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-        <h3 className="mb-4 text-sm font-semibold text-slate-950">
+      <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <h3 className="mb-4 text-sm font-semibold text-[color:var(--ink)]">
           Log de procesamiento
         </h3>
         <div className="max-h-72 overflow-y-auto rounded-xl bg-slate-900 p-4 font-mono text-sm leading-6">
@@ -851,11 +851,11 @@ function IngestTab({
                 log.startsWith('ERROR')
                   ? 'text-rose-400'
                   : log.startsWith('>>>')
-                    ? 'text-sky-400'
+                    ? 'text-[color:var(--ink-3)]'
                     : log.startsWith('OK') || log.includes('OK')
                       ? 'text-green-400'
                       : log.startsWith('//')
-                        ? 'text-slate-500'
+                        ? 'text-[color:var(--ink-3)]'
                         : 'text-green-400'
               }
             >
@@ -867,11 +867,11 @@ function IngestTab({
       </div>
 
       {/* --- Vista previa de chunks --- */}
-      <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-        <h3 className="mb-4 text-sm font-semibold text-slate-950">
+      <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <h3 className="mb-4 text-sm font-semibold text-[color:var(--ink)]">
           Vista previa de chunks
           {processResult && (
-            <span className="ml-2 text-xs font-normal text-slate-400">
+            <span className="ml-2 text-xs font-normal text-[color:var(--ink-3)]">
               ({processResult.chunks.length} chunks)
             </span>
           )}
@@ -882,26 +882,26 @@ function IngestTab({
             {processResult.chunks.map((chunk, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-slate-100 bg-slate-50 p-4"
+                className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-sky-600">
+                  <span className="text-xs font-semibold text-[color:var(--ink-3)]">
                     #{i + 1} &middot; {chunk.section_id || 'Sin seccion'}
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-[color:var(--ink-3)]">
                     {chunk.char_count} chars
                   </span>
                 </div>
-                <p className="line-clamp-4 text-xs leading-relaxed text-slate-600">
+                <p className="line-clamp-4 text-xs leading-relaxed text-[color:var(--ink-3)]">
                   {chunk.content}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10">
-            <Layers3 className="h-6 w-6 text-slate-300" />
-            <p className="text-sm text-slate-400">
+          <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-10">
+            <Layers3 className="h-6 w-6 text-[color:var(--ink-4)]" />
+            <p className="text-sm text-[color:var(--ink-3)]">
               Los chunks apareceran aqui despues del procesamiento
             </p>
           </div>
@@ -1026,16 +1026,16 @@ function ExtractTab({
     <div className="space-y-6">
       {/* === PASO 1: SELECCIONAR FUENTE === */}
       {(stageStr === 'select' || stageStr === 'extracting') && (
-        <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
               <Plane className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-950">
+              <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                 Extraer datos de aeronave
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[color:var(--ink-3)]">
                 Usa IA para extraer datos estructurados de un TCDS
               </p>
             </div>
@@ -1063,7 +1063,7 @@ function ExtractTab({
 
           {/* Codigo del documento */}
           <div className="mb-4">
-            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+            <label className="mb-1.5 block text-xs font-semibold text-[color:var(--ink-3)]">
               Codigo del documento TCDS
             </label>
             <input
@@ -1072,13 +1072,13 @@ function ExtractTab({
               onChange={(e) => setDocumentCode(e.target.value)}
               placeholder="Ej: EASA.A.064"
               disabled={isExtracting}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-sky-300 focus:ring-1 focus:ring-sky-200 disabled:opacity-50"
+              className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2.5 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)] disabled:opacity-50"
             />
           </div>
 
           {/* Area de texto para pegar contenido */}
           <div className="mb-4">
-            <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+            <label className="mb-1.5 block text-xs font-semibold text-[color:var(--ink-3)]">
               Texto fuente (contenido del TCDS)
             </label>
             <textarea
@@ -1087,10 +1087,10 @@ function ExtractTab({
               placeholder="Pega aqui el texto del TCDS o usa el boton de arriba para cargar el ultimo documento procesado..."
               rows={8}
               disabled={isExtracting}
-              className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs leading-relaxed text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-sky-300 focus:ring-1 focus:ring-sky-200 disabled:opacity-50"
+              className="w-full resize-y rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3 font-mono text-xs leading-relaxed text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)] disabled:opacity-50"
             />
             {sourceText && (
-              <p className="mt-1 text-[10px] text-slate-400">
+              <p className="mt-1 text-[10px] text-[color:var(--ink-3)]">
                 {sourceText.length.toLocaleString()} caracteres
               </p>
             )}
@@ -1111,7 +1111,7 @@ function ExtractTab({
             className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-colors ${
               sourceText.trim() && !isExtracting
                 ? 'bg-sky-600 text-white hover:bg-sky-700'
-                : 'cursor-not-allowed bg-slate-200 text-slate-400'
+                : 'cursor-not-allowed bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
             }`}
           >
             {isExtracting ? (
@@ -1131,12 +1131,12 @@ function ExtractTab({
 
       {/* === PASO 2: EXTRACCION EN PROGRESO (spinner) === */}
       {isExtracting && (
-        <div className="rounded-[22px] border border-slate-200 bg-white p-10 text-center shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-sky-500" />
-          <p className="mt-4 text-sm font-medium text-slate-600">
+        <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-10 text-center shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-[color:var(--ink-3)]" />
+          <p className="mt-4 text-sm font-medium text-[color:var(--ink-3)]">
             Extrayendo datos con IA...
           </p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             Analizando el contenido del TCDS para identificar variantes de aeronave
           </p>
         </div>
@@ -1146,17 +1146,17 @@ function ExtractTab({
       {(isReview || isSaving || isSaved) && extractionResult && (
         <div className="space-y-5">
           {/* Cabecera con informacion del TCDS */}
-          <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                   <Plane className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-950">
+                  <h3 className="text-sm font-semibold text-[color:var(--ink)]">
                     Datos extraidos del TCDS
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[color:var(--ink-3)]">
                     Revisa los datos antes de guardar en la base de datos
                   </p>
                 </div>
@@ -1164,7 +1164,7 @@ function ExtractTab({
               {!isSaved && (
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50"
+                  className="flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
                 >
                   <RefreshCw className="h-3 w-3" />
                   Nueva extraccion
@@ -1178,14 +1178,14 @@ function ExtractTab({
                clave para proyectos en la DOA. Se muestra grande y destacado
                para que el usuario lo identifique de inmediato.
                ================================================================ */}
-            <div className="mb-4 rounded-xl border-2 border-sky-200 bg-gradient-to-r from-sky-50 via-white to-sky-50 p-4">
+            <div className="mb-4 rounded-xl border-2 border-[color:var(--ink-4)] bg-gradient-to-r from-[color:var(--paper-2)] via-[color:var(--paper)] to-[color:var(--paper-2)] p-4">
               <div className="flex flex-wrap items-center gap-6">
                 {/* Codigo TCDS completo — grande y en negrita */}
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     TCDS Code
                   </p>
-                  <p className="text-2xl font-bold tracking-tight text-slate-900">
+                  <p className="text-2xl font-bold tracking-tight text-[color:var(--ink)]">
                     {(variants.length > 0 && variants[0].tcds_code) || documentCode || '--'}
                   </p>
                 </div>
@@ -1193,7 +1193,7 @@ function ExtractTab({
                 {/* Codigo TCDS corto — badge destacado, es el que se usa para codigos de proyecto */}
                 {variants.length > 0 && variants[0].tcds_code_short && (
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                       Codigo Proyecto
                     </p>
                     <span className="mt-0.5 inline-flex items-center rounded-lg bg-sky-600 px-3 py-1 text-lg font-bold text-white shadow-md shadow-sky-200">
@@ -1203,26 +1203,26 @@ function ExtractTab({
                 )}
 
                 {/* Separador vertical */}
-                <div className="hidden h-12 w-px bg-slate-200 sm:block" />
+                <div className="hidden h-12 w-px bg-[color:var(--paper-3)] sm:block" />
 
                 {/* Issue y Fecha */}
                 <div className="flex flex-wrap gap-4">
                   {variants.length > 0 && variants[0].tcds_issue && (
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Issue
                       </p>
-                      <p className="text-sm font-medium text-slate-800">
+                      <p className="text-sm font-medium text-[color:var(--ink-2)]">
                         {variants[0].tcds_issue}
                       </p>
                     </div>
                   )}
                   {variants.length > 0 && variants[0].tcds_date && (
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Fecha
                       </p>
-                      <p className="text-sm font-medium text-slate-800">
+                      <p className="text-sm font-medium text-[color:var(--ink-2)]">
                         {variants[0].tcds_date}
                       </p>
                     </div>
@@ -1230,26 +1230,26 @@ function ExtractTab({
                 </div>
 
                 {/* Separador vertical */}
-                <div className="hidden h-12 w-px bg-slate-200 sm:block" />
+                <div className="hidden h-12 w-px bg-[color:var(--paper-3)] sm:block" />
 
                 {/* Fabricante y Tipo */}
                 <div className="flex flex-wrap gap-4">
                   {variants.length > 0 && variants[0].fabricante && (
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Fabricante
                       </p>
-                      <p className="text-sm font-medium text-slate-800">
+                      <p className="text-sm font-medium text-[color:var(--ink-2)]">
                         {variants[0].fabricante}
                       </p>
                     </div>
                   )}
                   {variants.length > 0 && variants[0].tipo && (
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Tipo
                       </p>
-                      <p className="text-sm font-medium text-slate-800">
+                      <p className="text-sm font-medium text-[color:var(--ink-2)]">
                         {variants[0].tipo}
                       </p>
                     </div>
@@ -1257,11 +1257,11 @@ function ExtractTab({
                 </div>
 
                 {/* Contador de variantes — a la derecha */}
-                <div className="ml-auto rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-center">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+                <div className="ml-auto rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Variantes
                   </p>
-                  <p className="text-lg font-bold text-sky-700">
+                  <p className="text-lg font-bold text-[color:var(--ink-2)]">
                     {variants.length}
                   </p>
                 </div>
@@ -1269,17 +1269,17 @@ function ExtractTab({
             </div>
 
             {/* Metadata de la extraccion */}
-            <div className="flex items-center gap-4 text-[10px] text-slate-400">
+            <div className="flex items-center gap-4 text-[10px] text-[color:var(--ink-3)]">
               <span>Modelo IA: {extractionResult.model_used}</span>
               <span>Tokens: {extractionResult.tokens_used.toLocaleString()}</span>
             </div>
           </div>
 
           {/* Tabla de variantes */}
-          <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-            <h3 className="mb-4 text-sm font-semibold text-slate-950">
+          <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <h3 className="mb-4 text-sm font-semibold text-[color:var(--ink)]">
               Variantes de aeronave
-              <span className="ml-2 text-xs font-normal text-slate-400">
+              <span className="ml-2 text-xs font-normal text-[color:var(--ink-3)]">
                 ({variants.length} {variants.length === 1 ? 'variante' : 'variantes'})
               </span>
             </h3>
@@ -1290,38 +1290,38 @@ function ExtractTab({
                    porque es el identificador principal de proyecto en la DOA */}
                 <table className="w-full min-w-[1000px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200">
+                    <tr className="border-b border-[color:var(--ink-4)]">
                       {/* Primera columna: TCDS CODE — destacada porque identifica el proyecto */}
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-sky-600 bg-sky-50 rounded-tl-lg">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)] bg-[color:var(--paper-2)] rounded-tl-lg">
                         TCDS Code
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Modelo
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Fabricante
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Motor
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         MTOW (kg)
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         MLW (kg)
                       </th>
                       <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-50 rounded-t-lg">
                         Regulacion Base
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Categoria
                       </th>
-                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         MSN Elegibles
                       </th>
                       {/* Columna de acciones solo si no se ha guardado todavia */}
                       {!isSaved && (
-                        <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                           {/* Sin titulo, solo icono de eliminar */}
                         </th>
                       )}
@@ -1331,29 +1331,29 @@ function ExtractTab({
                     {variants.map((v, i) => (
                       <tr
                         key={i}
-                        className="border-b border-slate-100 transition-colors hover:bg-slate-50"
+                        className="border-b border-[color:var(--ink-4)] transition-colors hover:bg-[color:var(--paper-3)]"
                       >
                         {/* Codigo TCDS corto — badge destacado en cada fila para identificacion rapida */}
-                        <td className="px-3 py-2.5 bg-sky-50/50">
-                          <span className="inline-flex items-center rounded-md bg-sky-100 px-2 py-0.5 text-xs font-bold text-sky-800">
+                        <td className="px-3 py-2.5 bg-[color:var(--paper-2)]/50">
+                          <span className="inline-flex items-center rounded-md bg-[color:var(--paper-2)] px-2 py-0.5 text-xs font-bold text-[color:var(--ink-2)]">
                             {v.tcds_code_short || v.tcds_code || '--'}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 font-medium text-slate-900">
+                        <td className="px-3 py-2.5 font-medium text-[color:var(--ink)]">
                           {v.modelo || '--'}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600">
+                        <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
                           {v.fabricante || '--'}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600">
+                        <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
                           <span className="max-w-[180px] truncate block" title={v.motor}>
                             {v.motor || '--'}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600 tabular-nums">
+                        <td className="px-3 py-2.5 text-[color:var(--ink-3)] tabular-nums">
                           {v.mtow_kg != null ? v.mtow_kg.toLocaleString() : '--'}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600 tabular-nums">
+                        <td className="px-3 py-2.5 text-[color:var(--ink-3)] tabular-nums">
                           {v.mlw_kg != null ? v.mlw_kg.toLocaleString() : '--'}
                         </td>
                         {/* Columna destacada: Regulacion Base */}
@@ -1362,10 +1362,10 @@ function ExtractTab({
                             {v.regulacion_base || '--'}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600">
+                        <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
                           {v.categoria || '--'}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600">
+                        <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
                           <span className="max-w-[140px] truncate block text-xs" title={v.msn_elegibles}>
                             {v.msn_elegibles || '--'}
                           </span>
@@ -1376,7 +1376,7 @@ function ExtractTab({
                             <button
                               onClick={() => handleRemoveVariant(i)}
                               disabled={isSaving}
-                              className="flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                              className="flex h-6 w-6 items-center justify-center rounded-lg text-[color:var(--ink-3)] transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
                               title="Eliminar variante"
                             >
                               <X className="h-3.5 w-3.5" />
@@ -1389,9 +1389,9 @@ function ExtractTab({
                 </table>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10">
-                <Plane className="h-6 w-6 text-slate-300" />
-                <p className="text-sm text-slate-400">
+              <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-10">
+                <Plane className="h-6 w-6 text-[color:var(--ink-4)]" />
+                <p className="text-sm text-[color:var(--ink-3)]">
                   No hay variantes para mostrar. Se han eliminado todas las filas.
                 </p>
               </div>
@@ -1400,8 +1400,8 @@ function ExtractTab({
 
           {/* Notas de las variantes (si hay) */}
           {variants.some((v) => v.notas) && (
-            <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <h3 className="mb-3 text-sm font-semibold text-slate-950">
+            <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <h3 className="mb-3 text-sm font-semibold text-[color:var(--ink)]">
                 Notas adicionales
               </h3>
               <div className="space-y-2">
@@ -1410,12 +1410,12 @@ function ExtractTab({
                   .map((v, i) => (
                     <div
                       key={i}
-                      className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5"
+                      className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2.5"
                     >
-                      <span className="text-xs font-semibold text-sky-600">
+                      <span className="text-xs font-semibold text-[color:var(--ink-3)]">
                         {v.modelo}:
                       </span>{' '}
-                      <span className="text-xs text-slate-600">{v.notas}</span>
+                      <span className="text-xs text-[color:var(--ink-3)]">{v.notas}</span>
                     </div>
                   ))}
               </div>
@@ -1439,7 +1439,7 @@ function ExtractTab({
                 className={`flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
                   variants.length > 0 && !isSaving
                     ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700'
-                    : 'cursor-not-allowed bg-slate-200 text-slate-400'
+                    : 'cursor-not-allowed bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
                 }`}
               >
                 {isSaving ? (
@@ -1454,7 +1454,7 @@ function ExtractTab({
                   </>
                 )}
               </button>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-[color:var(--ink-3)]">
                 {variants.length} {variants.length === 1 ? 'variante' : 'variantes'} para guardar
               </span>
             </div>
@@ -1479,7 +1479,7 @@ function ExtractTab({
                 </div>
                 <button
                   onClick={handleReset}
-                  className="flex items-center gap-1 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+                  className="flex items-center gap-1 rounded-lg border border-emerald-300 bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
                 >
                   <RefreshCw className="h-3 w-3" />
                   Nueva extraccion
@@ -1586,19 +1586,19 @@ function DocumentsTab({ token }: { token: string }) {
   return (
     <div className="space-y-5">
       {/* --- Busqueda semantica RAG --- */}
-      <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-        <h3 className="mb-3 text-sm font-semibold text-slate-950">
+      <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <h3 className="mb-3 text-sm font-semibold text-[color:var(--ink)]">
           Busqueda semantica RAG
         </h3>
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-3)]" />
             <input
               type="text"
               value={chatQuery}
               onChange={(e) => setChatQuery(e.target.value)}
               placeholder="Buscar en todos los documentos indexados..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-sky-300 focus:ring-1 focus:ring-sky-200"
+              className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] py-2.5 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)]"
             />
           </div>
           <button
@@ -1619,15 +1619,15 @@ function DocumentsTab({ token }: { token: string }) {
         {chatResult && (
           <div className="mt-4 space-y-3">
             {/* Respuesta generada */}
-            <div className="rounded-xl border border-sky-100 bg-sky-50 p-4">
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+            <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                 Respuesta
               </p>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[color:var(--ink-2)]">
                 {chatResult.answer}
               </p>
               {chatResult.tokens_used > 0 && (
-                <p className="mt-2 text-[10px] text-slate-400">
+                <p className="mt-2 text-[10px] text-[color:var(--ink-3)]">
                   {chatResult.tokens_used} tokens usados
                 </p>
               )}
@@ -1636,24 +1636,24 @@ function DocumentsTab({ token }: { token: string }) {
             {/* Fuentes */}
             {chatResult.sources.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-semibold text-slate-500">
+                <p className="mb-2 text-xs font-semibold text-[color:var(--ink-3)]">
                   Fuentes ({chatResult.sources.length})
                 </p>
                 <div className="space-y-2">
                   {chatResult.sources.map((src, i) => (
                     <div
                       key={i}
-                      className="rounded-lg border border-slate-100 bg-slate-50 p-3"
+                      className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3"
                     >
                       <div className="mb-1 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-sky-600">
+                        <span className="text-xs font-semibold text-[color:var(--ink-3)]">
                           {src.code} &middot; {src.section}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-[color:var(--ink-3)]">
                           Score: {(src.score * 100).toFixed(1)}%
                         </span>
                       </div>
-                      <p className="line-clamp-2 text-xs text-slate-600">
+                      <p className="line-clamp-2 text-xs text-[color:var(--ink-3)]">
                         {src.content}
                       </p>
                     </div>
@@ -1668,12 +1668,12 @@ function DocumentsTab({ token }: { token: string }) {
       {/* --- Grid de documentos y chunks --- */}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         {/* Panel izquierdo: lista de documentos indexados */}
-        <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-1">
+        <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-1">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-950">
+            <h3 className="text-sm font-semibold text-[color:var(--ink)]">
               Documentos indexados
               {documents.length > 0 && (
-                <span className="ml-1.5 text-xs font-normal text-slate-400">
+                <span className="ml-1.5 text-xs font-normal text-[color:var(--ink-3)]">
                   ({documents.length})
                 </span>
               )}
@@ -1681,7 +1681,7 @@ function DocumentsTab({ token }: { token: string }) {
             <button
               onClick={loadDocuments}
               disabled={loadingDocs}
-              className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-medium text-slate-500 transition-colors hover:bg-slate-50"
+              className="flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] px-2 py-1 text-[10px] font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
             >
               <RefreshCw className={`h-3 w-3 ${loadingDocs ? 'animate-spin' : ''}`} />
             </button>
@@ -1689,13 +1689,13 @@ function DocumentsTab({ token }: { token: string }) {
 
           {/* Buscador local */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-3)]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filtrar documentos..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-sky-300 focus:ring-1 focus:ring-sky-200"
+              className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] py-2 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)]"
             />
           </div>
 
@@ -1710,7 +1710,7 @@ function DocumentsTab({ token }: { token: string }) {
           {/* Lista de documentos o estado vacio */}
           {loadingDocs ? (
             <div className="flex items-center justify-center py-10">
-              <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+              <Loader2 className="h-6 w-6 animate-spin text-[color:var(--ink-4)]" />
             </div>
           ) : filteredDocs.length > 0 ? (
             <div className="max-h-[500px] space-y-2 overflow-y-auto">
@@ -1720,21 +1720,21 @@ function DocumentsTab({ token }: { token: string }) {
                   onClick={() => handleSelectDoc(doc)}
                   className={`w-full rounded-xl border px-4 py-3 text-left transition-colors ${
                     selectedDoc?.code === doc.code
-                      ? 'border-sky-300 bg-sky-50'
-                      : 'border-slate-100 bg-slate-50 hover:border-sky-200 hover:bg-sky-50/50'
+                      ? 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)]'
+                      : 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] hover:border-[color:var(--ink-4)] hover:bg-[color:var(--paper-3)]/50'
                   }`}
                 >
-                  <p className="truncate text-sm font-medium text-slate-950">
+                  <p className="truncate text-sm font-medium text-[color:var(--ink)]">
                     {doc.code}
                   </p>
-                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                  <p className="mt-0.5 truncate text-xs text-[color:var(--ink-3)]">
                     {doc.title || doc.doc_type || 'Sin titulo'}
                   </p>
                   <div className="mt-1.5 flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                    <span className="inline-flex items-center rounded-md bg-[color:var(--paper-3)] px-1.5 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]">
                       {doc.agency}
                     </span>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-[color:var(--ink-3)]">
                       {doc.chunk_count} chunks
                     </span>
                   </div>
@@ -1742,9 +1742,9 @@ function DocumentsTab({ token }: { token: string }) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10">
-              <FileStack className="h-6 w-6 text-slate-300" />
-              <p className="text-center text-sm text-slate-400">
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-10">
+              <FileStack className="h-6 w-6 text-[color:var(--ink-4)]" />
+              <p className="text-center text-sm text-[color:var(--ink-3)]">
                 {searchQuery
                   ? 'No se encontraron documentos'
                   : 'No hay documentos indexados'}
@@ -1754,13 +1754,13 @@ function DocumentsTab({ token }: { token: string }) {
         </div>
 
         {/* Panel derecho: visor de chunks del documento seleccionado */}
-        <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-2">
+        <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-950">
+            <h3 className="text-sm font-semibold text-[color:var(--ink)]">
               {selectedDoc ? (
                 <>
                   Chunks: {selectedDoc.code}
-                  <span className="ml-1.5 text-xs font-normal text-slate-400">
+                  <span className="ml-1.5 text-xs font-normal text-[color:var(--ink-3)]">
                     ({chunks.length} chunks)
                   </span>
                 </>
@@ -1773,36 +1773,36 @@ function DocumentsTab({ token }: { token: string }) {
           {/* Contenido: chunks o estado vacio */}
           {loadingChunks ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+              <Loader2 className="h-6 w-6 animate-spin text-[color:var(--ink-4)]" />
             </div>
           ) : chunks.length > 0 ? (
             <div className="max-h-[600px] space-y-3 overflow-y-auto">
               {chunks.map((chunk, i) => (
                 <div
                   key={chunk.id}
-                  className="rounded-xl border border-slate-100 bg-slate-50 p-4"
+                  className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4"
                 >
                   {/* Cabecera del chunk */}
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-sky-600">
+                    <span className="text-xs font-semibold text-[color:var(--ink-3)]">
                       #{i + 1}
                     </span>
                     {chunk.section_id && (
-                      <span className="rounded-md bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-700">
+                      <span className="rounded-md bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[10px] font-medium text-[color:var(--ink-2)]">
                         {chunk.section_id}
                       </span>
                     )}
                     {chunk.chapter && (
-                      <span className="rounded-md bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700">
+                      <span className="rounded-md bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[10px] font-medium text-[color:var(--ink-2)]">
                         {chunk.chapter}
                       </span>
                     )}
                     {chunk.page_number && (
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-[color:var(--ink-3)]">
                         Pag. {chunk.page_number}
                       </span>
                     )}
-                    <span className="ml-auto text-[10px] text-slate-400">
+                    <span className="ml-auto text-[10px] text-[color:var(--ink-3)]">
                       {chunk.char_count} chars
                     </span>
                     {chunk.has_image && (
@@ -1814,13 +1814,13 @@ function DocumentsTab({ token }: { token: string }) {
 
                   {/* Titulo/topico del chunk */}
                   {chunk.topic && (
-                    <p className="mb-1.5 text-xs font-medium text-slate-700">
+                    <p className="mb-1.5 text-xs font-medium text-[color:var(--ink-2)]">
                       {chunk.topic}
                     </p>
                   )}
 
                   {/* Contenido del chunk */}
-                  <p className="line-clamp-6 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">
+                  <p className="line-clamp-6 whitespace-pre-wrap text-xs leading-relaxed text-[color:var(--ink-3)]">
                     {chunk.content}
                   </p>
 
@@ -1831,7 +1831,7 @@ function DocumentsTab({ token }: { token: string }) {
                         href={chunk.page_capture_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[10px] text-sky-500 hover:underline"
+                        className="text-[10px] text-[color:var(--ink-3)] hover:underline"
                       >
                         Ver captura de pagina
                       </a>
@@ -1841,9 +1841,9 @@ function DocumentsTab({ token }: { token: string }) {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16">
-              <Database className="h-6 w-6 text-slate-300" />
-              <p className="text-sm text-slate-400">
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-16">
+              <Database className="h-6 w-6 text-[color:var(--ink-4)]" />
+              <p className="text-sm text-[color:var(--ink-3)]">
                 Selecciona un documento para ver sus chunks
               </p>
             </div>

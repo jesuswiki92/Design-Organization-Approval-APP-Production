@@ -193,40 +193,40 @@ export function PreliminaryScopeChatPanel({
   }
 
   return (
-    <aside className="flex min-h-[680px] flex-col overflow-hidden rounded-[28px] border border-sky-200 bg-white shadow-[0_18px_40px_rgba(148,163,184,0.14)] xl:sticky xl:top-6">
-      <div className="border-b border-sky-100 bg-[linear-gradient(180deg,#e0f2fe_0%,#f8fbff_42%,#ffffff_100%)] px-5 py-5">
+    <aside className="flex min-h-[680px] flex-col overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_40px_rgba(148,163,184,0.14)] xl:sticky xl:top-6">
+      <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(180deg,#e0f2fe_0%,#f8fbff_42%,#ffffff_100%)] px-5 py-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-[#0B1220] text-sky-400">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[#0B1220] text-[color:var(--ink-3)]">
             <PanelRightOpen className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Copiloto de alcance
             </div>
             <h3 className="mt-2 text-lg font-semibold text-slate-950">
               Chat contextual para esta quotation
             </h3>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
+            <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
               Usa datos de la consulta actual, la lectura TCDS y el precedente base ya seleccionado.
             </p>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs text-sky-700">
+          <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1 text-xs text-[color:var(--ink-2)]">
             {currentModel}
           </span>
-          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+          <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1 text-xs text-[color:var(--ink-3)]">
             {model.context.chosenReferenceLabel}
           </span>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-slate-400">
+        <div className="mt-4 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
             <Sparkles className="h-3.5 w-3.5" />
             Contexto activo
           </div>
-          <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+          <ul className="mt-3 space-y-2 text-sm leading-6 text-[color:var(--ink-3)]">
             <li>{model.context.clientLabel}</li>
             <li>{model.context.aircraftLabel}</li>
             <li>{model.proposedScope.headline}</li>
@@ -237,8 +237,8 @@ export function PreliminaryScopeChatPanel({
 
       <div ref={scrollRef} className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
         {messages.length === 1 && (
-          <div className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 p-4">
-            <p className="text-sm leading-6 text-slate-600">
+          <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-4">
+            <p className="text-sm leading-6 text-[color:var(--ink-3)]">
               Pregunta por deltas contra el precedente, datos a pedir al cliente, disciplinas
               impactadas o framing interno de certificacion.
             </p>
@@ -250,7 +250,7 @@ export function PreliminaryScopeChatPanel({
                   onClick={() => {
                     void sendQuestion(question)
                   }}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700"
+                  className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2 text-xs text-[color:var(--ink-2)] transition hover:border-[color:var(--ink-4)] hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink-2)]"
                 >
                   {question}
                 </button>
@@ -270,7 +270,7 @@ export function PreliminaryScopeChatPanel({
               className={`flex items-start gap-3 ${isAssistant ? '' : 'justify-end'}`}
             >
               {isAssistant && (
-                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                   <Bot className="h-4 w-4" />
                 </div>
               )}
@@ -278,13 +278,13 @@ export function PreliminaryScopeChatPanel({
               <div
                 className={`max-w-[92%] rounded-[22px] border px-4 py-3 ${
                   isAssistant
-                    ? 'border-slate-200 bg-white text-slate-900'
+                    ? 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink)]'
                     : 'border-transparent bg-[linear-gradient(135deg,#0f766e,#38bdf8)] text-white'
                 }`}
               >
                 <div
                   className={`text-[11px] uppercase tracking-[0.18em] ${
-                    isAssistant ? 'text-slate-400' : 'text-sky-100'
+                    isAssistant ? 'text-[color:var(--ink-3)]' : 'text-sky-100'
                   }`}
                 >
                   {isAssistant ? 'Asistente' : 'Usuario'}
@@ -292,7 +292,7 @@ export function PreliminaryScopeChatPanel({
                 <div className="mt-2 whitespace-pre-wrap text-sm leading-7">{message.content}</div>
 
                 {showLoadingDots && (
-                  <div className="mt-3 flex items-center gap-1 text-slate-400">
+                  <div className="mt-3 flex items-center gap-1 text-[color:var(--ink-3)]">
                     <span className="h-2 w-2 animate-bounce rounded-full bg-sky-500 [animation-delay:-0.2s]" />
                     <span className="h-2 w-2 animate-bounce rounded-full bg-sky-500 [animation-delay:-0.1s]" />
                     <span className="h-2 w-2 animate-bounce rounded-full bg-sky-500" />
@@ -301,7 +301,7 @@ export function PreliminaryScopeChatPanel({
               </div>
 
               {!isAssistant && (
-                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600">
+                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]">
                   <User className="h-4 w-4" />
                 </div>
               )}
@@ -310,10 +310,10 @@ export function PreliminaryScopeChatPanel({
         })}
       </div>
 
-      <div className="border-t border-slate-200 px-5 py-5">
+      <div className="border-t border-[color:var(--ink-4)] px-5 py-5">
         {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
 
-        <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3">
+        <div className="rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 p-3">
           <Textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
@@ -324,11 +324,11 @@ export function PreliminaryScopeChatPanel({
               }
             }}
             placeholder="Pregunta por deltas, ruta de certificacion, faltantes o alcance propuesto..."
-            className="min-h-[110px] resize-none border-0 bg-transparent px-1 text-sm leading-6 text-slate-900 shadow-none focus-visible:ring-0"
+            className="min-h-[110px] resize-none border-0 bg-transparent px-1 text-sm leading-6 text-[color:var(--ink)] shadow-none focus-visible:ring-0"
           />
 
           <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[color:var(--ink-3)]">
               Contexto servidor: consulta actual + precedente base + lectura TCDS.
             </p>
             <Button

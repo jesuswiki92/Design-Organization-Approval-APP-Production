@@ -85,7 +85,7 @@ function classificationBadge(classification: string | null): {
   }
   return {
     label: 'Sin clasificar',
-    cls: 'bg-slate-100 text-slate-500 border-slate-200',
+    cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
   }
 }
 
@@ -104,7 +104,7 @@ function fuenteBadge(fuente: Precedente['fuente']): {
   if (fuente === 'archivado') {
     return {
       label: 'Archivado',
-      cls: 'bg-violet-50 text-violet-700 border-violet-200',
+      cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
       Icon: Archive,
     }
   }
@@ -117,7 +117,7 @@ function fuenteBadge(fuente: Precedente['fuente']): {
   }
   return {
     label: 'Historico',
-    cls: 'bg-slate-50 text-slate-600 border-slate-200',
+    cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
     Icon: Database,
   }
 }
@@ -220,16 +220,16 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-sm">
       {/* Header de la seccion */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--ink-4)] px-5 py-4">
         <div className="flex items-center gap-3">
-          <Sparkles className="h-4 w-4 text-slate-400" />
+          <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               Proyectos similares
             </h2>
-            <p className="mt-0.5 text-[11px] text-slate-400">
+            <p className="mt-0.5 text-[11px] text-[color:var(--ink-3)]">
               Top 3 segun el indice
             </p>
           </div>
@@ -243,7 +243,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
             className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
               filterMinor
                 ? 'border-emerald-300 bg-emerald-100 text-emerald-700'
-                : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)] hover:bg-[color:var(--paper-3)]'
             }`}
           >
             Minor
@@ -254,7 +254,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
             className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
               filterMajor
                 ? 'border-orange-300 bg-orange-100 text-orange-700'
-                : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)] hover:bg-[color:var(--paper-3)]'
             }`}
           >
             Major
@@ -269,11 +269,11 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="animate-pulse rounded-xl border border-slate-100 bg-slate-50 p-4"
+                className="animate-pulse rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4"
               >
-                <div className="h-3 w-1/3 rounded bg-slate-200" />
-                <div className="mt-2 h-4 w-2/3 rounded bg-slate-200" />
-                <div className="mt-3 h-3 w-full rounded bg-slate-200" />
+                <div className="h-3 w-1/3 rounded bg-[color:var(--paper-3)]" />
+                <div className="mt-2 h-4 w-2/3 rounded bg-[color:var(--paper-3)]" />
+                <div className="mt-3 h-3 w-full rounded bg-[color:var(--paper-3)]" />
               </div>
             ))}
           </div>
@@ -286,7 +286,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
               <button
                 type="button"
                 onClick={() => window.location.reload()}
-                className="mt-3 inline-flex items-center gap-1 rounded-md border border-amber-200 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100"
+                className="mt-3 inline-flex items-center gap-1 rounded-md border border-amber-200 bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100"
               >
                 <RefreshCw className="h-3 w-3" />
                 Refrescar
@@ -296,7 +296,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
         )}
 
         {!loading && !error && filtered.length === 0 && (
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-8 text-center text-sm text-slate-400">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-8 text-center text-sm text-[color:var(--ink-3)]">
             {results.length === 0
               ? 'No hay proyectos similares en el indice.'
               : 'Ningun proyecto coincide con los filtros activos.'}
@@ -313,20 +313,20 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
               return (
                 <li
                   key={p.project_number}
-                  className="rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-sm"
+                  className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 transition-shadow hover:shadow-sm"
                 >
                   {/* Header line */}
                   <div className="flex items-start justify-between gap-3">
-                    <span className="font-mono text-xs text-slate-500">
+                    <span className="font-mono text-xs text-[color:var(--ink-3)]">
                       {p.project_number}
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
+                    <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--ink-2)]">
                       {scorePct(p.score)}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-slate-900">
+                  <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-[color:var(--ink)]">
                     {p.project_title ?? 'Sin titulo'}
                   </h3>
 
@@ -354,12 +354,12 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
                       </span>
                     )}
                     {p.family && (
-                      <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-600">
+                      <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-0.5 text-[11px] text-[color:var(--ink-3)]">
                         {p.family}
                       </span>
                     )}
                     {p.cert_basis && (
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-[11px] text-[color:var(--ink-3)]">
                         {p.cert_basis}
                       </span>
                     )}
@@ -367,7 +367,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
 
                   {/* Snippet */}
                   {p.snippet && (
-                    <p className="mt-2 line-clamp-2 text-xs italic text-slate-500">
+                    <p className="mt-2 line-clamp-2 text-xs italic text-[color:var(--ink-3)]">
                       {p.snippet}
                     </p>
                   )}
@@ -378,7 +378,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
                       <button
                         type="button"
                         onClick={() => handleCopy(p.source_path as string)}
-                        className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
+                        className="inline-flex items-center gap-1 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-1 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
                       >
                         {isCopied ? (
                           <>
@@ -393,7 +393,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
                         )}
                       </button>
                       <span
-                        className="inline-flex items-center gap-1 truncate text-[11px] text-slate-400"
+                        className="inline-flex items-center gap-1 truncate text-[11px] text-[color:var(--ink-3)]"
                         title={p.source_path}
                       >
                         <FolderTree className="h-3 w-3" />

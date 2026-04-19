@@ -100,11 +100,11 @@ export default async function ProyectosHistoricoEntryPage({
           subtitle="Ficha preparada para completar la informacion del proyecto"
         />
         <div className="flex min-h-0 flex-1 items-center justify-center px-5 py-8">
-          <section className="w-full max-w-3xl rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+          <section className="w-full max-w-3xl rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
               Proyecto historico no encontrado
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--ink-3)]">
               No hemos podido cargar la ficha de entrada para este proyecto historico. Vuelve al
               listado y abre otra fila para continuar.
             </p>

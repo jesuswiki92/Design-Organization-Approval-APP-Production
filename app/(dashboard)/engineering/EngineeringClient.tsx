@@ -81,10 +81,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Intake',
     description: 'Solicitudes entrantes y peticiones de proyecto pendientes de routing.',
     accent: {
-      bg: 'bg-sky-50',
-      border: 'border-sky-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-sky-500',
-      chip: 'border-sky-200 bg-white text-sky-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]',
     },
     cards: [
       {
@@ -110,10 +110,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Discovery',
     description: 'Framing del problema, restricciones y análisis técnico.',
     accent: {
-      bg: 'bg-cyan-50',
-      border: 'border-cyan-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-cyan-500',
-      chip: 'border-cyan-200 bg-white text-cyan-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]',
     },
     cards: [
       {
@@ -139,10 +139,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Architecture',
     description: 'Decisiones de diseño, límites de servicio y forma de implementación.',
     accent: {
-      bg: 'bg-indigo-50',
-      border: 'border-indigo-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-indigo-500',
-      chip: 'border-indigo-200 bg-white text-indigo-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]',
     },
     cards: [
       {
@@ -168,10 +168,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Build',
     description: 'Implementación activa con cambios de código en progreso.',
     accent: {
-      bg: 'bg-emerald-50',
-      border: 'border-emerald-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-emerald-500',
-      chip: 'border-emerald-200 bg-white text-emerald-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-emerald-700',
     },
     cards: [
       {
@@ -205,10 +205,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Verification',
     description: 'Tests, review y checks de corrección antes de release.',
     accent: {
-      bg: 'bg-amber-50',
-      border: 'border-amber-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-amber-500',
-      chip: 'border-amber-200 bg-white text-amber-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-amber-700',
     },
     cards: [
       {
@@ -234,10 +234,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Release',
     description: 'Elementos listos para entrega y coordinación final antes del launch.',
     accent: {
-      bg: 'bg-violet-50',
-      border: 'border-violet-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-violet-500',
-      chip: 'border-violet-200 bg-white text-violet-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]',
     },
     cards: [
       {
@@ -263,10 +263,10 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
     title: 'Observability',
     description: 'Monitorización, feedback y señales post-release.',
     accent: {
-      bg: 'bg-slate-50',
-      border: 'border-slate-200',
+      bg: 'bg-[color:var(--paper-2)]',
+      border: 'border-[color:var(--ink-4)]',
       dot: 'bg-slate-500',
-      chip: 'border-slate-200 bg-white text-slate-700',
+      chip: 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]',
     },
     cards: [
       {
@@ -295,20 +295,20 @@ const BOARD_ITEMS = BOARD_COLUMNS.flatMap((column) => column.cards.map((card) =>
 /** Tarjeta individual de un elemento de trabajo */
 function EngineeringCard({ card }: { card: EngineeringWorkItem }) {
   return (
-    <article className="rounded-[22px] border border-slate-200 bg-white p-3.5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] transition-transform hover:-translate-y-0.5 hover:border-cyan-300">
+    <article className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3.5 shadow-[0_14px_36px_rgba(15,23,42,0.07)] transition-transform hover:-translate-y-0.5 hover:border-[color:var(--ink-4)]">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="font-mono text-[10px] tracking-[0.24em] text-slate-500">{card.id}</p>
+          <p className="font-mono text-[10px] tracking-[0.24em] text-[color:var(--ink-3)]">{card.id}</p>
           <h4 className="text-sm font-semibold leading-5 text-slate-950">{card.title}</h4>
         </div>
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
           {card.tag}
         </span>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-slate-600">{card.summary}</p>
+      <p className="mt-3 text-sm leading-6 text-[color:var(--ink-3)]">{card.summary}</p>
 
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] text-slate-500">
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-[color:var(--ink-4)] pt-3 text-[11px] text-[color:var(--ink-3)]">
         <span>{card.owner}</span>
         <span>{card.due}</span>
       </div>
@@ -332,7 +332,7 @@ function EngineeringColumnCard({ column }: { column: EngineeringColumn }) {
               <span className={cn('h-2.5 w-2.5 rounded-full', column.accent.dot)} />
               <h3 className="text-sm font-semibold text-slate-950">{column.title}</h3>
             </div>
-            <p className="max-w-[220px] text-xs leading-5 text-slate-600">{column.description}</p>
+            <p className="max-w-[220px] text-xs leading-5 text-[color:var(--ink-3)]">{column.description}</p>
           </div>
           <span
             className={cn(
@@ -352,13 +352,13 @@ function EngineeringColumnCard({ column }: { column: EngineeringColumn }) {
 
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-[22px] border border-dashed border-slate-200 bg-white/80 px-4 py-3 text-left text-sm text-slate-600 transition-colors hover:border-cyan-300 hover:bg-cyan-50/60 hover:text-cyan-800"
+          className="flex w-full items-center justify-between rounded-[22px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-3 text-left text-sm text-[color:var(--ink-3)] transition-colors hover:border-[color:var(--ink-4)] hover:bg-[color:var(--paper-3)]/60 hover:text-[color:var(--ink-2)]"
         >
           <span className="inline-flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5" />
             Visual placeholder
           </span>
-          <span className="font-mono text-[10px] tracking-[0.2em] text-slate-400">MOCK</span>
+          <span className="font-mono text-[10px] tracking-[0.2em] text-[color:var(--ink-3)]">MOCK</span>
         </button>
       </div>
     </section>
@@ -374,25 +374,25 @@ function EngineeringListRow({
   card: EngineeringWorkItem
 }) {
   return (
-    <tr className="border-b border-slate-200/70 bg-white transition-colors hover:bg-cyan-50/50">
+    <tr className="border-b border-[color:var(--ink-4)]/70 bg-[color:var(--paper)] transition-colors hover:bg-[color:var(--paper-3)]/50">
       <td className="px-4 py-3 align-top">
         <div className="flex items-center gap-2">
           <span className={cn('h-2.5 w-2.5 rounded-full', column.accent.dot)} />
           <div>
-            <p className="font-mono text-[11px] text-slate-500">{card.id}</p>
+            <p className="font-mono text-[11px] text-[color:var(--ink-3)]">{card.id}</p>
             <p className="text-sm font-semibold text-slate-950">{card.title}</p>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3 align-top text-sm text-slate-600">{column.title}</td>
-      <td className="px-4 py-3 align-top text-sm text-slate-600">{card.owner}</td>
-      <td className="px-4 py-3 align-top text-sm text-slate-600">{card.due}</td>
+      <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">{column.title}</td>
+      <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">{card.owner}</td>
+      <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">{card.due}</td>
       <td className="px-4 py-3 align-top">
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
           {card.tag}
         </span>
       </td>
-      <td className="px-4 py-3 align-top text-sm text-slate-600">{card.summary}</td>
+      <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">{card.summary}</td>
     </tr>
   )
 }
@@ -400,7 +400,7 @@ function EngineeringListRow({
 /** Insignia decorativa que muestra el modo actual del tablero */
 function ModeBadge({ children }: { children: ReactNode }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-700">
+    <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)]">
       <span className="h-2 w-2 rounded-full bg-cyan-500" />
       {children}
     </div>
@@ -416,10 +416,10 @@ export function EngineeringClient() {
     <Tabs
       value={view}
       onValueChange={(nextValue) => setView(nextValue as EngineeringView)}
-      className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-5 text-slate-900"
+      className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-5 text-[color:var(--ink)]"
     >
-      <section className="overflow-hidden rounded-[34px] border border-cyan-100 bg-[radial-gradient(circle_at_top_left,#effbff_0%,#ffffff_44%,#f8fafc_100%)] shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
-        <div className="border-b border-cyan-100 px-5 py-5">
+      <section className="overflow-hidden rounded-[34px] border border-[color:var(--ink-4)] bg-[radial-gradient(circle_at_top_left,#effbff_0%,#ffffff_44%,#f8fafc_100%)] shadow-[0_24px_60px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-[color:var(--ink-4)] px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
               <ModeBadge>Tablero de proyectos</ModeBadge>
@@ -427,27 +427,27 @@ export function EngineeringClient() {
                 <h2 className="text-xl font-semibold tracking-tight text-slate-950">
                   Vista operativa del equipo de proyectos
                 </h2>
-                <p className="max-w-3xl text-sm leading-6 text-slate-600">
+                <p className="max-w-3xl text-sm leading-6 text-[color:var(--ink-3)]">
                   Una superficie visual, basada en datos mock, para revisar el trabajo como tablero o como tabla ligera.
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <div className="rounded-[22px] border border-cyan-200 bg-white/90 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                   Estados
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-slate-950">{BOARD_COLUMNS.length}</p>
               </div>
-              <div className="rounded-[22px] border border-cyan-200 bg-white/90 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                   Elementos
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-slate-950">{BOARD_ITEMS.length}</p>
               </div>
-              <div className="rounded-[22px] border border-cyan-200 bg-white/90 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                   Modo
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-slate-950">Mock UI</p>
@@ -457,7 +457,7 @@ export function EngineeringClient() {
 
           <TabsList
             variant="default"
-            className="mt-5 flex w-full flex-wrap gap-2 rounded-[24px] border border-slate-200 bg-slate-50 p-2"
+            className="mt-5 flex w-full flex-wrap gap-2 rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-2"
           >
             {VIEW_OPTIONS.map((option) => {
               const Icon = option.icon
@@ -466,7 +466,7 @@ export function EngineeringClient() {
                 <TabsTrigger
                   key={option.value}
                   value={option.value}
-                  className="rounded-[18px] px-4 py-2.5 text-sm font-semibold text-slate-500 transition-all data-active:bg-white data-active:text-slate-950 data-active:shadow-sm"
+                  className="rounded-[18px] px-4 py-2.5 text-sm font-semibold text-[color:var(--ink-3)] transition-all data-active:bg-[color:var(--paper)] data-active:text-slate-950 data-active:shadow-sm"
                 >
                   <Icon className="h-4 w-4" />
                   {option.label}
@@ -478,7 +478,7 @@ export function EngineeringClient() {
 
         <TabsContent value="board" className="min-h-0">
           <div className="px-5 py-5">
-            <div className="mb-4 rounded-[28px] border border-cyan-100 bg-white/85 px-4 py-3 text-sm text-slate-600 shadow-sm">
+            <div className="mb-4 rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/85 px-4 py-3 text-sm text-[color:var(--ink-3)] shadow-sm">
               El scroll horizontal está habilitado en el tablero. Las columnas tienen ancho fijo, así que la vista se lee como un workspace real.
             </div>
 
@@ -493,22 +493,22 @@ export function EngineeringClient() {
         </TabsContent>
 
         <TabsContent value="list" className="px-5 py-5">
-          <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <div className="overflow-hidden rounded-[30px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
+            <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
               <h3 className="text-base font-semibold text-slate-950">Lista de proyectos</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
+              <p className="mt-1 text-sm leading-6 text-[color:var(--ink-3)]">
                 Los mismos datos mock, organizados como una tabla compacta para revisar responsables, fechas y estado.
               </p>
             </div>
 
             <div className="overflow-auto">
               <table className="min-w-[980px] w-full border-separate border-spacing-0 text-left">
-                <thead className="sticky top-0 z-10 bg-white">
-                  <tr className="border-b border-slate-200 bg-slate-50">
+                <thead className="sticky top-0 z-10 bg-[color:var(--paper)]">
+                  <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
                     {['Elemento', 'Estado', 'Responsable', 'Vence', 'Etiqueta', 'Resumen'].map((label) => (
                       <th
                         key={label}
-                        className="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
+                        className="whitespace-nowrap border-b border-[color:var(--ink-4)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]"
                       >
                         {label}
                       </th>

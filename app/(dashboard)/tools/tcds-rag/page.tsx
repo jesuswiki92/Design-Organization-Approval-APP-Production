@@ -27,18 +27,18 @@ export default function TcdsRagPage() {
       {/* Barra superior */}
       <TopBar title="TCDS RAG Engine" subtitle="Motor de indexacion y busqueda semantica" />
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-slate-900">
+      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
         {/* Enlace de retorno a Herramientas */}
         <Link
           href="/tools"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-sky-700"
+          className="inline-flex items-center gap-1.5 text-sm text-[color:var(--ink-3)] transition-colors hover:text-[color:var(--ink-2)]"
         >
           <ArrowLeft className="h-4 w-4" />
           Volver a Herramientas
         </Link>
 
         {/* Componente cliente con toda la interactividad */}
-        <Suspense fallback={<div className="text-slate-500">Cargando...</div>}>
+        <Suspense fallback={<div className="text-[color:var(--ink-3)]">Cargando...</div>}>
           <TcdsRagClient />
         </Suspense>
       </main>

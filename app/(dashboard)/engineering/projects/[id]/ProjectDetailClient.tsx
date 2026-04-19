@@ -88,14 +88,14 @@ function toDatetimeLocal(iso: string): string {
 
 /** Mapa de colores por estado */
 const ESTADO_COLORS: Record<string, string> = {
-  nuevo: 'bg-sky-100 text-sky-700 border-sky-200',
-  en_progreso: 'bg-blue-100 text-blue-700 border-blue-200',
+  nuevo: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  en_progreso: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
   revision: 'bg-amber-100 text-amber-700 border-amber-200',
-  aprobacion: 'bg-violet-100 text-violet-700 border-violet-200',
+  aprobacion: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
   entregado: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  cerrado: 'bg-slate-100 text-slate-600 border-slate-200',
-  activo: 'bg-blue-100 text-blue-700 border-blue-200',
-  oferta: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+  cerrado: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
+  activo: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  oferta: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
   en_revision: 'bg-amber-100 text-amber-700 border-amber-200',
   en_pausa: 'bg-orange-100 text-orange-700 border-orange-200',
   cancelado: 'bg-red-100 text-red-700 border-red-200',
@@ -405,7 +405,7 @@ export function ProjectDetailClient({
     return formatDuration(mins)
   }
 
-  const estadoColor = ESTADO_COLORS[project.estado] ?? 'bg-slate-100 text-slate-600 border-slate-200'
+  const estadoColor = ESTADO_COLORS[project.estado] ?? 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]'
   const estadoLabel = ESTADO_LABELS[project.estado] ?? project.estado
 
   // Sprint 1/2: el estado_v2 se mantiene en local para reflejar transiciones
@@ -435,25 +435,25 @@ export function ProjectDetailClient({
       {/* Boton volver */}
       <Link
         href="/proyectos"
-        className="inline-flex w-fit items-center gap-2 rounded-full border border-sky-200 bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
+        className="inline-flex w-fit items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
       >
         <ArrowLeft className="h-4 w-4" />
         Volver a Proyectos
       </Link>
 
       {/* Cabecera del proyecto */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-semibold text-slate-900">
+              <h1 className="text-xl font-semibold text-[color:var(--ink)]">
                 {project.titulo}
               </h1>
               <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${estadoColor}`}>
                 {estadoLabel}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-[color:var(--ink-3)]">
               <span className="inline-flex items-center gap-1">
                 <Hash className="h-3.5 w-3.5" />
                 {project.numero_proyecto}
@@ -486,7 +486,7 @@ export function ProjectDetailClient({
 
       {/* Tabs: Horas + Deliverables (Sprint 1) + Validacion (Sprint 2) */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList variant="line" className="mb-3 border-b border-slate-200">
+        <TabsList variant="line" className="mb-3 border-b border-[color:var(--ink-4)]">
           <TabsTrigger value="horas">Horas</TabsTrigger>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="validacion">Validacion</TabsTrigger>
@@ -532,12 +532,12 @@ export function ProjectDetailClient({
 
         <TabsContent value="horas">
       {/* Seccion Registro de Horas */}
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-sm">
         {/* Header de la seccion */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--ink-4)] px-5 py-4">
           <div className="flex items-center gap-3">
-            <Clock className="h-4 w-4 text-slate-400" />
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Clock className="h-4 w-4 text-[color:var(--ink-3)]" />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               Registro de Horas
             </h2>
           </div>
@@ -548,28 +548,28 @@ export function ProjectDetailClient({
         </div>
 
         {/* Resumen de metricas */}
-        <div className="grid grid-cols-1 gap-3 border-b border-slate-100 px-5 py-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <div className="grid grid-cols-1 gap-3 border-b border-[color:var(--ink-4)] px-5 py-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               Total trabajado
             </p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">
+            <p className="mt-1 text-lg font-semibold text-[color:var(--ink)]">
               {formatDuration(totalMinutes)}
             </p>
           </div>
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               Sesiones
             </p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">
+            <p className="mt-1 text-lg font-semibold text-[color:var(--ink)]">
               {totalSessions}
             </p>
           </div>
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
               Media por sesion
             </p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">
+            <p className="mt-1 text-lg font-semibold text-[color:var(--ink)]">
               {formatDuration(avgMinutes)}
             </p>
           </div>
@@ -577,27 +577,27 @@ export function ProjectDetailClient({
 
         {/* Tabla de entradas */}
         {entries.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-slate-400">
+          <div className="px-5 py-10 text-center text-sm text-[color:var(--ink-3)]">
             No hay sesiones de trabajo registradas.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-left">
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-[color:var(--ink-4)] text-left">
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Fecha
                   </th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Inicio
                   </th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Fin
                   </th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Duracion
                   </th>
-                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Acciones
                   </th>
                 </tr>
@@ -609,27 +609,27 @@ export function ProjectDetailClient({
                   const rowBg = isEditing
                     ? 'bg-yellow-50'
                     : idx % 2 === 0
-                      ? 'bg-white'
-                      : 'bg-slate-50'
+                      ? 'bg-[color:var(--paper)]'
+                      : 'bg-[color:var(--paper-2)]'
 
                   return (
                     <tr key={entry.id} className={`border-b border-slate-50 ${rowBg}`}>
                       {/* Fecha */}
-                      <td className="whitespace-nowrap px-5 py-3 text-sm text-slate-700">
+                      <td className="whitespace-nowrap px-5 py-3 text-sm text-[color:var(--ink-2)]">
                         <span className="inline-flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                          <Calendar className="h-3.5 w-3.5 text-[color:var(--ink-3)]" />
                           {formatDate(entry.inicio)}
                         </span>
                       </td>
 
                       {/* Inicio */}
-                      <td className="whitespace-nowrap px-5 py-3 text-sm text-slate-700">
+                      <td className="whitespace-nowrap px-5 py-3 text-sm text-[color:var(--ink-2)]">
                         {isEditing ? (
                           <input
                             type="datetime-local"
                             value={editInicio}
                             onChange={(e) => setEditInicio(e.target.value)}
-                            className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                            className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-sm text-[color:var(--ink-2)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-sky-400"
                           />
                         ) : (
                           formatTime(entry.inicio)
@@ -637,13 +637,13 @@ export function ProjectDetailClient({
                       </td>
 
                       {/* Fin */}
-                      <td className="whitespace-nowrap px-5 py-3 text-sm text-slate-700">
+                      <td className="whitespace-nowrap px-5 py-3 text-sm text-[color:var(--ink-2)]">
                         {isEditing ? (
                           <input
                             type="datetime-local"
                             value={editFin}
                             onChange={(e) => setEditFin(e.target.value)}
-                            className="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                            className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-sm text-[color:var(--ink-2)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-sky-400"
                           />
                         ) : isOpen ? (
                           <span className="inline-flex items-center gap-1.5 text-emerald-600 font-medium">
@@ -656,9 +656,9 @@ export function ProjectDetailClient({
                       </td>
 
                       {/* Duracion */}
-                      <td className="whitespace-nowrap px-5 py-3 text-sm font-medium text-slate-900">
+                      <td className="whitespace-nowrap px-5 py-3 text-sm font-medium text-[color:var(--ink)]">
                         {isEditing ? (
-                          <span className="text-slate-500">{getEditDuration()}</span>
+                          <span className="text-[color:var(--ink-3)]">{getEditDuration()}</span>
                         ) : (
                           getRowDuration(entry)
                         )}
@@ -682,7 +682,7 @@ export function ProjectDetailClient({
                               type="button"
                               onClick={cancelEdit}
                               title="Cancelar"
-                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
+                              className="inline-flex items-center gap-1 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-1 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
                             >
                               <X className="h-3 w-3" />
                               Cancelar
@@ -695,7 +695,7 @@ export function ProjectDetailClient({
                               onClick={() => startEdit(entry)}
                               disabled={editingId !== null}
                               title="Editar"
-                              className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30"
+                              className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-1.5 text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink)] disabled:opacity-30"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                             </button>
@@ -704,7 +704,7 @@ export function ProjectDetailClient({
                               onClick={() => handleDelete(entry.id)}
                               disabled={deletingId !== null}
                               title="Eliminar"
-                              className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
+                              className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-1.5 text-[color:var(--ink-3)] transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-30"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>

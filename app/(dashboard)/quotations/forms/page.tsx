@@ -108,34 +108,34 @@ export default async function QuotationsFormsCatalogPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/quotations"
-            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50"
+            className="inline-flex items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm font-medium text-[color:var(--ink)] shadow-sm transition-colors hover:bg-[color:var(--paper-3)]"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a quotations
           </Link>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 shadow-sm">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)] shadow-sm">
             <FileText className="h-3.5 w-3.5" />
             n8n generated URLs
           </div>
         </div>
 
-        <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
               Formularios disponibles
             </h1>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600">
+            <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
               Aqui puedes ver las consultas que ya tienen `url_formulario`
               generada por n8n y abrir exactamente la URL publica que recibiria el cliente.
             </p>
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
-          <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+        <section className="overflow-hidden rounded-[30px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
+          <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
             <h2 className="text-base font-semibold text-slate-950">Tabla de formularios</h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-[color:var(--ink-3)]">
               Cada fila corresponde a una consulta con URL de formulario persistida en
               `doa_consultas_entrantes`.
             </p>
@@ -143,12 +143,12 @@ export default async function QuotationsFormsCatalogPage() {
 
           <div className="overflow-auto">
             <table className="min-w-[1040px] w-full border-separate border-spacing-0 text-left">
-              <thead className="sticky top-0 z-10 bg-white">
-                <tr className="border-b border-slate-200 bg-slate-50">
+              <thead className="sticky top-0 z-10 bg-[color:var(--paper)]">
+                <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
                   {['Consulta', 'Cliente', 'Estado', 'Creado', 'URL', 'Accion'].map((label) => (
                     <th
                       key={label}
-                      className="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400"
+                      className="whitespace-nowrap border-b border-[color:var(--ink-4)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]"
                     >
                       {label}
                     </th>
@@ -160,7 +160,7 @@ export default async function QuotationsFormsCatalogPage() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-5 py-10 text-center text-sm text-slate-500"
+                      className="px-5 py-10 text-center text-sm text-[color:var(--ink-3)]"
                     >
                       Todavia no hay formularios generados.
                     </td>
@@ -176,31 +176,31 @@ export default async function QuotationsFormsCatalogPage() {
                     return (
                       <tr
                         key={consulta.id}
-                        className="border-b border-slate-200/70 bg-white transition-colors hover:bg-sky-50/50"
+                        className="border-b border-[color:var(--ink-4)]/70 bg-[color:var(--paper)] transition-colors hover:bg-[color:var(--paper-3)]/50"
                       >
                         <td className="px-4 py-3 align-top">
                           <p className="font-medium text-slate-950">
                             {consulta.asunto ?? 'Consulta sin asunto'}
                           </p>
-                          <p className="mt-1 font-mono text-[11px] text-slate-500">
+                          <p className="mt-1 font-mono text-[11px] text-[color:var(--ink-3)]">
                             {consulta.id}
                           </p>
                         </td>
                         <td className="px-4 py-3 align-top">
-                          <p className="font-medium text-slate-900">
+                          <p className="font-medium text-[color:var(--ink)]">
                             {clientIdentity.kind === 'known'
                               ? `${clientIdentity.companyName} · ${clientIdentity.contactName}`
                               : 'cliente desconocido'}
                           </p>
-                          <p className="mt-1 text-xs text-slate-500">{consulta.remitente}</p>
+                          <p className="mt-1 text-xs text-[color:var(--ink-3)]">{consulta.remitente}</p>
                         </td>
-                        <td className="px-4 py-3 align-top text-sm text-slate-600">
+                        <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">
                           {consulta.estado}
                         </td>
-                        <td className="px-4 py-3 align-top text-sm text-slate-600">
+                        <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">
                           {formatDate(consulta.created_at)}
                         </td>
-                        <td className="max-w-[320px] px-4 py-3 align-top text-sm text-slate-600">
+                        <td className="max-w-[320px] px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">
                           <p className="break-all">{formHref || '-'}</p>
                         </td>
                         <td className="px-4 py-3 align-top">
@@ -209,13 +209,13 @@ export default async function QuotationsFormsCatalogPage() {
                               href={formHref}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex h-9 items-center rounded-full border border-sky-200 bg-sky-50 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 transition-colors hover:bg-sky-100"
+                              className="inline-flex h-9 items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                             >
                               <ExternalLink className="mr-2 h-3.5 w-3.5" />
                               Abrir
                             </a>
                           ) : (
-                            <span className="text-xs text-slate-400">Sin URL</span>
+                            <span className="text-xs text-[color:var(--ink-3)]">Sin URL</span>
                           )}
                         </td>
                       </tr>

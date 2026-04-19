@@ -217,31 +217,31 @@ export default function CertificationExpertPage() {
       <TopBar title="Asistente DOA" subtitle="Chat operativo general con OpenRouter" />
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 p-6 xl:grid xl:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5">
+        <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+          <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-950">
                   DOA AI Desk
                 </h2>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-[color:var(--ink-3)]">
                   Chat directo para soporte operativo, quotations y estados de proyecto.
                 </p>
               </div>
             </div>
 
-            <div className="hidden rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs text-sky-700 md:block">
+            <div className="hidden rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2 text-xs text-[color:var(--ink-2)] md:block">
               OpenRouter + Claude Sonnet 4
             </div>
           </div>
 
           <div ref={scrollRef} className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
             {messages.length === 1 && (
-              <div className="rounded-[24px] border border-dashed border-sky-200 bg-sky-50/50 p-6">
-                <p className="max-w-2xl text-sm leading-7 text-slate-600">
+              <div className="rounded-[24px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-6">
+                <p className="max-w-2xl text-sm leading-7 text-[color:var(--ink-3)]">
                   Formula una consulta operativa sobre quotations, estados de proyecto, procesos
                   DOA o ayuda de redaccion. Esta version es un chat directo con OpenRouter y no
                   consulta base de datos ni documentos internos.
@@ -254,7 +254,7 @@ export default function CertificationExpertPage() {
                       onClick={() => {
                         void sendQuestion(question)
                       }}
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700"
+                      className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm text-[color:var(--ink-2)] shadow-sm transition hover:border-[color:var(--ink-4)] hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink-2)]"
                     >
                       {question}
                     </button>
@@ -273,7 +273,7 @@ export default function CertificationExpertPage() {
                   className={`flex items-start gap-4 ${isAssistant ? '' : 'justify-end'}`}
                 >
                   {isAssistant && (
-                    <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+                    <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                       <Bot className="h-4 w-4" />
                     </div>
                   )}
@@ -281,18 +281,18 @@ export default function CertificationExpertPage() {
                   <div
                     className={`max-w-3xl rounded-[24px] border px-5 py-4 ${
                       isAssistant
-                        ? 'border-slate-200 bg-white text-slate-900 shadow-sm'
+                        ? 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink)] shadow-sm'
                         : 'border-transparent bg-[linear-gradient(135deg,#2563EB,#38BDF8)] text-white'
                     }`}
                   >
-                    <div className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500">
+                    <div className="mb-2 text-[11px] uppercase tracking-[0.2em] text-[color:var(--ink-3)]">
                       {isAssistant ? 'Asistente' : 'Usuario'}
                     </div>
 
                     <div className="whitespace-pre-wrap text-sm leading-7">{message.content}</div>
 
                     {showLoadingDots && (
-                      <div className="mt-3 flex items-center gap-1 text-slate-400">
+                      <div className="mt-3 flex items-center gap-1 text-[color:var(--ink-3)]">
                         <span className="h-2 w-2 animate-bounce rounded-full bg-sky-500 [animation-delay:-0.2s]" />
                         <span className="h-2 w-2 animate-bounce rounded-full bg-sky-500 [animation-delay:-0.1s]" />
                         <span className="h-2 w-2 animate-bounce rounded-full bg-sky-500" />
@@ -301,7 +301,7 @@ export default function CertificationExpertPage() {
                   </div>
 
                   {!isAssistant && (
-                    <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+                    <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)] shadow-sm">
                       <User className="h-4 w-4" />
                     </div>
                   )}
@@ -310,10 +310,10 @@ export default function CertificationExpertPage() {
             })}
           </div>
 
-          <div className="border-t border-slate-200 px-6 py-5">
+          <div className="border-t border-[color:var(--ink-4)] px-6 py-5">
             {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
 
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3 shadow-sm">
+            <div className="rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 p-3 shadow-sm">
               <Textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
@@ -324,11 +324,11 @@ export default function CertificationExpertPage() {
                   }
                 }}
                 placeholder="Escribe tu consulta para el asistente DOA..."
-                className="min-h-24 resize-none border-0 bg-transparent px-2 py-2 text-sm leading-7 text-slate-950 placeholder:text-slate-400 focus-visible:ring-0"
+                className="min-h-24 resize-none border-0 bg-transparent px-2 py-2 text-sm leading-7 text-slate-950 placeholder:text-[color:var(--ink-3)] focus-visible:ring-0"
               />
 
               <div className="mt-3 flex items-center justify-between gap-3">
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[color:var(--ink-3)]">
                   Enter para enviar. Shift + Enter para nueva linea.
                 </p>
 
@@ -345,41 +345,41 @@ export default function CertificationExpertPage() {
           </div>
         </section>
 
-        <aside className="flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
-          <div className="flex items-center justify-between border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-5">
+        <aside className="flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+          <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                 <FileText className="h-4 w-4" />
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-slate-950">Capacidades actuales</h3>
-                <p className="text-xs text-slate-500">Lo que hace hoy este asistente</p>
+                <p className="text-xs text-[color:var(--ink-3)]">Lo que hace hoy este asistente</p>
               </div>
             </div>
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-            <article className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">Modelo</div>
+            <article className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">Modelo</div>
               <p className="mt-2 text-sm font-semibold text-slate-950">{currentModel}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
                 Respuesta conversacional general para soporte DOA, quotations y proyectos.
               </p>
             </article>
 
-            <article className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-500">
+            <article className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Alcance
               </div>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-[color:var(--ink-3)]">
                 <li>Soporte general en quotations y workflow operativo.</li>
                 <li>Ayuda de redaccion y estructuracion inicial de respuestas.</li>
                 <li>No consulta base de datos ni documentos internos todavia.</li>
               </ul>
             </article>
 
-            <article className="rounded-[22px] border border-dashed border-sky-200 bg-sky-50/50 p-4 text-sm leading-6 text-slate-600">
+            <article className="rounded-[22px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-4 text-sm leading-6 text-[color:var(--ink-3)]">
               Si mas adelante conectamos RAG o contexto documental, ese bloque se incorporara aqui
               de forma explicita en lugar de simular “fuentes” inexistentes.
             </article>

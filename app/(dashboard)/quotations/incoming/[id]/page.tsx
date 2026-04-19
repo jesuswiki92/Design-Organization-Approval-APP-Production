@@ -69,30 +69,30 @@ import { TcdsStatusBanner } from './TcdsStatusBanner'
 
 function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-4">
-        <h2 className="text-base font-semibold text-slate-950">Detalle del cliente</h2>
+    <section className="flex h-full min-h-0 flex-col rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
+        <h2 className="text-base font-semibold text-[color:var(--ink)]">Detalle del cliente</h2>
       </div>
       <div className="flex flex-1 flex-col gap-4 px-5 py-4">
-        <div className="rounded-[20px] border border-dashed border-amber-200 bg-[linear-gradient(180deg,#fffaf0_0%,#fff7ed_100%)] px-4 py-5">
+        <div className="rounded-[20px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-5">
           <div className="flex items-start gap-3">
-            <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+            <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             <div>
-              <p className="text-sm font-semibold text-slate-950">Cliente desconocido</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="text-sm font-semibold text-[color:var(--ink)]">Cliente desconocido</p>
+              <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
                 Esta consulta todavia no se ha podido vincular con un cliente registrado
                 en la base de datos.
               </p>
             </div>
           </div>
         </div>
-        <div className="rounded-[18px] border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <div className="rounded-[18px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
             Email remitente
           </p>
           <div className="mt-3 flex items-start gap-3">
-            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-            <p className="break-all text-sm text-slate-900">
+            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--ink-3)]" />
+            <p className="break-all text-sm text-[color:var(--ink)]">
               {senderEmail ?? 'No disponible'}
             </p>
           </div>
@@ -139,19 +139,19 @@ function ProjectHistoryGroup({
   const sourceBadgeClass =
     source === 'active'
       ? 'bg-emerald-100 text-emerald-700'
-      : 'bg-slate-200 text-slate-500'
+      : 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
   const statusBadgeClass =
     source === 'active'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-      : 'border-slate-200 bg-white text-slate-600'
+      : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]'
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
           {title}
         </span>
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+        <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
           {projects.length}
         </span>
       </div>
@@ -159,13 +159,13 @@ function ProjectHistoryGroup({
       {projects.map((project) => (
         <div
           key={`${project.source}-${project.id}`}
-          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
+          className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5"
         >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
                 {project.numero_proyecto && (
-                  <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                  <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
                     {project.numero_proyecto}
                   </span>
                 )}
@@ -175,11 +175,11 @@ function ProjectHistoryGroup({
                   {source === 'active' ? 'Activo' : 'Historico'}
                 </span>
               </div>
-              <p className="mt-1 text-sm font-medium leading-snug text-slate-900">
+              <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">
                 {project.titulo ?? '—'}
               </p>
               {project.created_at && (
-                <p className="mt-0.5 text-[10px] text-slate-400">
+                <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                   {formatProjectYear(project.created_at)}
                 </p>
               )}
@@ -194,7 +194,7 @@ function ProjectHistoryGroup({
               )}
               <Link
                 href={getProjectHistoryHref(project)}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                 title={source === 'active' ? 'Abrir proyecto activo' : 'Abrir ficha historica'}
                 aria-label={`Abrir ficha de ${project.numero_proyecto}`}
               >
@@ -213,18 +213,18 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
   const historicProjects = projects.filter((project) => project.source === 'historic')
 
   return (
-    <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
         <div className="flex items-center gap-2">
-          <FolderOpen className="h-4 w-4 text-sky-600" />
-          <h2 className="text-sm font-semibold text-slate-950">Proyectos del cliente</h2>
-          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+          <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
+          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+          <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
             {projects.length}
           </span>
         </div>
       </div>
       <details className="group">
-        <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+        <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
           <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
           Ver proyectos
         </summary>
@@ -235,7 +235,7 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
               <ProjectHistoryGroup title="Historico" source="historic" projects={historicProjects} />
             </>
           ) : (
-            <p className="text-xs italic text-slate-400">
+            <p className="text-xs italic text-[color:var(--ink-3)]">
               No se encontraron proyectos para este cliente.
             </p>
           )}
@@ -272,13 +272,13 @@ function ReviewSummarySection({
   ]
 
   return (
-    <section className="rounded-[22px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-sky-200 px-5 py-3">
+    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="border-b border-[color:var(--ink-4)] px-5 py-3">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-sky-600" />
-          <h2 className="text-sm font-semibold text-slate-950">Resumen de revision</h2>
+          <CheckCircle2 className="h-4 w-4 text-[color:var(--ink-3)]" />
+          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Resumen de revision</h2>
         </div>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-[color:var(--ink-3)]">
           Vista rapida de los datos clave para decidir esta consulta en fase 3.
         </p>
       </div>
@@ -287,23 +287,23 @@ function ReviewSummarySection({
           {cards.map((card) => (
             <div
               key={card.label}
-              className="rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5"
+              className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-2.5"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                 {card.label}
               </p>
-              <p className="mt-1 text-sm font-medium leading-6 text-slate-900">
+              <p className="mt-1 text-sm font-medium leading-6 text-[color:var(--ink)]">
                 {card.value}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white/90 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
             Alcance enviado
           </p>
-          <p className="mt-1 text-sm leading-6 text-slate-700">{scopeSummary}</p>
+          <p className="mt-1 text-sm leading-6 text-[color:var(--ink-2)]">{scopeSummary}</p>
         </div>
       </div>
     </section>
@@ -339,17 +339,17 @@ export default async function IncomingQuotationDetailPage({
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)] px-5 pb-8 pt-5">
           <Link
             href="/quotations"
-            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50"
+            className="inline-flex items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm font-medium text-[color:var(--ink)] shadow-sm transition-colors hover:bg-[color:var(--paper-3)]"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a quotations
           </Link>
-          <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+          <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
             <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 Consulta no encontrada
               </h1>
-              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
                 {error ? `Error: ${error.message}` : 'No se encontro una consulta con este identificador.'}
               </p>
             </div>
@@ -785,26 +785,26 @@ export default async function IncomingQuotationDetailPage({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/quotations"
-            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition-colors hover:bg-slate-50"
+            className="inline-flex items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm font-medium text-[color:var(--ink)] shadow-sm transition-colors hover:bg-[color:var(--paper-3)]"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a quotations
           </Link>
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 shadow-sm">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)]/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)] shadow-sm">
             <ScanSearch className="h-3.5 w-3.5" />
             Consulta entrante
           </div>
         </div>
 
         {/* --- CABECERA PRINCIPAL --- */}
-        <section className="rounded-[34px] border border-sky-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
-              <p className="font-mono text-xs text-slate-500">{query.codigo}</p>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+              <p className="font-mono text-xs text-[color:var(--ink-3)]">{query.codigo}</p>
+              <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 {query.asunto}
               </h1>
-              <p className="max-w-3xl text-sm leading-7 text-slate-600">
+              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
                 {data.estado === CONSULTA_ESTADOS.NUEVO
                   ? 'Consulta recien recibida. Revisa el email y prepara la respuesta al cliente.'
                   : data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO
@@ -827,7 +827,7 @@ export default async function IncomingQuotationDetailPage({
             ================================================================ */}
         {data.estado === CONSULTA_ESTADOS.NUEVO && (
           <>
-          <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
             <CenterColumnCollapsible
               emails={emails}
               query={{
@@ -853,44 +853,44 @@ export default async function IncomingQuotationDetailPage({
           {matchedClient ? (
             <div className="grid gap-5 lg:grid-cols-2">
               <ClientDetailPanel client={matchedClient} />
-              <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4 text-sky-600" />
-                    <h2 className="text-sm font-semibold text-slate-950">Proyectos del cliente</h2>
-                    <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                    <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
+                    <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+                    <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
                       {projectHistory.length}
                     </span>
                   </div>
                 </div>
                 <details className="group">
-                  <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                  <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                     <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                     Ver proyectos
                   </summary>
                   <div className="space-y-2 px-5 pb-4">
                     {projectHistory.length > 0 ? (
                       projectHistory.map((project) => (
-                        <div key={`${project.source}-${project.id}`} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                        <div key={`${project.source}-${project.id}`} className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-1.5">
                                 {project.numero_proyecto && (
-                                  <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                  <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
                                     {project.numero_proyecto}
                                   </span>
                                 )}
                                 <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
                                   project.source === 'active'
                                     ? 'bg-emerald-100 text-emerald-700'
-                                    : 'bg-slate-200 text-slate-500'
+                                    : 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
                                 }`}>
                                   Historico
                                 </span>
                               </div>
-                              <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
+                              <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
                               {project.created_at && (
-                                <p className="mt-0.5 text-[10px] text-slate-400">
+                                <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                                   {new Date(project.created_at).getFullYear()}
                                 </p>
                               )}
@@ -900,14 +900,14 @@ export default async function IncomingQuotationDetailPage({
                                 <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
                                   project.source === 'active'
                                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                    : 'border-slate-200 bg-white text-slate-600'
+                                    : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]'
                                 }`}>
                                   {project.estado}
                                 </span>
                               )}
                               <Link
                                 href={`/proyectos-historico/${project.id}`}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                                 title="Abrir ficha"
                                 aria-label={`Abrir ficha de ${project.numero_proyecto}`}
                               >
@@ -918,17 +918,17 @@ export default async function IncomingQuotationDetailPage({
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs italic text-slate-400">No se encontraron proyectos para este cliente.</p>
+                      <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos para este cliente.</p>
                     )}
                   </div>
                 </details>
               </section>
             </div>
           ) : (
-            <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="flex items-start gap-3 rounded-xl border border-dashed border-amber-200 bg-amber-50/50 px-4 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="flex items-start gap-3 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
                 <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                <p className="text-sm text-amber-800">
+                <p className="text-sm text-[color:var(--ink-2)]">
                   Cliente no identificado — se registrara con el formulario
                 </p>
               </div>
@@ -943,7 +943,7 @@ export default async function IncomingQuotationDetailPage({
         {data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO && (
           <>
             {/* Hilo de emails (con respuesta enviada visible, sin compositor) */}
-            <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
               <CenterColumnCollapsible
                 hideComposer
                 emails={emails}
@@ -994,53 +994,53 @@ export default async function IncomingQuotationDetailPage({
             {matchedClient ? (
               <div className="grid gap-5 lg:grid-cols-2">
                 <ClientDetailPanel client={matchedClient} />
-                <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                  <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                  <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                     <div className="flex items-center gap-2">
-                      <FolderOpen className="h-4 w-4 text-sky-600" />
-                      <h2 className="text-sm font-semibold text-slate-950">Proyectos del cliente</h2>
-                      <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                      <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
+                      <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+                      <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
                         {projectHistory.length}
                       </span>
                     </div>
                   </div>
                   <details className="group">
-                    <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                    <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                       <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                       Ver proyectos
                     </summary>
                     <div className="space-y-2 px-5 pb-4">
                       {projectHistory.length > 0 ? (
                         projectHistory.map((project) => (
-                          <div key={`${project.source}-${project.id}`} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                          <div key={`${project.source}-${project.id}`} className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   {project.numero_proyecto && (
-                                    <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                    <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
                                       {project.numero_proyecto}
                                     </span>
                                   )}
-                                  <span className={"rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500"}>
+                                  <span className={"rounded-full bg-[color:var(--paper-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[color:var(--ink-3)]"}>
                                     Historico
                                   </span>
                                 </div>
-                                <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
+                                <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
                                 {project.created_at && (
-                                  <p className="mt-0.5 text-[10px] text-slate-400">
+                                  <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                                     {new Date(project.created_at).getFullYear()}
                                   </p>
                                 )}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 {project.estado && (
-                                  <span className={"rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600"}>
+                                  <span className={"rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]"}>
                                     {project.estado}
                                   </span>
                                 )}
                                 <Link
                                   href={`/proyectos-historico/${project.id}`}
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                                   title="Abrir ficha"
                                   aria-label={`Abrir ficha de ${project.numero_proyecto}`}
                                 >
@@ -1051,14 +1051,14 @@ export default async function IncomingQuotationDetailPage({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs italic text-slate-400">No se encontraron proyectos para este cliente.</p>
+                        <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos para este cliente.</p>
                       )}
                     </div>
                   </details>
                 </section>
               </div>
             ) : (
-              <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
                 <div className="flex items-start gap-3 rounded-xl border border-dashed border-amber-200 bg-amber-50/50 px-4 py-3">
                   <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                   <p className="text-sm text-amber-800">
@@ -1087,15 +1087,15 @@ export default async function IncomingQuotationDetailPage({
             />
 
             {/* --- Comunicaciones (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-indigo-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-indigo-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef2ff_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef2ff_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-indigo-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Comunicaciones</h2>
+                  <Mail className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver hilo de emails
                 </summary>
@@ -1125,15 +1125,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos del cliente (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <UserRound className="h-4 w-4 text-sky-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Datos del cliente</h2>
+                  <UserRound className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos del cliente
                 </summary>
@@ -1151,53 +1151,53 @@ export default async function IncomingQuotationDetailPage({
                 <>
                   <ClientProjectsPanel projects={projectHistory} />
                   {false && (
-                <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                  <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                  <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                     <div className="flex items-center gap-2">
-                      <FolderOpen className="h-4 w-4 text-sky-600" />
-                      <h2 className="text-sm font-semibold text-slate-950">Proyectos del cliente</h2>
-                      <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                      <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
+                      <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+                      <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
                         {projectHistory.length}
                       </span>
                     </div>
                   </div>
                   <details className="group">
-                    <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                    <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                       <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                       Ver proyectos
                     </summary>
                     <div className="space-y-2 px-5 pb-4">
                       {projectHistory.length > 0 ? (
                         projectHistory.map((project) => (
-                          <div key={`${project.source}-${project.id}`} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                          <div key={`${project.source}-${project.id}`} className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   {project.numero_proyecto && (
-                                    <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                    <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
                                       {project.numero_proyecto}
                                     </span>
                                   )}
-                                  <span className={"rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-500"}>
+                                  <span className={"rounded-full bg-[color:var(--paper-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[color:var(--ink-3)]"}>
                                     Historico
                                   </span>
                                 </div>
-                                <p className="mt-1 text-sm font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
+                                <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
                                 {project.created_at && (
-                                  <p className="mt-0.5 text-[10px] text-slate-400">
+                                  <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                                     {new Date(project.created_at).getFullYear()}
                                   </p>
                                 )}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
                                 {project.estado && (
-                                  <span className={"rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600"}>
+                                  <span className={"rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]"}>
                                     {project.estado}
                                   </span>
                                 )}
                                 <Link
                                   href={`/proyectos-historico/${project.id}`}
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                                   title="Abrir ficha"
                                   aria-label={`Abrir ficha de ${project.numero_proyecto}`}
                                 >
@@ -1208,7 +1208,7 @@ export default async function IncomingQuotationDetailPage({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs italic text-slate-400">No se encontraron proyectos para este cliente.</p>
+                        <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos para este cliente.</p>
                       )}
                     </div>
                   </details>
@@ -1216,11 +1216,11 @@ export default async function IncomingQuotationDetailPage({
                   )}
                 </>
               ) : (
-                <section className="flex items-center justify-center rounded-[22px] border-2 border-dashed border-slate-200 bg-slate-50/50 p-8">
+                <section className="flex items-center justify-center rounded-[22px] border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-8">
                   <div className="text-center">
-                    <FolderOpen className="mx-auto h-6 w-6 text-slate-300" />
-                    <p className="mt-2 text-sm font-medium text-slate-400">Proyectos del cliente</p>
-                    <p className="mt-1 text-xs text-slate-300">
+                    <FolderOpen className="mx-auto h-6 w-6 text-[color:var(--ink-4)]" />
+                    <p className="mt-2 text-sm font-medium text-[color:var(--ink-3)]">Proyectos del cliente</p>
+                    <p className="mt-1 text-xs text-[color:var(--ink-4)]">
                       Se mostraran cuando se identifique al cliente
                     </p>
                   </div>
@@ -1232,15 +1232,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
-            <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <Plane className="h-4 w-4 text-sky-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Datos de aeronave</h2>
+                  <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos de aeronave
                 </summary>
@@ -1248,40 +1248,40 @@ export default async function IncomingQuotationDetailPage({
                   {hasAircraftData ? (
                     <>
                       {/* Datos enviados por el cliente */}
-                      <div className="mb-4 grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg border border-slate-200 bg-white p-3 text-sm">
-                        <div className="col-span-2 mb-1 text-xs font-medium uppercase tracking-wider text-slate-400">Datos del formulario</div>
+                      <div className="mb-4 grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3 text-sm">
+                        <div className="col-span-2 mb-1 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Datos del formulario</div>
                         {data.aircraft_manufacturer && (
                           <div>
-                            <span className="text-slate-500">Fabricante</span>
-                            <p className="text-slate-900">{data.aircraft_manufacturer}</p>
+                            <span className="text-[color:var(--ink-3)]">Fabricante</span>
+                            <p className="text-[color:var(--ink)]">{data.aircraft_manufacturer}</p>
                           </div>
                         )}
                         {data.aircraft_model && (
                           <div>
-                            <span className="text-slate-500">Modelo</span>
-                            <p className="text-slate-900">{data.aircraft_model}</p>
+                            <span className="text-[color:var(--ink-3)]">Modelo</span>
+                            <p className="text-[color:var(--ink)]">{data.aircraft_model}</p>
                           </div>
                         )}
                         {data.aircraft_count && (
                           <div>
-                            <span className="text-slate-500">Cantidad de aeronaves</span>
-                            <p className="text-slate-900">{data.aircraft_count}</p>
+                            <span className="text-[color:var(--ink-3)]">Cantidad de aeronaves</span>
+                            <p className="text-[color:var(--ink)]">{data.aircraft_count}</p>
                           </div>
                         )}
                         {data.aircraft_msn && (
                           <div>
-                            <span className="text-slate-500">MSN / Registro</span>
-                            <p className="text-slate-900">{data.aircraft_msn}</p>
+                            <span className="text-[color:var(--ink-3)]">MSN / Registro</span>
+                            <p className="text-[color:var(--ink)]">{data.aircraft_msn}</p>
                           </div>
                         )}
                       </div>
 
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                      <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/70 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
                             Revision TCDS
                           </p>
-                          <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                          <span className="rounded-full bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
                             {aeronaveVariants.length} variante{aeronaveVariants.length === 1 ? '' : 's'} encontrada{aeronaveVariants.length === 1 ? '' : 's'}
                           </span>
                         </div>
@@ -1297,11 +1297,11 @@ export default async function IncomingQuotationDetailPage({
                               aircraftModel={data.aircraft_model ?? null}
                             />
                           ) : (
-                            <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3">
-                              <p className="text-sm font-medium text-slate-700">
+                            <div className="rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3">
+                              <p className="text-sm font-medium text-[color:var(--ink-2)]">
                                 Sin revision TCDS disponible todavia.
                               </p>
-                              <p className="mt-1 text-xs text-slate-500">
+                              <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                                 El operador puede validar el TCDS mas adelante con los datos de aeronave ya recibidos.
                               </p>
                             </div>
@@ -1309,33 +1309,33 @@ export default async function IncomingQuotationDetailPage({
 
                           {(primaryAircraftVariant || data.tcds_pdf_url) && (
                             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Variante usada para revisar</p>
-                                <p className="mt-0.5 text-sm font-medium text-slate-900">
+                              <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Variante usada para revisar</p>
+                                <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">
                                   {primaryAircraftVariant?.modelo ?? 'Pendiente'}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">MTOW</p>
-                                <p className="mt-0.5 text-sm font-medium text-slate-900">
+                              <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">MTOW</p>
+                                <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">
                                   {primaryAircraftVariant?.mtow_kg != null
                                     ? `${primaryAircraftVariant.mtow_kg.toLocaleString()} kg`
                                     : '—'}
                                 </p>
                               </div>
-                              <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Referencia para revisar</p>
+                              <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2.5">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Referencia para revisar</p>
                                 {data.tcds_pdf_url ? (
                                   <a
                                     href={data.tcds_pdf_url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="mt-0.5 inline-flex text-sm font-medium text-sky-700 underline hover:text-sky-800"
+                                    className="mt-0.5 inline-flex text-sm font-medium text-[color:var(--ink-2)] underline hover:text-[color:var(--ink-2)]"
                                   >
                                     Abrir PDF enviado
                                   </a>
                                 ) : (
-                                  <p className="mt-0.5 text-sm font-medium text-slate-900">
+                                  <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">
                                     {primaryAircraftVariant?.tcds_code ?? '—'}
                                   </p>
                                 )}
@@ -1356,32 +1356,32 @@ export default async function IncomingQuotationDetailPage({
                         aircraftModel={data.aircraft_model ?? null}
                       />
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">TCDS Number</p>
-                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.tcds_number}</p>
+                        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">TCDS Number</p>
+                          <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.tcds_number}</p>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Fabricante</p>
-                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_manufacturer ?? '—'}</p>
+                        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Fabricante</p>
+                          <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_manufacturer ?? '—'}</p>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Modelo</p>
-                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_model ?? '—'}</p>
+                        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Modelo</p>
+                          <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_model ?? '—'}</p>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">Cantidad de aeronaves</p>
-                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_count ?? '—'}</p>
+                        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Cantidad de aeronaves</p>
+                          <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_count ?? '—'}</p>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">MSN</p>
-                          <p className="mt-0.5 text-sm font-medium text-slate-900">{data.aircraft_msn ?? '—'}</p>
+                        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">MSN</p>
+                          <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_msn ?? '—'}</p>
                         </div>
                         {data.tcds_pdf_url && (
                           <a
                             href={data.tcds_pdf_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-semibold text-sky-700 transition-colors hover:bg-sky-100"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2.5 text-xs font-semibold text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                           >
                             Descargar TCDS PDF
                           </a>
@@ -1391,29 +1391,29 @@ export default async function IncomingQuotationDetailPage({
                       )}
 
                       {data.aircraft_location && (
-                        <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-                          <MapPin className="h-4 w-4 text-slate-400" />
+                        <div className="mt-3 flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
+                          <MapPin className="h-4 w-4 text-[color:var(--ink-3)]" />
                           <span>Ubicación: {data.aircraft_location}</span>
                         </div>
                       )}
                     </>
                   ) : (
-                    <p className="text-xs italic text-slate-400">No se han enviado datos de aeronave todavia.</p>
+                    <p className="text-xs italic text-[color:var(--ink-3)]">No se han enviado datos de aeronave todavia.</p>
                   )}
                 </div>
               </details>
             </section>
 
             {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 text-sky-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Datos técnicos del Proyecto</h2>
+                  <ClipboardList className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-sky-600 hover:text-sky-700">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos técnicos
                 </summary>
@@ -1421,154 +1421,154 @@ export default async function IncomingQuotationDetailPage({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
 
                     {/* ── 1. General (full width) ── */}
-                    <div className="md:col-span-2 rounded-xl border border-sky-200/60 border-l-4 border-l-sky-400 bg-sky-50/50 p-4">
+                    <div className="md:col-span-2 rounded-xl border border-[color:var(--ink-4)]/60 border-l-4 border-l-sky-400 bg-[color:var(--paper-2)]/50 p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-sky-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-sky-700">General</h4>
+                        <FileText className="h-5 w-5 text-[color:var(--ink-3)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">General</h4>
                       </div>
                       {(data.work_type || data.modification_summary || data.operational_goal) ? (
                         <div className="space-y-2">
                           {data.work_type && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Tipo de trabajo</span>
-                              <p className="mt-0.5 text-sm text-slate-900">
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Tipo de trabajo</span>
+                              <p className="mt-0.5 text-sm text-[color:var(--ink)]">
                                 {data.work_type === 'proyecto_nuevo' ? 'Proyecto nuevo' : data.work_type === 'modificacion_existente' ? 'Modificación a proyecto existente' : data.work_type}
                                 {data.existing_project_code && (
-                                  <span className="ml-2 text-xs text-slate-500">({data.existing_project_code})</span>
+                                  <span className="ml-2 text-xs text-[color:var(--ink-3)]">({data.existing_project_code})</span>
                                 )}
                               </p>
                             </div>
                           )}
                           {data.modification_summary && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Descripción</span>
-                              <p className="mt-0.5 text-sm text-slate-900">{data.modification_summary}</p>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Descripción</span>
+                              <p className="mt-0.5 text-sm text-[color:var(--ink)]">{data.modification_summary}</p>
                             </div>
                           )}
                           {data.operational_goal && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Objetivo operativo</span>
-                              <p className="mt-0.5 text-sm text-slate-900">{data.operational_goal}</p>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Objetivo operativo</span>
+                              <p className="mt-0.5 text-sm text-[color:var(--ink)]">{data.operational_goal}</p>
                             </div>
                           )}
                           {data.additional_notes && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Notas adicionales</span>
-                              <p className="mt-0.5 text-sm text-slate-600">{data.additional_notes}</p>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Notas adicionales</span>
+                              <p className="mt-0.5 text-sm text-[color:var(--ink-3)]">{data.additional_notes}</p>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 2. Estructural ── */}
-                    <div className="rounded-xl border border-orange-200/60 border-l-4 border-l-orange-400 bg-orange-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)] p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <Building2 className="h-5 w-5 text-orange-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-orange-700">Estructural</h4>
+                        <Building2 className="h-5 w-5 text-[color:var(--umber)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Estructural</h4>
                       </div>
                       {(data.impact_location || data.fuselage_position || data.sta_location || data.impact_structural_attachment || data.impact_structural_interface || data.affects_primary_structure) ? (
                         <div className="space-y-1.5">
                           {data.impact_location && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Ubicación</span>
-                              <span className="text-right text-slate-900">
+                              <span className="text-[color:var(--ink-3)]">Ubicación</span>
+                              <span className="text-right text-[color:var(--ink)]">
                                 {data.impact_location === 'interior_cabin' ? 'Interior / Cabina' : data.impact_location === 'exterior_fuselage' ? 'Exterior / Fuselaje' : data.impact_location === 'cockpit' ? 'Cockpit / Flight deck' : data.impact_location === 'cargo_hold' ? 'Cargo hold / Belly' : data.impact_location === 'wing' ? 'Wing' : data.impact_location === 'empennage' ? 'Empennage / Tail' : data.impact_location === 'engine_area' ? 'Engine / Nacelle area' : data.impact_location === 'landing_gear' ? 'Landing gear area' : data.impact_location === 'other' ? 'Other' : data.impact_location}
                               </span>
                             </div>
                           )}
                           {data.fuselage_position && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Posición fuselaje</span>
-                              <span className="text-slate-900">
+                              <span className="text-[color:var(--ink-3)]">Posición fuselaje</span>
+                              <span className="text-[color:var(--ink)]">
                                 {data.fuselage_position === 'fwd' ? 'Forward (Fwd)' : data.fuselage_position === 'mid' ? 'Mid' : data.fuselage_position === 'aft' ? 'Aft (Posterior)' : data.fuselage_position}
                               </span>
                             </div>
                           )}
                           {data.sta_location && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">STA</span>
-                              <span className="text-slate-900">{data.sta_location}</span>
+                              <span className="text-[color:var(--ink-3)]">STA</span>
+                              <span className="text-[color:var(--ink)]">{data.sta_location}</span>
                             </div>
                           )}
                           {data.impact_structural_attachment && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Fijación estructural</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_structural_attachment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_structural_attachment === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                              <span className="text-[color:var(--ink-3)]">Fijación estructural</span>
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_structural_attachment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_structural_attachment === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_structural_attachment === 'si' ? 'Sí' : data.impact_structural_attachment === 'no' ? 'No' : data.impact_structural_attachment === 'no_seguro' ? 'No seguro' : data.impact_structural_attachment}
                               </span>
                             </div>
                           )}
                           {data.impact_structural_interface && (
                             <div className="text-sm">
-                              <span className="text-slate-500">Interfaz estructural</span>
-                              <p className="mt-0.5 text-xs text-slate-600">{data.impact_structural_interface}</p>
+                              <span className="text-[color:var(--ink-3)]">Interfaz estructural</span>
+                              <p className="mt-0.5 text-xs text-[color:var(--ink-3)]">{data.impact_structural_interface}</p>
                             </div>
                           )}
                           {data.affects_primary_structure && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Afecta PSE</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.affects_primary_structure === 'si' ? 'bg-red-500/20 text-red-400' : data.affects_primary_structure === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                              <span className="text-[color:var(--ink-3)]">Afecta PSE</span>
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.affects_primary_structure === 'si' ? 'bg-red-500/20 text-red-400' : data.affects_primary_structure === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.affects_primary_structure === 'si' ? 'Sí' : data.affects_primary_structure === 'no' ? 'No' : data.affects_primary_structure === 'no_seguro' ? 'No seguro' : data.affects_primary_structure}
                               </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 3. Eléctrico y Aviónica ── */}
-                    <div className="rounded-xl border border-amber-200/60 border-l-4 border-l-amber-400 bg-amber-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)] p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-amber-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-amber-700">Eléctrico y Aviónica</h4>
+                        <Zap className="h-5 w-5 text-[color:var(--umber)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Eléctrico y Aviónica</h4>
                       </div>
                       {(data.impact_electrical || data.impact_avionics) ? (
                         <div className="space-y-1.5">
                           {data.impact_electrical && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Cableado eléctrico</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_electrical === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_electrical === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                              <span className="text-[color:var(--ink-3)]">Cableado eléctrico</span>
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_electrical === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_electrical === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_electrical === 'si' ? 'Sí' : data.impact_electrical === 'no' ? 'No' : data.impact_electrical === 'no_seguro' ? 'No seguro' : data.impact_electrical}
                               </span>
                             </div>
                           )}
                           {data.impact_avionics && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Aviónica / instrumentos</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_avionics === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_avionics === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                              <span className="text-[color:var(--ink-3)]">Aviónica / instrumentos</span>
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_avionics === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_avionics === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_avionics === 'si' ? 'Sí' : data.impact_avionics === 'no' ? 'No' : data.impact_avionics === 'no_seguro' ? 'No seguro' : data.impact_avionics}
                               </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 4. Peso y Balance ── */}
-                    <div className="rounded-xl border border-violet-200/60 border-l-4 border-l-violet-400 bg-violet-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)]/60 border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)]/50 p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <Scale className="h-5 w-5 text-violet-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-violet-700">Peso y Balance</h4>
+                        <Scale className="h-5 w-5 text-[color:var(--ink-3)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Peso y Balance</h4>
                       </div>
                       {(data.estimated_weight_kg || (Array.isArray(data.items_weight_list) && (data.items_weight_list as { item: string; weight_added_kg: number; weight_removed_kg: number }[]).length > 0) || data.fuselage_position) ? (
                         <div className="space-y-2">
                           {data.estimated_weight_kg && (
                             <div className="flex items-center justify-between text-sm">
-                              <span className="text-slate-500">Peso estimado total</span>
-                              <span className="font-medium text-slate-900">{data.estimated_weight_kg} kg</span>
+                              <span className="text-[color:var(--ink-3)]">Peso estimado total</span>
+                              <span className="font-medium text-[color:var(--ink)]">{data.estimated_weight_kg} kg</span>
                             </div>
                           )}
                           {data.fuselage_position && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Posición CG ref.</span>
-                              <span className="text-slate-900">
+                              <span className="text-[color:var(--ink-3)]">Posición CG ref.</span>
+                              <span className="text-[color:var(--ink)]">
                                 {data.fuselage_position === 'fwd' ? 'Forward (Fwd)' : data.fuselage_position === 'mid' ? 'Mid' : data.fuselage_position === 'aft' ? 'Aft (Posterior)' : data.fuselage_position}
                               </span>
                             </div>
@@ -1580,39 +1580,39 @@ export default async function IncomingQuotationDetailPage({
                             const totalNet = totalAdded - totalRemoved
                             return (
                               <details className="group">
-                                <summary className="flex cursor-pointer items-center gap-1 text-xs font-medium uppercase tracking-wider text-slate-400 hover:text-slate-600">
+                                <summary className="flex cursor-pointer items-center gap-1 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                                   <svg className="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                                   Desglose de pesos
                                 </summary>
                                 <div className="mt-2">
-                                  <div className="overflow-hidden rounded-lg border border-slate-200">
+                                  <div className="overflow-hidden rounded-lg border border-[color:var(--ink-4)]">
                                     <table className="w-full text-xs">
                                       <thead>
-                                        <tr className="border-b border-slate-200 bg-slate-50">
-                                          <th className="px-2.5 py-1.5 text-left font-semibold text-slate-500">Item</th>
-                                          <th className="px-2.5 py-1.5 text-right font-semibold text-slate-500">Added (kg)</th>
-                                          <th className="px-2.5 py-1.5 text-right font-semibold text-slate-500">Removed (kg)</th>
-                                          <th className="px-2.5 py-1.5 text-right font-semibold text-slate-500">Net (kg)</th>
+                                        <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
+                                          <th className="px-2.5 py-1.5 text-left font-semibold text-[color:var(--ink-3)]">Item</th>
+                                          <th className="px-2.5 py-1.5 text-right font-semibold text-[color:var(--ink-3)]">Added (kg)</th>
+                                          <th className="px-2.5 py-1.5 text-right font-semibold text-[color:var(--ink-3)]">Removed (kg)</th>
+                                          <th className="px-2.5 py-1.5 text-right font-semibold text-[color:var(--ink-3)]">Net (kg)</th>
                                         </tr>
                                       </thead>
                                       <tbody>
                                         {items.map((row, idx) => (
-                                          <tr key={idx} className="border-b border-slate-100 last:border-b-0">
-                                            <td className="px-2.5 py-1.5 text-slate-900">{row.item}</td>
-                                            <td className="px-2.5 py-1.5 text-right text-slate-700">{(row.weight_added_kg ?? 0).toFixed(1)}</td>
-                                            <td className="px-2.5 py-1.5 text-right text-slate-700">{(row.weight_removed_kg ?? 0).toFixed(1)}</td>
-                                            <td className={`px-2.5 py-1.5 text-right font-medium ${((row.weight_added_kg ?? 0) - (row.weight_removed_kg ?? 0)) > 0 ? 'text-amber-600' : ((row.weight_added_kg ?? 0) - (row.weight_removed_kg ?? 0)) < 0 ? 'text-emerald-600' : 'text-slate-600'}`}>
+                                          <tr key={idx} className="border-b border-[color:var(--ink-4)] last:border-b-0">
+                                            <td className="px-2.5 py-1.5 text-[color:var(--ink)]">{row.item}</td>
+                                            <td className="px-2.5 py-1.5 text-right text-[color:var(--ink-2)]">{(row.weight_added_kg ?? 0).toFixed(1)}</td>
+                                            <td className="px-2.5 py-1.5 text-right text-[color:var(--ink-2)]">{(row.weight_removed_kg ?? 0).toFixed(1)}</td>
+                                            <td className={`px-2.5 py-1.5 text-right font-medium ${((row.weight_added_kg ?? 0) - (row.weight_removed_kg ?? 0)) > 0 ? 'text-amber-600' : ((row.weight_added_kg ?? 0) - (row.weight_removed_kg ?? 0)) < 0 ? 'text-emerald-600' : 'text-[color:var(--ink-3)]'}`}>
                                               {((row.weight_added_kg ?? 0) - (row.weight_removed_kg ?? 0)) > 0 ? '+' : ''}{((row.weight_added_kg ?? 0) - (row.weight_removed_kg ?? 0)).toFixed(1)}
                                             </td>
                                           </tr>
                                         ))}
                                       </tbody>
                                       <tfoot>
-                                        <tr className="border-t border-slate-200 bg-slate-50">
-                                          <td className="px-2.5 py-1.5 font-semibold text-slate-700">Total</td>
-                                          <td className="px-2.5 py-1.5 text-right font-semibold text-slate-700">{totalAdded.toFixed(1)}</td>
-                                          <td className="px-2.5 py-1.5 text-right font-semibold text-slate-700">{totalRemoved.toFixed(1)}</td>
-                                          <td className={`px-2.5 py-1.5 text-right font-semibold ${totalNet > 0 ? 'text-amber-600' : totalNet < 0 ? 'text-emerald-600' : 'text-slate-700'}`}>
+                                        <tr className="border-t border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
+                                          <td className="px-2.5 py-1.5 font-semibold text-[color:var(--ink-2)]">Total</td>
+                                          <td className="px-2.5 py-1.5 text-right font-semibold text-[color:var(--ink-2)]">{totalAdded.toFixed(1)}</td>
+                                          <td className="px-2.5 py-1.5 text-right font-semibold text-[color:var(--ink-2)]">{totalRemoved.toFixed(1)}</td>
+                                          <td className={`px-2.5 py-1.5 text-right font-semibold ${totalNet > 0 ? 'text-amber-600' : totalNet < 0 ? 'text-emerald-600' : 'text-[color:var(--ink-2)]'}`}>
                                             {totalNet > 0 ? '+' : ''}{totalNet.toFixed(1)}
                                           </td>
                                         </tr>
@@ -1625,155 +1625,155 @@ export default async function IncomingQuotationDetailPage({
                           })()}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 5. Cabina y Presurización ── */}
-                    <div className="rounded-xl border border-teal-200/60 border-l-4 border-l-teal-400 bg-teal-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)]/60 border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)]/50 p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <LayoutGrid className="h-5 w-5 text-teal-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-teal-700">Cabina y Presurización</h4>
+                        <LayoutGrid className="h-5 w-5 text-[color:var(--ink-3)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Cabina y Presurización</h4>
                       </div>
                       {(data.impact_cabin_layout || data.impact_pressurized) ? (
                         <div className="space-y-1.5">
                           {data.impact_cabin_layout && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Layout cabina</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_cabin_layout === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_cabin_layout === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                              <span className="text-[color:var(--ink-3)]">Layout cabina</span>
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_cabin_layout === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_cabin_layout === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_cabin_layout === 'si' ? 'Sí' : data.impact_cabin_layout === 'no' ? 'No' : data.impact_cabin_layout === 'no_seguro' ? 'No seguro' : data.impact_cabin_layout}
                               </span>
                             </div>
                           )}
                           {data.impact_pressurized && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Zona presurizada</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_pressurized === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_pressurized === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                              <span className="text-[color:var(--ink-3)]">Zona presurizada</span>
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_pressurized === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_pressurized === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_pressurized === 'si' ? 'Sí' : data.impact_pressurized === 'no' ? 'No' : data.impact_pressurized === 'no_seguro' ? 'No seguro' : data.impact_pressurized}
                               </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 6. Operacional ── */}
-                    <div className="rounded-xl border border-slate-200/60 border-l-4 border-l-slate-400 bg-slate-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)]/60 border-l-4 border-l-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <Settings className="h-5 w-5 text-slate-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-slate-700">Operacional</h4>
+                        <Settings className="h-5 w-5 text-[color:var(--ink-3)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Operacional</h4>
                       </div>
                       {data.impact_operational_change ? (
                         <div className="flex items-start justify-between gap-2 text-sm">
-                          <span className="text-slate-500">Cambio operacional</span>
-                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_operational_change === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_operational_change === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                          <span className="text-[color:var(--ink-3)]">Cambio operacional</span>
+                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_operational_change === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_operational_change === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                             {data.impact_operational_change === 'si' ? 'Sí' : data.impact_operational_change === 'no' ? 'No' : data.impact_operational_change === 'no_seguro' ? 'No seguro' : data.impact_operational_change}
                           </span>
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 7. Directiva de Aeronavegabilidad ── */}
-                    <div className="rounded-xl border border-yellow-200/60 border-l-4 border-l-yellow-500 bg-yellow-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)] p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-yellow-700">Directiva de Aeronavegabilidad</h4>
+                        <AlertTriangle className="h-5 w-5 text-[color:var(--umber)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Directiva de Aeronavegabilidad</h4>
                       </div>
                       {(data.related_to_ad || data.motivated_by_ad) ? (
                         <div className="space-y-1.5">
                           <div className="flex items-start justify-between gap-2 text-sm">
-                            <span className="text-slate-500">Motivado por AD</span>
-                            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'bg-emerald-500/20 text-emerald-400' : val === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400' })()}`}>
+                            <span className="text-[color:var(--ink-3)]">Motivado por AD</span>
+                            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'bg-emerald-500/20 text-emerald-400' : val === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]' })()}`}>
                               {(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'Sí' : val === 'no' ? 'No' : val === 'no_seguro' ? 'No seguro' : val })()}
                             </span>
                           </div>
                           {(data.related_to_ad ?? data.motivated_by_ad) === 'si' && data.ad_reference && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-slate-500">Referencia AD</span>
-                              <span className="font-mono text-slate-900">{data.ad_reference}</span>
+                              <span className="text-[color:var(--ink-3)]">Referencia AD</span>
+                              <span className="font-mono text-[color:var(--ink)]">{data.ad_reference}</span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
                     {/* ── 8. Recursos y Plazos ── */}
-                    <div className="rounded-xl border border-indigo-200/60 border-l-4 border-l-indigo-400 bg-indigo-50/50 p-4">
+                    <div className="rounded-xl border border-[color:var(--ink-4)]/60 border-l-4 border-l-indigo-400 bg-[color:var(--paper-2)]/50 p-4">
                       <div className="mb-3 flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-indigo-600" />
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-indigo-700">Recursos y Plazos</h4>
+                        <Calendar className="h-5 w-5 text-[color:var(--ink-3)]" />
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-[color:var(--ink-2)]">Recursos y Plazos</h4>
                       </div>
                       {(data.has_equipment || data.has_drawings || data.has_manufacturer_docs || data.has_previous_mod || data.target_date || data.is_aog) ? (
                         <div className="space-y-3">
                           {/* Recursos */}
                           {(data.has_equipment || data.has_drawings || data.has_manufacturer_docs || data.has_previous_mod) && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Recursos disponibles</span>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Recursos disponibles</span>
                               <div className="mt-2 grid grid-cols-2 gap-2">
                                 {data.has_equipment && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_equipment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_equipment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_equipment === 'si' ? 'Sí' : data.has_equipment === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-slate-500">Equipo</span>
+                                    <span className="text-[color:var(--ink-3)]">Equipo</span>
                                   </div>
                                 )}
                                 {data.has_drawings && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_drawings === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_drawings === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_drawings === 'si' ? 'Sí' : data.has_drawings === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-slate-500">Planos</span>
+                                    <span className="text-[color:var(--ink-3)]">Planos</span>
                                   </div>
                                 )}
                                 {data.has_manufacturer_docs && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_manufacturer_docs === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_manufacturer_docs === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_manufacturer_docs === 'si' ? 'Sí' : data.has_manufacturer_docs === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-slate-500">Doc. fabricante</span>
+                                    <span className="text-[color:var(--ink-3)]">Doc. fabricante</span>
                                   </div>
                                 )}
                                 {data.has_previous_mod && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_previous_mod === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.has_previous_mod === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_previous_mod === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.has_previous_mod === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_previous_mod === 'si' ? 'Sí' : data.has_previous_mod === 'no_seguro' ? '?' : 'No'}
                                     </span>
-                                    <span className="text-slate-500">Mod. previa</span>
+                                    <span className="text-[color:var(--ink-3)]">Mod. previa</span>
                                   </div>
                                 )}
                               </div>
                               {data.equipment_details && data.has_equipment === 'si' && (
-                                <p className="mt-1.5 text-xs text-slate-500">Equipo: {data.equipment_details}</p>
+                                <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">Equipo: {data.equipment_details}</p>
                               )}
                               {data.previous_mod_ref && data.has_previous_mod === 'si' && (
-                                <p className="mt-1.5 text-xs text-slate-500">Ref. mod. previa: {data.previous_mod_ref}</p>
+                                <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">Ref. mod. previa: {data.previous_mod_ref}</p>
                               )}
                             </div>
                           )}
                           {/* Plazos */}
                           {(data.target_date || data.is_aog) && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Plazos</span>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Plazos</span>
                               <div className="mt-2 space-y-1.5">
                                 {data.target_date && (
                                   <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500">Fecha deseada</span>
-                                    <span className="text-slate-900">
+                                    <span className="text-[color:var(--ink-3)]">Fecha deseada</span>
+                                    <span className="text-[color:var(--ink)]">
                                       {new Date(data.target_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </span>
                                   </div>
                                 )}
                                 {data.is_aog && (
                                   <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500">AOG</span>
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.is_aog === 'si' ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                                    <span className="text-[color:var(--ink-3)]">AOG</span>
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.is_aog === 'si' ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.is_aog === 'si' ? 'Sí — AOG' : 'No'}
                                     </span>
                                   </div>
@@ -1783,7 +1783,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1793,11 +1793,11 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir alcance preliminar (ancho completo) --- */}
-            <section className="rounded-[22px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-indigo-500" />
-                  <h2 className="text-sm font-semibold text-slate-950">Definir alcance preliminar</h2>
+                  <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
                 </div>
               </div>
               <div className="px-5 py-4 space-y-4">
@@ -1806,19 +1806,19 @@ export default async function IncomingQuotationDetailPage({
                   {/* Proyectos sugeridos automaticamente */}
                   <div>
                     {hasTechnicalData ? (
-                      <div className="rounded-xl border border-slate-200 bg-slate-50/50">
-                        <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2.5">
-                          <ScanSearch className="h-3.5 w-3.5 text-sky-600" />
-                          <span className="text-xs font-semibold text-slate-800">Proyectos sugeridos</span>
-                          <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[9px] font-semibold text-sky-700">
+                      <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50">
+                        <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] px-4 py-2.5">
+                          <ScanSearch className="h-3.5 w-3.5 text-[color:var(--ink-3)]" />
+                          <span className="text-xs font-semibold text-[color:var(--ink-2)]">Proyectos sugeridos</span>
+                          <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[9px] font-semibold text-[color:var(--ink-2)]">
                             {similarProjects.length}
                           </span>
-                          <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[8px] font-medium text-slate-500">
+                          <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[8px] font-medium text-[color:var(--ink-3)]">
                             automatico
                           </span>
                         </div>
                         <details className="group">
-                          <summary className="flex cursor-pointer items-center gap-1 px-4 py-2 text-[11px] font-medium text-sky-600 hover:text-sky-700">
+                          <summary className="flex cursor-pointer items-center gap-1 px-4 py-2 text-[11px] font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                             <svg className="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                             Ver proyectos sugeridos
                           </summary>
@@ -1832,14 +1832,14 @@ export default async function IncomingQuotationDetailPage({
                                     className={`rounded-lg border px-2.5 py-2 ${
                                       isRef
                                         ? 'border-amber-300 bg-amber-50/60'
-                                        : 'border-slate-200 bg-white'
+                                        : 'border-[color:var(--ink-4)] bg-[color:var(--paper)]'
                                     }`}
                                   >
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-1.5">
                                           {project.numero_proyecto && (
-                                            <span className="inline-block rounded bg-slate-200 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                            <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
                                               {project.numero_proyecto}
                                             </span>
                                           )}
@@ -1849,10 +1849,10 @@ export default async function IncomingQuotationDetailPage({
                                             </span>
                                           )}
                                         </div>
-                                        <p className="mt-1 text-xs font-medium leading-snug text-slate-900">{project.titulo ?? '—'}</p>
+                                        <p className="mt-1 text-xs font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
                                         <div className="mt-0.5 flex flex-wrap items-center gap-1">
                                           {project.created_at && (
-                                            <p className="text-[10px] text-slate-400">
+                                            <p className="text-[10px] text-[color:var(--ink-3)]">
                                               {new Date(project.created_at).getFullYear()}
                                             </p>
                                           )}
@@ -1872,7 +1872,7 @@ export default async function IncomingQuotationDetailPage({
                                       </div>
                                       <div className="flex shrink-0 items-center gap-1.5">
                                         {project.estado && (
-                                          <span className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-semibold text-slate-600">
+                                          <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-1.5 py-0.5 text-[9px] font-semibold text-[color:var(--ink-3)]">
                                             {project.estado}
                                           </span>
                                         )}
@@ -1883,7 +1883,7 @@ export default async function IncomingQuotationDetailPage({
                                         />
                                         <Link
                                           href={`/proyectos-historico/${project.id}`}
-                                          className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-sky-200 bg-sky-50 text-sky-700 transition-colors hover:bg-sky-100"
+                                          className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                                           title="Abrir ficha"
                                           aria-label={`Abrir ficha de ${project.numero_proyecto}`}
                                         >
@@ -1895,27 +1895,27 @@ export default async function IncomingQuotationDetailPage({
                                 )
                               })
                             ) : (
-                              <p className="text-xs italic text-slate-400">No se encontraron proyectos similares.</p>
+                              <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos similares.</p>
                             )}
                           </div>
                         </details>
                       </div>
                     ) : (
-                      <div className="flex h-24 items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+                      <div className="flex h-24 items-center justify-center rounded-xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50">
                         <div className="text-center">
-                          <ScanSearch className="mx-auto h-5 w-5 text-slate-300" />
-                          <p className="mt-1 text-xs text-slate-400">Proyectos sugeridos</p>
+                          <ScanSearch className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
+                          <p className="mt-1 text-xs text-[color:var(--ink-3)]">Proyectos sugeridos</p>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Busqueda manual de proyectos */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/50">
-                    <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2.5">
-                      <Search className="h-3.5 w-3.5 text-sky-600" />
-                      <span className="text-xs font-semibold text-slate-800">Buscar proyectos</span>
-                      <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[8px] font-medium text-slate-500">
+                  <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50">
+                    <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] px-4 py-2.5">
+                      <Search className="h-3.5 w-3.5 text-[color:var(--ink-3)]" />
+                      <span className="text-xs font-semibold text-[color:var(--ink-2)]">Buscar proyectos</span>
+                      <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[8px] font-medium text-[color:var(--ink-3)]">
                         manual
                       </span>
                     </div>
@@ -1980,15 +1980,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir documentacion (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-violet-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-violet-200 bg-[linear-gradient(135deg,#ffffff_0%,#f5f3ff_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f5f3ff_100%)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-violet-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Definir documentacion</h2>
+                  <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-violet-600 hover:text-violet-700">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Seleccionar documentos de compliance
                 </summary>
@@ -2005,15 +2005,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Informacion de Quotation (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-orange-200 bg-white shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-orange-200 bg-[linear-gradient(135deg,#ffffff_0%,#fff7ed_100%)] px-5 py-3">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-orange-600" />
-                  <h2 className="text-sm font-semibold text-slate-950">Oferta / Quotation</h2>
+                  <Receipt className="h-4 w-4 text-[color:var(--umber)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Oferta / Quotation</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-orange-600 hover:text-orange-700">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Preparar datos de oferta
                 </summary>
@@ -2033,9 +2033,9 @@ export default async function IncomingQuotationDetailPage({
                 currentState={data.estado ?? ''}
               />
             ) : (
-              <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                <h2 className="text-sm font-semibold text-slate-950">Panel de decision</h2>
-                <p className="mt-1 text-xs text-slate-500">
+              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                <h2 className="text-sm font-semibold text-[color:var(--ink)]">Panel de decision</h2>
+                <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                   Revisa toda la informacion y decide como proceder con esta consulta.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">

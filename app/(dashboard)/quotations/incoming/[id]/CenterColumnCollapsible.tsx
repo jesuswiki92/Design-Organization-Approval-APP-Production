@@ -197,7 +197,7 @@ function EmailCard({
       {/* Cabecera clicable */}
       <div
         className={cn(
-          "flex w-full items-start gap-3 rounded-2xl border bg-white px-4 py-3 shadow-sm transition-colors hover:bg-slate-50/80",
+          "flex w-full items-start gap-3 rounded-2xl border bg-[color:var(--paper)] px-4 py-3 shadow-sm transition-colors hover:bg-[color:var(--paper-3)]/80",
           isIncoming
             ? "border-l-[3px] border-l-sky-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
             : "border-r-[3px] border-r-emerald-400 border-t-slate-200 border-l-slate-200 border-b-slate-200",
@@ -209,7 +209,7 @@ function EmailCard({
           onClick={onToggle}
           className={cn(
             "mt-0.5 shrink-0 rounded-lg p-1.5",
-            isIncoming ? "bg-sky-50 text-sky-500" : "bg-emerald-50 text-emerald-500",
+            isIncoming ? "bg-[color:var(--paper-2)] text-[color:var(--ink-3)]" : "bg-emerald-50 text-emerald-500",
           )}
         >
           {isIncoming ? (
@@ -225,13 +225,13 @@ function EmailCard({
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.16em]",
-                isIncoming ? "text-sky-500" : "text-emerald-500",
+                isIncoming ? "text-[color:var(--ink-3)]" : "text-emerald-500",
               )}
             >
               {email.label}
             </p>
             {email.date && (
-              <p className="text-[10px] text-slate-400">
+              <p className="text-[10px] text-[color:var(--ink-3)]">
                 {formatDateSpanish(email.date)}
               </p>
             )}
@@ -243,14 +243,14 @@ function EmailCard({
             </p>
           )}
 
-          <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-[color:var(--ink-3)]">
             <Mail className="h-3 w-3 shrink-0" />
-            <span className="font-medium text-slate-400">{email.contactLabel}:</span>
+            <span className="font-medium text-[color:var(--ink-3)]">{email.contactLabel}:</span>
             {email.contactValue}
           </p>
 
           {!isOpen && (
-            <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-slate-400 italic">
+            <p className="mt-1.5 line-clamp-2 text-xs leading-5 text-[color:var(--ink-3)] italic">
               {buildSnippet(email.body, email.isHtml)}
             </p>
           )}
@@ -265,7 +265,7 @@ function EmailCard({
                 e.stopPropagation()
                 onDelete(email.id)
               }}
-              className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500"
+              className="rounded-lg p-1.5 text-[color:var(--ink-4)] transition-colors hover:bg-red-50 hover:text-red-500"
               title="Eliminar email"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -274,7 +274,7 @@ function EmailCard({
           <button type="button" onClick={onToggle} className="p-1">
             <ChevronDown
               className={cn(
-                "h-4 w-4 text-slate-400 transition-transform duration-200",
+                "h-4 w-4 text-[color:var(--ink-3)] transition-transform duration-200",
                 isOpen && "rotate-180",
               )}
             />
@@ -288,17 +288,17 @@ function EmailCard({
           className={cn(
             "mt-2 rounded-2xl border p-4",
             isIncoming
-              ? "border-sky-100 bg-sky-50/30"
+              ? "border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/30"
               : "border-emerald-100 bg-emerald-50/30",
           )}
         >
           {email.date && (
-            <p className="mb-3 text-[11px] font-medium text-slate-400">
+            <p className="mb-3 text-[11px] font-medium text-[color:var(--ink-3)]">
               {formatDateSpanish(email.date)}
             </p>
           )}
           <div
-            className="prose prose-sm max-w-none text-slate-700 [overflow-wrap:break-word] [word-break:break-word] [&_a]:text-sky-600 [&_a]:underline"
+            className="prose prose-sm max-w-none text-[color:var(--ink-2)] [overflow-wrap:break-word] [word-break:break-word] [&_a]:text-[color:var(--ink-3)] [&_a]:underline"
             dangerouslySetInnerHTML={{ __html: sanitizedBody }}
           />
         </div>
@@ -312,13 +312,13 @@ function EmailCard({
  */
 function EmptyResponsePlaceholder() {
   return (
-    <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6">
+    <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-4 py-6">
       <div className="text-center">
-        <Send className="mx-auto h-5 w-5 text-slate-300" />
-        <p className="mt-2 text-xs font-medium text-slate-400">
+        <Send className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
+        <p className="mt-2 text-xs font-medium text-[color:var(--ink-3)]">
           Sin respuesta enviada
         </p>
-        <p className="mt-0.5 text-[10px] text-slate-300">
+        <p className="mt-0.5 text-[10px] text-[color:var(--ink-4)]">
           Usa el compositor de abajo para responder
         </p>
       </div>
@@ -511,13 +511,13 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
           CABECERA DE LA SECCION
           ================================================================ */}
       <div className="flex items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">
-          <Mail className="h-3 w-3 text-slate-500" />
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--paper-2)]">
+          <Mail className="h-3 w-3 text-[color:var(--ink-3)]" />
         </div>
-        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
           Hilo de comunicacion
         </h3>
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+        <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
           {totalEmails} {totalEmails === 1 ? "email" : "emails"}
         </span>
       </div>
@@ -528,7 +528,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-sky-400" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-sky-500">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             Correos del cliente
           </span>
         </div>
@@ -557,10 +557,10 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
               />
             ))
           ) : (
-            <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6">
+            <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-4 py-6">
               <div className="text-center">
-                <Inbox className="mx-auto h-5 w-5 text-slate-300" />
-                <p className="mt-2 text-xs font-medium text-slate-400">
+                <Inbox className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
+                <p className="mt-2 text-xs font-medium text-[color:var(--ink-3)]">
                   Sin correos entrantes
                 </p>
               </div>
@@ -594,7 +594,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
           <button
             type="button"
             onClick={() => setComposeOpen((prev) => !prev)}
-            className="flex w-full items-start gap-3 rounded-2xl border border-l-[3px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200 bg-white px-4 py-3 text-left shadow-sm transition-colors hover:bg-slate-50/80"
+            className="flex w-full items-start gap-3 rounded-2xl border border-l-[3px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200 bg-[color:var(--paper)] px-4 py-3 text-left shadow-sm transition-colors hover:bg-[color:var(--paper-3)]/80"
           >
             <div className="mt-0.5 shrink-0 rounded-lg bg-amber-50 p-1.5 text-amber-500">
               <PenLine className="h-3.5 w-3.5" />
@@ -607,14 +607,14 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
                 Redactar y enviar respuesta
               </p>
               {!composeOpen && (
-                <p className="mt-1 text-xs leading-5 text-slate-400 italic">
+                <p className="mt-1 text-xs leading-5 text-[color:var(--ink-3)] italic">
                   Pulsa para abrir el editor de respuesta y enviar al cliente.
                 </p>
               )}
             </div>
             <ChevronDown
               className={cn(
-                "mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200",
+                "mt-1 h-4 w-4 shrink-0 text-[color:var(--ink-3)] transition-transform duration-200",
                 composeOpen && "rotate-180",
               )}
             />
