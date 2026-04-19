@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const pattern = `%${safeQ}%`
 
   const { data, error } = await supabase
-    .from('doa_proyectos_historico')
+    .from('proyectos_historico')
     .select('id, numero_proyecto, titulo, descripcion, estado, aeronave, msn, cliente_nombre, anio, created_at')
     .or(`numero_proyecto.ilike.${pattern},titulo.ilike.${pattern},cliente_nombre.ilike.${pattern},aeronave.ilike.${pattern},msn.ilike.${pattern},descripcion.ilike.${pattern}`)
     .order('created_at', { ascending: false })

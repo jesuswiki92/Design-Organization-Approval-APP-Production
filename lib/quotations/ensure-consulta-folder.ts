@@ -13,8 +13,8 @@ const SIMULATION_BASE_PATH =
  *
  * Estructura:
  *   {SIMULATION_BASE_PATH}/{numeroEntrada}/
- *     emails/
- *     adjuntos/
+ *     1. Email/
+ *     2. Adjuntos/
  *
  * Es idempotente: si la carpeta ya existe, no hace nada.
  * No lanza excepciones para no interrumpir la carga de la pagina.
@@ -35,8 +35,8 @@ export async function ensureConsultaFolder(
     const alreadyExists = existsSync(baseFolderPath)
 
     await Promise.all([
-      mkdir(path.join(baseFolderPath, 'emails'), { recursive: true }),
-      mkdir(path.join(baseFolderPath, 'adjuntos'), { recursive: true }),
+      mkdir(path.join(baseFolderPath, '1. Email'), { recursive: true }),
+      mkdir(path.join(baseFolderPath, '2. Adjuntos'), { recursive: true }),
     ])
 
     return { created: !alreadyExists }

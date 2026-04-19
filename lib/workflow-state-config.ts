@@ -3,7 +3,7 @@
  *
  * Este archivo es el "motor de estilos" de los estados de flujo de trabajo.
  * Se encarga de convertir los datos de configuracion guardados en la base de datos
- * (tabla doa_workflow_state_config) en objetos listos para pintar en la interfaz.
+ * (tabla workflow_state_config) en objetos listos para pintar en la interfaz.
  *
  * Funciones principales:
  * - Define los COLORES disponibles para los estados (sky, cyan, emerald, amber, etc.)

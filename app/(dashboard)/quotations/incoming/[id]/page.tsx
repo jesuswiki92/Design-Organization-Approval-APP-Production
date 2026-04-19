@@ -28,7 +28,7 @@
  */
 
 import Link from 'next/link'
-import { AlertTriangle, ArrowLeft, Building2, Calendar, CheckCircle2, ClipboardList, Clock, FileText, FolderOpen, LayoutGrid, Mail, MapPin, MessageSquarePlus, Plane, Plus, Receipt, Scale, ScanSearch, Search, Settings, Sparkles, UserRound, UserRoundX, XCircle, Zap } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Building2, Calendar, CheckCircle2, ClipboardList, Clock, FileText, FolderOpen, LayoutGrid, Mail, MapPin, Plane, Plus, Receipt, Scale, ScanSearch, Search, Settings, Sparkles, UserRound, UserRoundX, Zap } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 // import { buildPreliminaryScopeModel } from '@/lib/quotations/build-preliminary-scope-model'
@@ -53,6 +53,7 @@ import { codeToColumn, getPreselectedTemplates, type ComplianceTemplate } from '
 
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 import { ComplianceDocumentsSection } from './ComplianceDocumentsSection'
+import { DecisionPanel } from './DecisionPanel'
 import { ManualProjectSearch } from './ManualProjectSearch'
 // import { PreliminaryScopeChatPanel } from './PreliminaryScopeChatPanel'
 // import { PreliminaryScopePanel } from './PreliminaryScopePanel'
@@ -324,7 +325,7 @@ export default async function IncomingQuotationDetailPage({
 
   // --- Cargar la consulta ---
   const { data, error } = await supabase
-    .from('doa_consultas_entrantes')
+    .from('consultas_entrantes')
     .select('*')
     .eq('id', id)
     .maybeSingle()
@@ -368,15 +369,15 @@ export default async function IncomingQuotationDetailPage({
       })
   }
 
-  // --- Cargar emails de doa_emails para esta consulta ---
+  // --- Cargar emails de emails para esta consulta ---
   const { data: emailRows, error: emailError } = await supabase
-    .from('doa_emails')
+    .from('emails')
     .select('*')
     .eq('consulta_id', id)
     .order('fecha', { ascending: true })
 
   if (emailError) {
-    console.error('Error cargando emails de doa_emails:', emailError)
+    console.error('Error cargando emails de emails:', emailError)
   }
 
   const emails: DoaEmail[] = (emailRows ?? []) as DoaEmail[]
@@ -385,11 +386,11 @@ export default async function IncomingQuotationDetailPage({
   const [{ data: clientRows, error: clientError }, { data: contactRows, error: contactError }] =
     await Promise.all([
       supabase
-        .from('doa_clientes_datos_generales')
+        .from('clientes_datos_generales')
         .select('*')
         .order('nombre', { ascending: true }),
       supabase
-        .from('doa_clientes_contactos')
+        .from('clientes_contactos')
         .select('*')
         .order('es_principal', { ascending: false })
         .order('activo', { ascending: false })
@@ -410,7 +411,7 @@ export default async function IncomingQuotationDetailPage({
   const query = toIncomingQuery(data as ConsultaEntrante, clientLookup)
   const matchedClient = resolveIncomingClientRecord(query.remitente, clients, contacts)
 
-  // --- Verificar TCDS en doa_aeronaves ---
+  // --- Verificar TCDS en aeronaves ---
   let aeronaveVariants: {
     tcds_code: string
     tcds_code_short: string
@@ -432,7 +433,7 @@ export default async function IncomingQuotationDetailPage({
 
   if (data.tcds_number) {
     const { data: aeronaveRows } = await supabase
-      .from('doa_aeronaves')
+      .from('aeronaves')
       .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, fabricante, pais, tipo, modelo, motor, mtow_kg, mlw_kg, regulacion_base, categoria, msn_elegibles, notas')
       .eq('tcds_code', data.tcds_number)
 
@@ -444,7 +445,7 @@ export default async function IncomingQuotationDetailPage({
   if (aeronaveVariants.length === 0 && (data.aircraft_model || data.aircraft_manufacturer)) {
     tcdsFallbackUsed = true
     let fallbackQuery = supabase
-      .from('doa_aeronaves')
+      .from('aeronaves')
       .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, fabricante, pais, tipo, modelo, motor, mtow_kg, mlw_kg, regulacion_base, categoria, msn_elegibles, notas')
 
     if (data.aircraft_model) {
@@ -473,12 +474,12 @@ export default async function IncomingQuotationDetailPage({
       { data: historyRows, error: historyError },
     ] = await Promise.all([
       supabase
-        .from('doa_proyectos')
+        .from('proyectos')
         .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
         .or(`client_id.eq.${safeClientId},cliente_nombre.ilike.${safeClientNombre}`)
         .order('created_at', { ascending: false }),
       supabase
-        .from('doa_proyectos_historico')
+        .from('proyectos_historico')
         .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
         .eq('client_id', matchedClient.id)
         .order('created_at', { ascending: false }),
@@ -536,7 +537,7 @@ export default async function IncomingQuotationDetailPage({
   let referenceProjects: RefProject[] = []
   if (currentRefs.length > 0) {
     const { data: refRows } = await supabase
-      .from('doa_proyectos_historico')
+      .from('proyectos_historico')
       .select('id, numero_proyecto, titulo, descripcion, estado, aeronave, msn, cliente_nombre, anio, created_at, summary_md')
       .in('id', currentRefs)
     const refOrder = new Map(currentRefs.map((refId, index) => [refId, index]))
@@ -557,7 +558,7 @@ export default async function IncomingQuotationDetailPage({
 
   // --- Plantillas de compliance (desde BD) y pre-seleccion por referencia ---
   const { data: templateRows } = await supabase
-    .from('doa_plantillas_compliance')
+    .from('plantillas_compliance')
     .select('code, name, category')
     .eq('active', true)
     .order('category')
@@ -573,7 +574,7 @@ export default async function IncomingQuotationDetailPage({
   let preselectedComplianceCodes: string[] = []
   if (currentRefs.length > 0) {
     const { data: refDocRows } = await supabase
-      .from('doa_proyectos_historico_documentos')
+      .from('proyectos_historico_documentos')
       .select('familia_documental')
       .in('proyecto_id', currentRefs)
 
@@ -592,7 +593,7 @@ export default async function IncomingQuotationDetailPage({
     .map((t) => t.code)
 
   // --- Buscar proyectos similares basados en datos tecnicos ---
-  // Solo busca en doa_proyectos_historico (cerrados). Filtra palabras genericas
+  // Solo busca en proyectos_historico (cerrados). Filtra palabras genericas
   // del dominio aeronautico para buscar por terminos especificos (ej: "rack",
   // "antenna", "STC") y no por genericos (ej: "installation", "modification").
   let similarProjects: { id: string; numero_proyecto: string | null; titulo: string | null; descripcion: string | null; estado: string | null; created_at: string | null; source: 'active' | 'historic'; matchedKeywords: string[] }[] = []
@@ -729,7 +730,7 @@ export default async function IncomingQuotationDetailPage({
 
       // Solo buscamos en proyectos historicos (cerrados)
       const { data: simHistRows, error: simHistError } = await supabase
-        .from('doa_proyectos_historico')
+        .from('proyectos_historico')
         .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
         .or(orFilters)
         .order('created_at', { ascending: false })
@@ -2033,38 +2034,7 @@ export default async function IncomingQuotationDetailPage({
                 currentState={data.estado ?? ''}
               />
             ) : (
-              <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                <h2 className="text-sm font-semibold text-slate-950">Panel de decision</h2>
-                <p className="mt-1 text-xs text-slate-500">
-                  Revisa toda la informacion y decide como proceder con esta consulta.
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  {/* TODO: implement crear proyecto action */}
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-100"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                    Crear proyecto
-                  </button>
-                  {/* TODO: implement solicitar mas informacion action */}
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-5 py-2.5 text-sm font-semibold text-amber-700 shadow-sm transition-colors hover:bg-amber-100"
-                  >
-                    <MessageSquarePlus className="h-4 w-4" />
-                    Solicitar mas informacion
-                  </button>
-                  {/* TODO: implement rechazar action */}
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Rechazar
-                  </button>
-                </div>
-              </section>
+              <DecisionPanel consultaId={data.id} />
             )}
           </>
         )}

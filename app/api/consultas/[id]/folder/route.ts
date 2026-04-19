@@ -22,8 +22,8 @@ function jsonResponse(status: number, data: Record<string, unknown>) {
  *
  * Estructura creada:
  *   {SIMULATION_BASE_PATH}/{numero_entrada}/
- *     emails/
- *     adjuntos/
+ *     1. Email/
+ *     2. Adjuntos/
  *
  * Body: { numero_entrada: string }
  *
@@ -50,8 +50,8 @@ export async function POST(
     }
 
     const baseFolderPath = path.join(SIMULATION_BASE_PATH, numeroEntrada)
-    const emailsPath = path.join(baseFolderPath, 'emails')
-    const adjuntosPath = path.join(baseFolderPath, 'adjuntos')
+    const emailsPath = path.join(baseFolderPath, '1. Email')
+    const adjuntosPath = path.join(baseFolderPath, '2. Adjuntos')
 
     const alreadyExists = existsSync(baseFolderPath)
 

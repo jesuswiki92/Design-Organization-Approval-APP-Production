@@ -8,8 +8,8 @@
  * (ClientsPageClient) los muestre en pantalla.
  *
  * QUE CARGA:
- *   1. Todos los clientes de la tabla "doa_clientes_datos_generales"
- *   2. Todos los contactos de la tabla "doa_clientes_contactos"
+ *   1. Todos los clientes de la tabla "clientes_datos_generales"
+ *   2. Todos los contactos de la tabla "clientes_contactos"
  *
  * PROCESAMIENTO:
  *   - Agrupa los contactos por cliente (usando cliente_id)
@@ -41,12 +41,12 @@ export default async function ClientsPage() {
     await Promise.all([
       // Todos los clientes ordenados por nombre
       supabase
-        .from('doa_clientes_datos_generales')
+        .from('clientes_datos_generales')
         .select('*')
         .order('nombre', { ascending: true }),
       // Todos los contactos, priorizando principales y activos
       supabase
-        .from('doa_clientes_contactos')
+        .from('clientes_contactos')
         .select('*')
         .order('es_principal', { ascending: false })
         .order('activo', { ascending: false })
@@ -55,11 +55,11 @@ export default async function ClientsPage() {
 
   // Registrar errores de base de datos si los hay
   if (clientError) {
-    console.error('Error cargando clientes desde doa_clientes_datos_generales:', clientError)
+    console.error('Error cargando clientes desde clientes_datos_generales:', clientError)
   }
 
   if (contactError) {
-    console.error('Error cargando contactos desde doa_clientes_contactos:', contactError)
+    console.error('Error cargando contactos desde clientes_contactos:', contactError)
   }
 
   // Paso 2: Preparar datos

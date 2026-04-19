@@ -6,7 +6,7 @@ import { extractPhase4BaselineFromSummary } from '@/lib/project-summary-phase4'
 export const runtime = 'nodejs'
 
 /**
- * GET — Fetches the PROJECT_SUMMARY markdown from doa_proyectos_historico.
+ * GET — Fetches the PROJECT_SUMMARY markdown from proyectos_historico.
  * Returns { summary_md, numero_proyecto, titulo }.
  */
 export async function GET(
@@ -24,7 +24,7 @@ export async function GET(
   }
 
   const { data, error } = await supabase
-    .from('doa_proyectos_historico')
+    .from('proyectos_historico')
     .select('summary_md, numero_proyecto, titulo')
     .eq('id', id)
     .maybeSingle()

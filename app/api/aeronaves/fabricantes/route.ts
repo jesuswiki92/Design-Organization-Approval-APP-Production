@@ -5,8 +5,8 @@ export const runtime = 'nodejs'
 /**
  * GET /api/aeronaves/fabricantes
  *
- * Devuelve la lista distinta de fabricantes en `doa_aeronaves` (la tabla
- * catalogo real; `doa_aeronaves_modelos` que declaraba types/database.ts no
+ * Devuelve la lista distinta de fabricantes en `aeronaves` (la tabla
+ * catalogo real; `ams_aeronaves_modelos` que declaraba types/database.ts no
  * existe en BD). No hay columna `activo` — devolvemos todos los fabricantes
  * con `fabricante` no-vacio.
  *
@@ -19,7 +19,7 @@ export async function GET() {
 
   try {
     const { data, error } = await supabase
-      .from('doa_aeronaves')
+      .from('aeronaves')
       .select('fabricante')
 
     if (error) {

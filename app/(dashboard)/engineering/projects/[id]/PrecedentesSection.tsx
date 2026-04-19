@@ -6,7 +6,7 @@
  * Renderiza el top-3 de proyectos pasados similares al proyecto actual,
  * usando busqueda vectorial sobre PROJECT_SUMMARY.md (ver
  * `app/api/proyectos/[id]/precedentes/route.ts` y la migracion
- * `doa_proyectos_embeddings`).
+ * `proyectos_embeddings`).
  *
  * Estados gestionados de forma elegante:
  *   - 200 con resultados   -> tarjetas con score, clasificacion, snippet
@@ -49,7 +49,7 @@ type Precedente = {
   snippet: string | null
   /**
    * Sprint 4: origen del precedente.
-   *   - 'historico'  -> indice OpenAI (doa_proyectos_embeddings).
+   *   - 'historico'  -> indice OpenAI (proyectos_embeddings).
    *   - 'archivado'  -> indice Pinecone doa-precedentes (proyectos archivados).
    *   - 'cerrado'    -> Pinecone, proyecto cerrado pero no archivado.
    */

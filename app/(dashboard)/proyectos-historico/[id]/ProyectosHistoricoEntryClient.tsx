@@ -343,7 +343,7 @@ function parseMarkdown(md: string): string {
  *
  * Parametros que recibe:
  *   - project: todos los datos del proyecto (codigo, titulo, cliente, mdl_contenido, etc.)
- *   - documentos: familias documentales del proyecto (tabla doa_proyectos_historico_documentos)
+ *   - documentos: familias documentales del proyecto (tabla proyectos_historico_documentos)
  */
 export default function ProyectosHistoricoEntryClient({
   project,

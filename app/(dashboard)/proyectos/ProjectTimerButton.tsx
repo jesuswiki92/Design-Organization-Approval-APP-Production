@@ -7,7 +7,7 @@
  *   - "Iniciar" (verde): crea una fila nueva con inicio = ahora
  *   - "Parar" (rojo): actualiza la fila abierta con fin = ahora + duracion
  *
- * Una fila en doa_conteo_horas_proyectos = una sesion de trabajo.
+ * Una fila en conteo_horas_proyectos = una sesion de trabajo.
  * Al iniciar: INSERT {proyecto_id, numero_proyecto, inicio}.
  * Al parar: n8n busca la fila con fin=null y hace UPDATE {fin, duracion_minutos}.
  *
@@ -64,7 +64,7 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
 
     async function fetchLastEntry() {
       const { data, error } = await supabase
-        .from('doa_conteo_horas_proyectos')
+        .from('conteo_horas_proyectos')
         .select('*')
         .eq('proyecto_id', proyectoId)
         .order('inicio', { ascending: false })
@@ -130,7 +130,7 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
+          table: 'conteo_horas_proyectos',
           filter: `proyecto_id=eq.${proyectoId}`,
         },
         (payload) => {
@@ -146,7 +146,7 @@ export function ProjectTimerButton({ proyectoId, numeroProyecto }: ProjectTimerB
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
+          table: 'conteo_horas_proyectos',
           filter: `proyecto_id=eq.${proyectoId}`,
         },
         (payload) => {

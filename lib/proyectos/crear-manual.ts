@@ -9,10 +9,10 @@
  *   1. Derivar numero de proyecto a partir del fabricante/modelo.
  *   2. Crear la estructura de carpetas en disco (raiz nueva, NO la de
  *      simulacion usada por `abrir-proyecto`).
- *   3. Insertar fila en `doa_proyectos` con `consulta_id = null`.
+ *   3. Insertar fila en `proyectos` con `consulta_id = null`.
  *   4. Generar un `.docx` por cada plantilla compliance seleccionada,
  *      aplicando reemplazos `project_code` / `document_code`.
- *   5. Insertar un `doa_project_deliverables` por cada plantilla generada.
+ *   5. Insertar un `project_deliverables` por cada plantilla generada.
  *
  * Esta fn NO se mezcla con `lib/project-builder.ts`, que solo lo usa la ruta
  * automatica `/api/consultas/[id]/abrir-proyecto`. Comparte, eso si, los
@@ -155,7 +155,7 @@ export async function crearProyectoManualCompleto(opts: {
     )
   }
 
-  // 4. INSERT en doa_proyectos
+  // 4. INSERT en proyectos
   const insertPayload: Record<string, unknown> = {
     numero_proyecto: numeroProyecto,
     titulo,
@@ -183,7 +183,7 @@ export async function crearProyectoManualCompleto(opts: {
   }
 
   const { data: inserted, error: insertError } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .insert(insertPayload)
     .select('id, numero_proyecto')
     .single()
@@ -196,7 +196,7 @@ export async function crearProyectoManualCompleto(opts: {
       console.error('[crear-manual] Rollback de carpeta fallo:', rmErr)
     }
     throw new Error(
-      `Error insertando en doa_proyectos: ${insertError?.message ?? 'sin fila devuelta'}`,
+      `Error insertando en proyectos: ${insertError?.message ?? 'sin fila devuelta'}`,
     )
   }
 
@@ -281,7 +281,7 @@ export async function crearProyectoManualCompleto(opts: {
   // 6. Insertar deliverables (si hay)
   if (deliverablesRows.length > 0) {
     const { error: deliverError } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .insert(deliverablesRows)
 
     if (deliverError) {

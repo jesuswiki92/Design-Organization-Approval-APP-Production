@@ -9,7 +9,7 @@
  *
  * QUE HACE:
  *   1. Se conecta a Supabase (base de datos en la nube)
- *   2. Pide todos los registros de la tabla "doa_proyectos_historico"
+ *   2. Pide todos los registros de la tabla "proyectos_historico"
  *   3. Los ordena por numero de proyecto
  *   4. Envia esos datos al componente visual ProyectosHistoricoPageClient
  *
@@ -36,13 +36,13 @@ export default async function ProyectosHistoricoPage() {
 
   // Paso 2: Pedir todos los proyectos historicos, ordenados por numero de proyecto
   const { data: projectRows, error } = await supabase
-    .from('doa_proyectos_historico')
+    .from('proyectos_historico')
     .select('*')
     .order('numero_proyecto', { ascending: true })
 
   // Si hay un error de base de datos, lo registramos en la consola del servidor
   if (error) {
-    console.error('Error cargando proyectos historicos desde doa_proyectos_historico:', error)
+    console.error('Error cargando proyectos historicos desde proyectos_historico:', error)
   }
 
   // Si no llegan datos, usamos una lista vacia para evitar errores

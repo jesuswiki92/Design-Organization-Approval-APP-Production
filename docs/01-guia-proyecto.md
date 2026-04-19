@@ -45,12 +45,12 @@ En Next.js, cada carpeta dentro de `app/` se convierte en una pagina web (una UR
 | `app/login/` | `/login` | Pagina de inicio de sesion con email y contrasena | Supabase Auth |
 | `app/home/` | `/home` | Panel principal (dashboard) con resumen general | Estadisticas generales |
 | `app/engineering/` | `/engineering` | Pagina indice visible como `Proyectos` con tablero y lista mock | Ninguno (es un menu) |
-| `app/engineering/portfolio/` | `/engineering/portfolio` | Lista de todos los proyectos de ingenieria con filtros | `doa_proyectos_generales`, `doa_clientes_datos_generales`, `doa_aeronaves_modelos` |
-| `app/engineering/projects/[id]/` | `/engineering/projects/123` | Espacio de trabajo de un proyecto individual: documentos, tareas, detalles | `doa_proyectos_generales`, `doa_proyectos_documentos`, `doa_proyectos_tareas`, `doa_usuarios` |
-| `app/quotations/` | `/quotations` | Workspace de quotations con selector `Tablero` / `Lista` | `doa_ofertas`, `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
+| `app/engineering/portfolio/` | `/engineering/portfolio` | Lista de todos los proyectos de ingenieria con filtros | `ams_proyectos`, `ams_clientes_datos_generales`, `ams_aeronaves_modelos` |
+| `app/engineering/projects/[id]/` | `/engineering/projects/123` | Espacio de trabajo de un proyecto individual: documentos, tareas, detalles | `ams_proyectos`, `ams_proyectos_documentos`, `ams_proyectos_tareas`, `ams_usuarios` |
+| `app/quotations/` | `/quotations` | Workspace de quotations con selector `Tablero` / `Lista` | `ams_ofertas`, `ams_consultas_entrantes`, `ams_clientes_datos_generales` |
 | `app/quotations/[id]/` | `/quotations/456` | Detalle de una quotation con bloques preparados para crecer | Datos mock de quotations mientras no exista backend final |
-| `app/quotations/incoming/[id]/` | `/quotations/incoming/456` | Detalle de una consulta entrante especifica: email original, datos del cliente, respuesta IA | `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
-| `app/clients/` | `/clients` | Gestion de clientes: lista, busqueda, detalles y contactos | `doa_clientes_datos_generales`, `doa_clientes_contactos` |
+| `app/quotations/incoming/[id]/` | `/quotations/incoming/456` | Detalle de una consulta entrante especifica: email original, datos del cliente, respuesta IA | `ams_consultas_entrantes`, `ams_clientes_datos_generales` |
+| `app/clients/` | `/clients` | Gestion de clientes: lista, busqueda, detalles y contactos | `ams_clientes_datos_generales`, `ams_clientes_contactos` |
 | `app/databases/` | `/databases` | Navegador de tablas: permite ver todas las tablas de la base de datos | Catalogo de tablas (`lib/databases.ts`) |
 | `app/databases/[table]/` | `/databases/nombre_tabla` | Vista de los datos de una tabla especifica en formato tabla | Datos dinamicos segun la tabla seleccionada |
 | `app/tools/` | `/tools` | Seccion de herramientas | Ninguno (es un menu) |
@@ -165,7 +165,7 @@ El flujo mas importante de la aplicacion es el de **consultas entrantes**. Funci
    - Lee el email
    - Extrae la informacion relevante (asunto, remitente, contenido)
    - Usa IA para clasificar la consulta y preparar un borrador de respuesta
-   - Crea un registro en la tabla `doa_consultas_entrantes`
+   - Crea un registro en la tabla `ams_consultas_entrantes`
 
 3. **La app muestra la consulta** en la seccion `/quotations` como una "consulta entrante" nueva.
 

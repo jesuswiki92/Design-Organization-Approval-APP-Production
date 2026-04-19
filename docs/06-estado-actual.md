@@ -193,7 +193,7 @@ El cambio de estado en las tarjetas del tablero y en la pagina de detalle funcio
 
 1. El usuario selecciona un nuevo estado en el dropdown (`QuotationStateSelector`)
 2. El componente llama al webhook de n8n `doa-quotation-cambio-estado`
-3. n8n actualiza el campo `estado` en `doa_consultas_entrantes` via nodo Supabase nativo
+3. n8n actualiza el campo `estado` en `ams_consultas_entrantes` via nodo Supabase nativo
 4. La app refresca y lee el nuevo estado de Supabase
 
 Componentes involucrados:
@@ -244,7 +244,7 @@ Todavia no esta conectado a un backend final de quotations.
 
 Las consultas entrantes son la fuente de datos principal del tablero de quotations. Cada consulta entrante se muestra como una tarjeta en el pipeline:
 
-- `doa_consultas_entrantes` esta conectada
+- `ams_consultas_entrantes` esta conectada
 - `doa_clientes_contactos` esta conectada y se usa en el detalle de consulta para matching de cliente por email del remitente
 - n8n crea la fila inicial y rellena `url_formulario`
 - El detalle `/quotations/incoming/[id]` existe e incluye:
@@ -253,10 +253,10 @@ Las consultas entrantes son la fuente de datos principal del tablero de quotatio
   - Seccion colapsable **Project History** que muestra proyectos previos del cliente cuando se identifica un cliente conocido
   - Boton "+" en Project History que enlaza a `/proyectos-historico` para consultar el historico completo
 - Seccion colapsable **Definir alcance. Preliminar** con comparacion 1-to-1 entre la consulta actual y los proyectos referencia (8 campos: descripcion, aeronave, MSN, cliente, tipo trabajo, TCDS, objetivo operativo, año)
-  - Seccion colapsable **Definir documentacion** con las 44 plantillas de compliance agrupadas por categoria como checkboxes. Pre-seleccion automatica basada en documentos del proyecto referencia. El ingeniero valida y guarda la seleccion. Datos persistidos en `doa_consultas_entrantes.documentos_compliance` (jsonb). Plantillas servidas desde tabla `doa_plantillas_compliance`.
+  - Seccion colapsable **Definir documentacion** con las 44 plantillas de compliance agrupadas por categoria como checkboxes. Pre-seleccion automatica basada en documentos del proyecto referencia. El ingeniero valida y guarda la seleccion. Datos persistidos en `ams_consultas_entrantes.documentos_compliance` (jsonb). Plantillas servidas desde tabla `doa_plantillas_compliance`.
 - `app/api/consultas/[id]/send-client/route.ts` envia al webhook de n8n usando `url_formulario` ya existente
 - Guardado de documentos compliance via webhook n8n `DOA - Guardar Documentos Compliance` (ID: `FUmlV5uBEnacTVs2`, path: `doa-compliance-docs`). Variable: `DOA_COMPLIANCE_DOCS_WEBHOOK_URL`
-- La respuesta del formulario ya no la aloja la app: n8n sirve el HTML y guarda en `doa_respuestas_formularios`
+- La respuesta del formulario ya no la aloja la app: n8n sirve el HTML y guarda en `ams_respuestas_formularios`
 - El envio de formularios al cliente usa un unico webhook n8n (`doa-form-submit`) con campo `section` que determina el branching (client/aircraft)
 
 Limite actual:

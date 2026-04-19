@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     }))
 
     const { data, error } = await supabase
-      .from('doa_workflow_state_config')
+      .from('workflow_state_config')
       .upsert(payload, { onConflict: 'scope,state_code' })
       .select(
         'id, scope, state_code, label, short_label, description, color_token, sort_order, is_system, is_active, created_at, updated_at',
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       if (isMissingSchemaError(error)) {
         return jsonResponse(
           409,
-          'La tabla public.doa_workflow_state_config no está lista todavía. Aplica primero la migración de Supabase.',
+          'La tabla public.workflow_state_config no está lista todavía. Aplica primero la migración de Supabase.',
         )
       }
 

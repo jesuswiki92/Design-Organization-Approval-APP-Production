@@ -10,7 +10,7 @@ function jsonResponse(status: number, error: string) {
 }
 
 // TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
-// doa_consultas_entrantes no tiene columna de ownership (no owner_user_id). Hasta
+// consultas_entrantes no tiene columna de ownership (no owner_user_id). Hasta
 // que se introduzca una tabla de roles + columna owner, cualquier usuario
 // autenticado puede borrar cualquier consulta. Se emite un evento severity=warn
 // cuando el actor no es admin para que quede trazable en la auditoria.
@@ -50,7 +50,7 @@ export async function DELETE(
     }
 
     const deletion = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .delete()
       .eq('id', id)
       .select('id')
@@ -60,7 +60,7 @@ export async function DELETE(
       if (isMissingSchemaError(deletion.error)) {
         return jsonResponse(
           409,
-          'La tabla public.doa_consultas_entrantes no coincide con el esquema esperado. Aplica la migración pendiente antes de borrar consultas.',
+          'La tabla public.consultas_entrantes no coincide con el esquema esperado. Aplica la migración pendiente antes de borrar consultas.',
         )
       }
 

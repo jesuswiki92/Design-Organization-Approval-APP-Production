@@ -3,7 +3,7 @@
  * PAGINA SERVIDOR: TABLERO DE PROYECTOS (KANBAN POR ESTADO V2)
  * ============================================================================
  *
- * Lee `doa_proyectos` y, en un segundo query, `doa_project_deliverables`
+ * Lee `proyectos` y, en un segundo query, `project_deliverables`
  * para calcular total/completados por proyecto. Luego adjunta esos contadores
  * a cada Proyecto antes de pasarlos al client component.
  *
@@ -30,7 +30,7 @@ export default async function EngineeringPortfolioTableroPage() {
   const supabase = await createClient()
 
   const { data: projectsData, error: projectsError } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .select(
       'id, numero_proyecto, titulo, descripcion, aeronave, modelo, cliente_nombre, ' +
         'estado, estado_v2, fase_actual, estado_updated_at, ruta_proyecto, consulta_id, ' +
@@ -40,7 +40,7 @@ export default async function EngineeringPortfolioTableroPage() {
     .order('created_at', { ascending: false })
 
   if (projectsError) {
-    console.error('Tablero: error leyendo doa_proyectos:', projectsError)
+    console.error('Tablero: error leyendo proyectos:', projectsError)
   }
 
   const projects = (projectsData ?? []) as unknown as Proyecto[]
@@ -51,12 +51,12 @@ export default async function EngineeringPortfolioTableroPage() {
   const counts = new Map<string, { total: number; done: number }>()
   if (projects.length > 0) {
     const { data: deliverablesData, error: deliverablesError } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('proyecto_id, estado')
 
     if (deliverablesError) {
       console.error(
-        'Tablero: error leyendo doa_project_deliverables (continuamos sin contadores):',
+        'Tablero: error leyendo project_deliverables (continuamos sin contadores):',
         deliverablesError,
       )
     } else if (deliverablesData) {

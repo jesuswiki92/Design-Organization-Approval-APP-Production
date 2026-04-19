@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   if (auth instanceof Response) return auth
   const { user } = auth
 
-  // RLS de doa_proyectos / doa_project_deliverables solo permite INSERT al
+  // RLS de proyectos / project_deliverables solo permite INSERT al
   // service_role; el cliente ligado al usuario del cookie no puede escribir.
   // Usamos el admin client aqui despues de que requireUserApi ha validado la
   // sesion via cookie.

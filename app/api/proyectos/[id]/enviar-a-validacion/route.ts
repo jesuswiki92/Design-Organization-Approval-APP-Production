@@ -48,7 +48,7 @@ export async function POST(
     if (!id) return jsonResponse(400, { error: 'proyecto_id requerido.' })
 
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, estado_v2, fase_actual')
       .eq('id', id)
       .maybeSingle()
@@ -81,7 +81,7 @@ export async function POST(
 
     // Comprobar deliverables: todos deben estar completados o no_aplica.
     const { data: deliverables, error: delErr } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('id, titulo, estado')
       .eq('proyecto_id', id)
 
@@ -108,7 +108,7 @@ export async function POST(
     const nowIso = new Date().toISOString()
 
     const { data: updated, error: updateError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .update({
         estado_v2: PROJECT_EXECUTION_STATES.EN_VALIDACION,
         fase_actual: PROJECT_EXECUTION_PHASES.VALIDACION,

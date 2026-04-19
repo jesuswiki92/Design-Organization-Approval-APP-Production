@@ -9,14 +9,14 @@
  *   - DERECHA: respuestas enviadas (tarjetas verdes)
  *
  * Fuente de datos (prioridad):
- *   1. Tabla doa_emails — si el array emails[] tiene elementos, se usa como
+ *   1. Tabla emails — si el array emails[] tiene elementos, se usa como
  *      fuente principal. Los emails se separan por direccion ('entrante' / 'saliente')
  *      y se muestran en orden cronologico por fecha en cada columna.
  *   2. Campos legacy de la consulta (remitente, asunto, cuerpo_original, etc.) —
  *      se usan como fallback cuando el array emails[] esta vacio, para mantener
- *      compatibilidad con consultas antiguas que no tienen filas en doa_emails.
+ *      compatibilidad con consultas antiguas que no tienen filas en emails.
  *
- * Incluye una suscripcion Supabase Realtime para INSERTs en doa_emails
+ * Incluye una suscripcion Supabase Realtime para INSERTs en emails
  * filtrados por consulta_id, de modo que nuevos emails aparecen automaticamente.
  *
  * Debajo de los emails se muestra el compositor de nueva respuesta.
@@ -70,7 +70,7 @@ const EMAIL_ALLOWED_URI_REGEXP = /^(https?:|mailto:|tel:|cid:|#)/i
 
 /** Datos necesarios para renderizar la seccion de emails */
 type CenterColumnCollapsibleProps = {
-  /** Emails de la tabla doa_emails ordenados cronologicamente por fecha */
+  /** Emails de la tabla emails ordenados cronologicamente por fecha */
   emails?: DoaEmail[]
   query: {
     id: string
@@ -107,7 +107,7 @@ type ThreadEmail = {
   subject?: string
   /** Si true, el body es HTML y se renderiza como tal */
   isHtml?: boolean
-  /** Si true, se puede eliminar (solo emails de doa_emails, no legacy) */
+  /** Si true, se puede eliminar (solo emails de emails, no legacy) */
   isDeletable?: boolean
 }
 
@@ -350,7 +350,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'doa_emails',
+          table: 'emails',
           filter: `consulta_id=eq.${query.id}`,
         },
         (payload) => {
@@ -368,7 +368,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
         {
           event: 'DELETE',
           schema: 'public',
-          table: 'doa_emails',
+          table: 'emails',
           filter: `consulta_id=eq.${query.id}`,
         },
         (payload) => {
@@ -385,14 +385,14 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     }
   }, [query.id])
 
-  // --- Eliminar email de doa_emails (optimista) ---
+  // --- Eliminar email de emails (optimista) ---
   async function handleDeleteEmail(emailId: string) {
     // Eliminacion optimista
     setLiveEmails((prev) => prev.filter((e) => e.id !== emailId))
 
     const supabase = createClient()
     const { error } = await supabase
-      .from('doa_emails')
+      .from('emails')
       .delete()
       .eq('id', emailId)
 
@@ -400,7 +400,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       console.error('Error eliminando email:', error)
       // Revertir: volver a cargar desde server
       const { data } = await supabase
-        .from('doa_emails')
+        .from('emails')
         .select('*')
         .eq('consulta_id', query.id)
         .order('fecha', { ascending: true })
@@ -408,13 +408,13 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     }
   }
 
-  // --- Determinar si usamos emails de doa_emails o fallback a campos legacy ---
+  // --- Determinar si usamos emails de emails o fallback a campos legacy ---
   const useDoaEmails = liveEmails.length > 0
 
   // --- Construir listas de emails entrantes y salientes ---
   const { entrantes, salientes, totalEmails } = useMemo(() => {
     if (useDoaEmails) {
-      // Usar emails de doa_emails
+      // Usar emails de emails
       const inc: ThreadEmail[] = liveEmails
         .filter((e) => e.direccion === "entrante")
         .map((e) => ({

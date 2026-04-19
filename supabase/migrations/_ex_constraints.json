@@ -1,0 +1,1990 @@
+[
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "modelo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_18_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_19_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "tcds_code IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "tcds_code_short IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "fabricante IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "2200_94535_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "tipo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_aeronaves",
+  "constraint_name": "doa_aeronaves_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_ai_response_cache",
+  "constraint_name": "2200_99756_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "key IS NOT NULL"
+ },
+ {
+  "table_name": "doa_ai_response_cache",
+  "constraint_name": "2200_99756_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "value IS NOT NULL"
+ },
+ {
+  "table_name": "doa_ai_response_cache",
+  "constraint_name": "2200_99756_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "expires_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_ai_response_cache",
+  "constraint_name": "2200_99756_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_ai_response_cache",
+  "constraint_name": "doa_ai_response_cache_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "key",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_15_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "metadata IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_19_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "severity IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "event_name IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "event_category IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "event_source IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "2200_96276_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "outcome IS NOT NULL"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "doa_app_events_event_source_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(event_source = ANY (ARRAY['server'::text, 'client'::text]))"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "doa_app_events_outcome_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(outcome = ANY (ARRAY['attempt'::text, 'success'::text, 'failure'::text, 'info'::text]))"
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "doa_app_events_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_app_events",
+  "constraint_name": "doa_app_events_severity_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(severity = ANY (ARRAY['info'::text, 'warn'::text, 'error'::text, 'critical'::text]))"
+ },
+ {
+  "table_name": "doa_chunks",
+  "constraint_name": "2200_74508_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_chunks",
+  "constraint_name": "2200_74508_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "content IS NOT NULL"
+ },
+ {
+  "table_name": "doa_chunks",
+  "constraint_name": "2200_74508_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "metadata IS NOT NULL"
+ },
+ {
+  "table_name": "doa_chunks",
+  "constraint_name": "doa_chunks_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "cliente_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "nombre IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "email IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "es_principal IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "2200_71998_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "activo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_contactos",
+  "constraint_name": "contactos_cliente_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "2200_71988_11_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "2200_71988_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "2200_71988_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "nombre IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "2200_71988_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "pais IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "2200_71988_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "activo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "clientes_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "doa_clientes_datos_generales_codigo_cliente_key",
+  "constraint_type": "UNIQUE",
+  "cols": "codigo_cliente",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_clientes_datos_generales",
+  "constraint_name": "doa_clientes_datos_generales_tipo_cliente_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(tipo_cliente = ANY (ARRAY['aerolinea'::text, 'mro'::text, 'privado'::text, 'fabricante'::text, 'otro'::text]))"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_38_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_01 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_39_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_02 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_40_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_03 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_41_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_04 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_42_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_05 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_43_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_06 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_44_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_07 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_45_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_08 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_46_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_09 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_47_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_10 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_48_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_11 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_49_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_12 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_50_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_14 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_51_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_15 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_52_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_16 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_53_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_17 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_54_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_18 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_55_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_19 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_56_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_20 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_57_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_21 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_58_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_22 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_59_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_23 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_60_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_24 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_61_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_25 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_62_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_26 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_63_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_28 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_64_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_29 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_65_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_30 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_66_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_31 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_67_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_32 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_68_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_36 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_69_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_37 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_70_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_38 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_71_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_39 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_72_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_40 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_73_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_41 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_74_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_42 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_75_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_43 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_76_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_44 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_77_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_45 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_78_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_46 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_79_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g12_60 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_80_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g18_02 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_81_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "doc_g18_03 IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "2200_73235_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "estado IS NOT NULL"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "doa_consultas_entrantes_estado_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(estado = ANY (ARRAY['nuevo'::text, 'esperando_formulario'::text, 'formulario_recibido'::text, 'archivado'::text, 'entrada_recibida'::text, 'formulario_enviado'::text, 'definir_alcance'::text, 'esperando_respuesta_cliente'::text, 'alcance_definido'::text, 'oferta_en_revision'::text, 'oferta_enviada'::text, 'oferta_aceptada'::text, 'oferta_rechazada'::text, 'revision_final'::text, 'proyecto_abierto'::text]))"
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "doa_consultas_entrantes_numero_entrada_key",
+  "constraint_type": "UNIQUE",
+  "cols": "numero_entrada",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_consultas_entrantes",
+  "constraint_name": "doa_consultas_entrantes_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_conteo_horas_proyectos",
+  "constraint_name": "2200_94849_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_conteo_horas_proyectos",
+  "constraint_name": "2200_94849_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_conteo_horas_proyectos",
+  "constraint_name": "2200_94849_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "numero_proyecto IS NOT NULL"
+ },
+ {
+  "table_name": "doa_conteo_horas_proyectos",
+  "constraint_name": "2200_94849_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "inicio IS NOT NULL"
+ },
+ {
+  "table_name": "doa_conteo_horas_proyectos",
+  "constraint_name": "2200_94849_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_conteo_horas_proyectos",
+  "constraint_name": "doa_conteo_horas_proyectos_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_emails",
+  "constraint_name": "2200_94798_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_emails",
+  "constraint_name": "2200_94798_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "direccion IS NOT NULL"
+ },
+ {
+  "table_name": "doa_emails",
+  "constraint_name": "doa_emails_direccion_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(direccion = ANY (ARRAY['entrante'::text, 'saliente'::text]))"
+ },
+ {
+  "table_name": "doa_emails",
+  "constraint_name": "doa_emails_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "2200_96332_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "2200_96332_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "content IS NOT NULL"
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "2200_96332_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "embedding IS NOT NULL"
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "2200_96332_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "metadata IS NOT NULL"
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "2200_96332_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "2200_96332_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_part21_embeddings",
+  "constraint_name": "doa_part21_embeddings_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "code IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "name IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "category IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "sort_order IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "active IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "2200_94897_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "doa_plantillas_compliance_category_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(category = ANY (ARRAY['classification'::text, 'review'::text, 'approval'::text, 'analysis'::text, 'test'::text, 'manual'::text, 'management'::text]))"
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "doa_plantillas_compliance_code_key",
+  "constraint_type": "UNIQUE",
+  "cols": "code",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_plantillas_compliance",
+  "constraint_name": "doa_plantillas_compliance_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "2200_99670_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "2200_99670_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "2200_99670_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "closer_user_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "2200_99670_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "metrics IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "2200_99670_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "outcome IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "2200_99670_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "doa_project_closures_outcome_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(outcome = ANY (ARRAY['exitoso'::text, 'exitoso_con_reservas'::text, 'problematico'::text, 'abortado'::text]))"
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "doa_project_closures_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_closures",
+  "constraint_name": "doa_project_closures_proyecto_id_key",
+  "constraint_type": "UNIQUE",
+  "cols": "proyecto_id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "version_actual IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_11_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "orden IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_13_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_14_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "titulo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "2200_99518_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "estado IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "doa_project_deliverables_estado_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(estado = ANY (ARRAY['pendiente'::text, 'en_curso'::text, 'en_revision'::text, 'completado'::text, 'bloqueado'::text, 'no_aplica'::text]))"
+ },
+ {
+  "table_name": "doa_project_deliverables",
+  "constraint_name": "doa_project_deliverables_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_15_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "dispatch_status IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_19_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_20_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "sent_by_user_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "recipient_email IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "2200_99628_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "subject IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "doa_project_deliveries_client_confirmation_token_key",
+  "constraint_type": "UNIQUE",
+  "cols": "client_confirmation_token",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "doa_project_deliveries_dispatch_status_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(dispatch_status = ANY (ARRAY['pendiente'::text, 'enviando'::text, 'enviado'::text, 'fallo'::text, 'confirmado_cliente'::text]))"
+ },
+ {
+  "table_name": "doa_project_deliveries",
+  "constraint_name": "doa_project_deliveries_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_12_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_13_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "author_user_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "categoria IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "tipo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "titulo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "2200_99703_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "descripcion IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "doa_project_lessons_categoria_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(categoria = ANY (ARRAY['tecnica'::text, 'proceso'::text, 'cliente'::text, 'calidad'::text, 'planificacion'::text, 'herramientas'::text, 'regulatoria'::text, 'otro'::text]))"
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "doa_project_lessons_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_lessons",
+  "constraint_name": "doa_project_lessons_tipo_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(tipo = ANY (ARRAY['positiva'::text, 'negativa'::text, 'mejora'::text, 'riesgo'::text]))"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "signed_payload IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_11_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "signer_user_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "signer_role IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "signature_type IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "payload_hash IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "hmac_signature IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "2200_99595_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "hmac_key_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "doa_project_signatures_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "doa_project_signatures_signature_type_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(signature_type = ANY (ARRAY['validation_approval'::text, 'validation_return'::text, 'delivery_release'::text, 'closure'::text]))"
+ },
+ {
+  "table_name": "doa_project_signatures",
+  "constraint_name": "doa_project_signatures_signer_role_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(signer_role = ANY (ARRAY['doh'::text, 'dos'::text, 'staff'::text, 'manager'::text, 'cvc'::text]))"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "validator_user_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "role IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "decision IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "observaciones IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "2200_99568_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "doa_project_validations_decision_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(decision = ANY (ARRAY['aprobado'::text, 'devuelto'::text, 'pendiente'::text]))"
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "doa_project_validations_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_project_validations",
+  "constraint_name": "doa_project_validations_role_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(role = ANY (ARRAY['doh'::text, 'dos'::text, 'reviewer'::text]))"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "2200_94701_13_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "estado IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "2200_94701_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "2200_94701_25_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "2200_94701_26_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "2200_94701_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "numero_proyecto IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "2200_94701_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "titulo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "doa_proyectos_estado_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(estado = ANY (ARRAY['nuevo'::text, 'en_progreso'::text, 'revision'::text, 'aprobacion'::text, 'entregado'::text, 'cerrado'::text, 'archivado'::text]))"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "doa_proyectos_estado_v2_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(estado_v2 = ANY (ARRAY['proyecto_abierto'::text, 'planificacion'::text, 'en_ejecucion'::text, 'revision_interna'::text, 'listo_para_validacion'::text, 'en_validacion'::text, 'validado'::text, 'devuelto_a_ejecucion'::text, 'preparando_entrega'::text, 'entregado'::text, 'confirmacion_cliente'::text, 'cerrado'::text, 'archivado_proyecto'::text]))"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "doa_proyectos_fase_actual_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(fase_actual = ANY (ARRAY['ejecucion'::text, 'validacion'::text, 'entrega'::text, 'cierre'::text]))"
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "doa_proyectos_numero_proyecto_key",
+  "constraint_type": "UNIQUE",
+  "cols": "numero_proyecto",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_proyectos",
+  "constraint_name": "doa_proyectos_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "anio IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_11_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "ruta_origen IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_12_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "nombre_carpeta_origen IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "numero_proyecto IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "titulo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "2200_93336_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "doa_proyectos_historico_numero_proyecto_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(length(TRIM(BOTH FROM numero_proyecto)) > 0)"
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "doa_proyectos_historico_numero_proyecto_key",
+  "constraint_type": "UNIQUE",
+  "cols": "numero_proyecto",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "doa_proyectos_historico_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_proyectos_historico",
+  "constraint_name": "doa_proyectos_historico_titulo_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(length(TRIM(BOTH FROM titulo)) > 0)"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "2200_93391_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "2200_93391_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "2200_93391_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "documento_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "2200_93391_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "nombre_archivo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "2200_93391_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "formato IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "2200_93391_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "es_edicion_vigente IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_archivos",
+  "constraint_name": "doa_proyectos_historico_archivos_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_11_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "proyecto_historico_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "familia_documental IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "carpeta_origen IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "ruta_origen IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "total_archivos IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "2200_93360_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "formatos_disponibles IS NOT NULL"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "doa_proyectos_historico_documentos_carpeta_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(length(TRIM(BOTH FROM carpeta_origen)) > 0)"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "doa_proyectos_historico_documentos_familia_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(length(TRIM(BOTH FROM familia_documental)) > 0)"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "doa_proyectos_historico_documentos_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "doa_proyectos_historico_documentos_ruta_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(length(TRIM(BOTH FROM ruta_origen)) > 0)"
+ },
+ {
+  "table_name": "doa_proyectos_historico_documentos",
+  "constraint_name": "doa_proyectos_historico_documentos_total_archivos_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(total_archivos >= 0)"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "quotation_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "sort_order IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "description IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "quantity IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "unit_price IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "amount IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "2200_94984_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "category IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotation_items",
+  "constraint_name": "doa_quotation_items_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_17_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "estado IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_18_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_19_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "consulta_id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "quotation_number IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "version IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_5_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "quotation_date IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "2200_94958_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "validity_days IS NOT NULL"
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "doa_quotations_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_quotations",
+  "constraint_name": "doa_quotations_quotation_number_key",
+  "constraint_type": "UNIQUE",
+  "cols": "quotation_number",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_respuestas_formularios",
+  "constraint_name": "2200_92176_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_respuestas_formularios",
+  "constraint_name": "doa_respuestas_formularios_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "2200_94570_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "2200_94570_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "content IS NOT NULL"
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "2200_94570_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "embedding IS NOT NULL"
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "2200_94570_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "metadata IS NOT NULL"
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "2200_94570_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "2200_94570_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_tcds_embeddings",
+  "constraint_name": "doa_tcds_embeddings_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "2200_76866_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "2200_76866_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "nombre IS NOT NULL"
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "2200_76866_6_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "rol IS NOT NULL"
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "2200_76866_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "activo IS NOT NULL"
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "2200_76866_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "doa_usuarios_email_key",
+  "constraint_type": "UNIQUE",
+  "cols": "email",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "doa_usuarios_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_usuarios",
+  "constraint_name": "doa_usuarios_rol_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(rol = ANY (ARRAY['ingeniero'::text, 'cve'::text, 'approval'::text, 'marketing'::text, 'admin'::text]))"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_10_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "is_active IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_11_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "created_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_12_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "updated_at IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_1_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "id IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_2_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "scope IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_3_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "state_code IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_4_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "label IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_7_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "color_token IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_8_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "sort_order IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "2200_90929_9_not_null",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "is_system IS NOT NULL"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "doa_workflow_state_config_color_token_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(color_token = ANY (ARRAY['sky'::text, 'cyan'::text, 'teal'::text, 'emerald'::text, 'amber'::text, 'violet'::text, 'indigo'::text, 'slate'::text, 'blue'::text, 'green'::text, 'yellow'::text, 'rose'::text]))"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "doa_workflow_state_config_pkey",
+  "constraint_type": "PRIMARY KEY",
+  "cols": "id",
+  "check_clause": null
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "doa_workflow_state_config_scope_check",
+  "constraint_type": "CHECK",
+  "cols": null,
+  "check_clause": "(scope = ANY (ARRAY['incoming_queries'::text, 'quotation_board'::text, 'project_board'::text, 'project_execution'::text]))"
+ },
+ {
+  "table_name": "doa_workflow_state_config",
+  "constraint_name": "doa_workflow_state_config_scope_state_code_key",
+  "constraint_type": "UNIQUE",
+  "cols": "scope,state_code",
+  "check_clause": null
+ }
+]

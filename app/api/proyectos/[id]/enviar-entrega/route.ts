@@ -19,7 +19,7 @@
  * Flujo:
  *   1. Validar estado_v2 = 'preparando_entrega' y que la delivery pertenece al proyecto.
  *   2. Computar HMAC sobre el payload del release.
- *   3. INSERT firma `delivery_release` en doa_project_signatures.
+ *   3. INSERT firma `delivery_release` en project_signatures.
  *   4. UPDATE delivery con signature_id, campos del email, dispatch_status='enviando'.
  *   5. POST al webhook de n8n con el PDF URL firmado + confirmation_link.
  *        - 2xx -> dispatch_status='enviado', dispatched_at=now; transit -> entregado.
@@ -123,7 +123,7 @@ export async function POST(
 
     // 1. Cargar proyecto + delivery
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, titulo, estado_v2')
       .eq('id', id)
       .maybeSingle()
@@ -142,7 +142,7 @@ export async function POST(
     }
 
     const { data: dRow, error: dErr } = await supabase
-      .from('doa_project_deliveries')
+      .from('project_deliveries')
       .select('*')
       .eq('id', deliveryId)
       .eq('proyecto_id', id)
@@ -208,7 +208,7 @@ export async function POST(
     } as never
 
     const { data: sigRow, error: sigErr } = await admin
-      .from('doa_project_signatures' as never)
+      .from('project_signatures' as never)
       .insert(signatureInsertPayload)
       .select('id')
       .single()
@@ -261,7 +261,7 @@ export async function POST(
     } as never
 
     const { error: updDelErr } = await admin
-      .from('doa_project_deliveries' as never)
+      .from('project_deliveries' as never)
       .update(deliveryPreparePayload)
       .eq('id', delivery.id)
 
@@ -385,7 +385,7 @@ export async function POST(
 
     if (!n8nOk) {
       await admin
-        .from('doa_project_deliveries' as never)
+        .from('project_deliveries' as never)
         .update({ dispatch_status: 'fallo' } as never)
         .eq('id', delivery.id)
 
@@ -427,7 +427,7 @@ export async function POST(
     } as never
 
     const { data: updatedDelivery, error: finalDelErr } = await admin
-      .from('doa_project_deliveries' as never)
+      .from('project_deliveries' as never)
       .update(deliveryFinalPayload)
       .eq('id', delivery.id)
       .select('*')
@@ -447,7 +447,7 @@ export async function POST(
     } as never
 
     const { data: updatedProyecto, error: proyectoUpdateErr } = await admin
-      .from('doa_proyectos' as never)
+      .from('proyectos' as never)
       .update(proyectoUpdatePayload)
       .eq('id', id)
       .select('id, numero_proyecto, estado_v2, fase_actual, estado_updated_at')

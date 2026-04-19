@@ -23,11 +23,11 @@ export const TABLE_GROUPS = [
     name: 'Clientes',
     tables: [
       {
-        table: 'doa_clientes_datos_generales',
+        table: 'clientes_datos_generales',
         description: 'Datos generales de clientes, operadores y fabricantes.',
       },
       {
-        table: 'doa_clientes_contactos',
+        table: 'clientes_contactos',
         description: 'Contactos comerciales y tecnicos asociados a cada cliente.',
       },
     ],
@@ -36,11 +36,11 @@ export const TABLE_GROUPS = [
     name: 'Consultas y proyectos',
     tables: [
       {
-        table: 'doa_consultas_entrantes',
+        table: 'consultas_entrantes',
         description: 'Consultas comerciales entrantes procesadas desde email y formularios.',
       },
       {
-        table: 'doa_proyectos_generales',
+        table: 'proyectos',
         description: 'Registro maestro de proyectos y expedientes de ingenieria.',
       },
     ],
@@ -49,7 +49,7 @@ export const TABLE_GROUPS = [
     name: 'Usuarios',
     tables: [
       {
-        table: 'doa_usuarios',
+        table: 'usuarios',
         description: 'Usuarios internos, roles, titulaciones y estado de actividad.',
       },
     ],
@@ -83,7 +83,7 @@ export const TABLE_GROUPS = [
         description: 'Documentos vectorizados y metadatos usados por el sistema RAG.',
       },
       {
-        table: 'doa_chunks',
+        table: 'chunks',
         description: 'Chunks indexados del corpus DOA para recuperación semántica.',
       },
     ],
@@ -122,4 +122,4 @@ export const ALLOWED_TABLE_SET = new Set<string>(ALLOWED_TABLES)
 // Conjunto de tablas que pertenecen al sistema RAG (busqueda semantica con IA).
 // Estas tablas contienen documentos procesados y fragmentos de texto ("chunks")
 // que la inteligencia artificial usa para responder preguntas sobre certificacion.
-export const RAG_TABLE_SET = new Set<AllowedTable>(['DocumentacionCertificacion', 'documents', 'doa_chunks'])
+export const RAG_TABLE_SET = new Set<AllowedTable>(['DocumentacionCertificacion', 'documents', 'chunks'])

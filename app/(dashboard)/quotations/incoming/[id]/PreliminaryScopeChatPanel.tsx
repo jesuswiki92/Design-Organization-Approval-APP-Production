@@ -15,7 +15,7 @@ type ChatMessage = {
   role: ChatRole
 }
 
-const DEFAULT_MODEL = 'anthropic/claude-sonnet-4'
+const DEFAULT_MODEL = 'llm-default'
 
 function createId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

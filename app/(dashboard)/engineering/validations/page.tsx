@@ -1,7 +1,7 @@
 /**
  * Cola de proyectos pendientes de validacion (Sprint 2). Server component.
  *
- * Lista `doa_proyectos` con `estado_v2 = 'en_validacion'`. Para cada proyecto
+ * Lista `proyectos` con `estado_v2 = 'en_validacion'`. Para cada proyecto
  * cuenta deliverables totales y bloqueantes (estado distinto de completado/
  * no_aplica) y calcula tiempo en cola a partir de `estado_updated_at`.
  */
@@ -33,13 +33,13 @@ export default async function ValidationsQueuePage() {
   const supabase = await createClient()
 
   const { data: proyectosData, error: proyectosError } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .select('id, numero_proyecto, titulo, cliente_nombre, estado_updated_at')
     .eq('estado_v2', PROJECT_EXECUTION_STATES.EN_VALIDACION)
     .order('estado_updated_at', { ascending: true })
 
   if (proyectosError) {
-    console.error('ValidationsQueue: error leyendo doa_proyectos:', proyectosError)
+    console.error('ValidationsQueue: error leyendo proyectos:', proyectosError)
   }
 
   const proyectos = (proyectosData ?? []) as ProyectoRow[]
@@ -48,7 +48,7 @@ export default async function ValidationsQueuePage() {
   let deliverables: DeliverableRow[] = []
   if (ids.length > 0) {
     const { data, error } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('proyecto_id, estado')
       .in('proyecto_id', ids)
 

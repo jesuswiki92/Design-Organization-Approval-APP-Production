@@ -4,13 +4,13 @@
  * ============================================================================
  *
  * Acciones que se ejecutan en el servidor para operaciones de escritura
- * sobre la tabla doa_proyectos_historico.
+ * sobre la tabla proyectos_historico.
  *
  * NOTA: Las foreign keys tienen CASCADE DELETE configurado, por lo que
  * al eliminar un proyecto historico se eliminan automaticamente sus
- * documentos (doa_proyectos_historico_documentos) y archivos
- * (doa_proyectos_historico_archivos). NO se elimina el cliente
- * (doa_clientes_datos_generales).
+ * documentos (proyectos_historico_documentos) y archivos
+ * (proyectos_historico_archivos). NO se elimina el cliente
+ * (clientes_datos_generales).
  * ============================================================================
  */
 
@@ -25,7 +25,7 @@ import { logServerEvent } from '@/lib/observability/server'
  * No elimina datos del cliente.
  *
  * TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
- * doa_proyectos_historico no tiene owner_user_id; se registra un severity=warn
+ * proyectos_historico no tiene owner_user_id; se registra un severity=warn
  * cuando un non-admin ejecuta la accion (ownership real se delega a RLS).
  */
 export async function deleteProyectoHistorico(id: string) {
@@ -47,7 +47,7 @@ export async function deleteProyectoHistorico(id: string) {
   }
 
   const { error } = await supabase
-    .from('doa_proyectos_historico')
+    .from('proyectos_historico')
     .delete()
     .eq('id', id)
 

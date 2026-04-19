@@ -34,7 +34,7 @@ export async function POST(
 
     // Leer las referencias actuales
     const { data: current, error: readError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('proyectos_referencia')
       .eq('id', id)
       .single()
@@ -73,7 +73,7 @@ export async function POST(
     const updatedRefs = [...refs, proyectoId]
 
     const { error: updateError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .update({ proyectos_referencia: updatedRefs })
       .eq('id', id)
 
@@ -151,7 +151,7 @@ export async function DELETE(
     if (!proyectoId) return jsonResponse(400, { error: 'proyecto_id es obligatorio.' })
 
     const { data: current, error: readError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('proyectos_referencia')
       .eq('id', id)
       .single()
@@ -167,7 +167,7 @@ export async function DELETE(
     const updatedRefs = refs.filter((r) => r !== proyectoId)
 
     const { error: updateError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .update({ proyectos_referencia: updatedRefs })
       .eq('id', id)
 

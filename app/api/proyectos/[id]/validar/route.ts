@@ -54,8 +54,8 @@ function parseObservaciones(raw: unknown): ValidationObservation[] {
 /**
  * POST — Registra la decision de validacion (DOH/DOS/reviewer) sobre un
  * proyecto que esta en `en_validacion`. Crea una fila en
- * `doa_project_validations`, firma HMAC la decision e inserta una fila en
- * `doa_project_signatures`, y transiciona el proyecto a `validado` (aprobado)
+ * `project_validations`, firma HMAC la decision e inserta una fila en
+ * `project_signatures`, y transiciona el proyecto a `validado` (aprobado)
  * o `devuelto_a_ejecucion` (devuelto).
  *
  * Body:
@@ -120,7 +120,7 @@ export async function POST(
 
     // Cargar proyecto
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, estado_v2, fase_actual')
       .eq('id', id)
       .maybeSingle()
@@ -140,7 +140,7 @@ export async function POST(
 
     // Snapshot de deliverables
     const { data: delRows, error: delErr } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('id, titulo, estado, version_actual')
       .eq('proyecto_id', id)
       .order('orden', { ascending: true })
@@ -164,7 +164,7 @@ export async function POST(
 
     // 1) Insertar validacion
     const { data: validationRow, error: vErr } = await supabase
-      .from('doa_project_validations')
+      .from('project_validations')
       .insert({
         proyecto_id: id,
         validator_user_id: user.id,
@@ -245,7 +245,7 @@ export async function POST(
       decision === 'aprobado' ? 'validation_approval' : 'validation_return'
 
     const { data: sigRow, error: sigErr } = await supabase
-      .from('doa_project_signatures')
+      .from('project_signatures')
       .insert({
         proyecto_id: id,
         validation_id: validation.id,
@@ -297,7 +297,7 @@ export async function POST(
 
     const nowIso = new Date().toISOString()
     const { data: updated, error: updateError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .update({
         estado_v2: nextState,
         fase_actual: PROJECT_EXECUTION_PHASES.VALIDACION,

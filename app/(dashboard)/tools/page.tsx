@@ -41,11 +41,11 @@ export default function ToolsPage() {
       .catch(() => setRagConnected(false))
   }, [])
 
-  /** Verificar que la tabla doa_part21_embeddings tiene datos */
+  /** Verificar que la tabla part21_embeddings tiene datos */
   useEffect(() => {
     const supabase = createClient()
     supabase
-      .from('doa_part21_embeddings')
+      .from('part21_embeddings')
       .select('id', { count: 'exact', head: true })
       .then(({ count, error }) => {
         if (error || count === null) {

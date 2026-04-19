@@ -1,11 +1,9 @@
-import OpenAI from 'openai'
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { getLiteLLM, MODEL_LLM_DEFAULT } from '@/lib/llm/litellm-client'
 
 export const runtime = 'nodejs'
-
-const DEFAULT_OPENROUTER_MODEL = 'anthropic/claude-sonnet-4'
 
 const SYSTEM_PROMPT = `You are a DOA (Design Organisation Approval) engineering analyst under EASA Part 21J.
 
@@ -106,13 +104,9 @@ export async function POST(
       return jsonResponse(400, { error: 'referenceProjectId es requerido.' })
     }
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return jsonResponse(500, { error: 'OPENROUTER_API_KEY no esta configurada.' })
-    }
-
     // Fetch the consultation data
     const { data: consultation, error: consultationError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('*')
       .eq('id', id)
       .maybeSingle()
@@ -135,7 +129,7 @@ export async function POST(
 
     // Fetch the reference project summary
     const { data: project, error: projectError } = await supabase
-      .from('doa_proyectos_historico')
+      .from('proyectos_historico')
       .select('id, numero_proyecto, titulo, aeronave, summary_md')
       .eq('id', referenceProjectId)
       .maybeSingle()
@@ -158,29 +152,18 @@ export async function POST(
 
     const userMessage = `Analyze this NEW modification request. Use the reference project as precedent.\n\n${clientContext}\n\n---\n\n${referenceContext}`
 
-    // Send to AI
-    const modelName = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_MODEL
-    const openai = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
+    // Send to LiteLLM
+    const modelName = MODEL_LLM_DEFAULT
+    const openai = getLiteLLM()
 
-    const completion = await openai.chat.completions.create(
-      {
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userMessage },
-        ],
-        model: modelName,
-        temperature: 0.1,
-      },
-      {
-        headers: {
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-          'X-Title': 'DOA Preliminary Scope Analyzer',
-        },
-      },
-    )
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
+      model: modelName,
+      temperature: 0.1,
+    })
 
     const rawContent = completion.choices[0]?.message?.content ?? ''
 

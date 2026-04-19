@@ -1,11 +1,9 @@
-import OpenAI from 'openai'
 import { NextRequest } from 'next/server'
 import { requireUserApi } from '@/lib/auth/require-user'
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
+import { getLiteLLM, MODEL_LLM_DEFAULT, MODEL_EMBEDDING_CLOUD } from '@/lib/llm/litellm-client'
 
 export const runtime = 'nodejs'
-
-const DEFAULT_OPENROUTER_MODEL = 'anthropic/claude-sonnet-4'
 
 /**
  * Section keys must match the ones used by ModificationDescriptionPanel:
@@ -118,18 +116,15 @@ async function fetchRagContext(query: string): Promise<string> {
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!supabaseUrl || !serviceKey) return ''
 
-    const openaiKey = process.env.OPENAI_API_KEY
-    if (!openaiKey) return ''
-
-    const openai = new OpenAI({ apiKey: openaiKey })
+    const openai = getLiteLLM()
     const embResponse = await openai.embeddings.create({
-      model: 'text-embedding-3-large',
+      model: MODEL_EMBEDDING_CLOUD,
       input: query,
     })
     const queryEmbedding = embResponse.data[0].embedding
 
     const adminClient = createSupabaseAdmin(supabaseUrl, serviceKey)
-    const { data, error } = await adminClient.rpc('match_doa_part21', {
+    const { data, error } = await adminClient.rpc('match_ams_part21', {
       query_embedding: queryEmbedding,
       match_count: 8,
     })
@@ -218,13 +213,9 @@ export async function POST(
     }
     const referenceProjectId = typeof body.referenceProjectId === 'string' ? body.referenceProjectId.trim() : ''
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return jsonResponse(500, { error: 'OPENROUTER_API_KEY no configurada.' })
-    }
-
     // Fetch consultation from database
     const { data: consultation, error: consultError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('*')
       .eq('id', id)
       .maybeSingle()
@@ -242,7 +233,7 @@ export async function POST(
     let referenceContext = ''
     if (referenceProjectId) {
       const { data: project } = await supabase
-        .from('doa_proyectos_historico')
+        .from('proyectos_historico')
         .select('numero_proyecto, titulo, aeronave, summary_md')
         .eq('id', referenceProjectId)
         .maybeSingle()
@@ -266,28 +257,17 @@ export async function POST(
       'Return a JSON object with these exact keys and string values.',
     ].join('\n')
 
-    const modelName = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_MODEL
-    const openai = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
+    const modelName = MODEL_LLM_DEFAULT
+    const openai = getLiteLLM()
 
-    const completion = await openai.chat.completions.create(
-      {
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userMessage },
-        ],
-        model: modelName,
-        temperature: 0.2,
-      },
-      {
-        headers: {
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-          'X-Title': 'DOA Modification Description Generator',
-        },
-      },
-    )
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
+      model: modelName,
+      temperature: 0.2,
+    })
 
     const rawContent = completion.choices[0]?.message?.content ?? ''
 

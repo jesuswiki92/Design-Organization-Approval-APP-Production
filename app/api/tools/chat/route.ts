@@ -1,7 +1,7 @@
-import OpenAI from "openai";
 import { NextRequest } from "next/server";
 
 import { requireUserApi } from "@/lib/auth/require-user";
+import { getLiteLLM, MODEL_LLM_DEFAULT } from "@/lib/llm/litellm-client";
 
 export const runtime = "nodejs";
 
@@ -16,8 +16,6 @@ const SYSTEM_PROMPT = [
   "Do not claim to have searched company documents or databases.",
   "If the user asks for regulated or compliance-sensitive guidance, be explicit about assumptions and limits.",
 ].join(" ");
-
-const DEFAULT_OPENROUTER_MODEL = "anthropic/claude-sonnet-4";
 
 function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status });
@@ -65,39 +63,24 @@ export async function POST(request: NextRequest) {
       return jsonResponse(400, "Question is required.");
     }
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return jsonResponse(500, "OPENROUTER_API_KEY is not configured.");
-    }
-
-    const model = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_MODEL;
+    const model = MODEL_LLM_DEFAULT;
     const history = normalizeHistory(body.history);
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1",
-    });
+    const openai = getLiteLLM();
 
-    const completion = await openai.chat.completions.create(
-      {
-        model,
-        stream: true,
-        temperature: 0.3,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...history.map((item) => ({
-            role: item.role,
-            content: item.content,
-          })),
-          { role: "user", content: question },
-        ],
-      },
-      {
-        headers: {
-          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-          "X-Title": "DOA Operations Hub",
-        },
-      },
-    );
+    const completion = await openai.chat.completions.create({
+      model,
+      stream: true,
+      temperature: 0.3,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...history.map((item) => ({
+          role: item.role,
+          content: item.content,
+        })),
+        { role: "user", content: question },
+      ],
+    });
 
     const encoder = new TextEncoder();
 

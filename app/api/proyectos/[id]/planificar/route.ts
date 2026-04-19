@@ -27,15 +27,15 @@ type DeliverableInput = {
 
 /**
  * POST — Planifica un proyecto: lo mueve de `proyecto_abierto` -> `planificacion`
- * y siembra la tabla `doa_project_deliverables` con los deliverables derivados
+ * y siembra la tabla `project_deliverables` con los deliverables derivados
  * de la consulta origen (o los que venga en el body).
  *
  * Body opcional:
  *   { deliverables?: Array<{ template_code?, titulo, subpart_easa?, descripcion? }> }
  *
  * Si `body.deliverables` no se proporciona, se leen las columnas booleanas
- * `doc_g12_xx` de la consulta (doa_consultas_entrantes) y se convierten a
- * filas de deliverable usando el catalogo `doa_plantillas_compliance` para
+ * `doc_g12_xx` de la consulta (consultas_entrantes) y se convierten a
+ * filas de deliverable usando el catalogo `plantillas_compliance` para
  * resolver titulo/categoria.
  *
  * Respuestas:
@@ -67,7 +67,7 @@ export async function POST(
 
     // 1. Cargar proyecto y validar estado_v2
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, consulta_id, estado_v2, fase_actual')
       .eq('id', id)
       .maybeSingle()
@@ -125,7 +125,7 @@ export async function POST(
 
       const selectCols = ['id', ...ALL_DOC_COLUMNS].join(', ')
       const { data: consulta, error: consultaError } = await supabase
-        .from('doa_consultas_entrantes')
+        .from('consultas_entrantes')
         .select(selectCols)
         .eq('id', consultaId)
         .maybeSingle()
@@ -150,11 +150,11 @@ export async function POST(
         })
       }
 
-      // Resolver titulos desde doa_plantillas_compliance
+      // Resolver titulos desde plantillas_compliance
       // subpart_easa se agrego en migration 202604200010 — puede seguir siendo null
       // si el mapeo no se ha rellenado para esa plantilla.
       const { data: plantillas, error: plantillasError } = await supabase
-        .from('doa_plantillas_compliance')
+        .from('plantillas_compliance')
         .select('code, name, category, sort_order, subpart_easa')
         .in('code', selectedCodes)
 
@@ -217,7 +217,7 @@ export async function POST(
     }))
 
     const { data: inserted, error: insertError } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .insert(rowsToInsert)
       .select('*')
 
@@ -246,7 +246,7 @@ export async function POST(
 
     // 4. Transicionar el proyecto a planificacion
     const { data: updated, error: updateError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .update({
         estado_v2: PROJECT_EXECUTION_STATES.PLANIFICACION,
         fase_actual: PROJECT_EXECUTION_PHASES.EJECUCION,

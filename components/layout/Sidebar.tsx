@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Home, Plane, PlaneTakeoff, Wrench, Users, Database, ChevronLeft, ChevronRight, Shield, FileText, Clock3,
+  Home, Plane, PlaneTakeoff, Wrench, Users, Database, ChevronLeft, ChevronRight, FileText, Clock3,
   Settings,
 } from 'lucide-react'
 
+import { AmsMark } from '@/components/brand/AmsMark'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/store/uiStore'
 
@@ -45,12 +46,10 @@ export function Sidebar() {
           sidebarCollapsed && 'justify-center px-0',
         )}
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#2563eb,#38bdf8)] shadow-sm">
-          <Shield className="h-4 w-4 text-white" />
-        </div>
+        <AmsMark size={36} />
         {!sidebarCollapsed && (
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-950">DOA Hub</p>
+            <p className="truncate text-sm font-semibold text-[color:var(--ams-ink)]">AMS DOA Ops</p>
             <p className="truncate text-[10px] text-slate-500">Part 21J</p>
           </div>
         )}
@@ -66,13 +65,13 @@ export function Sidebar() {
               className={cn(
                 'group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm transition-colors',
                 active
-                  ? 'border border-sky-100 bg-white text-sky-700 shadow-[0_6px_18px_rgba(148,163,184,0.12)]'
+                  ? 'border border-sky-100 bg-white text-[color:var(--ams-navy)] shadow-[0_6px_18px_rgba(15,76,129,0.12)]'
                   : 'text-slate-500 hover:bg-white/80 hover:text-slate-950',
                 sidebarCollapsed && 'justify-center px-0',
               )}
               title={sidebarCollapsed ? label : undefined}
             >
-              <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-sky-700' : '')} />
+              <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-[color:var(--ams-navy)]' : '')} />
               {!sidebarCollapsed && <span>{label}</span>}
             </Link>
           )

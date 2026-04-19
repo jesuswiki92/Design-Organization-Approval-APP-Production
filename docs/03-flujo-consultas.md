@@ -9,9 +9,9 @@ El tablero de quotations muestra un pipeline unico de 10 columnas. Las consultas
 
 ### Fase de recepcion (estados 1-3, automaticos via n8n)
 
-1. **Entrada recibida** (`entrada_recibida`) — Ha llegado una consulta de un cliente por email. n8n procesa el email y crea la fila en `doa_consultas_entrantes`.
+1. **Entrada recibida** (`entrada_recibida`) — Ha llegado una consulta de un cliente por email. n8n procesa el email y crea la fila en `ams_consultas_entrantes`.
 2. **Formulario enviado. Esperando respuesta** (`formulario_enviado`) — El ingeniero envio el formulario al cliente. La app usa `url_formulario` y n8n envia el email.
-3. **Formulario general recibido. Revisar** (`formulario_recibido`) — El cliente completo el formulario. n8n guarda la respuesta en `doa_respuestas_formularios`.
+3. **Formulario general recibido. Revisar** (`formulario_recibido`) — El cliente completo el formulario. n8n guarda la respuesta en `ams_respuestas_formularios`.
 
 ### Fase de cotizacion (estados 4-10, cambio manual via dropdown)
 
@@ -30,7 +30,7 @@ Ademas existe **Archivado** (`archivado`) que oculta la consulta del tablero.
 El cambio de estado funciona via n8n (mismo patron que proyectos):
 1. El usuario selecciona un nuevo estado en el dropdown de la tarjeta o de la pagina de detalle
 2. `QuotationStateSelector` llama al webhook `doa-quotation-cambio-estado`
-3. n8n actualiza el campo `estado` en `doa_consultas_entrantes`
+3. n8n actualiza el campo `estado` en `ams_consultas_entrantes`
 4. La app refresca y lee el nuevo estado
 
 ## Diagrama del flujo
@@ -38,12 +38,12 @@ El cambio de estado funciona via n8n (mismo patron que proyectos):
 ```
 Cliente envia email
   -> n8n procesa el email
-  -> n8n crea fila en doa_consultas_entrantes + url_formulario -> Estado: ENTRADA_RECIBIDA
+  -> n8n crea fila en ams_consultas_entrantes + url_formulario -> Estado: ENTRADA_RECIBIDA
   -> Ingeniero revisa y envia respuesta con formulario
   -> App usa url_formulario existente
   -> n8n envia el email -> Estado: FORMULARIO_ENVIADO
   -> Cliente rellena el formulario
-  -> n8n recibe respuesta y la guarda en doa_respuestas_formularios -> Estado: FORMULARIO_RECIBIDO
+  -> n8n recibe respuesta y la guarda en ams_respuestas_formularios -> Estado: FORMULARIO_RECIBIDO
   -> Ingeniero cambia estado manualmente via dropdown en el tablero o detalle:
      -> DEFINIR_ALCANCE -> ALCANCE_DEFINIDO -> OFERTA_EN_REVISION
      -> OFERTA_ENVIADA -> OFERTA_ACEPTADA / OFERTA_RECHAZADA -> REVISION_FINAL
@@ -52,7 +52,7 @@ Cliente envia email
 
 ## Campo `url_formulario`
 
-La tabla `doa_consultas_entrantes` contiene el campo `url_formulario`. Almacena la URL publica del formulario que se envia al cliente. n8n la genera durante el alta de la consulta y la persiste directamente en la fila. La app la lee para componer el email de respuesta al cliente.
+La tabla `ams_consultas_entrantes` contiene el campo `url_formulario`. Almacena la URL publica del formulario que se envia al cliente. n8n la genera durante el alta de la consulta y la persiste directamente en la fila. La app la lee para componer el email de respuesta al cliente.
 
 ## Arquitectura de envio de formularios
 
@@ -83,7 +83,7 @@ POST doa-form-submit
   |
   +-- section=client  --> Crear Cliente + Crear Contacto --> Respond
   |
-  +-- section=aircraft --> Actualizar Consulta (doa_consultas_entrantes) --> Respond
+  +-- section=aircraft --> Actualizar Consulta (ams_consultas_entrantes) --> Respond
 ```
 
 ### Tecnica de envio: iframe oculto
@@ -92,7 +92,7 @@ Las paginas servidas por n8n tienen `origin: null`, lo que impide usar `fetch` o
 
 ### Subida de TCDS PDF
 
-El archivo PDF del TCDS se sube directamente a Supabase Storage desde el formulario del cliente (antes del submit). La URL resultante se almacena como `tcds_pdf_url` en `doa_consultas_entrantes` y viaja junto con el resto de datos del formulario en el POST de `section=aircraft`.
+El archivo PDF del TCDS se sube directamente a Supabase Storage desde el formulario del cliente (antes del submit). La URL resultante se almacena como `tcds_pdf_url` en `ams_consultas_entrantes` y viaja junto con el resto de datos del formulario en el POST de `section=aircraft`.
 
 ## Donde esta el codigo
 
@@ -123,7 +123,7 @@ El archivo PDF del TCDS se sube directamente a Supabase Storage desde el formula
 
 ## Estado actual de la UI
 
-- El tablero de quotations muestra un pipeline unificado de 10 columnas con datos reales de `doa_consultas_entrantes`
+- El tablero de quotations muestra un pipeline unificado de 10 columnas con datos reales de `ams_consultas_entrantes`
 - Las tarjetas tienen un dropdown para cambiar de estado que llama al webhook de n8n
 - La pagina de detalle (`/quotations/incoming/[id]`) tiene el mismo dropdown en la cabecera
 - La vista `Lista` usa los mismos estados del pipeline
@@ -132,7 +132,7 @@ El archivo PDF del TCDS se sube directamente a Supabase Storage desde el formula
 
 ## Detalle tecnico: mapeo de estados
 
-El campo `estado` en `doa_consultas_entrantes` puede contener tanto estados legacy (`nuevo`, `esperando_formulario`, `formulario_recibido`) como estados del pipeline (`definir_alcance`, `oferta_enviada`, etc.).
+El campo `estado` en `ams_consultas_entrantes` puede contener tanto estados legacy (`nuevo`, `esperando_formulario`, `formulario_recibido`) como estados del pipeline (`definir_alcance`, `oferta_enviada`, etc.).
 
 La funcion `mapIncomingStateToQuotationLane()` en `quotation-board-data.ts` decide en que columna va cada tarjeta:
 - Si el valor ya es un estado del pipeline → se usa tal cual

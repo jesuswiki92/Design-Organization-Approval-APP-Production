@@ -1,0 +1,77 @@
+# =============================================================================
+# .dockerignore — doa-ops-hub (Next.js 16)
+# -----------------------------------------------------------------------------
+# Excluye de la build context todo lo que no necesita `next build`. Reduce
+# tiempo de transfer al daemon y evita fugas de secretos o artefactos locales.
+# =============================================================================
+
+# --- VCS ---------------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+
+# --- Dependencies (se instalan dentro de la imagen) --------------------------
+node_modules
+**/node_modules
+
+# --- Next.js build outputs (se regeneran en la build) ------------------------
+.next
+out
+.turbo
+.swc
+next-env.d.ts.bak
+
+# --- Environments (NUNCA meter secretos en la imagen) ------------------------
+.env
+.env.*
+!.env.example
+
+# --- Logs / temporales -------------------------------------------------------
+*.log
+tmp-dev-err.log
+tmp-dev-out.log
+tmp
+tmp/**
+
+# --- Dev tools / IDE ---------------------------------------------------------
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# --- Tests / coverage --------------------------------------------------------
+coverage
+.nyc_output
+**/*.test.*
+**/*.spec.*
+__snapshots__
+__tests__
+
+# --- Docs / runbooks que no aportan a la imagen ------------------------------
+README*.md
+CHANGELOG.md
+CLAUDE.md
+docs
+openspec
+Formularios
+"01. Soporte_App"
+
+# --- Backends separados (el runner sólo es el frontend Next.js) --------------
+# rag-backend es un proceso Python independiente — no entra en la imagen Next.
+rag-backend
+
+# --- Deploy / infra (no debe estar dentro del context de la app) -------------
+# La carpeta "03. Deploy" vive fuera del app root, pero si alguien accidental-
+# mente la copia dentro, la ignoramos explícitamente.
+03.*Deploy
+deploy.sh
+docker-compose.yml
+Dockerfile
+
+# --- Salidas de scripts / procesado ------------------------------------------
+scripts/output
+scripts/*.log
+tools/output
+
+# --- Build cache de lightningcss / swc --------------------------------------
+.cache

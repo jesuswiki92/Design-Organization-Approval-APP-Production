@@ -18,13 +18,13 @@
  * ============================================================================
  */
 
-// ─── doa_clientes_* tables ────────────────────────────────────────────────────
+// ─── ams_clientes_* tables ────────────────────────────────────────────────────
 
 /**
  * CLIENTE
  * Representa una empresa u organizacion que nos contrata servicios de ingenieria.
  * Pueden ser aerolineas, talleres de mantenimiento (MRO), operadores privados, etc.
- * Corresponde a la tabla "doa_clientes" en la base de datos.
+ * Corresponde a la tabla "ams_clientes" en la base de datos.
  */
 export interface Cliente {
   // Identificador unico del cliente (generado automaticamente)
@@ -65,7 +65,7 @@ export interface Cliente {
  * Representa a una persona concreta dentro de una empresa cliente.
  * Cada cliente puede tener varios contactos (ej: el ingeniero jefe,
  * el responsable de compras, etc.).
- * Corresponde a la tabla "doa_clientes_contactos" en la base de datos.
+ * Corresponde a la tabla "clientes_contactos" en la base de datos.
  */
 export interface ClienteContacto {
   // Identificador unico del contacto
@@ -101,14 +101,14 @@ export interface ClienteWithContactos extends Cliente {
   contactos: ClienteContacto[]
 }
 
-// ─── doa_aeronaves_modelos ────────────────────────────────────────────────────
+// ─── ams_aeronaves_modelos ────────────────────────────────────────────────────
 
 /**
  * MODELO DE AERONAVE
  * Representa un modelo concreto de avion sobre el que podemos trabajar.
  * Se usa para asociar proyectos de ingenieria con el tipo de avion afectado.
  * Ejemplo: fabricante "Airbus", familia "A320", modelo "A320-214".
- * Corresponde a la tabla "doa_aeronaves_modelos" en la base de datos.
+ * Corresponde a la tabla "ams_aeronaves_modelos" en la base de datos.
  */
 export interface AeronaveModelo {
   // Identificador unico del modelo
@@ -125,7 +125,7 @@ export interface AeronaveModelo {
 
 /**
  * FILA DE AERONAVE
- * Representa un registro de la tabla "doa_aeronaves".
+ * Representa un registro de la tabla "aeronaves".
  */
 export interface AeronaveRow {
   id: string
@@ -147,14 +147,14 @@ export interface AeronaveRow {
   created_at: string
 }
 
-// ─── doa_usuarios ─────────────────────────────────────────────────────────────
+// ─── usuarios ─────────────────────────────────────────────────────────────
 
 /**
  * USUARIO DE LA DOA
  * Representa a un miembro del equipo de la organizacion de diseno (DOA).
  * Estos son los ingenieros y responsables internos que trabajan en los proyectos.
  * Se asignan como propietarios, revisores o aprobadores de proyectos.
- * Corresponde a la tabla "doa_usuarios" en la base de datos.
+ * Corresponde a la tabla "usuarios" en la base de datos.
  */
 export interface UsuarioDoa {
   // Identificador unico del usuario
@@ -240,7 +240,7 @@ export type EstadoProyecto = EstadoProyectoWorkflow
  */
 export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLegacy
 
-// ─── doa_proyectos ───────────────────────────────────────────────────────────
+// ─── proyectos ───────────────────────────────────────────────────────────
 
 /**
  * PROYECTO DE INGENIERIA (ACTIVO)
@@ -251,9 +251,9 @@ export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLe
  * Cada proyecto pasa por las fases del workflow (ver EstadoProyectoWorkflow)
  * y tiene asignados responsables internos (owner, checker, approval, CVE).
  *
- * Corresponde a la tabla "doa_proyectos" en la base de datos.
+ * Corresponde a la tabla "proyectos" en la base de datos.
  * Los campos coinciden 1:1 con las columnas de la migracion
- * 202604051200_create_doa_proyectos.sql.
+ * 202604051200_create_proyectos.sql.
  */
 export interface Proyecto {
   // Identificador unico del proyecto
@@ -270,7 +270,7 @@ export interface Proyecto {
   consulta_id: string | null
   // Nombre del cliente (texto libre, denormalizado)
   cliente_nombre: string | null
-  // Referencia al cliente en doa_clientes (puede estar vacia)
+  // Referencia al cliente en ams_clientes (puede estar vacia)
   client_id: string | null
 
   // --- Aeronave ---
@@ -347,7 +347,7 @@ export interface ProyectoConRelaciones extends Proyecto {
   estado_historial?: ProyectoEstadoHistorial[]
 }
 
-// ─── doa_proyectos_documentos ─────────────────────────────────────────────────
+// ─── ams_proyectos_documentos ─────────────────────────────────────────────────
 
 /**
  * DOCUMENTO DE PROYECTO
@@ -355,13 +355,13 @@ export interface ProyectoConRelaciones extends Proyecto {
  * Ejemplos: planos, informes de analisis, instrucciones de instalacion,
  * certificados, etc. Cada documento tiene un control de versiones y
  * un flujo de aprobacion propio.
- * Corresponde a la tabla "doa_proyectos_documentos" en la base de datos.
+ * Corresponde a la tabla "ams_proyectos_documentos" en la base de datos.
  */
-// ─── doa_project_deliverables ─────────────────────────────────────────────────
+// ─── project_deliverables ─────────────────────────────────────────────────
 
 /**
  * DELIVERABLE DE PROYECTO (Sprint 1+)
- * Fila de la tabla `doa_project_deliverables`. Cada fila representa un
+ * Fila de la tabla `project_deliverables`. Cada fila representa un
  * documento/trabajo concreto que el proyecto debe entregar (por ejemplo, cada
  * plantilla G12-xx seleccionada durante la consulta se convierte en un
  * deliverable). Se puebla automaticamente al planificar el proyecto
@@ -393,7 +393,7 @@ export interface ProjectDeliverable {
   updated_at: string
 }
 
-// ─── doa_project_validations (Sprint 2) ─────────────────────────────────────
+// ─── project_validations (Sprint 2) ─────────────────────────────────────
 
 /** Capacidad en la que un usuario toma una decision de validacion. */
 export type ValidationRole = 'doh' | 'dos' | 'reviewer'
@@ -406,7 +406,7 @@ export type ObservationSeverity = 'info' | 'warn' | 'blocker'
 
 /**
  * Observacion estructurada dentro del array `observaciones` de
- * `doa_project_validations`. `deliverable_id` es opcional; si se omite, la
+ * `project_validations`. `deliverable_id` es opcional; si se omite, la
  * observacion aplica al proyecto completo.
  */
 export interface ValidationObservation {
@@ -417,7 +417,7 @@ export interface ValidationObservation {
 
 /**
  * Snapshot mínimo de cada deliverable en el momento de la decision, guardado
- * dentro de `doa_project_validations.deliverables_snapshot`.
+ * dentro de `project_validations.deliverables_snapshot`.
  */
 export interface DeliverableSnapshot {
   id: string
@@ -426,7 +426,7 @@ export interface DeliverableSnapshot {
   version_actual: number
 }
 
-/** Fila de la tabla `doa_project_validations`. */
+/** Fila de la tabla `project_validations`. */
 export interface ProjectValidation {
   id: string
   proyecto_id: string
@@ -439,7 +439,7 @@ export interface ProjectValidation {
   created_at: string
 }
 
-// ─── doa_project_signatures (Sprint 2) ──────────────────────────────────────
+// ─── project_signatures (Sprint 2) ──────────────────────────────────────
 
 /** Rol en la firma (mas amplio que ValidationRole). */
 export type SignerRole = 'doh' | 'dos' | 'staff' | 'manager' | 'cvc'
@@ -451,7 +451,7 @@ export type SignatureType =
   | 'delivery_release'
   | 'closure'
 
-/** Fila de la tabla `doa_project_signatures`. */
+/** Fila de la tabla `project_signatures`. */
 export interface ProjectSignature {
   id: string
   proyecto_id: string
@@ -466,7 +466,7 @@ export interface ProjectSignature {
   created_at: string
 }
 
-// ─── doa_project_deliveries (Sprint 3) ──────────────────────────────────────
+// ─── project_deliveries (Sprint 3) ──────────────────────────────────────
 
 /** Estado del dispatch de una entrega (Statement of Compliance). */
 export type DeliveryDispatchStatus =
@@ -476,7 +476,7 @@ export type DeliveryDispatchStatus =
   | 'fallo'
   | 'confirmado_cliente'
 
-/** Fila de la tabla `doa_project_deliveries`. */
+/** Fila de la tabla `project_deliveries`. */
 export interface ProjectDelivery {
   id: string
   proyecto_id: string
@@ -582,7 +582,7 @@ export interface ProyectoDocumento {
   created_at: string
 }
 
-// ─── doa_proyectos_hitos ──────────────────────────────────────────────────────
+// ─── ams_proyectos_hitos ──────────────────────────────────────────────────────
 
 /**
  * HITO DE PROYECTO
@@ -590,7 +590,7 @@ export interface ProyectoDocumento {
  * Los hitos son como "checkpoints" que marcan momentos criticos del proyecto
  * (ej: "Entrega del primer borrador", "Aprobacion del CVE", "Envio a EASA").
  * Sirven para hacer seguimiento del progreso general del proyecto.
- * Corresponde a la tabla "doa_proyectos_hitos" en la base de datos.
+ * Corresponde a la tabla "ams_proyectos_hitos" en la base de datos.
  */
 export interface ProyectoHito {
   // Identificador unico del hito
@@ -611,7 +611,7 @@ export interface ProyectoHito {
   created_at: string
 }
 
-// ─── doa_proyectos_tareas ─────────────────────────────────────────────────────
+// ─── ams_proyectos_tareas ─────────────────────────────────────────────────────
 
 /**
  * TAREA DE PROYECTO
@@ -620,7 +620,7 @@ export interface ProyectoHito {
  * las actividades reales que alguien debe realizar (ej: "Redactar informe
  * de cumplimiento", "Revisar planos electricos", "Preparar documentacion STC").
  * Cada tarea se asigna a un responsable y tiene control de horas.
- * Corresponde a la tabla "doa_proyectos_tareas" en la base de datos.
+ * Corresponde a la tabla "ams_proyectos_tareas" en la base de datos.
  */
 export interface ProyectoTarea {
   // Identificador unico de la tarea
@@ -665,7 +665,7 @@ export interface ProyectoTarea {
  * y pueden evolucionar hasta convertirse en un proyecto de ingenieria.
  *
  * Los estados posibles se definen en lib/workflow-states.ts (CONSULTA_ESTADOS).
- * Corresponde a la tabla "doa_consultas_entrantes" en la base de datos.
+ * Corresponde a la tabla "consultas_entrantes" en la base de datos.
  */
 export interface ConsultaEntrante {
   // Identificador unico de la consulta
@@ -775,7 +775,7 @@ export type WorkflowStateColorToken =
  * Define las propiedades de cada columna/estado que aparece en los tableros
  * tipo Kanban de la app. Esto permite personalizar los estados sin tocar codigo:
  * se pueden crear nuevos estados, cambiar colores, reordenar, etc.
- * Corresponde a la tabla "doa_workflow_state_config" en la base de datos.
+ * Corresponde a la tabla "workflow_state_config" en la base de datos.
  */
 export interface WorkflowStateConfigRow {
   // Identificador unico del estado (generado automaticamente)
@@ -810,7 +810,7 @@ export interface WorkflowStateConfigRow {
  * "Revision interna"), se guarda un registro aqui. Esto permite ver
  * la trazabilidad completa: quien cambio el estado, cuando y por que.
  * Es importante para auditorias y para entender la historia de un proyecto.
- * Corresponde a la tabla "doa_proyectos_estado_historial" en la base de datos.
+ * Corresponde a la tabla "ams_proyectos_estado_historial" en la base de datos.
  */
 export interface ProyectoEstadoHistorial {
   // Identificador unico del registro de historial
@@ -829,7 +829,7 @@ export interface ProyectoEstadoHistorial {
   changed_by: string | null
 }
 
-// ─── doa_conteo_horas_proyectos ─────────────────────────────────────────────
+// ─── conteo_horas_proyectos ─────────────────────────────────────────────
 
 /**
  * CONTEO DE HORAS DE PROYECTO (PUNCH-CLOCK)
@@ -837,7 +837,7 @@ export interface ProyectoEstadoHistorial {
  * Sesion de trabajo en un proyecto. Una fila = un periodo inicio-fin.
  * Al pulsar "Iniciar" se crea la fila con inicio. Al pulsar "Parar" se
  * actualiza la misma fila con fin y duracion_minutos calculada.
- * Corresponde a la tabla "doa_conteo_horas_proyectos" en la base de datos.
+ * Corresponde a la tabla "conteo_horas_proyectos" en la base de datos.
  */
 export interface ConteoHorasProyecto {
   id: string
@@ -864,7 +864,7 @@ export interface MdlDocumento {
   estado: string // "Active" | "Superseded"
 }
 
-/** Estructura del campo JSONB mdl_contenido en doa_proyectos_historico */
+/** Estructura del campo JSONB mdl_contenido en proyectos_historico */
 export interface MdlContenido {
   entregables: MdlDocumento[]
   no_entregables: MdlDocumento[]
@@ -872,7 +872,7 @@ export interface MdlContenido {
 
 /**
  * FILA DE PROYECTO HISTORICO
- * Representa un registro de la tabla "doa_proyectos_historico".
+ * Representa un registro de la tabla "proyectos_historico".
  */
 export interface ProyectoHistoricoRow {
   id: string
@@ -892,7 +892,7 @@ export interface ProyectoHistoricoRow {
   updated_at: string
 }
 
-// ─── doa_emails ──────────────────────────────────────────────────────────────
+// ─── emails ──────────────────────────────────────────────────────────────
 
 /**
  * EMAIL ASOCIADO A UNA CONSULTA
@@ -900,7 +900,7 @@ export interface ProyectoHistoricoRow {
  * Los emails son registros INMUTABLES: una vez insertados, NUNCA se actualizan.
  * El hilo se mantiene via consulta_id (agrupa todos los emails de una consulta)
  * y orden cronologico por fecha.
- * Corresponde a la tabla "doa_emails" en la base de datos.
+ * Corresponde a la tabla "emails" en la base de datos.
  */
 export interface DoaEmail {
   // Identificador unico del email
@@ -927,7 +927,7 @@ export interface DoaEmail {
   created_at: string
 }
 
-// ─── doa_project_closures (Sprint 4) ────────────────────────────────────────
+// ─── project_closures (Sprint 4) ────────────────────────────────────────
 
 /** Outcome del cierre de un proyecto. */
 export type ClosureOutcome =
@@ -955,7 +955,7 @@ export interface ClosureMetricsSnapshot {
   [key: string]: unknown
 }
 
-/** Fila de la tabla `doa_project_closures`. */
+/** Fila de la tabla `project_closures`. */
 export interface ProjectClosure {
   id: string
   proyecto_id: string
@@ -967,7 +967,7 @@ export interface ProjectClosure {
   created_at: string
 }
 
-// ─── doa_project_lessons (Sprint 4) ─────────────────────────────────────────
+// ─── project_lessons (Sprint 4) ─────────────────────────────────────────
 
 /** Categoria de una leccion aprendida. */
 export type LessonCategoria =
@@ -983,7 +983,7 @@ export type LessonCategoria =
 /** Tipo de leccion aprendida. */
 export type LessonTipo = 'positiva' | 'negativa' | 'mejora' | 'riesgo'
 
-/** Fila de la tabla `doa_project_lessons`. */
+/** Fila de la tabla `project_lessons`. */
 export interface ProjectLesson {
   id: string
   proyecto_id: string
@@ -1011,9 +1011,9 @@ export interface LessonInput {
   tags?: string[] | null
 }
 
-// ─── doa_project_metrics_mv (Sprint 4) ──────────────────────────────────────
+// ─── project_metrics_mv (Sprint 4) ──────────────────────────────────────
 
-/** Fila de la materialized view doa_project_metrics_mv. */
+/** Fila de la materialized view project_metrics_mv. */
 export interface ProjectMetricsRow {
   proyecto_id: string
   titulo: string
@@ -1042,7 +1042,7 @@ export interface ProjectMetricsRow {
   lecciones_count: number
 }
 
-// ─── doa_proyectos_historico_archivos ────────────────────────────────────────
+// ─── proyectos_historico_archivos ────────────────────────────────────────
 
 /** Archivo individual dentro de una familia documental de un proyecto historico */
 export interface ProyectoHistoricoArchivo {
@@ -1056,4 +1056,43 @@ export interface ProyectoHistoricoArchivo {
   ruta_relativa: string | null
   contenido_md: string | null
   created_at: string
+}
+
+// ─── proyectos_embeddings (Sprint 4 — precedentes RAG) ─────────────────
+
+/**
+ * FILA DE EMBEDDING DE PROYECTO
+ * Representa un registro en la tabla `proyectos_embeddings`, que almacena
+ * vectores (pgvector dim=3072) de resumenes de proyectos cerrados para
+ * busqueda de precedentes via el RPC `match_proyectos_precedentes`.
+ *
+ * El campo `embedding` es un vector serializado como `number[]` en
+ * supabase-js (pgvector acepta JSON arrays en insert).
+ *
+ * Corresponde a la tabla "proyectos_embeddings" (migracion
+ * 20260418000010_proyectos_embeddings.sql).
+ */
+export interface ProyectoEmbeddingRow {
+  id: number
+  project_number: string
+  project_title: string | null
+  chunk_idx: number
+  chunk_text: string
+  embedding: number[]
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+/**
+ * INPUT PARA UPSERT DE EMBEDDING
+ * Forma mínima requerida para insertar/actualizar una fila de
+ * `proyectos_embeddings`. `id` y `created_at` los genera Postgres.
+ */
+export interface ProyectoEmbeddingInsert {
+  project_number: string
+  project_title?: string | null
+  chunk_idx: number
+  chunk_text: string
+  embedding: number[]
+  metadata?: Record<string, unknown>
 }

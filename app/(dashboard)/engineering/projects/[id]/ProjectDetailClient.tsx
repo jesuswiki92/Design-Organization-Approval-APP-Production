@@ -11,7 +11,7 @@
  *   - Resumen de horas (total, sesiones, media)
  *   - Tabla de entradas de horas con edicion inline y borrado
  *   - Boton de temporizador (ProjectTimerButton)
- *   - Realtime: INSERT, UPDATE, DELETE en doa_conteo_horas_proyectos
+ *   - Realtime: INSERT, UPDATE, DELETE en conteo_horas_proyectos
  * ============================================================================
  */
 
@@ -172,7 +172,7 @@ export function ProjectDetailClient({
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
+          table: 'conteo_horas_proyectos',
           filter: `proyecto_id=eq.${project.id}`,
         },
         (payload) => {
@@ -190,7 +190,7 @@ export function ProjectDetailClient({
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
+          table: 'conteo_horas_proyectos',
           filter: `proyecto_id=eq.${project.id}`,
         },
         (payload) => {
@@ -205,7 +205,7 @@ export function ProjectDetailClient({
         {
           event: 'DELETE',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
+          table: 'conteo_horas_proyectos',
           filter: `proyecto_id=eq.${project.id}`,
         },
         (payload) => {
@@ -285,7 +285,7 @@ export function ProjectDetailClient({
       }
 
       const { error } = await supabase
-        .from('doa_conteo_horas_proyectos')
+        .from('conteo_horas_proyectos')
         .update(updatePayload)
         .eq('id', editingId)
 
@@ -342,7 +342,7 @@ export function ProjectDetailClient({
     try {
       const supabase = createClient()
       const { error } = await supabase
-        .from('doa_conteo_horas_proyectos')
+        .from('conteo_horas_proyectos')
         .delete()
         .eq('id', entryId)
 

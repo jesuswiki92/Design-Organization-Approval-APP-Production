@@ -5,7 +5,7 @@
  *
  * Two-tier cache for expensive AI endpoint responses:
  *   - In-memory `Map` with TTL (L1, per-process, lost on restart).
- *   - Supabase table `doa_ai_response_cache` for cross-process persistence (L2).
+ *   - Supabase table `ai_response_cache` for cross-process persistence (L2).
  *
  * Keys are caller-chosen strings. Values are opaque strings (typically JSON).
  *
@@ -28,7 +28,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const CACHE_TABLE = 'doa_ai_response_cache'
+const CACHE_TABLE = 'ai_response_cache'
 
 type MemEntry = {
   value: string

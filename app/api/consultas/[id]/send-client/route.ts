@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { requireUserApi } from '@/lib/auth/require-user'
 import { logServerEvent } from '@/lib/observability/server'
 import { buildRequestContext } from '@/lib/observability/shared'
+import { syncConsultaEmails } from '@/lib/quotations/sync-consulta-emails'
 
 export const runtime = 'nodejs'
 
@@ -117,7 +118,7 @@ export async function POST(
       persistedUrl ||
       (await (async () => {
         const consultaResult = await supabase
-          .from('doa_consultas_entrantes')
+          .from('consultas_entrantes')
           .select('url_formulario')
           .eq('id', id)
           .maybeSingle()
@@ -213,12 +214,64 @@ export async function POST(
 
     // Guardar la respuesta enviada en Supabase para mostrarla en el hilo de emails
     const { error: replyError } = await supabase
-      .from('doa_consultas_entrantes')
-      .update({ reply_body: message, reply_sent_at: now })
+      .from('consultas_entrantes')
+      .update({
+        reply_body: message,
+        reply_sent_at: now,
+        correo_cliente_enviado_at: now,
+        correo_cliente_enviado_by: user.id,
+      })
       .eq('id', id)
 
     if (replyError) {
       console.error('Error guardando reply_body en Supabase:', replyError)
+    }
+
+    // Persistir el correo saliente en emails para que aparezca en el hilo
+    // y se materialice como archivo .eml en la carpeta "1. Email".
+    // Buscamos el ultimo correo entrante de la consulta para enlazar el hilo
+    // (en_respuesta_a -> id del correo entrante previo).
+    const { data: lastIncomingEmail } = await supabase
+      .from('emails')
+      .select('id, mensaje_id')
+      .eq('consulta_id', id)
+      .eq('direccion', 'entrante')
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const outgoingMensajeId = `<${id}-${Date.now()}@doa-ops-hub>`
+
+    const { error: insertEmailError } = await supabase
+      .from('emails')
+      .insert({
+        consulta_id: id,
+        direccion: 'saliente',
+        de: process.env.DOA_SENDER_EMAIL ?? null,
+        para: to,
+        asunto: subject,
+        cuerpo: finalMessage,
+        fecha: now,
+        mensaje_id: outgoingMensajeId,
+        en_respuesta_a: lastIncomingEmail?.id ?? null,
+      })
+
+    if (insertEmailError) {
+      console.error('Error insertando correo saliente en emails:', insertEmailError)
+    }
+
+    // Sincronizar .eml a la carpeta local (fire-and-forget). Solo si tenemos
+    // numero_entrada disponible; no bloqueamos la respuesta si falla.
+    const { data: consultaRow } = await supabase
+      .from('consultas_entrantes')
+      .select('numero_entrada')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (consultaRow?.numero_entrada) {
+      syncConsultaEmails(consultaRow.numero_entrada, id).catch((err) =>
+        console.error('send-client: syncConsultaEmails failed:', err),
+      )
     }
 
     let responsePayload: unknown = null

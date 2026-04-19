@@ -26,7 +26,7 @@ export async function GET(
   if (!id) return jsonResponse(400, { error: 'proyecto_id requerido.' })
 
   const { data: closure, error: closureErr } = await supabase
-    .from('doa_project_closures')
+    .from('project_closures')
     .select('*')
     .eq('proyecto_id', id)
     .maybeSingle()
@@ -37,7 +37,7 @@ export async function GET(
   if (closure && (closure as { signature_id?: string | null }).signature_id) {
     const sigId = (closure as { signature_id: string }).signature_id
     const { data: sigRow } = await supabase
-      .from('doa_project_signatures')
+      .from('project_signatures')
       .select('id, signature_type, signer_role, signer_user_id, payload_hash, hmac_key_id, created_at')
       .eq('id', sigId)
       .maybeSingle()
@@ -45,7 +45,7 @@ export async function GET(
   }
 
   const { data: lessons, error: lessonsErr } = await supabase
-    .from('doa_project_lessons')
+    .from('project_lessons')
     .select('*')
     .eq('proyecto_id', id)
     .order('created_at', { ascending: true })

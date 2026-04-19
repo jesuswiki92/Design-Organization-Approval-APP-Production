@@ -9,7 +9,7 @@
  *
  * QUE HACE:
  *   1. Se conecta a Supabase (base de datos en la nube)
- *   2. Pide todos los registros de la tabla "doa_aeronaves"
+ *   2. Pide todos los registros de la tabla "aeronaves"
  *   3. Los ordena por codigo TCDS corto y modelo
  *   4. Envia esos datos al componente visual AeronavesPageClient
  *
@@ -36,14 +36,14 @@ export default async function AeronavesPage() {
 
   // Paso 2: Pedir todas las aeronaves, ordenadas por TCDS y modelo
   const { data: aeronaveRows, error } = await supabase
-    .from('doa_aeronaves')
+    .from('aeronaves')
     .select('*')
     .order('tcds_code_short', { ascending: true })
     .order('modelo', { ascending: true })
 
   // Si hay un error de base de datos, lo registramos en la consola del servidor
   if (error) {
-    console.error('Error cargando aeronaves desde doa_aeronaves:', error)
+    console.error('Error cargando aeronaves desde aeronaves:', error)
   }
 
   // Si no llegan datos, usamos una lista vacia para evitar errores

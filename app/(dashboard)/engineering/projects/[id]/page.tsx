@@ -3,8 +3,8 @@
  * PAGINA SERVIDOR DE DETALLE DE UN PROYECTO
  * ============================================================================
  *
- * Carga el proyecto desde doa_proyectos y sus entradas de conteo de horas
- * desde doa_conteo_horas_proyectos, y pasa ambos al componente visual
+ * Carga el proyecto desde proyectos y sus entradas de conteo de horas
+ * desde conteo_horas_proyectos, y pasa ambos al componente visual
  * ProjectDetailClient.
  *
  * Si el proyecto no existe, redirige a /engineering/portfolio.
@@ -32,12 +32,12 @@ export default async function ProjectDetailPage({
   // Cargar proyecto y entradas de horas en paralelo
   const [proyectoResult, horasResult] = await Promise.all([
     supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('*')
       .eq('id', id)
       .single(),
     supabase
-      .from('doa_conteo_horas_proyectos')
+      .from('conteo_horas_proyectos')
       .select('*')
       .eq('proyecto_id', id)
       .order('inicio', { ascending: false }),

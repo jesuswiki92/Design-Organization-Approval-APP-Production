@@ -7,7 +7,7 @@
  * Body: { estado: string }
  *
  * Valida que el estado solicitado sea un codigo valido del workflow
- * (sin restriccion de transiciones) y actualiza en doa_proyectos.
+ * (sin restriccion de transiciones) y actualiza en proyectos.
  * ============================================================================
  */
 
@@ -19,7 +19,7 @@ import { buildRequestContext } from '@/lib/observability/shared'
 import { isProjectWorkflowState } from '@/lib/workflow-states'
 
 // TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
-// doa_proyectos.owner es texto libre (no FK a auth.users), asi que no se puede
+// proyectos.owner es texto libre (no FK a auth.users), asi que no se puede
 // enforcear ownership server-side. Hasta que exista una tabla de roles +
 // owner_user_id, emitimos un severity=warn cuando un non-admin muta el estado.
 export async function PATCH(
@@ -72,9 +72,9 @@ export async function PATCH(
 
     // Actualizar el estado en la base de datos sin restriccion de transicion
     // (el usuario puede cambiar manualmente a cualquier estado)
-    // (updated_at se actualiza automaticamente via trigger en doa_proyectos)
+    // (updated_at se actualiza automaticamente via trigger en proyectos)
     const { data: updatedRows, error: updateError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .update({ estado: nextState })
       .eq('id', id)
       .select('id, estado')

@@ -41,7 +41,7 @@ export async function GET(
   if (!id) return jsonResponse(400, { error: 'proyecto_id requerido.' })
 
   const { data, error } = await supabase
-    .from('doa_project_lessons')
+    .from('project_lessons')
     .select('*')
     .eq('proyecto_id', id)
     .order('created_at', { ascending: true })
@@ -98,7 +98,7 @@ export async function POST(
 
   // Resolver closure_id si existe
   const { data: closure } = await supabase
-    .from('doa_project_closures')
+    .from('project_closures')
     .select('id')
     .eq('proyecto_id', id)
     .maybeSingle()
@@ -106,7 +106,7 @@ export async function POST(
   const closureId = (closure as { id?: string } | null)?.id ?? null
 
   const { data: inserted, error: insertErr } = await supabase
-    .from('doa_project_lessons')
+    .from('project_lessons')
     .insert({
       proyecto_id: id,
       closure_id: closureId,

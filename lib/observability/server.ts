@@ -8,7 +8,7 @@ export async function logServerEvent(event: AppEventInput) {
   try {
     const admin = createAdminClient()
     const { error } = await admin
-      .from('doa_app_events' as never)
+      .from('app_events' as never)
       .insert(toEventRow(event) as never)
 
     if (error) {

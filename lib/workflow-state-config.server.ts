@@ -6,7 +6,7 @@
  * estados de los flujos de trabajo (como los estados del tablero de cotizaciones
  * o los estados de las consultas entrantes).
  *
- * La tabla "doa_workflow_state_config" en Supabase almacena como se llaman,
+ * La tabla "workflow_state_config" en Supabase almacena como se llaman,
  * que color tienen y en que orden aparecen los estados de cada flujo.
  * Si un administrador cambia el nombre o color de un estado, ese cambio
  * se guarda en esa tabla y este archivo lo lee para aplicarlo en la app.
@@ -44,7 +44,7 @@ export const getWorkflowStateConfigRows = cache(
       // Consultar la tabla de configuracion de estados, filtrando por los ambitos solicitados
       // y ordenando primero por ambito y luego por el orden de aparicion (sort_order)
       const { data, error } = await supabase
-        .from('doa_workflow_state_config')
+        .from('workflow_state_config')
         .select(
           'id, scope, state_code, label, short_label, description, color_token, sort_order, is_system, is_active, created_at, updated_at',
         )

@@ -9,8 +9,8 @@
  *   3. Renderiza el PDF con @react-pdf/renderer, calcula SHA-256.
  *   4. Sube el PDF a Supabase Storage (bucket `doa-deliverables`).
  *   5. Genera un token aleatorio de 32 bytes (base64url) para el link de confirmacion.
- *   6. Crea una fila en `doa_project_deliveries` con dispatch_status='pendiente'.
- *   7. Actualiza `doa_proyectos.estado_v2 -> preparando_entrega`.
+ *   6. Crea una fila en `project_deliveries` con dispatch_status='pendiente'.
+ *   7. Actualiza `proyectos.estado_v2 -> preparando_entrega`.
  *
  * NO envia el email — eso lo hace `enviar-entrega` al pulsar el boton.
  *
@@ -76,7 +76,7 @@ export async function POST(
 
     // 1. Cargar proyecto + validar estado
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select(
         'id, numero_proyecto, titulo, descripcion, cliente_nombre, consulta_id, estado_v2, fase_actual',
       )
@@ -107,7 +107,7 @@ export async function POST(
 
     // 2. Ultima validacion aprobada + firma validation_approval
     const { data: vRow, error: vErr } = await supabase
-      .from('doa_project_validations')
+      .from('project_validations')
       .select('*')
       .eq('proyecto_id', id)
       .eq('decision', 'aprobado')
@@ -120,13 +120,13 @@ export async function POST(
       return jsonResponse(422, {
         error:
           'No se encontro una validacion aprobada para este proyecto. ' +
-          'Requiere una decision "aprobado" previa en doa_project_validations.',
+          'Requiere una decision "aprobado" previa en project_validations.',
       })
     }
     const validation = vRow as ProjectValidation
 
     const { data: sigRow, error: sigErr } = await supabase
-      .from('doa_project_signatures')
+      .from('project_signatures')
       .select('*')
       .eq('validation_id', validation.id)
       .eq('signature_type', 'validation_approval')
@@ -139,14 +139,14 @@ export async function POST(
       return jsonResponse(422, {
         error:
           `No se encontro firma "validation_approval" para la validacion ${validation.id}. ` +
-          'Sprint 2 deberia haber creado la firma; revisa doa_project_signatures.',
+          'Sprint 2 deberia haber creado la firma; revisa project_signatures.',
       })
     }
     const approvalSignature = sigRow as ProjectSignature
 
     // 3. Deliverables actuales (orden estable)
     const { data: delRows, error: delErr } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('id, template_code, titulo, subpart_easa, version_actual, estado')
       .eq('proyecto_id', id)
       .order('orden', { ascending: true })
@@ -169,8 +169,31 @@ export async function POST(
     // 4. Construir payload canonico + renderizar PDF
     const generatedAt = new Date().toISOString()
     const companyName = process.env.DOA_COMPANY_NAME ?? 'DOA Operations'
-    const companyApproval =
-      process.env.DOA_COMPANY_APPROVAL_NO ?? 'EASA.21J.XXXX (PENDIENTE)'
+    const companyApproval = process.env.DOA_COMPANY_APPROVAL_NO?.trim()
+    if (!companyApproval) {
+      await logServerEvent({
+        eventName: 'project.preparar_entrega.config_missing',
+        eventCategory: 'project',
+        outcome: 'failure',
+        severity: 'error',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: request.method,
+        entityType: 'proyecto',
+        entityId: id,
+        metadata: { missing_env: 'DOA_COMPANY_APPROVAL_NO' },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
+      })
+      return jsonResponse(500, {
+        error:
+          'EASA DOA number not configured. Define DOA_COMPANY_APPROVAL_NO ' +
+          '(ej: EASA.21J.NNNN) en el entorno antes de preparar la entrega. ' +
+          'No se genera el SoC PDF con placeholder.',
+      })
+    }
 
     const payload = buildSoCCanonicalPayload({
       document: {
@@ -281,7 +304,7 @@ export async function POST(
     let recipientEmailDefault = ''
     if (proyectoRow.consulta_id) {
       const { data: consulta } = await supabase
-        .from('doa_consultas_entrantes')
+        .from('consultas_entrantes')
         .select('id, remitente')
         .eq('id', proyectoRow.consulta_id)
         .maybeSingle()
@@ -315,7 +338,7 @@ export async function POST(
     } as never
 
     const { data: deliveryRow, error: insertErr } = await admin
-      .from('doa_project_deliveries' as never)
+      .from('project_deliveries' as never)
       .insert(deliveryInsertPayload)
       .select('*')
       .single()
@@ -358,7 +381,7 @@ export async function POST(
     } as never
 
     const { data: updated, error: updateError } = await admin
-      .from('doa_proyectos' as never)
+      .from('proyectos' as never)
       .update(proyectoUpdatePayload)
       .eq('id', id)
       .select('id, numero_proyecto, estado_v2, fase_actual, estado_updated_at')

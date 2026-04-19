@@ -19,7 +19,7 @@ export async function GET(
     const { id } = await context.params
 
     const { data, error } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('change_classification')
       .eq('id', id)
       .maybeSingle()
@@ -52,7 +52,7 @@ export async function PUT(
     }
 
     const { error } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .update({ change_classification: classification })
       .eq('id', id)
 

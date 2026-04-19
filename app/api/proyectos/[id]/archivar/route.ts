@@ -38,7 +38,7 @@ export async function POST(
     if (!id) return jsonResponse(400, { error: 'proyecto_id requerido.' })
 
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, estado_v2')
       .eq('id', id)
       .maybeSingle()
@@ -68,7 +68,7 @@ export async function POST(
 
     const nowIso = new Date().toISOString()
     const { data: updated, error: updateError } = await admin
-      .from('doa_proyectos' as never)
+      .from('proyectos' as never)
       .update({
         estado_v2: PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO,
         fase_actual: PROJECT_EXECUTION_PHASES.CIERRE,
@@ -121,7 +121,7 @@ export async function POST(
     let mvRefreshed = false
     let mvError: string | null = null
     try {
-      const { error: rpcErr } = await admin.rpc('refresh_doa_project_metrics_mv')
+      const { error: rpcErr } = await admin.rpc('refresh_project_metrics_mv')
       if (rpcErr) {
         // Fallback: try raw SQL via a generic exec helper if available; else skip.
         mvError = rpcErr.message
@@ -146,8 +146,8 @@ export async function POST(
         entityId: id,
         metadata: {
           error_message: mvError,
-          // TODO(sprint-4+): create rpc refresh_doa_project_metrics_mv() SECURITY DEFINER
-          //   that runs REFRESH MATERIALIZED VIEW CONCURRENTLY doa_project_metrics_mv;
+          // TODO(sprint-4+): create rpc refresh_project_metrics_mv() SECURITY DEFINER
+          //   that runs REFRESH MATERIALIZED VIEW CONCURRENTLY project_metrics_mv;
           //   otherwise this will always log warn until the MV exists and the RPC is created.
         },
         userAgent: requestContext.userAgent,

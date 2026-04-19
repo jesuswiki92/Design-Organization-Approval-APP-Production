@@ -32,7 +32,7 @@ export async function GET(
 
   // Verificar que el proyecto existe (evita confundir "sin deliverables" con "no existe")
   const { data: proyecto, error: proyectoError } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .select('id')
     .eq('id', id)
     .maybeSingle()
@@ -41,7 +41,7 @@ export async function GET(
   if (!proyecto) return jsonResponse(404, { error: 'Proyecto no encontrado.' })
 
   const { data: deliverables, error } = await supabase
-    .from('doa_project_deliverables')
+    .from('project_deliverables')
     .select('*')
     .eq('proyecto_id', id)
     .order('orden', { ascending: true })
@@ -103,7 +103,7 @@ export async function POST(
 
     // Verificar proyecto
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id')
       .eq('id', id)
       .maybeSingle()
@@ -113,7 +113,7 @@ export async function POST(
 
     // Calcular siguiente `orden`
     const { data: maxRow, error: maxError } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('orden')
       .eq('proyecto_id', id)
       .order('orden', { ascending: false })
@@ -125,7 +125,7 @@ export async function POST(
     const nextOrden = ((maxRow as { orden?: number } | null)?.orden ?? -1) + 1
 
     const { data: inserted, error: insertError } = await supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .insert({
         proyecto_id: id,
         template_code: templateCode,

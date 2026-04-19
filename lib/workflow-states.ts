@@ -8,20 +8,20 @@
  *
  *   1. `consulta` (incoming queries)
  *        - Constants: `CONSULTA_ESTADOS`
- *        - DB table:  `doa_consultas_entrantes.estado`
- *        - Check:     `doa_consultas_entrantes_estado_check`
+ *        - DB table:  `consultas_entrantes.estado`
+ *        - Check:     `ams_consultas_entrantes_estado_check`
  *
  *   2. `quotation_board`
  *        - Constants: `QUOTATION_BOARD_STATES`
- *        - DB table:  `doa_consultas_entrantes.estado` (shared column, but the
+ *        - DB table:  `consultas_entrantes.estado` (shared column, but the
  *                     valid codes for the Kanban view are a superset here —
  *                     see audit doc 07 for the intentional overlap).
  *
  *   3. `project_execution` (machine v2)
  *        - Constants: `PROJECT_EXECUTION_STATES`, `PROJECT_EXECUTION_PHASES`
- *        - DB column: `doa_proyectos.estado_v2`, `doa_proyectos.fase_actual`
- *        - Check:     `doa_proyectos_estado_v2_check`,
- *                     `doa_proyectos_fase_actual_check`
+ *        - DB column: `proyectos.estado_v2`, `proyectos.fase_actual`
+ *        - Check:     `ams_proyectos_estado_v2_check`,
+ *                     `ams_proyectos_fase_actual_check`
  *
  * DAG guarantees that MUST hold for the app to be correct:
  *   (a) Every transition invoked from server code (API routes / actions) must
@@ -690,7 +690,7 @@ export function isProjectStatePersisted(value: string): value is EstadoProyectoP
 // PROJECT EXECUTION STATES (Sprint 1 — nueva maquina de estados v2)
 // Maquina de 13 estados que rige el ciclo de vida operativo de un proyecto
 // desde que se abre tras una oferta aceptada hasta que se archiva.
-// Se persiste en doa_proyectos.estado_v2 (columna nueva, paralela a legacy.estado).
+// Se persiste en proyectos.estado_v2 (columna nueva, paralela a legacy.estado).
 // ==========================================
 
 // Codigos de los 13 estados de ejecucion de un proyecto.
@@ -733,7 +733,7 @@ export const PROJECT_EXECUTION_STATE_LIST = [
 ] as const satisfies readonly ProjectExecutionState[]
 
 // Fases agregadas (agrupan los 13 estados en 4 bloques).
-// Se persiste en doa_proyectos.fase_actual para permitir agrupaciones en Kanban/dashboards.
+// Se persiste en proyectos.fase_actual para permitir agrupaciones en Kanban/dashboards.
 export const PROJECT_EXECUTION_PHASES = {
   EJECUCION: 'ejecucion',     // proyecto_abierto | planificacion | en_ejecucion | revision_interna | listo_para_validacion
   VALIDACION: 'validacion',   // en_validacion | validado | devuelto_a_ejecucion

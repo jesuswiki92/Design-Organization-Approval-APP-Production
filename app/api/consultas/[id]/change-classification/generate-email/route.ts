@@ -1,10 +1,8 @@
-import OpenAI from 'openai'
 import { NextRequest } from 'next/server'
 import { requireUserApi } from '@/lib/auth/require-user'
+import { getLiteLLM, MODEL_LLM_DEFAULT } from '@/lib/llm/litellm-client'
 
 export const runtime = 'nodejs'
-
-const DEFAULT_OPENROUTER_MODEL = 'anthropic/claude-sonnet-4'
 
 type ChatHistoryItem = {
   content: string
@@ -222,13 +220,9 @@ export async function POST(
       currentAnswers?: unknown
     }
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return jsonResponse(500, 'OPENROUTER_API_KEY is not configured.')
-    }
-
     // Fetch consultation data
     const { data: consultation, error: consultError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('*')
       .eq('id', id)
       .maybeSingle()
@@ -283,30 +277,19 @@ export async function POST(
       .filter((line) => line !== undefined)
       .join('\n')
 
-    // Call OpenRouter (non-streaming)
-    const modelName = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_MODEL
-    const openai = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
+    // Call LiteLLM (non-streaming)
+    const modelName = MODEL_LLM_DEFAULT
+    const openai = getLiteLLM()
 
-    const completion = await openai.chat.completions.create(
-      {
-        messages: [
-          { role: 'system', content: EMAIL_SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt },
-        ],
-        model: modelName,
-        stream: false,
-        temperature: 0.3,
-      },
-      {
-        headers: {
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-          'X-Title': 'DOA Email Draft Generator',
-        },
-      },
-    )
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: 'system', content: EMAIL_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      model: modelName,
+      stream: false,
+      temperature: 0.3,
+    })
 
     const rawContent = completion.choices[0]?.message?.content ?? ''
 

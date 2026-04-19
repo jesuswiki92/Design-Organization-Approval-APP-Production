@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
   if (projectId) {
     const current = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('estado, numero_proyecto')
       .eq('id', projectId)
       .maybeSingle()

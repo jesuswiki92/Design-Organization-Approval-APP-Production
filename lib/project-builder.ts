@@ -6,7 +6,7 @@
  *   "Airbus A320" -> "320") o de las siglas del fabricante cuando no hay numero
  *   (ej. "Beechcraft King Air 200" -> "B20").
  * - Calcula el siguiente numero disponible combinando proyectos activos
- *   (`doa_proyectos`) y proyectos historicos (`doa_proyectos_historico`).
+ *   (`proyectos`) y proyectos historicos (`proyectos_historico`).
  * - Propone una estructura de carpetas estandar para el proyecto.
  */
 
@@ -90,11 +90,11 @@ export async function computeNextSequence(
 ): Promise<{ next: number; existing: number }> {
   const [activos, historicos] = await Promise.all([
     supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('numero_proyecto')
       .ilike('numero_proyecto', `${prefix}%`),
     supabase
-      .from('doa_proyectos_historico')
+      .from('proyectos_historico')
       .select('numero_proyecto')
       .ilike('numero_proyecto', `${prefix}%`),
   ])

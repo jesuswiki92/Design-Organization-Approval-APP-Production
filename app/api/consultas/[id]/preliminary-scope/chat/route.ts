@@ -1,7 +1,7 @@
-import OpenAI from 'openai'
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { getLiteLLM, MODEL_LLM_DEFAULT } from '@/lib/llm/litellm-client'
 import {
   buildPreliminaryScopeModel,
   formatPreliminaryScopeChatContext,
@@ -23,8 +23,6 @@ type ConsultationRow = ConsultaEntrante & {
 }
 
 type AuthSuccess = Exclude<Awaited<ReturnType<typeof requireUserApi>>, Response>
-
-const DEFAULT_OPENROUTER_MODEL = 'anthropic/claude-sonnet-4'
 
 const SYSTEM_PROMPT = [
   'You are a DOA engineering copilot working on the preliminary scope stage of an incoming quotation.',
@@ -70,7 +68,7 @@ async function getPrimaryAircraftVariant(
 
   if (consultation.tcds_number) {
     const { data } = await supabase
-      .from('doa_aeronaves')
+      .from('aeronaves')
       .select(
         'fabricante, modelo, mtow_kg, msn_elegibles, regulacion_base, tcds_code, tcds_code_short',
       )
@@ -81,7 +79,7 @@ async function getPrimaryAircraftVariant(
 
   if (variants.length === 0 && (consultation.aircraft_model || consultation.aircraft_manufacturer)) {
     let fallbackQuery = supabase
-      .from('doa_aeronaves')
+      .from('aeronaves')
       .select(
         'fabricante, modelo, mtow_kg, msn_elegibles, regulacion_base, tcds_code, tcds_code_short',
       )
@@ -155,12 +153,8 @@ export async function POST(
       return jsonResponse(400, 'Question is required.')
     }
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return jsonResponse(500, 'OPENROUTER_API_KEY is not configured.')
-    }
-
     const { data: consultationRowRaw, error: consultationError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select(
         [
           'id',
@@ -226,7 +220,7 @@ export async function POST(
 
     if (referenceIds.length > 0) {
       const { data: referenceRows, error: referencesError } = await supabase
-        .from('doa_proyectos_historico')
+        .from('proyectos_historico')
         .select('id, numero_proyecto, titulo, aeronave, anio, created_at, summary_md')
         .in('id', referenceIds)
 
@@ -262,35 +256,24 @@ export async function POST(
       referenceProjects,
     })
 
-    const modelName = process.env.OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_MODEL
+    const modelName = MODEL_LLM_DEFAULT
     const history = normalizeHistory(body.history)
-    const openai = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    })
+    const openai = getLiteLLM()
 
-    const completion = await openai.chat.completions.create(
-      {
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'system', content: formatPreliminaryScopeChatContext(model) },
-          ...history.map((item) => ({
-            content: item.content,
-            role: item.role,
-          })),
-          { role: 'user', content: question },
-        ],
-        model: modelName,
-        stream: true,
-        temperature: 0.25,
-      },
-      {
-        headers: {
-          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-          'X-Title': 'DOA Preliminary Scope Copilot',
-        },
-      },
-    )
+    const completion = await openai.chat.completions.create({
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: formatPreliminaryScopeChatContext(model) },
+        ...history.map((item) => ({
+          content: item.content,
+          role: item.role,
+        })),
+        { role: 'user', content: question },
+      ],
+      model: modelName,
+      stream: true,
+      temperature: 0.25,
+    })
 
     const encoder = new TextEncoder()
 

@@ -41,7 +41,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 /**
  * Intenta obtener el usuario actual desde las cookies SSR de Supabase.
- * Aplica un timeout de 3 segundos para que un Supabase caido no tumbe la app.
+ * Aplica un timeout de 5 segundos para que un Supabase caido no tumbe la app.
+ * (Fase 6: subido de 3s a 5s — self-hosted cold-start ocasionalmente supera 3s
+ * si el stack entero acaba de arrancar.)
  *
  * @returns `{ user, supabaseResponse }` si la auth responde a tiempo, o
  *          `{ user: null, supabaseResponse: null }` si expira o falla.
@@ -72,7 +74,7 @@ async function resolveUser(request: NextRequest) {
     const result = await Promise.race([
       supabase.auth.getUser(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 3000),
+        setTimeout(() => reject(new Error('timeout')), 5000),
       ),
     ])
     return { user: result.data.user, supabaseResponse }

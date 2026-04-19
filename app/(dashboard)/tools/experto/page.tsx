@@ -29,9 +29,9 @@ const SUGGESTED_QUESTIONS = [
 ]
 
 const WELCOME_MESSAGE =
-  'Asistente DOA con OpenRouter. Puedo ayudarte con quotations, estados de proyecto, procedimientos y soporte operativo general.'
+  'Asistente DOA (via LiteLLM gateway). Puedo ayudarte con quotations, estados de proyecto, procedimientos y soporte operativo general.'
 
-const DEFAULT_MODEL_LABEL = 'anthropic/claude-sonnet-4'
+const DEFAULT_MODEL_LABEL = 'llm-default'
 
 function createId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

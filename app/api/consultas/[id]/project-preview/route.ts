@@ -33,7 +33,7 @@ export async function GET(
     if (!id) return jsonResponse(400, { error: 'Consulta ID requerido.' })
 
     const { data: consulta, error } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select(
         'id, asunto, resumen, remitente, aircraft_manufacturer, aircraft_model, aircraft_msn, tcds_number, modification_summary, numero_entrada',
       )
@@ -47,11 +47,11 @@ export async function GET(
     const model = (consulta.aircraft_model as string | null) ?? null
     const tcdsNumber = (consulta.tcds_number as string | null) ?? null
 
-    // Resolver TCDS code_short si hay match en doa_aeronaves
+    // Resolver TCDS code_short si hay match en aeronaves
     let tcdsCodeShort: string | null = null
     if (tcdsNumber) {
       const { data: aeronave } = await supabase
-        .from('doa_aeronaves')
+        .from('aeronaves')
         .select('tcds_code_short')
         .eq('tcds_code', tcdsNumber)
         .maybeSingle()

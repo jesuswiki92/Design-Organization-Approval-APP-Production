@@ -25,7 +25,7 @@
  * tablero, pero sigue siendo una transicion valida desde el selector de
  * estado. Los proyectos archivados permanecen en la BD.
  *
- * CAMPOS DE LA TABLA doa_proyectos usados aqui:
+ * CAMPOS DE LA TABLA proyectos usados aqui:
  *   numero_proyecto, titulo, descripcion, cliente_nombre, aeronave,
  *   owner, prioridad, fecha_inicio, estado
  * ============================================================================
@@ -724,7 +724,7 @@ export function ProyectosClient({
     setProyectos(initialProyectos)
   }, [initialProyectos])
 
-  // --- Supabase Realtime: suscripcion a cambios en doa_proyectos ---
+  // --- Supabase Realtime: suscripcion a cambios en proyectos ---
   // Escucha INSERT, UPDATE y DELETE en la tabla y actualiza el estado local
   // automaticamente sin necesidad de router.refresh().
   useEffect(() => {
@@ -734,7 +734,7 @@ export function ProyectosClient({
       .channel('proyectos-realtime')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'doa_proyectos' },
+        { event: '*', schema: 'public', table: 'proyectos' },
         (payload) => {
           if (payload.eventType === 'UPDATE') {
             setProyectos((prev) =>

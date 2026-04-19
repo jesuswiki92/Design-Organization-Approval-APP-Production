@@ -39,7 +39,7 @@ export async function GET(
   if (!id) return jsonResponse(400, { error: 'proyecto_id requerido.' })
 
   const { data: proyecto, error: proyectoError } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .select('id')
     .eq('id', id)
     .maybeSingle()
@@ -48,7 +48,7 @@ export async function GET(
   if (!proyecto) return jsonResponse(404, { error: 'Proyecto no encontrado.' })
 
   const { data, error } = await supabase
-    .from('doa_project_validations')
+    .from('project_validations')
     .select('*')
     .eq('proyecto_id', id)
     .order('created_at', { ascending: false })

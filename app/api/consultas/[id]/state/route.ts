@@ -13,7 +13,7 @@ function jsonResponse(status: number, error: string) {
 }
 
 // TODO(RLS): authz no garantiza ownership — depende de RLS [audit Fase pre-prod]
-// doa_consultas_entrantes no tiene columna owner_user_id; hasta que exista una
+// consultas_entrantes no tiene columna owner_user_id; hasta que exista una
 // tabla de roles, registramos un evento severity=warn cuando un non-admin muta
 // el estado (abajo) para dejar trazabilidad.
 export async function PATCH(
@@ -57,13 +57,13 @@ export async function PATCH(
     }
 
     const current = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('estado, codigo')
       .eq('id', id)
       .maybeSingle()
 
     const update = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .update({ estado })
       .eq('id', id)
       .select('id, estado')
@@ -94,7 +94,7 @@ export async function PATCH(
       if (isMissingSchemaError(update.error)) {
         return jsonResponse(
           409,
-          'La tabla public.doa_consultas_entrantes no coincide con el esquema esperado. Aplica la migración pendiente antes de cambiar estados.',
+          'La tabla public.consultas_entrantes no coincide con el esquema esperado. Aplica la migración pendiente antes de cambiar estados.',
         )
       }
 

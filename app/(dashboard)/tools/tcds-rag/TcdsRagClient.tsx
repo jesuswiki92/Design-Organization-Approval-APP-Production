@@ -1470,7 +1470,7 @@ function ExtractTab({
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-emerald-800">
-                      {savedCount} {savedCount === 1 ? 'variante guardada' : 'variantes guardadas'} en doa_aeronaves
+                      {savedCount} {savedCount === 1 ? 'variante guardada' : 'variantes guardadas'} en aeronaves
                     </h3>
                     <p className="text-xs text-emerald-600">
                       Los datos han sido aprobados y almacenados correctamente

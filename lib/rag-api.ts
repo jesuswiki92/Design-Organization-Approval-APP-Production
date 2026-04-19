@@ -500,7 +500,7 @@ export async function ragExtractAircraft(
 }
 
 /**
- * Guarda las variantes de aeronave aprobadas en la tabla doa_aeronaves.
+ * Guarda las variantes de aeronave aprobadas en la tabla aeronaves.
  * Solo se llama despues de que el usuario revise y apruebe los datos extraidos.
  */
 export async function ragSaveAircraft(

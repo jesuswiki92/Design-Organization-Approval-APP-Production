@@ -565,6 +565,38 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APP_BASE_URL }}/api/webhooks/doa-consulta-created",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-n8n-secret",
+              "value": "={{ $env.N8N_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"numero_entrada\": \"{{ $json.numero_entrada }}\",\n  \"consulta_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        480
+      ],
+      "id": "f1a7b3c2-0e4d-4b9a-9b88-crearcarpeta01",
+      "name": "Crear carpeta local",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
         "operation": "get",
         "tableId": "doa_clientes_contactos",
         "filters": {
@@ -854,8 +886,18 @@
             "node": "Filtro Correo entrante",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Crear carpeta local",
+            "type": "main",
+            "index": 0
           }
         ]
+      ]
+    },
+    "Crear carpeta local": {
+      "main": [
+        []
       ]
     },
     "Ver si el cliente es conocido": {

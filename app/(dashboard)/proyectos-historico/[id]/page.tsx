@@ -9,7 +9,7 @@
  *
  * QUE HACE:
  *   1. Lee el identificador del proyecto desde la URL (ej: /proyectos-historico/abc123)
- *   2. Busca ese proyecto en la tabla "doa_proyectos_historico" (incluye mdl_contenido)
+ *   2. Busca ese proyecto en la tabla "proyectos_historico" (incluye mdl_contenido)
  *   3. Si el proyecto existe, muestra la ficha completa
  *   4. Si no existe, muestra un mensaje de error
  *
@@ -65,21 +65,21 @@ export default async function ProyectosHistoricoEntryPage({
   // Paso 2: Conectar con Supabase y buscar el proyecto con ese ID
   const supabase = await createClient()
   const { data: project, error } = await supabase
-    .from('doa_proyectos_historico')
+    .from('proyectos_historico')
     .select('*')
     .eq('id', id)
     .maybeSingle()
 
   // Si hay error de base de datos, registrarlo en la consola
   if (error) {
-    console.error('Error cargando proyecto historico desde doa_proyectos_historico:', error)
+    console.error('Error cargando proyecto historico desde proyectos_historico:', error)
   }
 
-  // Paso 3: Cargar las familias documentales del proyecto (tabla doa_proyectos_historico_documentos)
+  // Paso 3: Cargar las familias documentales del proyecto (tabla proyectos_historico_documentos)
   let documentos: ProyectoHistoricoDocumentoRow[] = []
   if (project) {
     const { data: docs, error: docsError } = await supabase
-      .from('doa_proyectos_historico_documentos')
+      .from('proyectos_historico_documentos')
       .select('*')
       .eq('proyecto_historico_id', project.id)
       .order('orden_documental')

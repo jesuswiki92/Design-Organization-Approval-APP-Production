@@ -1,37 +1,31 @@
 // Server-side embedding helper for the Next.js app.
-// Mirrors scripts/lib/embed.mjs (used by the backfill script). Keep them in sync.
-import OpenAI from 'openai';
+// Fase 6: ruta los embeddings por LiteLLM (alias `embedding-cloud-3-large`),
+// que a su vez llama a OpenAI text-embedding-3-large (3072 dim). Mantenemos
+// la misma dimension que la tabla `proyectos_embeddings` usa (vector(3072))
+// para no tener que re-embeder.
+//
+// Mirrors `scripts/lib/embed.mjs` (node standalone, para scripts de backfill).
+// Si uno cambia, actualizar el otro.
+import 'server-only'
+import { getLiteLLM, MODEL_EMBEDDING_CLOUD } from '@/lib/llm/litellm-client'
 
-const MODEL = 'text-embedding-3-large';
-
-let client: OpenAI | null = null;
-
-function getClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not set');
-  }
-  if (!client) {
-    client = new OpenAI({ apiKey });
-  }
-  return client;
-}
+const MODEL = MODEL_EMBEDDING_CLOUD
 
 export async function embedText(text: string): Promise<number[]> {
-  const trimmed = (text ?? '').trim();
+  const trimmed = (text ?? '').trim()
   if (!trimmed) {
-    throw new Error('embedText: empty input');
+    throw new Error('embedText: empty input')
   }
-  const c = getClient();
-  const response = await c.embeddings.create({
+  const client = getLiteLLM()
+  const response = await client.embeddings.create({
     model: MODEL,
     input: trimmed,
-  });
-  const vec = response.data?.[0]?.embedding;
+  })
+  const vec = response.data?.[0]?.embedding
   if (!Array.isArray(vec) || vec.length === 0) {
-    throw new Error('embedText: API returned no vector');
+    throw new Error('embedText: API returned no vector')
   }
-  return vec;
+  return vec
 }
 
-export const EMBED_MODEL = MODEL;
+export const EMBED_MODEL = MODEL

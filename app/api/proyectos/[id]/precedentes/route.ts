@@ -25,7 +25,7 @@ export async function POST(
 
   // 1) Fetch project metadata
   const { data: project, error: projErr } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .select('numero_proyecto, titulo, descripcion, aeronave, modelo, tcds_code')
     .eq('id', id)
     .maybeSingle();

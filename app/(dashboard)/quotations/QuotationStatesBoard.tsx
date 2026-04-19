@@ -21,7 +21,6 @@
  *   - Guardar la configuracion de estados en Supabase
  *
  * COMPONENTES INTERNOS:
- *   - IncomingQueryStateControl: selector para cambiar el estado de una consulta
  *   - IncomingQueryDeleteControl: boton para borrar una consulta
  *   - IncomingQueryArchiveControl: boton para archivar una consulta
  *   - IncomingClientIdentityBlock: muestra si el cliente es conocido o desconocido
@@ -208,99 +207,6 @@ function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
     created_at,
     updated_at,
   }
-}
-
-/**
- * Selector desplegable para cambiar el estado de una consulta entrante.
- * Cuando el usuario selecciona un nuevo estado, envia el cambio a la API
- * y refresca la pagina para mostrar los datos actualizados.
- */
-function IncomingQueryStateControl({
-  card,
-  options,
-}: {
-  card: QuotationCard
-  options: BoardStateOption[]
-}) {
-  const router = useRouter()
-  const [selectedState, setSelectedState] = useState(card.stateCode ?? '')
-  const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
-  const [message, setMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    setSelectedState(card.stateCode ?? '')
-    setStatus('idle')
-    setMessage(null)
-  }, [card.stateCode])
-
-  if (card.kind !== 'incoming_query' || !card.stateCode) {
-    return null
-  }
-
-  async function handleChange(nextState: string) {
-    if (!nextState || nextState === card.stateCode) {
-      setSelectedState(card.stateCode ?? '')
-      return
-    }
-
-    setSelectedState(nextState)
-    setStatus('saving')
-    setMessage(null)
-
-    try {
-      const response = await fetch(`/api/consultas/${card.id}/state`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ estado: nextState }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo actualizar el estado.')
-      }
-
-      setStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setSelectedState(card.stateCode ?? '')
-      setStatus('error')
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error actualizando el estado.',
-      )
-    }
-  }
-
-  return (
-    <div className="space-y-1">
-      <label className="sr-only" htmlFor={`incoming-state-${card.id}`}>
-        Cambiar estado de la consulta
-      </label>
-      <select
-        id={`incoming-state-${card.id}`}
-        value={selectedState}
-        disabled={status === 'saving'}
-        onChange={(event) => void handleChange(event.target.value)}
-        className="h-8 min-w-[140px] rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-4 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {status === 'saving' ? (
-        <p className="text-[11px] text-slate-500">Guardando estado...</p>
-      ) : null}
-      {message ? <p className="text-[11px] text-rose-600">{message}</p> : null}
-    </div>
-  )
 }
 
 /**

@@ -74,19 +74,19 @@ export default async function QuotationsFormsCatalogPage() {
   const [consultasResult, clientsResult, contactsResult] = await Promise.all([
     // Solo consultas no archivadas que tienen URL de formulario
     supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select('*')
       .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
       .not('url_formulario', 'is', null)
       .order('created_at', { ascending: false }),
     // Todos los clientes ordenados alfabeticamente
     supabase
-      .from('doa_clientes_datos_generales')
+      .from('clientes_datos_generales')
       .select('*')
       .order('nombre', { ascending: true }),
     // Contactos de clientes
     supabase
-      .from('doa_clientes_contactos')
+      .from('clientes_contactos')
       .select('*')
       .order('es_principal', { ascending: false })
       .order('activo', { ascending: false })
@@ -137,7 +137,7 @@ export default async function QuotationsFormsCatalogPage() {
             <h2 className="text-base font-semibold text-slate-950">Tabla de formularios</h2>
             <p className="mt-1 text-sm text-slate-600">
               Cada fila corresponde a una consulta con URL de formulario persistida en
-              `doa_consultas_entrantes`.
+              `consultas_entrantes`.
             </p>
           </div>
 

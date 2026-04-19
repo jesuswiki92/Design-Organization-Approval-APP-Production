@@ -32,7 +32,7 @@ export async function POST(
     if (!id) return jsonResponse(400, { error: 'proyecto_id requerido.' })
 
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, estado_v2')
       .eq('id', id)
       .maybeSingle()
@@ -51,7 +51,7 @@ export async function POST(
     }
 
     const { data: updated, error: updateError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .update({
         estado_v2: PROJECT_EXECUTION_STATES.EN_EJECUCION,
         fase_actual: PROJECT_EXECUTION_PHASES.EJECUCION,

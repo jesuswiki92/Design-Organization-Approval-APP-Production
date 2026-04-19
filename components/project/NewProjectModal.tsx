@@ -9,7 +9,7 @@
  * Llama a POST /api/proyectos/crear-manual que a su vez:
  *   - calcula numero_proyecto,
  *   - crea carpetas,
- *   - inserta fila en doa_proyectos,
+ *   - inserta fila en proyectos,
  *   - genera un .docx por cada plantilla G12-xx seleccionada.
  *
  * Se renderiza como un overlay nativo (no usamos una libreria de Dialog
@@ -347,7 +347,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
                 onChange={(e) => {
                   const nextModelo = e.target.value
                   setModelo(nextModelo)
-                  // Auto-rellenar TCDS desde la fila del catalogo doa_aeronaves.
+                  // Auto-rellenar TCDS desde la fila del catalogo aeronaves.
                   const match = modelos.find((m) => m.modelo === nextModelo)
                   setTcdsCode(match?.tcds_code ?? '')
                   setTcdsCodeShort(match?.tcds_code_short ?? '')

@@ -8,7 +8,7 @@
  *
  * Caso de uso principal: operaciones de escritura (INSERT, UPDATE, DELETE)
  * en tablas que tienen RLS habilitado sin politicas para el rol
- * 'authenticated' (por ejemplo, doa_proyectos que solo permite
+ * 'authenticated' (por ejemplo, proyectos que solo permite
  * SELECT publico y ALL para service_role).
  *
  * IMPORTANTE: la autenticacion del usuario ya debe haberse verificado

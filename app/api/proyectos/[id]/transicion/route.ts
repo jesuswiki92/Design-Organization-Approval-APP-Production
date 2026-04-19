@@ -291,7 +291,7 @@ export async function POST(
     const targetState = targetStateRaw as ProjectExecutionState
 
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, estado_v2')
       .eq('id', id)
       .maybeSingle()
@@ -365,7 +365,7 @@ export async function POST(
     // Inline path: UPDATE + webhook fire-and-forget.
     const nowIso = new Date().toISOString()
     const { data: updated, error: updateError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .update({
         estado_v2: targetState,
         fase_actual: PROJECT_EXECUTION_STATE_TO_PHASE[targetState],

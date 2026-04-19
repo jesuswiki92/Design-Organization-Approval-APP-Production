@@ -7,8 +7,8 @@ export const runtime = 'nodejs'
 /**
  * GET /api/aeronaves/modelos?fabricante={name}
  *
- * Devuelve los modelos de `doa_aeronaves` para el fabricante dado.
- * La tabla real es `doa_aeronaves` (no `doa_aeronaves_modelos` que aparecia
+ * Devuelve los modelos de `aeronaves` para el fabricante dado.
+ * La tabla real es `aeronaves` (no `ams_aeronaves_modelos` que aparecia
  * en types/database.ts y no existe). No hay columna `familia` en BD; la
  * devolvemos como cadena vacia para conservar el contrato del modal.
  *
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { data, error } = await supabase
-      .from('doa_aeronaves')
+      .from('aeronaves')
       .select('id, fabricante, modelo, tcds_code, tcds_code_short, tcds_issue, tcds_date')
       .eq('fabricante', fabricante)
 
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       return Response.json({ modelos: [] })
     }
 
-    // Deduplicar por `modelo` — `doa_aeronaves` tiene una fila por TCDS/MSN,
+    // Deduplicar por `modelo` — `aeronaves` tiene una fila por TCDS/MSN,
     // asi que el mismo modelo aparece varias veces. Aqui la relacion
     // modelo -> TCDS es 1:1 (verificado en BD), asi que la primera ocurrencia
     // sirve.

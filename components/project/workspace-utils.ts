@@ -62,7 +62,7 @@ export function daysRemaining(date: string | null) {
 
 /**
  * Formatea el nombre del owner del proyecto.
- * En doa_proyectos, owner es un campo texto simple.
+ * En proyectos, owner es un campo texto simple.
  */
 export function userName(user: string | null) {
   if (!user) return 'Sin asignar'
@@ -79,7 +79,7 @@ export function userInitials(user: string | null) {
 
 /**
  * Label de la aeronave del proyecto.
- * En doa_proyectos, aeronave es un campo texto simple.
+ * En proyectos, aeronave es un campo texto simple.
  */
 export function getAircraftLabel(aeronave: string | null) {
   return aeronave ?? 'Sin aeronave asignada'
@@ -87,7 +87,7 @@ export function getAircraftLabel(aeronave: string | null) {
 
 /**
  * Label del cliente del proyecto.
- * En doa_proyectos, cliente es un objeto con nombre
+ * En proyectos, cliente es un objeto con nombre
  * o puede venir como cliente_nombre (texto simple).
  */
 export function getClientLabel(cliente: { nombre?: string } | null) {

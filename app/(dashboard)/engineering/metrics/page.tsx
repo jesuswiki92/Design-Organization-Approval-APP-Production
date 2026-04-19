@@ -2,9 +2,9 @@
  * Panel de metricas operativas de proyectos — Sprint 4 (close-the-loop).
  *
  * Estrategia:
- *   1. Intenta leer `doa_project_metrics_mv` (materialized view).
+ *   1. Intenta leer `project_metrics_mv` (materialized view).
  *   2. Si la MV no existe o falla, computa agregados live a partir de las
- *      tablas base (doa_proyectos + doa_project_deliverables + ...). En este
+ *      tablas base (proyectos + project_deliverables + ...). En este
  *      caso marca `fallbackMode=true` para que el cliente muestre banner.
  *
  * Server component: requireUserAction() garantiza sesion o redirige a /login.
@@ -53,7 +53,7 @@ async function computeFallback(
   supabase: Awaited<ReturnType<typeof requireUserAction>>['supabase'],
 ): Promise<ProjectMetricsRow[]> {
   const { data: projectsData } = await supabase
-    .from('doa_proyectos')
+    .from('proyectos')
     .select(
       'id, numero_proyecto, titulo, client_id, estado_v2, fase_actual, created_at, estado_updated_at',
     )
@@ -66,23 +66,23 @@ async function computeFallback(
 
   const [delRes, valRes, entRes, lessRes, closRes] = await Promise.all([
     supabase
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('proyecto_id, estado')
       .in('proyecto_id', projectIds),
     supabase
-      .from('doa_project_validations')
+      .from('project_validations')
       .select('proyecto_id, decision')
       .in('proyecto_id', projectIds),
     supabase
-      .from('doa_project_deliveries')
+      .from('project_deliveries')
       .select('proyecto_id, dispatch_status')
       .in('proyecto_id', projectIds),
     supabase
-      .from('doa_project_lessons')
+      .from('project_lessons')
       .select('proyecto_id')
       .in('proyecto_id', projectIds),
     supabase
-      .from('doa_project_closures')
+      .from('project_closures')
       .select('proyecto_id, outcome')
       .in('proyecto_id', projectIds),
   ])
@@ -183,7 +183,7 @@ export default async function EngineeringMetricsPage() {
 
   try {
     const { data, error } = await supabase
-      .from('doa_project_metrics_mv' as never)
+      .from('project_metrics_mv' as never)
       .select('*')
       .limit(500)
 

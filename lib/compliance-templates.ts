@@ -6,10 +6,10 @@
  * Lista maestra de las plantillas G12-xx y G18-xx disponibles en:
  *   02. Datos DOA / 01. Plantillas
  *
- * FUENTE DE VERDAD: tabla `doa_plantillas_compliance` en Supabase.
+ * FUENTE DE VERDAD: tabla `plantillas_compliance` en Supabase.
  * Las constantes de este archivo se usan como fallback y para el mapeo
  * FAMILIA_TO_TEMPLATES que conecta las familias documentales de proyectos
- * historicos (doa_proyectos_historico_documentos.familia_documental) con
+ * historicos (proyectos_historico_documentos.familia_documental) con
  * los codigos de plantilla, permitiendo la pre-seleccion automatica cuando
  * el ingeniero marca un proyecto como referencia.
  *
@@ -107,7 +107,7 @@ export const CATEGORY_ORDER: ComplianceTemplate['category'][] = [
 ]
 
 /**
- * Mapeo de familia_documental (doa_proyectos_historico_documentos)
+ * Mapeo de familia_documental (proyectos_historico_documentos)
  * a codigos de plantilla. Cuando el ingeniero marca un proyecto como
  * referencia, se pre-seleccionan las plantillas correspondientes.
  */
@@ -162,5 +162,5 @@ export function columnToCode(col: string): string {
   return col.replace('doc_', '').replace('_', '-').toUpperCase()
 }
 
-/** Lista de todas las columnas doc_* en doa_consultas_entrantes */
+/** Lista de todas las columnas doc_* en consultas_entrantes */
 export const ALL_DOC_COLUMNS = COMPLIANCE_TEMPLATES.map((t) => codeToColumn(t.code))

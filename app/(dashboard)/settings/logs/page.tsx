@@ -37,7 +37,7 @@ const EVENT_SELECT_COLUMNS = [
 async function loadRecentEvents() {
   const admin = createAdminClient()
   const { data, error } = await admin
-    .from('doa_app_events' as never)
+    .from('app_events' as never)
     .select(EVENT_SELECT_COLUMNS)
     .order('created_at', { ascending: false })
     .limit(RECENT_EVENTS_LIMIT)
@@ -84,7 +84,7 @@ export default async function SettingsLogsPage() {
                 Logs operativos recientes
               </h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                Esta vista lee <code>doa_app_events</code> en servidor con el patron
+                Esta vista lee <code>app_events</code> en servidor con el patron
                 autenticado y privilegiado ya usado por la app. El objetivo es soporte:
                 detectar fallos recientes, entender que flujo esta activo y revisar el
                 contexto redacted de cada evento sin exponer contenido sensible.

@@ -63,8 +63,8 @@ function buildEmlContent(email: DoaEmail): string {
 }
 
 /**
- * Descarga los emails de una consulta desde `doa_emails` y los guarda como
- * archivos `.eml` (RFC 2822) en la carpeta `{SIMULATION_BASE_PATH}/{numeroEntrada}/emails/`.
+ * Descarga los emails de una consulta desde `emails` y los guarda como
+ * archivos `.eml` (RFC 2822) en la carpeta `{SIMULATION_BASE_PATH}/{numeroEntrada}/1. Email/`.
  *
  * Es idempotente: si un archivo ya existe (mismo nombre), se omite.
  * No lanza excepciones para no interrumpir la carga de la pagina.
@@ -84,13 +84,13 @@ export async function syncConsultaEmails(
     const supabase = await createClient()
 
     const { data: emails, error: dbError } = await supabase
-      .from('doa_emails')
+      .from('emails')
       .select('*')
       .eq('consulta_id', consultaId)
       .order('fecha', { ascending: true })
 
     if (dbError) {
-      console.error('syncConsultaEmails — error consultando doa_emails:', dbError)
+      console.error('syncConsultaEmails — error consultando emails:', dbError)
       return { written: -1, error: dbError.message }
     }
 
@@ -98,7 +98,7 @@ export async function syncConsultaEmails(
       return { written: 0 }
     }
 
-    const emailsDir = path.join(SIMULATION_BASE_PATH, trimmed, 'emails')
+    const emailsDir = path.join(SIMULATION_BASE_PATH, trimmed, '1. Email')
     let written = 0
 
     for (const row of emails as DoaEmail[]) {

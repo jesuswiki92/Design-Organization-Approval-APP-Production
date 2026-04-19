@@ -70,18 +70,18 @@ export default async function QuotationsPage() {
       ]),
       // Consultas entrantes (excluye las archivadas), ordenadas por fecha
       supabase
-        .from('doa_consultas_entrantes')
+        .from('consultas_entrantes')
         .select('*')
         .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
         .order('created_at', { ascending: false }),
       // Todos los clientes registrados, ordenados alfabeticamente
       supabase
-        .from('doa_clientes_datos_generales')
+        .from('clientes_datos_generales')
         .select('*')
         .order('nombre', { ascending: true }),
       // Contactos de los clientes, priorizando los principales y activos
       supabase
-        .from('doa_clientes_contactos')
+        .from('clientes_contactos')
         .select('*')
         .order('es_principal', { ascending: false })
         .order('activo', { ascending: false })
@@ -92,15 +92,15 @@ export default async function QuotationsPage() {
   const { data, error } = queriesResult
 
   if (error) {
-    console.error('Error cargando consultas entrantes desde doa_consultas_entrantes:', error)
+    console.error('Error cargando consultas entrantes desde consultas_entrantes:', error)
   }
 
   if (clientsResult.error) {
-    console.error('Error cargando clientes desde doa_clientes_datos_generales:', clientsResult.error)
+    console.error('Error cargando clientes desde clientes_datos_generales:', clientsResult.error)
   }
 
   if (contactsResult.error) {
-    console.error('Error cargando contactos desde doa_clientes_contactos:', contactsResult.error)
+    console.error('Error cargando contactos desde clientes_contactos:', contactsResult.error)
   }
 
   // Paso 3: Construir el mapa de busqueda de clientes por email

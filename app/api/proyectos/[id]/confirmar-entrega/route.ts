@@ -120,7 +120,7 @@ async function handle(
   }
 
   const { data: dRow, error: dErr } = await admin
-    .from('doa_project_deliveries')
+    .from('project_deliveries')
     .select('*')
     .eq('proyecto_id', id)
     .eq('client_confirmation_token', token)
@@ -162,7 +162,7 @@ async function handle(
 
   // Marcar delivery como confirmada
   const { error: updDelErr } = await admin
-    .from('doa_project_deliveries' as never)
+    .from('project_deliveries' as never)
     .update({
       dispatch_status: 'confirmado_cliente',
       client_confirmed_at: nowIso,
@@ -181,7 +181,7 @@ async function handle(
 
   // Obtener proyecto para leer numero_proyecto y el estado actual
   const { data: proyecto } = await admin
-    .from('doa_proyectos')
+    .from('proyectos')
     .select('id, numero_proyecto, titulo, estado_v2')
     .eq('id', id)
     .maybeSingle()
@@ -196,7 +196,7 @@ async function handle(
   // Transitar proyecto solo si esta en entregado
   if (proyectoRow && proyectoRow.estado_v2 === PROJECT_EXECUTION_STATES.ENTREGADO) {
     const { error: proyectoUpdateErr } = await admin
-      .from('doa_proyectos' as never)
+      .from('proyectos' as never)
       .update({
         estado_v2: PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE,
         fase_actual: PROJECT_EXECUTION_PHASES.ENTREGA,

@@ -17,12 +17,12 @@ export async function GET() {
 
   try {
     const { data, error } = await supabase
-      .from('doa_clientes_datos_generales')
+      .from('clientes_datos_generales')
       .select('id, nombre')
       .order('nombre', { ascending: true })
 
     if (error) {
-      console.warn('[api/clientes] error leyendo doa_clientes_datos_generales:', error.message)
+      console.warn('[api/clientes] error leyendo clientes_datos_generales:', error.message)
       return Response.json({ clientes: [] })
     }
 

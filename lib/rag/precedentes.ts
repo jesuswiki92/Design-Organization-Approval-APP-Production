@@ -1,66 +1,47 @@
 /**
  * ============================================================================
- * Precedentes reindex helper (Sprint 4 — close the loop)
+ * Precedentes reindex helper (Sprint 4 — close the loop) — Fase 6 rewrite
  * ============================================================================
  *
- * Minimal helper to (re)index a single archived/closed project into a
- * Pinecone-backed "precedentes" vector index so future quotations / projects
- * can retrieve it as a structured precedent.
+ * Migrado de Pinecone HTTP -> pgvector local en `ams-postgres-app`.
  *
- * Design decisions:
- *   - This is the "new" precedentes index (separate from the OpenAI-embedded
- *     doa_proyectos_embeddings table used by
- *     app/api/proyectos/[id]/precedentes/route.ts). Both can coexist.
- *   - Uses the Pinecone records API (integrated embedding via the index's
- *     fieldMap) — the app does NOT embed locally. The index must be created
- *     with an embedding model already attached (see Pinecone "Integrated
- *     Embedding" indexes).
- *   - Env vars:
- *       PINECONE_API_KEY           — required to push upserts. If missing,
- *                                    reindex logs a warn and returns
- *                                    { upserted: false }, NOT a fatal error.
- *       PINECONE_INDEX_HOST        — the index host, e.g.
- *                                    https://doa-precedentes-xxxx.svc.region.pinecone.io
- *                                    (found in the Pinecone console for the
- *                                    index — "Connect -> Host").
- *       PINECONE_INDEX_PRECEDENTES — the index name (informational; not used
- *                                    for the HTTP call but kept for logs).
- *       PINECONE_NAMESPACE         — optional, defaults to '__default__'.
- *   - If the index uses a fieldMap text field different from 'text', set
- *     PINECONE_PRECEDENTES_TEXT_FIELD. Defaults to 'text'.
+ * (Re)indexa un unico proyecto archivado/cerrado en la tabla
+ * `proyectos_embeddings` (vector(3072)) para que futuras consultas /
+ * proyectos puedan recuperarlo como precedente via el RPC
+ * `match_proyectos_precedentes`.
  *
- * Record schema (consistent across calls):
+ * Decisiones:
+ *   - Reutilizamos la tabla existente con `chunk_idx = 0` para resumenes
+ *     Sprint-4. Se distingue de chunks legacy (backfill-precedentes.mjs) via
+ *     `metadata->>'kind' = 'sprint4_summary'`.
+ *   - La dimension del embedding se mantiene en 3072 (text-embedding-3-large
+ *     via LiteLLM alias `embedding-cloud-3-large`) — coincide con la columna
+ *     vector(3072) existente, asi evitamos un re-embedding masivo.
+ *   - Idempotencia: ON CONFLICT (project_number, chunk_idx) DO UPDATE (emulado
+ *     por supabase-js `upsert({ onConflict: 'project_number,chunk_idx' })`).
+ *   - Ya no hay fail-soft por env var faltante: si LiteLLM no responde, el
+ *     reindex falla y la UI mostrara el error — LiteLLM tiene su propio
+ *     fallback cloud para el alias de embeddings.
+ *
+ * Record schema en metadata (jsonb):
  *   {
- *     _id: <proyecto_id>,
- *     text: <structured summary>,
- *     proyecto_id: <uuid>,
- *     numero_proyecto: string,
- *     titulo: string,
- *     cliente_id: string | null,
- *     estado_v2: string,
- *     outcome: string | null,
- *     lecciones_count: number,
- *     deliverables_count: number,
- *     validaciones_aprobadas: number,
- *     validaciones_devueltas: number,
- *     created_at: string,
- *     tags: string[],
+ *     kind: 'sprint4_summary',
+ *     estado_v2, outcome,
+ *     lecciones_count, deliverables_count,
+ *     validaciones_aprobadas, validaciones_devueltas, entregas_confirmadas,
+ *     cliente_id, created_at, tags[]
  *   }
- *
- * NOTE: the legacy doa_proyectos_embeddings (OpenAI based) is untouched; this
- * helper is the Sprint 4 channel to Pinecone.
  */
 
 import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getLiteLLM, MODEL_EMBEDDING_CLOUD } from '@/lib/llm/litellm-client'
+import type { ProyectoEmbeddingInsert } from '@/types/database'
 
 type ReindexOk = { upserted: true; record_id: string }
 type ReindexSkipped = { upserted: false; reason: string }
 export type ReindexResult = ReindexOk | ReindexSkipped
-
-const DEFAULT_TEXT_FIELD = 'text'
-const DEFAULT_NAMESPACE = '__default__'
 
 function composeText(parts: {
   titulo: string
@@ -112,7 +93,7 @@ export async function reindexPrecedente(
 
   // 1) Load project
   const { data: projectRow, error: projErr } = await admin
-    .from('doa_proyectos')
+    .from('proyectos')
     .select(
       'id, numero_proyecto, titulo, descripcion, client_id, estado_v2, fase_actual, created_at',
     )
@@ -150,24 +131,24 @@ export async function reindexPrecedente(
   // 2) Load related context
   const [delRes, valRes, entRes, closureRes, lessonsRes] = await Promise.all([
     admin
-      .from('doa_project_deliverables')
+      .from('project_deliverables')
       .select('titulo, template_code, subpart_easa, estado')
       .eq('proyecto_id', proyectoId),
     admin
-      .from('doa_project_validations')
+      .from('project_validations')
       .select('decision')
       .eq('proyecto_id', proyectoId),
     admin
-      .from('doa_project_deliveries')
+      .from('project_deliveries')
       .select('dispatch_status')
       .eq('proyecto_id', proyectoId),
     admin
-      .from('doa_project_closures')
+      .from('project_closures')
       .select('outcome, metrics')
       .eq('proyecto_id', proyectoId)
       .maybeSingle(),
     admin
-      .from('doa_project_lessons')
+      .from('project_lessons')
       .select('categoria, tipo, titulo, descripcion, tags')
       .eq('proyecto_id', proyectoId),
   ])
@@ -215,54 +196,71 @@ export async function reindexPrecedente(
     lecciones: lessons,
   })
 
-  // 3) Push to Pinecone (if configured)
-  const apiKey = process.env.PINECONE_API_KEY
-  const indexHost = process.env.PINECONE_INDEX_HOST
-  const textField = process.env.PINECONE_PRECEDENTES_TEXT_FIELD || DEFAULT_TEXT_FIELD
-  const namespace = process.env.PINECONE_NAMESPACE || DEFAULT_NAMESPACE
-
-  if (!apiKey || !indexHost) {
+  // 3) Embed via LiteLLM (3072 dim, text-embedding-3-large).
+  let embedding: number[]
+  try {
+    const llm = getLiteLLM()
+    const resp = await llm.embeddings.create({
+      model: MODEL_EMBEDDING_CLOUD,
+      input: text,
+    })
+    const vec = resp.data?.[0]?.embedding
+    if (!Array.isArray(vec) || vec.length === 0) {
+      return {
+        upserted: false,
+        reason: 'embed_empty_vector',
+      }
+    }
+    embedding = vec as number[]
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
     return {
       upserted: false,
-      reason: 'pinecone_env_missing:PINECONE_API_KEY_or_PINECONE_INDEX_HOST',
+      reason: `embed_failed:${msg.slice(0, 200)}`,
     }
   }
 
-  const record: Record<string, unknown> = {
-    _id: p.id,
-    [textField]: text,
-    proyecto_id: p.id,
-    numero_proyecto: p.numero_proyecto ?? '',
-    titulo: p.titulo,
-    cliente_id: p.client_id ?? '',
-    estado_v2: p.estado_v2 ?? '',
-    outcome: closure?.outcome ?? '',
-    lecciones_count: lessons.length,
-    deliverables_count: deliverables.length,
-    validaciones_aprobadas: validacionesAprobadas,
-    validaciones_devueltas: validacionesDevueltas,
-    entregas_confirmadas: entregasConfirmadas,
-    created_at: p.created_at,
-    tags: Array.from(allTags),
-  }
+  // 4) Upsert en proyectos_embeddings (pgvector). Reusamos chunk_idx=0
+  //    para el resumen Sprint-4; metadata.kind distingue de chunks legacy.
+  // NOTA: cast a `any` en `.from()` porque la tabla `proyectos_embeddings`
+  //       no está en los tipos generados (`types/database.ts`). La tabla se
+  //       crea via migracion (202604081200_create_proyectos_embeddings.sql)
+  //       pero los tipos no se han regenerado aun. El runtime valida el schema
+  //       a traves de Postgres, así que el cast es seguro.
+  const projectNumber = p.numero_proyecto ?? p.id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const anyAdmin = admin as any
+  const { error: upsertErr } = await anyAdmin
+    .from('proyectos_embeddings')
+    .upsert(
+      {
+        project_number: projectNumber,
+        project_title: p.titulo,
+        chunk_idx: 0,
+        chunk_text: text,
+        embedding, // supabase-js serializa number[] -> vector
+        metadata: {
+          kind: 'sprint4_summary',
+          proyecto_id: p.id,
+          estado_v2: p.estado_v2,
+          outcome: closure?.outcome ?? null,
+          lecciones_count: lessons.length,
+          deliverables_count: deliverables.length,
+          validaciones_aprobadas: validacionesAprobadas,
+          validaciones_devueltas: validacionesDevueltas,
+          entregas_confirmadas: entregasConfirmadas,
+          cliente_id: p.client_id,
+          created_at: p.created_at,
+          tags: Array.from(allTags),
+        },
+      },
+      { onConflict: 'project_number,chunk_idx' },
+    )
 
-  const url = `${indexHost.replace(/\/$/, '')}/records/namespaces/${encodeURIComponent(namespace)}/upsert`
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Api-Key': apiKey,
-      'Content-Type': 'application/x-ndjson',
-      'X-Pinecone-API-Version': '2025-01',
-    },
-    body: JSON.stringify(record) + '\n',
-  })
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '')
+  if (upsertErr) {
     return {
       upserted: false,
-      reason: `pinecone_upsert_failed:${res.status}:${detail.slice(0, 160)}`,
+      reason: `pgvector_upsert_failed:${(upsertErr as { message?: string }).message?.slice(0, 200) ?? 'unknown'}`,
     }
   }
 

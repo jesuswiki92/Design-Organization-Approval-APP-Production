@@ -31,7 +31,7 @@ export async function GET(
   }
 
   const { data: dRow, error: dErr } = await supabase
-    .from('doa_project_deliveries')
+    .from('project_deliveries')
     .select('id, proyecto_id, soc_pdf_storage_path')
     .eq('id', deliveryId)
     .eq('proyecto_id', id)

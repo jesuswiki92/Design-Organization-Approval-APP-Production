@@ -16,7 +16,7 @@
  * Consumers:
  *   - lib/signatures/hmac.ts          (this file)
  *   - app/api/proyectos/[id]/validar/route.ts
- *   - supabase/migrations/202604170010_doa_project_signatures.sql
+ *   - supabase/migrations/202604170010_project_signatures.sql
  *
  * Env var: DOA_SIGNATURE_HMAC_SECRET (REQUIRED in all envs that sign).
  */

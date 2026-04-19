@@ -6,7 +6,7 @@
  * ============================================================================
  *
  * Componente cliente que muestra el estado de verificacion de un TCDS
- * contra la base de datos interna de aeronaves (doa_aeronaves).
+ * contra la base de datos interna de aeronaves (aeronaves).
  *
  * Tres modos de visualizacion cuando hay variantes:
  * - VARIANTE EXACTA: Si aircraftModel coincide con un modelo, muestra solo
@@ -28,7 +28,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle2, ChevronDown, Plane } from 'lucide-react'
 
-/** Tipo para cada variante de aeronave encontrada en doa_aeronaves */
+/** Tipo para cada variante de aeronave encontrada en aeronaves */
 interface AeronaveVariant {
   tcds_code: string
   tcds_code_short: string
@@ -48,7 +48,7 @@ interface AeronaveVariant {
 }
 
 interface TcdsStatusBannerProps {
-  /** Si se encontraron variantes en doa_aeronaves */
+  /** Si se encontraron variantes en aeronaves */
   found: boolean
   /** El numero de TCDS que se busco */
   tcdsNumber: string | null
@@ -371,7 +371,7 @@ export function TcdsStatusBanner({
             {tcdsNumber ? (
               <>
                 El codigo <span className="font-mono font-medium text-slate-700">{tcdsNumber}</span> no
-                se encontro en <span className="font-medium">doa_aeronaves</span>.
+                se encontro en <span className="font-medium">aeronaves</span>.
               </>
             ) : (
               <>

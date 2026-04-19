@@ -1,4 +1,4 @@
-// Backfill: ingest PROJECT_SUMMARY.md files into doa_proyectos_embeddings.
+// Backfill: ingest PROJECT_SUMMARY.md files into ams_proyectos_embeddings.
 //
 // Usage: from `01.Desarrollo de App/`:
 //   OPENAI_API_KEY=... SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/backfill-precedentes.mjs
@@ -46,7 +46,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const MAX_DEPTH = 3;
 const SUMMARY_FILENAME = 'PROJECT_SUMMARY.md';
-const TABLE = 'doa_proyectos_embeddings';
+const TABLE = 'ams_proyectos_embeddings';
 const PARAGRAPH_TARGET_CHARS = 1000;
 
 // ---------------------------------------------------------------------------

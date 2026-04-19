@@ -131,12 +131,12 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
             <strong className="font-semibold">Modo fallback activo.</strong>{' '}
             La materialized view{' '}
             <code className="rounded bg-amber-100 px-1 text-[11px]">
-              doa_project_metrics_mv
+              project_metrics_mv
             </code>{' '}
             no esta disponible. Se estan mostrando agregados en vivo (mas lentos,
             no reflejan dwell por fase). Aplica la migracion{' '}
             <code className="rounded bg-amber-100 px-1 text-[11px]">
-              202604190020_doa_project_metrics_mv.sql
+              202604190020_project_metrics_mv.sql
             </code>{' '}
             para activar la MV.
             {fallbackReason && (

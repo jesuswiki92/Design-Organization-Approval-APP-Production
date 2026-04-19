@@ -152,7 +152,7 @@ export async function POST(
 
     // Cargar proyecto
     const { data: proyecto, error: proyectoError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('id, numero_proyecto, estado_v2, fase_actual, created_at, titulo')
       .eq('id', id)
       .maybeSingle()
@@ -181,15 +181,15 @@ export async function POST(
     // Computar snapshot de metricas
     const [delRes, valRes, entRes] = await Promise.all([
       supabase
-        .from('doa_project_deliverables')
+        .from('project_deliverables')
         .select('estado')
         .eq('proyecto_id', id),
       supabase
-        .from('doa_project_validations')
+        .from('project_validations')
         .select('decision')
         .eq('proyecto_id', id),
       supabase
-        .from('doa_project_deliveries')
+        .from('project_deliveries')
         .select('dispatch_status, dispatched_at, client_confirmed_at, created_at')
         .eq('proyecto_id', id),
     ])
@@ -281,7 +281,7 @@ export async function POST(
 
     // 1) Insert signature
     const { data: sigRow, error: sigErr } = await admin
-      .from('doa_project_signatures' as never)
+      .from('project_signatures' as never)
       .insert({
         proyecto_id: id,
         validation_id: null,
@@ -325,7 +325,7 @@ export async function POST(
 
     // 2) Insert closure row
     const { data: closureRow, error: closureErr } = await admin
-      .from('doa_project_closures' as never)
+      .from('project_closures' as never)
       .insert({
         proyecto_id: id,
         closer_user_id: user.id,
@@ -383,7 +383,7 @@ export async function POST(
         tags: l.tags ?? null,
       }))
       const { data: lessonRows, error: lessonErr } = await admin
-        .from('doa_project_lessons' as never)
+        .from('project_lessons' as never)
         .insert(rows as never)
         .select('*')
       if (lessonErr) {
@@ -414,7 +414,7 @@ export async function POST(
 
     // 4) Transicionar proyecto -> cerrado
     const { data: updatedProyecto, error: updateError } = await admin
-      .from('doa_proyectos' as never)
+      .from('proyectos' as never)
       .update({
         estado_v2: PROJECT_EXECUTION_STATES.CERRADO,
         fase_actual: PROJECT_EXECUTION_PHASES.CIERRE,

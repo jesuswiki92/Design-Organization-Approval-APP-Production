@@ -4,7 +4,7 @@
  * ============================================================================
  *
  * Pagina principal del modulo de Proyectos activos. Se encarga de cargar
- * los proyectos desde la tabla doa_proyectos y la configuracion de estados
+ * los proyectos desde la tabla proyectos y la configuracion de estados
  * del workflow en paralelo, y pasarlos al componente visual interactivo.
  *
  * Los proyectos cerrados se excluyen para mostrar solo los que estan en curso.
@@ -39,7 +39,7 @@ export default async function ProyectosPage() {
     ]),
     // Proyectos activos (excluye cerrados), ordenados por fecha
     supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .select('*')
       .not('estado', 'in', '("cerrado")')
       .order('created_at', { ascending: false }),
@@ -48,7 +48,7 @@ export default async function ProyectosPage() {
   // Paso 2: Verificar errores
   if (proyectosResult.error) {
     console.error(
-      'Error cargando proyectos desde doa_proyectos:',
+      'Error cargando proyectos desde proyectos:',
       proyectosResult.error,
     )
   }

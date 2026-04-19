@@ -31,7 +31,7 @@ function jsonResponse(status: number, data: unknown) {
  *  1. Autenticar y cargar la consulta.
  *  2. Calcular (o validar) el numero_proyecto.
  *  3. Crear la carpeta del proyecto con las 6 subcarpetas estandar.
- *  4. Insertar la fila en `doa_proyectos`.
+ *  4. Insertar la fila en `proyectos`.
  *
  * Body (opcional): { numero_proyecto?: string, titulo?: string }.
  * Respuestas:
@@ -69,7 +69,7 @@ export async function POST(
 
     // 1. Cargar consulta (mismos campos que project-preview)
     const { data: consulta, error: consultaError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .select(
         'id, asunto, resumen, remitente, aircraft_manufacturer, aircraft_model, aircraft_msn, tcds_number, modification_summary, numero_entrada',
       )
@@ -89,7 +89,7 @@ export async function POST(
     let tcdsCodeShort: string | null = null
     if (tcdsNumber) {
       const { data: aeronave } = await supabase
-        .from('doa_aeronaves')
+        .from('aeronaves')
         .select('tcds_code_short')
         .eq('tcds_code', tcdsNumber)
         .maybeSingle()
@@ -113,13 +113,13 @@ export async function POST(
       (consulta.asunto as string | null) ||
       'Proyecto sin titulo'
 
-    // 3. Insertar fila en doa_proyectos PRIMERO (antes de crear carpetas).
+    // 3. Insertar fila en proyectos PRIMERO (antes de crear carpetas).
     //    Asi, si el INSERT falla por unique_violation u otro motivo,
     //    no dejamos carpetas huerfanas en disco que generen duplicados
     //    en siguientes reintentos.
     const folderPath = buildProjectFolderPath(SIMULATION_BASE_PATH, numeroProyecto)
     const { data: inserted, error: insertError } = await supabase
-      .from('doa_proyectos')
+      .from('proyectos')
       .insert({
         numero_proyecto: numeroProyecto,
         consulta_id: id,
@@ -177,7 +177,7 @@ export async function POST(
       const mkdirMessage =
         mkdirError instanceof Error ? mkdirError.message : 'Unknown mkdir error'
       const { error: rollbackError } = await supabase
-        .from('doa_proyectos')
+        .from('proyectos')
         .delete()
         .eq('id', inserted.id)
 
@@ -219,7 +219,7 @@ export async function POST(
     //    desaparezca del tablero de cotizaciones. Si falla, solo se loguea:
     //    el proyecto ya existe y la carpeta tambien, no debemos romper la request.
     const { error: consultaUpdateError } = await supabase
-      .from('doa_consultas_entrantes')
+      .from('consultas_entrantes')
       .update({ estado: QUOTATION_BOARD_STATES.PROYECTO_ABIERTO })
       .eq('id', id)
 

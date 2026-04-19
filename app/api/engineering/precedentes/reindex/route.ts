@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     try {
       const admin = createAdminClient()
       const { data, error } = await admin
-        .from('doa_proyectos')
+        .from('proyectos')
         .select('id')
         .in('estado_v2', ['cerrado', 'archivado_proyecto'])
         .order('estado_updated_at', { ascending: false })
