@@ -47,7 +47,7 @@ export function ProjectExpertPanel({
 
   return (
     <aside className="flex min-h-[520px] flex-col overflow-hidden rounded-[24px] border border-sky-200 bg-white xl:sticky xl:top-6">
-      <div className="border-b border-sky-100 bg-[linear-gradient(180deg,#e0f2fe_0%,#f8fbff_36%,#ffffff_100%)] px-5 py-5">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-5">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-[#0B1220] text-sky-700">
             <PanelRightOpen className="h-5 w-5" />

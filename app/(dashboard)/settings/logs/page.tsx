@@ -67,14 +67,14 @@ export default async function SettingsLogsPage() {
   const analysis = buildLogsAnalysis(events)
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar
         title="Settings / Logs"
         subtitle="Superficie operativa para revisar observabilidad reciente de la aplicacion"
       />
 
       <main className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
-        <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+        <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)]">

@@ -13,7 +13,7 @@ export default function DatabasesClient({ tableGroups }: { tableGroups: TableGro
   )
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar title="Bases de datos" subtitle="Gestion de datos estructurados y vectoriales" />
 
       <div className="flex-1 overflow-y-auto p-6 text-[color:var(--ink)]">

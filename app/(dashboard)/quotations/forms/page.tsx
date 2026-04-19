@@ -101,7 +101,7 @@ export default async function QuotationsFormsCatalogPage() {
   const clientLookup = buildIncomingClientLookup(clients, contacts)
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar title="Formularios" subtitle="Catalogo interno de formularios de quotations" />
 
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
@@ -120,7 +120,7 @@ export default async function QuotationsFormsCatalogPage() {
           </div>
         </div>
 
-        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
               Formularios disponibles

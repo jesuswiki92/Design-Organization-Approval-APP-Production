@@ -42,7 +42,7 @@ export function ClientDetailPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-auto rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-4">
+      <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
         <div>
           <h2 className="text-base font-semibold text-slate-950">{client.nombre}</h2>
           {client.cif_vat ? (
@@ -208,11 +208,11 @@ export function ClientDetailPanel({
 export function EmptyClientDetail() {
   return (
     <div className="flex h-full min-h-0 flex-col rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-4">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
         <h2 className="text-base font-semibold text-slate-950">Detalle del cliente</h2>
       </div>
       <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full rounded-[26px] border border-dashed border-[color:var(--ink-4)] bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_100%)] p-6 text-center">
+        <div className="w-full rounded-[26px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 text-center">
           <p className="text-sm font-semibold text-slate-950">Selecciona un cliente</p>
           <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
             La zona izquierda muestra nombre, dirección y teléfono. Al pulsar una fila, aquí verás

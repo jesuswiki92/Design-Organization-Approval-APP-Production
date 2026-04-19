@@ -483,7 +483,7 @@ export default function ProyectosHistoricoEntryClient({
       {/*   - Texto explicativo                                              */}
       {/*   - Etiquetas resumen: cliente, anio y carpeta de origen           */}
       {/* ------------------------------------------------------------------ */}
-      <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+      <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
         {/* Codigo del proyecto mostrado en estilo "monoespaciado" (como texto tecnico) */}
         <span className="inline-block rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-1 font-mono text-xs font-medium text-[color:var(--ink-3)]">
           {project.numero_proyecto}
@@ -992,7 +992,7 @@ export default function ProyectosHistoricoEntryClient({
           {/* ------------------------------------------------------------ */}
           <section
             id="siguiente-paso"
-            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_46%,#f8fafc_100%)] p-6 shadow-[0_18px_40px_rgba(14,165,233,0.08)]"
+            className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_18px_40px_rgba(14,165,233,0.08)]"
           >
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
               Siguiente paso

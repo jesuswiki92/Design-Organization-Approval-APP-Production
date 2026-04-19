@@ -56,7 +56,7 @@ export default async function ProjectDetailPage({
   const timeEntries = (horasResult.data ?? []) as ConteoHorasProyecto[]
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar
         title={project.numero_proyecto}
         subtitle={project.titulo}

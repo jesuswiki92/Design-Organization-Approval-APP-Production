@@ -213,12 +213,12 @@ export default function CertificationExpertPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar title="Asistente DOA" subtitle="Chat operativo general con OpenRouter" />
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 p-6 xl:grid xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
-          <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5">
+          <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                 <Sparkles className="h-5 w-5" />
@@ -346,7 +346,7 @@ export default function CertificationExpertPage() {
         </section>
 
         <aside className="flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
-          <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_100%)] px-5 py-5">
+          <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]">
                 <FileText className="h-4 w-4" />

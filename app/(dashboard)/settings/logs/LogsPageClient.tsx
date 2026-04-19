@@ -412,7 +412,7 @@ export function LogsPageClient({
           <div className="space-y-4 p-5">
             {selectedEvent ? (
               <>
-                <div className="rounded-[20px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_100%)] p-4">
+                <div className="rounded-[20px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={cn(

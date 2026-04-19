@@ -23,7 +23,7 @@ import { TcdsRagClient } from './TcdsRagClient'
 
 export default function TcdsRagPage() {
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior */}
       <TopBar title="TCDS RAG Engine" subtitle="Motor de indexacion y busqueda semantica" />
 

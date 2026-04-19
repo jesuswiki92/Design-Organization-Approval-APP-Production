@@ -43,11 +43,11 @@ const plannedSettings = [
 
 export default function SettingsPage() {
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar title="Settings" subtitle="Configuracion general de la aplicacion" />
 
       <main className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
-        <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
+        <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
           <h2 className="text-2xl font-semibold text-slate-950">Configuracion general</h2>
           <p className="mt-1 text-sm leading-7 text-[color:var(--ink-3)]">
             Gestiona parametros globales, superficie operativa y preferencias del

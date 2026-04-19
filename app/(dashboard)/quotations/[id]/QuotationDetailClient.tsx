@@ -145,7 +145,7 @@ export function QuotationDetailClient({
           Volver a Quotations
         </Link>
 
-        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
               Quotation no encontrada
@@ -185,7 +185,7 @@ export function QuotationDetailClient({
         </div>
       </div>
 
-      <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+      <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="space-y-3">
             <p className="font-mono text-xs text-[color:var(--ink-3)]">{card.code}</p>

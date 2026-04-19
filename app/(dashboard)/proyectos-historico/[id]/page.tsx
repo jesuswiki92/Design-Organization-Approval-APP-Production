@@ -94,13 +94,13 @@ export default async function ProyectosHistoricoEntryPage({
   // Si el proyecto no existe, mostrar mensaje de error al usuario
   if (!project) {
     return (
-      <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+      <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
         <TopBar
           title="Entrada de proyecto historico"
           subtitle="Ficha preparada para completar la informacion del proyecto"
         />
         <div className="flex min-h-0 flex-1 items-center justify-center px-5 py-8">
-          <section className="w-full max-w-3xl rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+          <section className="w-full max-w-3xl rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
               Proyecto historico no encontrado
             </h1>
@@ -116,7 +116,7 @@ export default async function ProyectosHistoricoEntryPage({
 
   // Paso 4: El proyecto existe — mostrar la ficha completa (mdl_contenido viene incluido en el registro)
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior con titulo de la pagina */}
       <TopBar
         title="Entrada de proyecto historico"

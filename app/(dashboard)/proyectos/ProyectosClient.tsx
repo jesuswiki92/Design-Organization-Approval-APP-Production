@@ -442,7 +442,7 @@ function BoardLane({
   return (
     <section
       className={cn(
-        'flex h-full w-[320px] flex-none flex-col rounded-[30px] border bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 shadow-[0_18px_42px_rgba(148,163,184,0.14)]',
+        'flex h-full w-[320px] flex-none flex-col rounded-[30px] border bg-[color:var(--paper-2)] p-4 shadow-[0_18px_42px_rgba(148,163,184,0.14)]',
         stateMeta.boardAccent.border,
       )}
     >

@@ -116,7 +116,7 @@ export default async function QuotationsPage() {
 
   // Paso 4: Renderizar la pagina con todos los datos cargados
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior con titulo de la seccion */}
       <TopBar title="Quotations" subtitle="Seguimiento comercial previo al proyecto" />
 
@@ -124,7 +124,7 @@ export default async function QuotationsPage() {
       <div className="px-5 pb-0 pt-5">
         <Link
           href="/quotations/forms"
-          className="inline-flex items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm font-semibold text-[color:var(--ink-2)] shadow-sm transition-colors hover:bg-[color:var(--paper-3)]"
+          className="inline-flex items-center rounded-xl border border-[color:var(--line)] bg-transparent px-4 py-2 text-sm font-semibold text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
         >
           <FileText className="mr-2 h-4 w-4" />
           Formularios

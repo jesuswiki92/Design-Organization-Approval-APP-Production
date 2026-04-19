@@ -194,7 +194,7 @@ export function PreliminaryScopeChatPanel({
 
   return (
     <aside className="flex min-h-[680px] flex-col overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_40px_rgba(148,163,184,0.14)] xl:sticky xl:top-6">
-      <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(180deg,#e0f2fe_0%,#f8fbff_42%,#ffffff_100%)] px-5 py-5">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-5">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[#0B1220] text-[color:var(--ink-3)]">
             <PanelRightOpen className="h-5 w-5" />

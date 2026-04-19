@@ -27,7 +27,7 @@ export default async function DatabaseTablePage({
     'Vista detallada de la tabla'
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar title="Bases de datos" subtitle="Gestion de datos estructurados y vectoriales" />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 text-[color:var(--ink)]">

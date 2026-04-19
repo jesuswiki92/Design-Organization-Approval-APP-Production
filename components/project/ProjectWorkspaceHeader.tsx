@@ -36,7 +36,7 @@ export function ProjectWorkspaceHeader({
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
-      <div className="border-b border-sky-100 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_52%,#e0f2fe_100%)] px-6 py-5">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-5">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-center gap-3">

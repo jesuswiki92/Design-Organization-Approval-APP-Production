@@ -214,7 +214,7 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
 
   return (
     <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
         <div className="flex items-center gap-2">
           <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
           <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
@@ -272,7 +272,7 @@ function ReviewSummarySection({
   ]
 
   return (
-    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
       <div className="border-b border-[color:var(--ink-4)] px-5 py-3">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-[color:var(--ink-3)]" />
@@ -344,7 +344,7 @@ export default async function IncomingQuotationDetailPage({
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a quotations
           </Link>
-          <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+          <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
             <div className="space-y-2">
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 Consulta no encontrada
@@ -797,7 +797,7 @@ export default async function IncomingQuotationDetailPage({
         </div>
 
         {/* --- CABECERA PRINCIPAL --- */}
-        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <p className="font-mono text-xs text-[color:var(--ink-3)]">{query.codigo}</p>
@@ -854,7 +854,7 @@ export default async function IncomingQuotationDetailPage({
             <div className="grid gap-5 lg:grid-cols-2">
               <ClientDetailPanel client={matchedClient} />
               <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                   <div className="flex items-center gap-2">
                     <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
                     <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
@@ -995,7 +995,7 @@ export default async function IncomingQuotationDetailPage({
               <div className="grid gap-5 lg:grid-cols-2">
                 <ClientDetailPanel client={matchedClient} />
                 <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                  <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                  <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
                       <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
@@ -1088,7 +1088,7 @@ export default async function IncomingQuotationDetailPage({
 
             {/* --- Comunicaciones (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#eef2ff_100%)] px-5 py-3">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-[color:var(--ink-3)]" />
                   <h2 className="text-sm font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
@@ -1126,7 +1126,7 @@ export default async function IncomingQuotationDetailPage({
 
             {/* --- Datos del cliente (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <UserRound className="h-4 w-4 text-[color:var(--ink-3)]" />
                   <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
@@ -1152,7 +1152,7 @@ export default async function IncomingQuotationDetailPage({
                   <ClientProjectsPanel projects={projectHistory} />
                   {false && (
                 <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                  <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+                  <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
                       <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
@@ -1233,7 +1233,7 @@ export default async function IncomingQuotationDetailPage({
 
             {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
                   <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
@@ -1406,7 +1406,7 @@ export default async function IncomingQuotationDetailPage({
 
             {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <ClipboardList className="h-4 w-4 text-[color:var(--ink-3)]" />
                   <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
@@ -1794,7 +1794,7 @@ export default async function IncomingQuotationDetailPage({
 
             {/* --- Definir alcance preliminar (ancho completo) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f0f9ff_100%)] px-5 py-3">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
                   <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
@@ -1981,7 +1981,7 @@ export default async function IncomingQuotationDetailPage({
 
             {/* --- Definir documentacion (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#ffffff_0%,#f5f3ff_100%)] px-5 py-3">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
                   <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion</h2>

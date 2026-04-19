@@ -714,7 +714,7 @@ export function ProjectSummaryPanel({
   }
 
   return (
-    <div className="mt-3 rounded-[20px] border border-[color:var(--ink-4)] bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-4 shadow-[0_10px_24px_rgba(148,163,184,0.08)]">
+    <div className="mt-3 rounded-[20px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4 shadow-[0_10px_24px_rgba(148,163,184,0.08)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">

@@ -55,10 +55,7 @@ export function TopBar({ title, subtitle }: TopBarProps) {
   }
 
   return (
-    <header
-      className="flex h-14 shrink-0 items-center justify-between border-b border-[color:var(--line)] px-6 backdrop-blur-sm"
-      style={{ background: 'linear-gradient(180deg,rgba(251,250,247,0.92) 0%,rgba(245,243,238,0.92) 100%)' }}
-    >
+    <header className="flex h-14 shrink-0 items-center justify-between bg-[color:var(--paper)] px-6">
       <div className="flex min-w-0 items-baseline gap-3">
         <h1 className="font-[family-name:var(--font-heading)] text-[18px] leading-none text-[color:var(--ink)]">
           {title}

@@ -1145,8 +1145,8 @@ export function QuotationStatesBoard({
       onValueChange={(nextValue) => setView(nextValue as BoardView)}
       className="w-full gap-4"
     >
-      <section className="overflow-hidden rounded-[28px] border border-[color:var(--line)] bg-[color:var(--paper-2)] shadow-[0_24px_60px_-30px_rgba(74,60,36,0.2)]">
-        <div className="border-b border-[color:var(--line)] px-5 py-5">
+      <section className="overflow-hidden bg-transparent">
+        <div className="border-b border-[color:var(--line)] px-0 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--paper)] px-3 py-1 doa-label-mono text-[color:var(--umber)]">
@@ -1221,7 +1221,7 @@ export function QuotationStatesBoard({
         </div>
 
         {settingsOpen ? (
-          <div className="border-b border-[color:var(--line)] bg-[color:var(--paper)] px-5 py-5">
+          <div className="border-b border-[color:var(--line)] bg-transparent px-0 py-5">
             <div className="mb-4 rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-4 py-4 text-sm text-[color:var(--ink-2)]">
               <p className="font-semibold text-[color:var(--ink)]">
                 Editor pro de estados
@@ -1256,7 +1256,7 @@ export function QuotationStatesBoard({
 
         {composerOpen ? (
           <form
-            className="grid gap-3 border-b border-[color:var(--line)] bg-[color:var(--paper)] px-5 py-4 md:grid-cols-[minmax(0,1fr)_auto]"
+            className="grid gap-3 border-b border-[color:var(--line)] bg-transparent px-0 py-4 md:grid-cols-[minmax(0,1fr)_auto]"
             onSubmit={handleAddLane}
           >
             <div className="space-y-2">
@@ -1291,7 +1291,7 @@ export function QuotationStatesBoard({
         ) : null}
 
         <TabsContent value="board" className="min-h-0">
-          <div className="px-5 py-5">
+          <div className="px-0 py-5">
             <div className="mb-4 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] px-4 py-3 text-sm text-[color:var(--ink-3)]">
               Scroll horizontal habilitado. Usa la barra o el trackpad para recorrer las columnas.
             </div>
@@ -1311,7 +1311,7 @@ export function QuotationStatesBoard({
           </div>
         </TabsContent>
 
-        <TabsContent value="list" className="px-5 py-5">
+        <TabsContent value="list" className="px-0 py-5">
           <div className="overflow-hidden rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] shadow-[0_18px_42px_-24px_rgba(74,60,36,0.18)]">
             <div className="border-b border-[color:var(--line)] bg-[color:var(--paper)] px-5 py-4">
               <h3 className="font-[family-name:var(--font-heading)] text-lg text-[color:var(--ink)]">Quotation list</h3>

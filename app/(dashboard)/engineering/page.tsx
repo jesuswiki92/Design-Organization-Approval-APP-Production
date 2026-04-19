@@ -25,7 +25,7 @@ import { EngineeringClient } from './EngineeringClient'
 /** Pagina principal del modulo de Proyectos */
 export default function EngineeringIndexPage() {
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f7fbff_0%,#eef6ff_44%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior con titulo */}
       <TopBar title="Proyectos" subtitle="Vista principal de proyectos" />
       {/* Tablero interactivo de proyectos */}

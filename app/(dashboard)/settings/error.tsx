@@ -15,7 +15,7 @@ export default function SettingsError({
   }, [error])
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)] text-[color:var(--ink)]">
+    <div className="flex h-full flex-col items-center justify-center gap-4 bg-[color:var(--paper)] text-[color:var(--ink)]">
       <div className="flex flex-col items-center gap-3 rounded-[22px] border border-amber-200 bg-[color:var(--paper)] p-8 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
         <AlertTriangle className="h-8 w-8 text-amber-500" />
         <h2 className="text-base font-semibold text-slate-950">No se pudo cargar la configuración</h2>

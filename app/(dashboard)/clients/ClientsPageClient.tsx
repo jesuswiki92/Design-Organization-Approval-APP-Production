@@ -1,216 +1,221 @@
 /**
  * ============================================================================
- * COMPONENTE VISUAL DE LA PAGINA DE CLIENTES
+ * COMPONENTE VISUAL DE LA PAGINA DE CLIENTES — patron magazine (warm executive)
  * ============================================================================
  *
- * Este componente muestra la interfaz completa de la seccion de Clientes
- * con dos paneles principales:
+ * Replica el patron del prototipo standalone:
+ *   - Headline serif con metrica ("{N} clients, {M} active this year.")
+ *   - Subtitulo en sans corta
+ *   - Botones "Export CSV" (outline) + "+ Add client" (ink filled)
+ *   - Grid 3 columnas de cards con avatar circular de color por cliente
+ *     y footer "N contactos" / "Since YYYY" (italic serif)
  *
- *   PANEL IZQUIERDO (2/3 de la pantalla):
- *     - Campo de busqueda para filtrar clientes
- *     - Contadores (total de clientes y activos)
- *     - Tabla con columnas: Nombre, Direccion, Telefono, Estado
- *     - Al hacer clic en una fila, se selecciona el cliente
- *
- *   PANEL DERECHO (1/3 de la pantalla):
- *     - Si hay un cliente seleccionado: muestra su ficha detallada
- *       (datos generales, contactos, etc.)
- *     - Si no hay seleccion: muestra un mensaje invitando a seleccionar
- *
- * FUNCIONALIDADES:
- *   - Busqueda en tiempo real por nombre, direccion, telefono o CIF/VAT
- *   - Seleccion/deseleccion de clientes al hacer clic
- *   - Indicador visual de cliente activo/inactivo
- *   - Iniciales del nombre en el avatar circular
- *
- * NOTA TECNICA: 'use client' porque necesita interactividad (busqueda,
- * seleccion de cliente, estados locales).
+ * Al hacer click en una card se abre el ClientDetailPanel existente
+ * en un overlay lateral (se conserva la logica previa).
  * ============================================================================
  */
 
 'use client'
 
-// Hooks de React para estados y calculos optimizados
 import { useMemo, useState } from 'react'
-// Icono de lupa para el campo de busqueda
-import { Search } from 'lucide-react'
+import { Search, Plus, Download } from 'lucide-react'
 
-// Barra superior de la pagina
 import { TopBar } from '@/components/layout/TopBar'
-// Utilidad para combinar clases CSS condicionalmente
 import { cn } from '@/lib/utils'
-// Tipo de datos de un cliente con sus contactos
 import type { ClienteWithContactos } from '@/types/database'
 
-// Panel de detalle del cliente (derecha) y estado vacio
-import { ClientDetailPanel, EmptyClientDetail } from './ClientDetailPanel'
+import { ClientDetailPanel } from './ClientDetailPanel'
 
-/**
- * Genera las iniciales de un nombre.
- * Ejemplo: "Airbus Defence" -> "AD"
- */
+/** Paleta controlada de avatares — solo tonos warm executive */
+const AVATAR_PALETTE: ReadonlyArray<{ bg: string; fg: string }> = [
+  { bg: '#3d4a2e', fg: '#f5f3ee' }, // verde oscuro
+  { bg: '#2f4aa8', fg: '#f5f3ee' }, // cobalt
+  { bg: '#8a5a2b', fg: '#f5f3ee' }, // umber
+  { bg: '#4a3a2a', fg: '#f5f3ee' }, // dark umber
+  { bg: '#545250', fg: '#f5f3ee' }, // ink slate
+  { bg: '#6b8e5a', fg: '#242220' }, // sage
+  { bg: '#a85425', fg: '#f5f3ee' }, // warn orange
+  { bg: '#3d322a', fg: '#f5f3ee' }, // ink deep
+]
+
+/** Hash estable -> indice de paleta, da un color consistente por cliente */
+function colorForClient(key: string): { bg: string; fg: string } {
+  let hash = 0
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0
+  }
+  const idx = Math.abs(hash) % AVATAR_PALETTE.length
+  return AVATAR_PALETTE[idx]
+}
+
 function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '—'
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-/**
- * Formatea la direccion completa de un cliente.
- * Combina: direccion, ciudad y pais separados por comas.
- */
-function formatAddress(client: ClienteWithContactos) {
-  return [client.direccion, client.ciudad, client.pais].filter(Boolean).join(', ')
+function yearOf(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  return String(d.getFullYear())
 }
 
-/**
- * Componente principal de la pagina de Clientes.
- * Recibe la lista completa de clientes con sus contactos.
- */
-export default function ClientsPageClient({ clients }: { clients: ClienteWithContactos[] }) {
-  // Estado del texto de busqueda
+export default function ClientsPageClient({
+  clients,
+}: {
+  clients: ClienteWithContactos[]
+}) {
   const [search, setSearch] = useState('')
-  // Cliente actualmente seleccionado (null si no hay ninguno)
   const [selectedClient, setSelectedClient] = useState<ClienteWithContactos | null>(null)
 
-  /**
-   * Lista filtrada de clientes segun el texto de busqueda.
-   * Busca en: nombre, direccion, telefono y CIF/VAT.
-   */
   const filtered = useMemo(() => {
+    if (search === '') return clients
+    const q = search.toLowerCase()
     return clients.filter((client) => {
-      if (search === '') return true
-      const q = search.toLowerCase()
-      const address = formatAddress(client).toLowerCase()
-
       return (
         client.nombre.toLowerCase().includes(q) ||
-        address.includes(q) ||
-        (client.telefono ?? '').toLowerCase().includes(q) ||
+        (client.ciudad ?? '').toLowerCase().includes(q) ||
+        (client.pais ?? '').toLowerCase().includes(q) ||
         (client.cif_vat ?? '').toLowerCase().includes(q)
       )
     })
   }, [clients, search])
 
+  const total = clients.length
+  const activeThisYear = clients.filter((c) => c.activo).length
+
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
-      <TopBar title="Clientes" subtitle="Base de datos de clientes" />
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
+      <TopBar title="Clients" subtitle="Base de datos de clientes" />
 
       <div className="flex min-h-0 flex-1 gap-5 p-5 text-[color:var(--ink)]">
-        <div className="flex min-h-0 basis-2/3 flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="relative max-w-lg flex-1">
-              <Search
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]"
-              />
-              <input
-                type="text"
-                placeholder="Buscar por nombre, dirección o teléfono..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] py-2 pl-9 pr-3 text-sm text-slate-950 shadow-sm transition-colors placeholder:text-[color:var(--ink-3)] focus:border-[color:var(--ink-4)] focus:outline-none"
-              />
+        <div className="flex min-h-0 flex-1 flex-col gap-5">
+          {/* Headline serif + metricas */}
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="font-[family-name:var(--font-heading)] text-[34px] leading-tight tracking-tight text-[color:var(--ink)]">
+                {total} clients,{' '}
+                <em className="italic text-[color:var(--ink-2)]">
+                  {activeThisYear} active this year.
+                </em>
+              </h2>
+              <p className="mt-1 text-sm text-[color:var(--ink-3)]">
+                People and companies we&apos;ve supported. Click a card to see full history.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="inline-flex h-10 items-center gap-2 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] px-4 text-sm font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-[color:var(--ink)] px-4 text-sm font-medium text-[color:var(--paper)] transition-colors hover:bg-[color:var(--ink-2)]"
+              >
+                <Plus className="h-4 w-4" />
+                Add client
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-[color:var(--ink-3)]">
-            <span>
-              <span className="font-semibold text-slate-950">{filtered.length}</span> clientes
-            </span>
-            <span>
-              <span className="font-semibold text-emerald-700">
-                {filtered.filter((client) => client.activo).length}
-              </span>{' '}
-              activos
-            </span>
+          {/* Search */}
+          <div className="relative max-w-md">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--ink-3)]"
+            />
+            <input
+              type="text"
+              placeholder="Search by name, city, country or VAT…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] py-2 pl-9 pr-3 text-sm text-[color:var(--ink)] transition-colors placeholder:text-[color:var(--ink-3)] focus:border-[color:var(--umber)] focus:outline-none focus:ring-2 focus:ring-[color:var(--umber)]/20"
+            />
           </div>
 
-          <div className="min-h-0 overflow-auto rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
-                  {['Nombre', 'Dirección', 'Teléfono', 'Estado'].map((col) => (
-                    <th
-                      key={col}
-                      className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]"
-                    >
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
+          {/* Grid */}
+          <div className="min-h-0 flex-1 overflow-auto pr-1">
+            {filtered.length === 0 ? (
+              <div className="rounded-[22px] border border-dashed border-[color:var(--line)] bg-transparent px-6 py-16 text-center text-sm text-[color:var(--ink-3)]">
+                {search
+                  ? `No se encontraron clientes para "${search}"`
+                  : 'No hay clientes registrados.'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((client) => {
-                  const address = formatAddress(client)
+                  const { bg, fg } = colorForClient(client.id || client.nombre)
+                  const city = client.ciudad ?? ''
+                  const country = client.pais ?? ''
+                  const locationLine = [city, country].filter(Boolean).join(' · ').toUpperCase()
                   const isSelected = selectedClient?.id === client.id
+                  const contactsCount = client.contactos.length
+                  const activeContacts = client.contactos.filter((c) => c.activo).length
 
                   return (
-                    <tr
+                    <button
                       key={client.id}
+                      type="button"
                       onClick={() => setSelectedClient(isSelected ? null : client)}
                       className={cn(
-                        'cursor-pointer border-b border-[color:var(--ink-4)]/60 transition-colors',
-                        isSelected ? 'bg-[color:var(--paper-2)]/70' : 'hover:bg-[color:var(--paper-3)]/40'
+                        'group flex w-full flex-col gap-3 rounded-[20px] border bg-[color:var(--paper-2)] p-4 text-left transition-colors',
+                        isSelected
+                          ? 'border-[color:var(--umber)]'
+                          : 'border-[color:var(--line)] hover:border-[color:var(--line-strong)]',
                       )}
                     >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#DBEAFE,#E0F2FE)] text-xs font-bold text-[color:var(--ink-2)]">
-                            {getInitials(client.nombre)}
-                          </div>
-                          <div>
-                            <p className="font-medium text-slate-950">{client.nombre}</p>
-                            {client.cif_vat ? (
-                              <p className="font-mono text-xs text-[color:var(--ink-3)]">{client.cif_vat}</p>
-                            ) : null}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-[color:var(--ink-3)]">{address || '—'}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-[color:var(--ink-3)]">
-                        {client.telefono ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={cn(
-                            'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
-                            client.activo
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
-                          )}
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-[family-name:var(--font-mono)] text-[11px] font-bold uppercase tracking-wider"
+                          style={{ backgroundColor: bg, color: fg }}
+                          aria-hidden="true"
                         >
-                          {client.activo ? 'Activo' : 'Inactivo'}
+                          {getInitials(client.nombre)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-[family-name:var(--font-heading)] text-[17px] leading-tight text-[color:var(--ink)]">
+                            {client.nombre}
+                          </p>
+                          {locationLine ? (
+                            <p className="mt-1 truncate font-[family-name:var(--font-mono)] text-[10px] font-medium uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+                              {locationLine}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className="flex items-end justify-between gap-3 border-t border-[color:var(--line)] pt-3">
+                        <span className="font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+                          {contactsCount} contacts
+                          {activeContacts > 0 ? ` · ${activeContacts} active` : ''}
                         </span>
-                      </td>
-                    </tr>
+                        <span className="font-[family-name:var(--font-heading)] text-[13px] italic text-[color:var(--ink-3)]">
+                          Since {yearOf(client.created_at)}
+                        </span>
+                      </div>
+                    </button>
                   )
                 })}
-
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-10 text-center text-sm text-[color:var(--ink-3)]">
-                      {search
-                        ? `No se encontraron clientes para "${search}"`
-                        : 'No hay clientes registrados.'}
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="min-h-0 basis-1/3">
-          {selectedClient ? (
-            <ClientDetailPanel client={selectedClient} onClose={() => setSelectedClient(null)} />
-          ) : (
-            <EmptyClientDetail />
-          )}
-        </div>
+        {/* Panel lateral de detalle (se conserva) */}
+        {selectedClient ? (
+          <div className="min-h-0 w-[360px] shrink-0">
+            <ClientDetailPanel
+              client={selectedClient}
+              onClose={() => setSelectedClient(null)}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )

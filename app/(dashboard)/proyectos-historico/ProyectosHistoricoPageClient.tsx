@@ -118,13 +118,13 @@ export default function ProyectosHistoricoPageClient({
 
   return (
     /* Contenedor principal de la pagina con fondo degradado azul claro */
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior con titulo y subtitulo de la pagina */}
       <TopBar title="Proyectos Historico" subtitle="Base historica de proyectos" />
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-5 text-[color:var(--ink)]">
         {/* === SECCION CABECERA: titulo, descripcion, contador y buscador === */}
-        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#eff6ff_0%,#ffffff_52%,#f8fafc_100%)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             {/* Titulo y texto explicativo */}
             <div className="space-y-2">
@@ -194,7 +194,7 @@ export default function ProyectosHistoricoPageClient({
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#DBEAFE,#E0F2FE)] text-xs font-bold text-[color:var(--ink-2)]">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-3)] text-xs font-bold text-[color:var(--ink-2)]">
                         {getBadgeLabel(project.numero_proyecto)}
                       </div>
                       <div>

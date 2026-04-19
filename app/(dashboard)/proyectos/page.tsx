@@ -57,7 +57,7 @@ export default async function ProyectosPage() {
 
   // Paso 3: Renderizar la pagina con todos los datos cargados
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior con titulo de la seccion */}
       <TopBar title="Proyectos" subtitle="Proyectos activos de ingenieria" />
 
