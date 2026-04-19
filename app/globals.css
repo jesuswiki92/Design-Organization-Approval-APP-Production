@@ -237,20 +237,24 @@
   }
 
   .doa-kanban-card {
-    background: linear-gradient(180deg, var(--paper-2) 0%, var(--paper) 100%);
-    border: 1px solid var(--line);
+    /* Warm white, slightly brighter than --paper-2 so cards stand proud of the
+       --paper column background. Previous gradient faded into --paper at the
+       bottom which killed contrast (user feedback 2026-04-19). */
+    background: #fdfcf8;
+    border: 1px solid var(--line-strong);
     border-radius: 12px;
     padding: 12px 14px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 2px 8px -4px rgba(74, 60, 36, 0.1);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 1px 2px rgba(36, 34, 32, 0.04),
+      0 4px 12px -6px rgba(74, 60, 36, 0.14);
     transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
   }
 
   .doa-kanban-card:hover {
     transform: translateY(-1px);
-    border-color: var(--line-strong);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 6px 18px -6px rgba(74, 60, 36, 0.2);
+    border-color: rgba(36, 34, 32, 0.28);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 8px 22px -8px rgba(74, 60, 36, 0.28);
   }
 
   .doa-kanban-card-code {
@@ -299,7 +303,7 @@
   }
 
   .doa-kanban-empty {
-    border: 1px dashed var(--line-strong);
+    border: 1px dashed rgba(36, 34, 32, 0.22);
     border-radius: 12px;
     padding: 14px;
     text-align: center;
@@ -307,7 +311,8 @@
     font-family: var(--font-serif);
     font-style: italic;
     font-size: 13px;
-    background: transparent;
+    /* Faint warm tint so empty lanes don't disappear against --paper-2 lanes */
+    background: rgba(253, 252, 248, 0.5);
   }
 
   /* Label mono uppercase — used for meta/labels. Slightly larger than before
