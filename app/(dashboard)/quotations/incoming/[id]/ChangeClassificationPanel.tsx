@@ -275,16 +275,13 @@ export default function ChangeClassificationPanel({
   const criticalYes = answers.filter((a) => a.question_number <= 3 && a.answer === 'yes').length
 
   return (
-    <div className="doa-section doa-section--umber">
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
       {/* Header - clickable to toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-5 py-4 text-left"
       >
         <div className="flex items-center gap-3">
-          <span className="doa-section-icon">
-            <Shield className="h-3.5 w-3.5" />
-          </span>
           <h4 className="text-sm font-semibold text-[color:var(--ink)]">
             G12-01 Change Classification
           </h4>
@@ -541,13 +538,13 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                       ) : null
                     })()
                   ) : (
-                    <span className="text-[10px] text-[color:var(--ink-3)]">
+                    <span className="text-[10px] text-[color:var(--ink-2)]">
                       MTOW no disponible para calculo de %
                     </span>
                   )}
                 </>
               ) : (
-                <span className="text-xs text-[color:var(--ink-3)]">Sin peso total estimado</span>
+                <span className="text-xs text-[color:var(--ink-2)]">Sin peso total estimado</span>
               )}
             </div>
 
@@ -619,19 +616,19 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
               {data.impact_location && (
                 <span className="text-[color:var(--ink-2)]">
-                  <span className="text-[color:var(--ink-3)]">Zone: </span>
+                  <span className="text-[color:var(--ink-2)]">Zone: </span>
                   {data.impact_location}
                 </span>
               )}
               {data.fuselage_position && (
                 <span className="text-[color:var(--ink-2)]">
-                  <span className="text-[color:var(--ink-3)]">Position: </span>
+                  <span className="text-[color:var(--ink-2)]">Position: </span>
                   {formatFuselagePosition(data.fuselage_position)}
                 </span>
               )}
               {data.sta_location && (
                 <span className="text-[color:var(--ink-2)]">
-                  <span className="text-[color:var(--ink-3)]">STA: </span>
+                  <span className="text-[color:var(--ink-2)]">STA: </span>
                   {data.sta_location}
                 </span>
               )}
@@ -651,13 +648,13 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
               {data.impact_structural_attachment && (
                 <span className="text-[color:var(--ink-2)]">
-                  <span className="text-[color:var(--ink-3)]">Structural attachment: </span>
+                  <span className="text-[color:var(--ink-2)]">Structural attachment: </span>
                   <span className={structural.color}>{structural.label}</span>
                 </span>
               )}
               {data.affects_primary_structure && (
                 <span className="text-[color:var(--ink-2)]">
-                  <span className="text-[color:var(--ink-3)]">PSE: </span>
+                  <span className="text-[color:var(--ink-2)]">PSE: </span>
                   <span className={pse.color}>{pse.label}</span>
                   {data.affects_primary_structure.toLowerCase() === 'si' && (
                     <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">
@@ -682,7 +679,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
               <span className="text-[color:var(--ink-2)]">
-                <span className="text-[color:var(--ink-3)]">Motivated by AD: </span>
+                <span className="text-[color:var(--ink-2)]">Motivated by AD: </span>
                 <span className={ad.color}>{ad.label}</span>
                 {data.related_to_ad?.toLowerCase() === 'si' && (
                   <span className="ml-1.5 inline-flex rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-600">
@@ -692,7 +689,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
               </span>
               {data.ad_reference && (
                 <span className="text-[color:var(--ink-2)]">
-                  <span className="text-[color:var(--ink-3)]">Reference: </span>
+                  <span className="text-[color:var(--ink-2)]">Reference: </span>
                   {data.ad_reference}
                 </span>
               )}

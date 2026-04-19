@@ -79,7 +79,7 @@ function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
             <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             <div>
               <p className="text-sm font-semibold text-[color:var(--ink)]">Cliente desconocido</p>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
+              <p className="mt-2 text-sm leading-6 text-[color:var(--ink-2)]">
                 Esta consulta todavia no se ha podido vincular con un cliente registrado
                 en la base de datos.
               </p>
@@ -235,7 +235,7 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
               <ProjectHistoryGroup title="Historico" source="historic" projects={historicProjects} />
             </>
           ) : (
-            <p className="text-xs italic text-[color:var(--ink-3)]">
+            <p className="text-xs italic text-[color:var(--ink-2)]">
               No se encontraron proyectos para este cliente.
             </p>
           )}
@@ -262,29 +262,22 @@ function ReviewSummarySection({
   referencesLabel: string
   scopeSummary: string
 }) {
-  // Per-card accent — each datum gets a distinct warm tint so the grid
-  // doesn't collapse into one beige wash. See globals.css → section identity.
-  const cards: { label: string; value: string; accent: string; soft: string }[] = [
-    { label: 'Cliente',           value: clientLabel,     accent: 'var(--sage)',           soft: 'var(--sage-soft)' },
-    { label: 'Aeronave',          value: aircraftLabel,   accent: 'var(--terracotta)',     soft: 'var(--terracotta-soft)' },
-    { label: 'Tipo de trabajo',   value: workTypeLabel,   accent: 'var(--parchment-gold)', soft: 'var(--parchment-soft)' },
-    { label: 'Plazo y prioridad', value: scheduleLabel,   accent: 'var(--cobalt)',         soft: 'var(--cobalt-soft)' },
-    { label: 'Soporte disponible',value: documentLabel,   accent: 'var(--umber)',          soft: 'rgba(138, 90, 43, 0.10)' },
-    { label: 'Referencias',       value: referencesLabel, accent: 'var(--slate-warm)',     soft: 'var(--slate-warm-soft)' },
+  const cards = [
+    { label: 'Cliente', value: clientLabel },
+    { label: 'Aeronave', value: aircraftLabel },
+    { label: 'Tipo de trabajo', value: workTypeLabel },
+    { label: 'Plazo y prioridad', value: scheduleLabel },
+    { label: 'Soporte disponible', value: documentLabel },
+    { label: 'Referencias', value: referencesLabel },
   ]
 
   return (
-    <section className="doa-section doa-section--cobalt shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-[color:var(--line-strong)] px-5 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="doa-section-icon">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-          </span>
-          <span className="doa-section-label">Resumen de revision</span>
+    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+      <div className="border-b border-[color:var(--ink-4)] px-5 py-3">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-[color:var(--ink-3)]" />
+          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Resumen de revision</h2>
         </div>
-        <h2 className="mt-2 text-base font-semibold text-[color:var(--ink)]">
-          Datos clave de la consulta
-        </h2>
         <p className="mt-1 text-xs text-[color:var(--ink-2)]">
           Vista rapida de los datos clave para decidir esta consulta en fase 3.
         </p>
@@ -294,15 +287,11 @@ function ReviewSummarySection({
           {cards.map((card) => (
             <div
               key={card.label}
-              className="relative overflow-hidden rounded-xl border border-[color:var(--line-strong)] bg-[color:var(--paper)] px-3 py-2.5"
-              style={{ ['--accent' as string]: card.accent, ['--accent-soft' as string]: card.soft }}
+              className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-2.5"
             >
-              <span
-                aria-hidden
-                className="absolute left-0 top-0 h-[3px] w-7"
-                style={{ background: card.accent, opacity: 0.9 }}
-              />
-              <p className="doa-sub-label">{card.label}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+                {card.label}
+              </p>
               <p className="mt-1 text-sm font-medium leading-6 text-[color:var(--ink)]">
                 {card.value}
               </p>
@@ -310,17 +299,11 @@ function ReviewSummarySection({
           ))}
         </div>
 
-        <div
-          className="relative overflow-hidden rounded-xl border border-[color:var(--line-strong)] bg-[color:var(--paper)] px-4 py-3"
-          style={{ ['--accent' as string]: 'var(--cobalt)' }}
-        >
-          <span
-            aria-hidden
-            className="absolute left-0 top-0 h-[3px] w-7"
-            style={{ background: 'var(--cobalt)', opacity: 0.9 }}
-          />
-          <p className="doa-sub-label">Alcance enviado</p>
-          <p className="mt-1 text-sm leading-6 text-[color:var(--ink)]">{scopeSummary}</p>
+        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+            Alcance enviado
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[color:var(--ink-2)]">{scopeSummary}</p>
         </div>
       </div>
     </section>
@@ -366,7 +349,7 @@ export default async function IncomingQuotationDetailPage({
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 Consulta no encontrada
               </h1>
-              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
+              <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-2)]">
                 {error ? `Error: ${error.message}` : 'No se encontro una consulta con este identificador.'}
               </p>
             </div>
@@ -817,7 +800,7 @@ export default async function IncomingQuotationDetailPage({
         <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
-              <p className="font-mono text-xs font-semibold tracking-[0.12em] text-[color:var(--umber)]">{query.codigo}</p>
+              <p className="font-mono text-xs text-[color:var(--ink-2)]">{query.codigo}</p>
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 {query.asunto}
               </h1>
@@ -1068,7 +1051,7 @@ export default async function IncomingQuotationDetailPage({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos para este cliente.</p>
+                        <p className="text-xs italic text-[color:var(--ink-2)]">No se encontraron proyectos para este cliente.</p>
                       )}
                     </div>
                   </details>
@@ -1104,17 +1087,15 @@ export default async function IncomingQuotationDetailPage({
             />
 
             {/* --- Comunicaciones (ancho completo, colapsable) --- */}
-            <section className="doa-section doa-section--umber shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <Mail className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Comunicaciones</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver hilo de emails
                 </summary>
@@ -1144,17 +1125,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos del cliente (ancho completo, colapsable) --- */}
-            <section className="doa-section doa-section--sage shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <UserRound className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Datos del cliente</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <UserRound className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos del cliente
                 </summary>
@@ -1229,7 +1208,7 @@ export default async function IncomingQuotationDetailPage({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos para este cliente.</p>
+                        <p className="text-xs italic text-[color:var(--ink-2)]">No se encontraron proyectos para este cliente.</p>
                       )}
                     </div>
                   </details>
@@ -1253,17 +1232,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
-            <section className="doa-section doa-section--terracotta shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <Plane className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Datos de aeronave</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos de aeronave
                 </summary>
@@ -1275,25 +1252,25 @@ export default async function IncomingQuotationDetailPage({
                         <div className="col-span-2 mb-1 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Datos del formulario</div>
                         {data.aircraft_manufacturer && (
                           <div>
-                            <span className="text-[color:var(--ink-3)]">Fabricante</span>
+                            <span className="text-[color:var(--ink-2)]">Fabricante</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_manufacturer}</p>
                           </div>
                         )}
                         {data.aircraft_model && (
                           <div>
-                            <span className="text-[color:var(--ink-3)]">Modelo</span>
+                            <span className="text-[color:var(--ink-2)]">Modelo</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_model}</p>
                           </div>
                         )}
                         {data.aircraft_count && (
                           <div>
-                            <span className="text-[color:var(--ink-3)]">Cantidad de aeronaves</span>
+                            <span className="text-[color:var(--ink-2)]">Cantidad de aeronaves</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_count}</p>
                           </div>
                         )}
                         {data.aircraft_msn && (
                           <div>
-                            <span className="text-[color:var(--ink-3)]">MSN / Registro</span>
+                            <span className="text-[color:var(--ink-2)]">MSN / Registro</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_msn}</p>
                           </div>
                         )}
@@ -1324,7 +1301,7 @@ export default async function IncomingQuotationDetailPage({
                               <p className="text-sm font-medium text-[color:var(--ink-2)]">
                                 Sin revision TCDS disponible todavia.
                               </p>
-                              <p className="mt-1 text-xs text-[color:var(--ink-3)]">
+                              <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                                 El operador puede validar el TCDS mas adelante con los datos de aeronave ya recibidos.
                               </p>
                             </div>
@@ -1414,31 +1391,29 @@ export default async function IncomingQuotationDetailPage({
                       )}
 
                       {data.aircraft_location && (
-                        <div className="mt-3 flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
+                        <div className="mt-3 flex items-center gap-2 text-sm text-[color:var(--ink-2)]">
                           <MapPin className="h-4 w-4 text-[color:var(--ink-3)]" />
                           <span>Ubicación: {data.aircraft_location}</span>
                         </div>
                       )}
                     </>
                   ) : (
-                    <p className="text-xs italic text-[color:var(--ink-3)]">No se han enviado datos de aeronave todavia.</p>
+                    <p className="text-xs italic text-[color:var(--ink-2)]">No se han enviado datos de aeronave todavia.</p>
                   )}
                 </div>
               </details>
             </section>
 
             {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
-            <section className="doa-section doa-section--parchment shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <ClipboardList className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Datos tecnicos del proyecto</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Ver datos técnicos
                 </summary>
@@ -1498,7 +1473,7 @@ export default async function IncomingQuotationDetailPage({
                         <div className="space-y-1.5">
                           {data.impact_location && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Ubicación</span>
+                              <span className="text-[color:var(--ink-2)]">Ubicación</span>
                               <span className="text-right text-[color:var(--ink)]">
                                 {data.impact_location === 'interior_cabin' ? 'Interior / Cabina' : data.impact_location === 'exterior_fuselage' ? 'Exterior / Fuselaje' : data.impact_location === 'cockpit' ? 'Cockpit / Flight deck' : data.impact_location === 'cargo_hold' ? 'Cargo hold / Belly' : data.impact_location === 'wing' ? 'Wing' : data.impact_location === 'empennage' ? 'Empennage / Tail' : data.impact_location === 'engine_area' ? 'Engine / Nacelle area' : data.impact_location === 'landing_gear' ? 'Landing gear area' : data.impact_location === 'other' ? 'Other' : data.impact_location}
                               </span>
@@ -1506,7 +1481,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.fuselage_position && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Posición fuselaje</span>
+                              <span className="text-[color:var(--ink-2)]">Posición fuselaje</span>
                               <span className="text-[color:var(--ink)]">
                                 {data.fuselage_position === 'fwd' ? 'Forward (Fwd)' : data.fuselage_position === 'mid' ? 'Mid' : data.fuselage_position === 'aft' ? 'Aft (Posterior)' : data.fuselage_position}
                               </span>
@@ -1514,13 +1489,13 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.sta_location && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">STA</span>
+                              <span className="text-[color:var(--ink-2)]">STA</span>
                               <span className="text-[color:var(--ink)]">{data.sta_location}</span>
                             </div>
                           )}
                           {data.impact_structural_attachment && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Fijación estructural</span>
+                              <span className="text-[color:var(--ink-2)]">Fijación estructural</span>
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_structural_attachment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_structural_attachment === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_structural_attachment === 'si' ? 'Sí' : data.impact_structural_attachment === 'no' ? 'No' : data.impact_structural_attachment === 'no_seguro' ? 'No seguro' : data.impact_structural_attachment}
                               </span>
@@ -1528,13 +1503,13 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.impact_structural_interface && (
                             <div className="text-sm">
-                              <span className="text-[color:var(--ink-3)]">Interfaz estructural</span>
-                              <p className="mt-0.5 text-xs text-[color:var(--ink-3)]">{data.impact_structural_interface}</p>
+                              <span className="text-[color:var(--ink-2)]">Interfaz estructural</span>
+                              <p className="mt-0.5 text-xs text-[color:var(--ink-2)]">{data.impact_structural_interface}</p>
                             </div>
                           )}
                           {data.affects_primary_structure && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Afecta PSE</span>
+                              <span className="text-[color:var(--ink-2)]">Afecta PSE</span>
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.affects_primary_structure === 'si' ? 'bg-red-500/20 text-red-400' : data.affects_primary_structure === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.affects_primary_structure === 'si' ? 'Sí' : data.affects_primary_structure === 'no' ? 'No' : data.affects_primary_structure === 'no_seguro' ? 'No seguro' : data.affects_primary_structure}
                               </span>
@@ -1542,7 +1517,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1556,7 +1531,7 @@ export default async function IncomingQuotationDetailPage({
                         <div className="space-y-1.5">
                           {data.impact_electrical && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Cableado eléctrico</span>
+                              <span className="text-[color:var(--ink-2)]">Cableado eléctrico</span>
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_electrical === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_electrical === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_electrical === 'si' ? 'Sí' : data.impact_electrical === 'no' ? 'No' : data.impact_electrical === 'no_seguro' ? 'No seguro' : data.impact_electrical}
                               </span>
@@ -1564,7 +1539,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.impact_avionics && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Aviónica / instrumentos</span>
+                              <span className="text-[color:var(--ink-2)]">Aviónica / instrumentos</span>
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_avionics === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_avionics === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_avionics === 'si' ? 'Sí' : data.impact_avionics === 'no' ? 'No' : data.impact_avionics === 'no_seguro' ? 'No seguro' : data.impact_avionics}
                               </span>
@@ -1572,7 +1547,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1586,13 +1561,13 @@ export default async function IncomingQuotationDetailPage({
                         <div className="space-y-2">
                           {data.estimated_weight_kg && (
                             <div className="flex items-center justify-between text-sm">
-                              <span className="text-[color:var(--ink-3)]">Peso estimado total</span>
+                              <span className="text-[color:var(--ink-2)]">Peso estimado total</span>
                               <span className="font-medium text-[color:var(--ink)]">{data.estimated_weight_kg} kg</span>
                             </div>
                           )}
                           {data.fuselage_position && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Posición CG ref.</span>
+                              <span className="text-[color:var(--ink-2)]">Posición CG ref.</span>
                               <span className="text-[color:var(--ink)]">
                                 {data.fuselage_position === 'fwd' ? 'Forward (Fwd)' : data.fuselage_position === 'mid' ? 'Mid' : data.fuselage_position === 'aft' ? 'Aft (Posterior)' : data.fuselage_position}
                               </span>
@@ -1650,7 +1625,7 @@ export default async function IncomingQuotationDetailPage({
                           })()}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1664,7 +1639,7 @@ export default async function IncomingQuotationDetailPage({
                         <div className="space-y-1.5">
                           {data.impact_cabin_layout && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Layout cabina</span>
+                              <span className="text-[color:var(--ink-2)]">Layout cabina</span>
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_cabin_layout === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_cabin_layout === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_cabin_layout === 'si' ? 'Sí' : data.impact_cabin_layout === 'no' ? 'No' : data.impact_cabin_layout === 'no_seguro' ? 'No seguro' : data.impact_cabin_layout}
                               </span>
@@ -1672,7 +1647,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.impact_pressurized && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Zona presurizada</span>
+                              <span className="text-[color:var(--ink-2)]">Zona presurizada</span>
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_pressurized === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_pressurized === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                 {data.impact_pressurized === 'si' ? 'Sí' : data.impact_pressurized === 'no' ? 'No' : data.impact_pressurized === 'no_seguro' ? 'No seguro' : data.impact_pressurized}
                               </span>
@@ -1680,7 +1655,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1692,13 +1667,13 @@ export default async function IncomingQuotationDetailPage({
                       </div>
                       {data.impact_operational_change ? (
                         <div className="flex items-start justify-between gap-2 text-sm">
-                          <span className="text-[color:var(--ink-3)]">Cambio operacional</span>
+                          <span className="text-[color:var(--ink-2)]">Cambio operacional</span>
                           <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_operational_change === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_operational_change === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                             {data.impact_operational_change === 'si' ? 'Sí' : data.impact_operational_change === 'no' ? 'No' : data.impact_operational_change === 'no_seguro' ? 'No seguro' : data.impact_operational_change}
                           </span>
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1711,20 +1686,20 @@ export default async function IncomingQuotationDetailPage({
                       {(data.related_to_ad || data.motivated_by_ad) ? (
                         <div className="space-y-1.5">
                           <div className="flex items-start justify-between gap-2 text-sm">
-                            <span className="text-[color:var(--ink-3)]">Motivado por AD</span>
+                            <span className="text-[color:var(--ink-2)]">Motivado por AD</span>
                             <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'bg-emerald-500/20 text-emerald-400' : val === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]' })()}`}>
                               {(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'Sí' : val === 'no' ? 'No' : val === 'no_seguro' ? 'No seguro' : val })()}
                             </span>
                           </div>
                           {(data.related_to_ad ?? data.motivated_by_ad) === 'si' && data.ad_reference && (
                             <div className="flex items-start justify-between gap-2 text-sm">
-                              <span className="text-[color:var(--ink-3)]">Referencia AD</span>
+                              <span className="text-[color:var(--ink-2)]">Referencia AD</span>
                               <span className="font-mono text-[color:var(--ink)]">{data.ad_reference}</span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1746,7 +1721,7 @@ export default async function IncomingQuotationDetailPage({
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_equipment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_equipment === 'si' ? 'Sí' : data.has_equipment === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-[color:var(--ink-3)]">Equipo</span>
+                                    <span className="text-[color:var(--ink-2)]">Equipo</span>
                                   </div>
                                 )}
                                 {data.has_drawings && (
@@ -1754,7 +1729,7 @@ export default async function IncomingQuotationDetailPage({
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_drawings === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_drawings === 'si' ? 'Sí' : data.has_drawings === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-[color:var(--ink-3)]">Planos</span>
+                                    <span className="text-[color:var(--ink-2)]">Planos</span>
                                   </div>
                                 )}
                                 {data.has_manufacturer_docs && (
@@ -1762,7 +1737,7 @@ export default async function IncomingQuotationDetailPage({
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_manufacturer_docs === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_manufacturer_docs === 'si' ? 'Sí' : data.has_manufacturer_docs === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-[color:var(--ink-3)]">Doc. fabricante</span>
+                                    <span className="text-[color:var(--ink-2)]">Doc. fabricante</span>
                                   </div>
                                 )}
                                 {data.has_previous_mod && (
@@ -1770,15 +1745,15 @@ export default async function IncomingQuotationDetailPage({
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_previous_mod === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.has_previous_mod === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.has_previous_mod === 'si' ? 'Sí' : data.has_previous_mod === 'no_seguro' ? '?' : 'No'}
                                     </span>
-                                    <span className="text-[color:var(--ink-3)]">Mod. previa</span>
+                                    <span className="text-[color:var(--ink-2)]">Mod. previa</span>
                                   </div>
                                 )}
                               </div>
                               {data.equipment_details && data.has_equipment === 'si' && (
-                                <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">Equipo: {data.equipment_details}</p>
+                                <p className="mt-1.5 text-xs text-[color:var(--ink-2)]">Equipo: {data.equipment_details}</p>
                               )}
                               {data.previous_mod_ref && data.has_previous_mod === 'si' && (
-                                <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">Ref. mod. previa: {data.previous_mod_ref}</p>
+                                <p className="mt-1.5 text-xs text-[color:var(--ink-2)]">Ref. mod. previa: {data.previous_mod_ref}</p>
                               )}
                             </div>
                           )}
@@ -1789,7 +1764,7 @@ export default async function IncomingQuotationDetailPage({
                               <div className="mt-2 space-y-1.5">
                                 {data.target_date && (
                                   <div className="flex items-center justify-between text-sm">
-                                    <span className="text-[color:var(--ink-3)]">Fecha deseada</span>
+                                    <span className="text-[color:var(--ink-2)]">Fecha deseada</span>
                                     <span className="text-[color:var(--ink)]">
                                       {new Date(data.target_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </span>
@@ -1797,7 +1772,7 @@ export default async function IncomingQuotationDetailPage({
                                 )}
                                 {data.is_aog && (
                                   <div className="flex items-center justify-between text-sm">
-                                    <span className="text-[color:var(--ink-3)]">AOG</span>
+                                    <span className="text-[color:var(--ink-2)]">AOG</span>
                                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.is_aog === 'si' ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
                                       {data.is_aog === 'si' ? 'Sí — AOG' : 'No'}
                                     </span>
@@ -1808,7 +1783,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-3)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
                       )}
                     </div>
 
@@ -1818,13 +1793,11 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir alcance preliminar (ancho completo) --- */}
-            <section className="doa-section doa-section--cobalt shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <Sparkles className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Definir alcance preliminar</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
                 </div>
               </div>
               <div className="px-5 py-4 space-y-4">
@@ -2007,17 +1980,15 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir documentacion (ancho completo, colapsable) --- */}
-            <section className="doa-section doa-section--slate shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <FileText className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Definir documentacion</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion</h2>
                 </div>
               </div>
               <details className="group">
-                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
+                <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   Seleccionar documentos de compliance
                 </summary>
@@ -2034,13 +2005,11 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Informacion de Quotation (ancho completo, colapsable) --- */}
-            <section className="doa-section doa-section--umber shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
-              <div className="border-b border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="doa-section-icon">
-                    <Receipt className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="doa-section-label">Oferta / Quotation</span>
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
+              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-4 w-4 text-[color:var(--umber)]" />
+                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Oferta / Quotation</h2>
                 </div>
               </div>
               <details className="group">
