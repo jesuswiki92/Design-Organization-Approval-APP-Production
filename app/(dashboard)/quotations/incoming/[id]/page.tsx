@@ -262,17 +262,17 @@ function ReviewSummarySection({
   referencesLabel: string
   scopeSummary: string
 }) {
-  const cards = [
-    { label: 'Cliente', value: clientLabel },
-    { label: 'Aeronave', value: aircraftLabel },
-    { label: 'Tipo de trabajo', value: workTypeLabel },
-    { label: 'Plazo y prioridad', value: scheduleLabel },
-    { label: 'Soporte disponible', value: documentLabel },
-    { label: 'Referencias', value: referencesLabel },
+  const cards: { label: string; value: string; accent: string }[] = [
+    { label: 'Cliente', value: clientLabel, accent: 'var(--cobalt)' },
+    { label: 'Aeronave', value: aircraftLabel, accent: 'var(--terracotta)' },
+    { label: 'Tipo de trabajo', value: workTypeLabel, accent: 'var(--parchment-gold)' },
+    { label: 'Plazo y prioridad', value: scheduleLabel, accent: 'var(--umber)' },
+    { label: 'Soporte disponible', value: documentLabel, accent: 'var(--ok)' },
+    { label: 'Referencias', value: referencesLabel, accent: 'var(--slate-warm)' },
   ]
 
   return (
-    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
       <div className="border-b border-[color:var(--ink-4)] px-5 py-3">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-[color:var(--ink-3)]" />
@@ -287,9 +287,17 @@ function ReviewSummarySection({
           {cards.map((card) => (
             <div
               key={card.label}
-              className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-3 py-2.5"
+              className="relative overflow-hidden rounded-[14px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] pl-4 pr-4 py-3"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+              <span
+                aria-hidden
+                className="absolute left-0 top-0 h-full w-1"
+                style={{ background: card.accent }}
+              />
+              <p
+                className="font-[family-name:var(--font-mono)] text-[10.5px] font-semibold uppercase tracking-[0.14em]"
+                style={{ color: card.accent }}
+              >
                 {card.label}
               </p>
               <p className="mt-1 text-sm font-medium leading-6 text-[color:var(--ink)]">
@@ -299,8 +307,16 @@ function ReviewSummarySection({
           ))}
         </div>
 
-        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+        <div className="relative overflow-hidden rounded-[14px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] pl-4 pr-4 py-3">
+          <span
+            aria-hidden
+            className="absolute left-0 top-0 h-full w-1"
+            style={{ background: 'var(--cobalt)' }}
+          />
+          <p
+            className="font-[family-name:var(--font-mono)] text-[10.5px] font-semibold uppercase tracking-[0.14em]"
+            style={{ color: 'var(--cobalt)' }}
+          >
             Alcance enviado
           </p>
           <p className="mt-1 text-sm leading-6 text-[color:var(--ink-2)]">{scopeSummary}</p>
@@ -331,12 +347,12 @@ export default async function IncomingQuotationDetailPage({
 
   if (error || !data) {
     return (
-      <div className="flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)]">
+      <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
         <TopBar
           title="Detalle de consulta"
           subtitle="Entrada comercial previa a quotation"
         />
-        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)] px-5 pb-8 pt-5">
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[color:var(--paper)] px-5 pb-8 pt-5">
           <Link
             href="/quotations"
             className="inline-flex items-center rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-sm font-medium text-[color:var(--ink)] shadow-sm transition-colors hover:bg-[color:var(--paper-3)]"
@@ -344,7 +360,7 @@ export default async function IncomingQuotationDetailPage({
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a quotations
           </Link>
-          <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+          <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(74,60,36,0.08)]">
             <div className="space-y-2">
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
                 Consulta no encontrada
@@ -774,13 +790,13 @@ export default async function IncomingQuotationDetailPage({
   // =========================================================================
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)]">
+    <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar
         title="Detalle de consulta"
         subtitle="Entrada comercial previa a quotation"
       />
 
-      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)] px-5 pb-8 pt-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[color:var(--paper)] px-5 pb-8 pt-5">
         {/* --- BARRA DE NAVEGACION --- */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -797,7 +813,7 @@ export default async function IncomingQuotationDetailPage({
         </div>
 
         {/* --- CABECERA PRINCIPAL --- */}
-        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
+        <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(74,60,36,0.08)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <p className="font-mono text-xs text-[color:var(--ink-2)]">{query.codigo}</p>
@@ -1087,12 +1103,18 @@ export default async function IncomingQuotationDetailPage({
             />
 
             {/* --- Comunicaciones (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--umber), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--umber) 14%, transparent)' }}
+                >
+                  <Mail className="h-4 w-4" style={{ color: 'var(--umber)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
@@ -1125,12 +1147,18 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos del cliente (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <UserRound className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--cobalt), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--cobalt) 14%, transparent)' }}
+                >
+                  <UserRound className="h-4 w-4" style={{ color: 'var(--cobalt)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
@@ -1232,12 +1260,18 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--terracotta), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--terracotta) 14%, transparent)' }}
+                >
+                  <Plane className="h-4 w-4" style={{ color: 'var(--terracotta)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
@@ -1405,12 +1439,18 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--parchment-gold), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--parchment-gold) 14%, transparent)' }}
+                >
+                  <ClipboardList className="h-4 w-4" style={{ color: 'var(--parchment-gold)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
@@ -1793,12 +1833,18 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir alcance preliminar (ancho completo) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--ok), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--ok) 14%, transparent)' }}
+                >
+                  <Sparkles className="h-4 w-4" style={{ color: 'var(--ok)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
               </div>
               <div className="px-5 py-4 space-y-4">
                 {/* Proyectos sugeridos + Busqueda manual (grid 50/50) */}
@@ -1980,12 +2026,18 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir documentacion (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--slate-warm), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--slate-warm) 14%, transparent)' }}
+                >
+                  <FileText className="h-4 w-4" style={{ color: 'var(--slate-warm)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Definir documentacion</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
@@ -2005,12 +2057,18 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Informacion de Quotation (ancho completo, colapsable) --- */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
-              <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
-                <div className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-[color:var(--umber)]" />
-                  <h2 className="text-sm font-semibold text-[color:var(--ink)]">Oferta / Quotation</h2>
-                </div>
+            <section
+              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
+              style={{ boxShadow: 'inset 4px 0 0 var(--cobalt), 0 10px 24px rgba(74,60,36,0.08)' }}
+            >
+              <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: 'color-mix(in oklab, var(--cobalt) 14%, transparent)' }}
+                >
+                  <Receipt className="h-4 w-4" style={{ color: 'var(--cobalt)' }} />
+                </span>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Oferta / Quotation</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
