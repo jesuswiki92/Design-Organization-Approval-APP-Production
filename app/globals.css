@@ -233,10 +233,12 @@
 
   .doa-kanban-lane-title {
     font-family: var(--font-serif);
-    font-size: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    font-style: normal;
     line-height: 1.2;
     color: var(--ink);
-    letter-spacing: -0.2px;
+    letter-spacing: -0.01em;
   }
 
   .doa-kanban-lane-count {
