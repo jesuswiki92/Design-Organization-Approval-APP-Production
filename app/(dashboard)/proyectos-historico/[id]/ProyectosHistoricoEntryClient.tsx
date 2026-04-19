@@ -44,7 +44,12 @@ import {
 import { type ReactNode, useMemo, useState } from 'react'
 
 // Tipos para el Master Document List (MDL) del proyecto
-import type { MdlContenido, MdlDocumento, ProyectoHistoricoRow } from '@/types/database'
+import type {
+  MdlContenido,
+  MdlDocumento,
+  ProyectoHistoricoArchivo,
+  ProyectoHistoricoRow,
+} from '@/types/database'
 
 // ============================================================================
 // DEFINICION DE LA ESTRUCTURA DE DATOS
@@ -88,6 +93,7 @@ interface ProyectoHistoricoDocumentoRow {
   formatos_disponibles: string[]
   created_at: string
   updated_at: string
+  archivos: ProyectoHistoricoArchivo[]
 }
 
 // ============================================================================
@@ -352,6 +358,32 @@ export default function ProyectosHistoricoEntryClient({
   project: ProyectoHistoricoDetailRow
   documentos: ProyectoHistoricoDocumentoRow[]
 }) {
+  // Defensas sobre arrays/jsonb que pueden llegar con shape inesperado desde la BBDD.
+  // El server component ya intenta normalizar, pero reforzamos aqui para evitar
+  // que un registro antiguo o mal formado reviente el render del cliente.
+  const documentosSafe: ProyectoHistoricoDocumentoRow[] = Array.isArray(documentos)
+    ? documentos.map((d) => ({
+        ...d,
+        archivos: Array.isArray(d.archivos) ? d.archivos : [],
+        formatos_disponibles: Array.isArray(d.formatos_disponibles) ? d.formatos_disponibles : [],
+      }))
+    : []
+
+  const mdlContenidoSafe: MdlContenido | null =
+    project.mdl_contenido &&
+    Array.isArray(project.mdl_contenido.entregables) &&
+    Array.isArray(project.mdl_contenido.no_entregables)
+      ? project.mdl_contenido
+      : null
+
+  const complianceDocsSafe: Record<
+    string,
+    { title: string; familia: string; content_md: string }
+  > | null =
+    project.compliance_docs_md && typeof project.compliance_docs_md === 'object'
+      ? project.compliance_docs_md
+      : null
+
   // -- Estado para el feedback visual al copiar la ruta al portapapeles --
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
@@ -380,24 +412,25 @@ export default function ProyectosHistoricoEntryClient({
    * Compara por nombre de carpeta (familia) o por referencia de archivo.
    */
   const findComplianceDocsForFamily = useMemo(() => {
-    if (!project.compliance_docs_md) return (_familia: string, _archivoRef: string | null) => []
-    const docsMap = project.compliance_docs_md
+    if (!complianceDocsSafe) return (_familia: string, _archivoRef: string | null) => []
+    const docsMap = complianceDocsSafe
     return (familia: string, archivoRef: string | null) => {
       const matches: Array<{ ref: string; title: string; content_md: string }> = []
       for (const [ref, doc] of Object.entries(docsMap)) {
+        if (!doc || typeof doc !== 'object') continue
         // Coincidencia por nombre de familia (ej: "01.Change Classification")
         if (doc.familia === familia) {
-          matches.push({ ref, title: doc.title, content_md: doc.content_md })
+          matches.push({ ref, title: doc.title ?? ref, content_md: doc.content_md ?? '' })
           continue
         }
         // Coincidencia por referencia de archivo (ej: archivo_referencia contiene "20885-12-01")
         if (archivoRef && archivoRef.includes(ref)) {
-          matches.push({ ref, title: doc.title, content_md: doc.content_md })
+          matches.push({ ref, title: doc.title ?? ref, content_md: doc.content_md ?? '' })
         }
       }
       return matches
     }
-  }, [project.compliance_docs_md])
+  }, [complianceDocsSafe])
 
   /**
    * Alterna la visibilidad del contenido markdown de una familia documental.
@@ -656,19 +689,19 @@ export default function ProyectosHistoricoEntryClient({
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold text-slate-950">Compliance Documents</h2>
               <div className="flex items-center gap-2">
-                {project.mdl_contenido && (
+                {mdlContenidoSafe && (
                   <>
                     <span className="rounded-full bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[11px] font-medium text-[color:var(--ink-2)]">
-                      {project.mdl_contenido.entregables.length} Entregables
+                      {mdlContenidoSafe.entregables.length} Entregables
                     </span>
                     <span className="rounded-full bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[11px] font-medium text-[color:var(--ink-3)]">
-                      {project.mdl_contenido.no_entregables.length} No entregables
+                      {mdlContenidoSafe.no_entregables.length} No entregables
                     </span>
                   </>
                 )}
-                {documentos.length > 0 && (
+                {documentosSafe.length > 0 && (
                   <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
-                    {documentos.length} Familias
+                    {documentosSafe.length} Familias
                   </span>
                 )}
               </div>
@@ -697,7 +730,7 @@ export default function ProyectosHistoricoEntryClient({
               {/* Contenido del MDL (solo visible cuando esta expandido) */}
               {mdlOpen && (
                 <div className="mt-3 space-y-3">
-                  {!project.mdl_contenido ? (
+                  {!mdlContenidoSafe ? (
                     // Sin MDL cargado: mensaje sutil
                     <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4 text-sm italic text-[color:var(--ink-3)]">
                       No se ha cargado el Master Document List para este proyecto
@@ -720,17 +753,17 @@ export default function ProyectosHistoricoEntryClient({
                             4.1 Documentos Entregables
                           </span>
                           <span className="ml-auto rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-medium text-[color:var(--ink-2)]">
-                            {project.mdl_contenido.entregables.length}
+                            {mdlContenidoSafe.entregables.length}
                           </span>
                         </button>
 
                         {/* Filas de documentos entregables */}
                         {entregablesOpen && (
                           <div className="border-t border-[color:var(--ink-4)]">
-                            {project.mdl_contenido.entregables.length === 0 ? (
+                            {mdlContenidoSafe.entregables.length === 0 ? (
                               <p className="px-4 py-3 text-xs italic text-[color:var(--ink-3)]">Sin documentos entregables.</p>
                             ) : (
-                              <MdlDocumentList docs={project.mdl_contenido.entregables} />
+                              <MdlDocumentList docs={mdlContenidoSafe.entregables} />
                             )}
                           </div>
                         )}
@@ -752,17 +785,17 @@ export default function ProyectosHistoricoEntryClient({
                             4.2 Documentos No Entregables
                           </span>
                           <span className="ml-auto rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]">
-                            {project.mdl_contenido.no_entregables.length}
+                            {mdlContenidoSafe.no_entregables.length}
                           </span>
                         </button>
 
                         {/* Filas de documentos no entregables */}
                         {noEntregablesOpen && (
                           <div className="border-t border-[color:var(--ink-4)]">
-                            {project.mdl_contenido.no_entregables.length === 0 ? (
+                            {mdlContenidoSafe.no_entregables.length === 0 ? (
                               <p className="px-4 py-3 text-xs italic text-[color:var(--ink-3)]">Sin documentos no entregables.</p>
                             ) : (
-                              <MdlDocumentList docs={project.mdl_contenido.no_entregables} />
+                              <MdlDocumentList docs={mdlContenidoSafe.no_entregables} />
                             )}
                           </div>
                         )}
@@ -825,13 +858,13 @@ export default function ProyectosHistoricoEntryClient({
                 <div className="h-px flex-1 bg-[color:var(--paper-3)]" />
               </div>
 
-              {documentos.length === 0 ? (
+              {documentosSafe.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-4 text-sm italic text-[color:var(--ink-3)]">
                   No se han registrado familias documentales para este proyecto
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {documentos.map((doc) => (
+                  {documentosSafe.map((doc) => (
                     <div
                       key={doc.id}
                       className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/80 px-4 py-3.5 transition-colors hover:border-[color:var(--ink-4)]"
@@ -900,6 +933,39 @@ export default function ProyectosHistoricoEntryClient({
                           )}
                         </button>
                       </div>
+
+                      {/* Lista de archivos asociados a esta familia documental */}
+                      {doc.archivos.length > 0 && (
+                        <div className="mt-2.5 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]/60 px-3 py-2">
+                          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
+                            Archivos ({doc.archivos.length})
+                          </p>
+                          <ul className="space-y-1">
+                            {doc.archivos.map((archivo) => (
+                              <li
+                                key={archivo.id}
+                                className="flex flex-wrap items-center gap-2 text-[11px] text-[color:var(--ink-2)]"
+                              >
+                                <FileText className="h-3 w-3 shrink-0 text-[color:var(--ink-3)]" />
+                                <span className="font-mono">{archivo.nombre_archivo}</span>
+                                {archivo.edicion && (
+                                  <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--ink-3)]">
+                                    {archivo.edicion}
+                                  </span>
+                                )}
+                                <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--ink-3)]">
+                                  {archivo.formato}
+                                </span>
+                                {archivo.es_edicion_vigente && (
+                                  <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700">
+                                    Vigente
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
                       {/* Contenido markdown del documento de compliance (colapsable) */}
                       {(() => {
