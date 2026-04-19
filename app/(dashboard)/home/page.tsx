@@ -1,231 +1,265 @@
-﻿/**
+/**
  * ============================================================================
- * PAGINA DE INICIO (HOME) DEL DOA OPERATIONS HUB
+ * HOME — "Your morning" (Warm Executive redesign)
  * ============================================================================
  *
- * Esta es la primera pagina que ve el usuario despues de iniciar sesion.
- * Funciona como un "centro de mando" que resume el estado de la aplicacion
- * y da acceso rapido a los modulos principales.
+ * Rediseño basado en el prototipo DOA Redesign.html (dirección "Warm
+ * Executive", ajuste cool-neutral). Estructura:
  *
- * SECCIONES QUE MUESTRA:
- *   1. Cabecera: nombre de la app, version actual y fecha de actualizacion
- *   2. Tarjetas de acceso rapido a los 4 modulos activos:
- *      - Quotations (ofertas comerciales)
- *      - Proyectos (workflow operativo)
- *      - Clientes (base de datos de clientes)
- *      - Asistente DOA (chat con IA)
- *   3. Estado del saneamiento: logros consolidados del sistema
- *   4. Siguiente foco: tareas pendientes recomendadas
+ *   1. Saludo serif grande + una frase que dice qué hay que mirar hoy.
+ *   2. Tarjeta hero "urgente" con el item overdue.
+ *   3. Dos columnas: "Today" (lista priorizada) + "Deliveries · next 14 days".
+ *   4. Fila de stats demotada (4 tiles pequeños).
+ *   5. "Recent activity" compacto.
  *
- * NOTA TECNICA: Es un Server Component (no tiene 'use client') porque
- * no necesita interactividad. Los datos que muestra son estaticos o vienen
- * de constantes definidas en el codigo.
+ * Es un Server Component: los datos son estáticos para esta iteración del
+ * rediseño; el handoff a datos reales lo hará la siguiente fase.
  * ============================================================================
  */
 
-// Link: para crear las tarjetas que llevan a cada modulo
 import Link from 'next/link'
-// Iconos decorativos para cada modulo y seccion
-import {
-  Bot,              // Robot (Asistente DOA)
-  BriefcaseBusiness, // Maletin (Quotations)
-  ClipboardCheck,   // Portapapeles con check (Estado del saneamiento)
-  FolderKanban,     // Carpeta kanban (Proyectos)
-  Layers3,          // Capas (Siguiente foco y flecha en tarjetas)
-  ShieldCheck,      // Escudo con check (insignia "Baseline saneada")
-  Users,            // Personas (Clientes)
-} from 'lucide-react'
-
-// Barra superior de la pagina con titulo y subtitulo
 import { TopBar } from '@/components/layout/TopBar'
-// Constantes de la version actual de la aplicacion
 import { APP_RELEASE } from '@/lib/app-release'
 
-/** Definicion de los 4 modulos activos que se muestran como tarjetas */
-const activeAreas = [
-  {
-    title: 'Quotations',
-    description: 'Pipeline comercial separado para seguimiento de ofertas y handoff a proyecto.',
-    href: '/quotations',
-    icon: BriefcaseBusiness,
-    accent: '#2563EB',
-    badge: 'Activo',
-  },
-  {
-    title: 'Proyectos',
-    description: 'Workflow operativo de proyectos con estados OP-00..OP-13 y separacion de dominio.',
-    href: '/engineering/portfolio',
-    icon: FolderKanban,
-    accent: '#0F766E',
-    badge: 'Activo',
-  },
-  {
-    title: 'Clientes',
-    description: 'Base operativa de clientes, contactos y soporte para intake comercial.',
-    href: '/clients',
-    icon: Users,
-    accent: '#D97706',
-    badge: 'Activo',
-  },
-  {
-    title: 'Asistente DOA',
-    description: 'Chat con OpenRouter para soporte general sin base de datos ni RAG.',
-    href: '/tools/experto',
-    icon: Bot,
-    accent: '#7C3AED',
-    badge: 'Activo',
-  },
+// ---------------------------------------------------------------------------
+// Contenidos (estáticos — reflejan el prototipo tal cual)
+// ---------------------------------------------------------------------------
+
+/** Item "urgente" que protagoniza la tarjeta hero. */
+const urgent = {
+  code: 'Q-26-11',
+  label: 'OVERDUE 2 DAYS',
+  title: 'AirNostrum cabin retrofit',
+  detail: 'offer draft awaiting your review',
+  href: '/quotations',
+}
+
+/** "Today" — lista de 4 items con dot de color, código, título y hora. */
+const today = [
+  { code: 'PRJ-0418', title: 'A320 Galley — DOS signoff',       color: 'var(--cobalt)', time: '14:00' },
+  { code: 'Q-26-14',  title: 'Unknown sender — scope call',     color: 'var(--umber)',  time: '16:00' },
+  { code: 'PRJ-0402', title: 'ATR repair — client review',      color: 'var(--ok)',     time: '—' },
+  { code: 'Q-26-09',  title: 'Binter MRO — TCDS lookup',        color: 'var(--ink-3)',  time: '—' },
+] as const
+
+/** Timeline de entregas, 14 días. */
+const deliveries = [
+  { date: 'Wed 21', code: 'PRJ-0418', what: 'DOS signoff',    color: 'var(--cobalt)', pct: 18 },
+  { date: 'Fri 23', code: 'PRJ-0401', what: 'Client handoff', color: 'var(--ok)',     pct: 32 },
+  { date: 'Mon 26', code: 'Q-26-05',  what: 'Offer deadline', color: 'var(--umber)',  pct: 50 },
+  { date: 'Thu 29', code: 'PRJ-0402', what: 'Final report',   color: 'var(--ink-3)',  pct: 72 },
+  { date: 'Mon 03', code: 'PRJ-0418', what: 'Closeout',       color: 'var(--ink-3)',  pct: 95 },
+] as const
+
+/** Stats demotadas. */
+const stats = [
+  { label: 'Inbound',    value: 12, delta: '+3',  tone: 'up'   as const },
+  { label: 'In offer',   value:  5, delta: '—',   tone: 'flat' as const },
+  { label: 'Validating', value:  3, delta: '−1',  tone: 'down' as const },
+  { label: 'To deliver', value:  2, delta: '+1',  tone: 'up'   as const },
 ]
 
-/** Logros del saneamiento que ya se han consolidado en la app */
-const sanitationHighlights = [
-  'Build y lint en verde sin depender de ignoreBuildErrors.',
-  'Quotations y Proyectos ya trabajan como workflows separados.',
-  'La navegacion y la proteccion de rutas se sanearon en el lote base.',
-  'La documentacion ya refleja que doa_* es la fuente activa de runtime.',
+/** Actividad reciente. */
+const activity = [
+  { letter: 'M', cls: '',  text: 'María moved Q-26-12 to Scope',  when: '09:14' },
+  { letter: 'A', cls: '',  text: 'You uploaded drawings-pack v3', when: 'Yst'   },
+  { letter: 'e', cls: 'e', text: 'Expert summarized new inbound', when: 'Yst'   },
+  { letter: 'J', cls: '',  text: 'Jorge signed DOS on PRJ-0401',  when: 'Fri'   },
+  { letter: 'A', cls: '',  text: 'You closed Q-26-03 as Won',     when: 'Fri'   },
 ]
 
-/** Tareas pendientes recomendadas antes de ampliar funcionalidades */
-const nextFocus = [
-  'Aplicar y validar persistencia real del workflow con migracion + RLS.',
-  'Completar el handoff quotation won -> create/activate project.',
-  'Seguir con automatizaciones comerciales y operativas por separado.',
-]
+// ---------------------------------------------------------------------------
+// Utilidades visuales
+// ---------------------------------------------------------------------------
 
-/** Componente principal de la pagina de inicio */
+function deltaToneClasses(tone: 'up' | 'down' | 'flat') {
+  if (tone === 'up')   return 'bg-[#e4ecdc] text-[color:var(--ok)]'
+  if (tone === 'down') return 'bg-[#f4e0d8] text-[color:var(--warn)]'
+  return 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 export default function HomePage() {
-  return (
-    <div className="flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
-      {/* Barra superior con titulo */}
-      <TopBar title="Inicio" subtitle="Estado real del hub y accesos principales" />
+  // Fecha fija del prototipo — en producción vendrá del servidor.
+  const dateLabel = 'Monday, 19 April'
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-slate-900">
-        {/* === SECCION CABECERA: titulo, insignia, version y fecha de actualizacion === */}
-        <section className="rounded-[24px] border border-sky-200 bg-[linear-gradient(135deg,#ffffff_0%,#eef6ff_55%,#e0f2fe_100%)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Baseline saneada
-              </div>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950">DOA Operations Hub</h2>
-              <p className="mt-1 text-sm leading-7 text-slate-600">
-                Esta portada ya no muestra datos simulados. Resume el estado real del producto,
-                los modulos activos y el siguiente bloque de trabajo.
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <TopBar title="Home" subtitle="your morning" />
+
+      <main className="flex-1 overflow-y-auto px-8 py-8">
+        {/* ---- Saludo ---- */}
+        <header className="mb-7 max-w-3xl">
+          <h1 className="font-[family-name:var(--font-heading)] text-[44px] leading-[1.05] tracking-[-0.8px] text-[color:var(--ink)]">
+            Good morning,{' '}
+            <em className="italic text-[color:var(--ink-3)]">Alejandro.</em>
+          </h1>
+          <p className="mt-2 max-w-[640px] text-[15.5px] leading-[1.55] text-[color:var(--ink-2)]">
+            {dateLabel}. One item is overdue and two are due this week. The rest can wait.
+          </p>
+          <p className="mt-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.1em] text-[color:var(--ink-4)]">
+            {APP_RELEASE.version} · {APP_RELEASE.releaseName}
+          </p>
+        </header>
+
+        {/* ---- Tarjeta hero "urgente" ---- */}
+        <Link
+          href={urgent.href}
+          className="mb-6 block rounded-2xl border border-[color:var(--umber)] bg-[color:var(--paper-2)] shadow-[0_0_0_1px_var(--umber)_inset,0_4px_14px_-6px_rgba(138,90,43,0.25)] transition-shadow hover:shadow-[0_0_0_1px_var(--umber)_inset,0_8px_22px_-6px_rgba(138,90,43,0.35)]"
+        >
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-6 px-6 py-5">
+            <div
+              className="grid h-12 w-12 place-items-center rounded-[14px] text-white shadow-[0_2px_6px_rgba(138,90,43,0.3)]"
+              style={{
+                background: 'linear-gradient(180deg,var(--umber-2),var(--umber))',
+                fontFamily: 'var(--font-heading)',
+                fontSize: '22px',
+              }}
+            >
+              !
+            </div>
+            <div className="min-w-0">
+              <p className="font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-[0.05em] text-[color:var(--umber)]">
+                {urgent.code} · {urgent.label}
+              </p>
+              <p className="mt-1 font-[family-name:var(--font-heading)] text-[24px] leading-[1.2] text-[color:var(--ink)]">
+                {urgent.title}{' '}
+                <em className="italic text-[color:var(--ink-3)]">· {urgent.detail}</em>
               </p>
             </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-sky-200 bg-white/85 px-4 py-3 shadow-sm">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-                  Version visible
-                </div>
-                <div className="mt-1 font-mono text-sm text-slate-900">{APP_RELEASE.version}</div>
-                <div className="mt-1 text-xs text-slate-500">{APP_RELEASE.releaseName}</div>
-              </div>
-
-              <div className="rounded-2xl border border-sky-200 bg-white/85 px-4 py-3 shadow-sm">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
-                  Ultima actualizacion
-                </div>
-                <div className="mt-1 font-mono text-sm text-slate-900">{APP_RELEASE.updatedAtLabel}</div>
-                <div className="mt-1 text-xs text-slate-500">
-                  Fecha fija de release. No cambia al refrescar.
-                </div>
-              </div>
+            <div className="flex shrink-0 gap-2">
+              <span className="rounded-[10px] border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-3 py-[7px] text-[13px] font-medium text-[color:var(--ink)] shadow-[0_1px_0_rgba(74,60,36,0.06),inset_0_1px_0_rgba(255,255,255,0.6)]">
+                Snooze
+              </span>
+              <span
+                className="rounded-[10px] border border-[color:var(--ink)] px-3 py-[7px] text-[13px] font-medium text-[color:var(--paper)] shadow-[0_1px_2px_rgba(74,60,36,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                style={{ background: 'linear-gradient(180deg,#3d322a 0%,var(--ink) 100%)' }}
+              >
+                Open →
+              </span>
             </div>
           </div>
-        </section>
+        </Link>
 
-        {/* === TARJETAS DE MODULOS ACTIVOS: acceso rapido a cada seccion === */}
-        <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          {activeAreas.map((area) => {
-            const Icon = area.icon
-
-            return (
-              <Link
-                key={area.title}
-                href={area.href}
-                className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] transition-colors hover:border-sky-300 hover:bg-sky-50/40"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div
-                      className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200"
-                      style={{ backgroundColor: `${area.accent}14` }}
-                    >
-                      <Icon className="h-5 w-5" style={{ color: area.accent }} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-slate-950">{area.title}</h3>
-                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-700">
-                          {area.badge}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">{area.description}</p>
-                    </div>
-                  </div>
-
-                  <Layers3 className="mt-1 h-4 w-4 text-slate-300" />
-                </div>
+        {/* ---- Two columns: Today + Deliveries ---- */}
+        <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+          {/* Today */}
+          <section className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-6 py-5 shadow-[0_2px_0_rgba(255,255,255,0.5)_inset,0_4px_14px_-6px_rgba(74,60,36,0.1)]">
+            <h2 className="mb-4 flex items-center justify-between font-[family-name:var(--font-heading)] text-[22px] tracking-[-0.3px] text-[color:var(--ink)]">
+              <span>
+                Today <em className="italic text-[color:var(--ink-3)]">· {today.length} items</em>
+              </span>
+              <Link href="/engineering/portfolio" className="font-[family-name:var(--font-sans)] text-[12.5px] text-[color:var(--umber)] hover:underline">
+                Plan week →
               </Link>
-            )
-          })}
-        </section>
-
-        {/* === PANELES INFORMATIVOS: estado del saneamiento y siguiente foco === */}
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          {/* Panel izquierdo: logros consolidados */}
-          <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-700">
-                <ClipboardCheck className="h-4 w-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-slate-950">Estado del saneamiento</h3>
-                <p className="text-xs text-slate-500">Lo que ya se ha consolidado</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {sanitationHighlights.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700"
+            </h2>
+            <ul>
+              {today.map((item, i) => (
+                <li
+                  key={item.code}
+                  className={`grid grid-cols-[10px_80px_1fr_80px] items-center gap-3.5 py-3 ${i > 0 ? 'border-t border-[color:var(--line)]' : ''}`}
                 >
-                  {item}
-                </div>
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: item.color }} />
+                  <span className="font-[family-name:var(--font-mono)] text-[11.5px] text-[color:var(--ink-3)]">
+                    {item.code}
+                  </span>
+                  <span className="truncate text-[14px] text-[color:var(--ink)]">{item.title}</span>
+                  <span className="text-right font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-4)]">
+                    {item.time}
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
 
-          {/* Panel derecho: tareas pendientes */}
-          <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 text-amber-700">
-                <Layers3 className="h-4 w-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-slate-950">Siguiente foco</h3>
-                <p className="text-xs text-slate-500">Trabajo recomendado antes de ampliar alcance</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {nextFocus.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700"
+          {/* Deliveries timeline */}
+          <section className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-6 py-5 shadow-[0_2px_0_rgba(255,255,255,0.5)_inset,0_4px_14px_-6px_rgba(74,60,36,0.1)]">
+            <h2 className="mb-4 font-[family-name:var(--font-heading)] text-[22px] tracking-[-0.3px] text-[color:var(--ink)]">
+              Deliveries <em className="italic text-[color:var(--ink-3)]">· next 14 days</em>
+            </h2>
+            <ul>
+              {deliveries.map((d, i) => (
+                <li
+                  key={`${d.date}-${d.code}`}
+                  className={`grid grid-cols-[70px_1fr_80px] items-center gap-3 py-2.5 ${i > 0 ? 'border-t border-[color:var(--line)]' : ''}`}
                 >
-                  {item}
-                </div>
+                  <span className="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-3)]">
+                    {d.date}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] text-[color:var(--ink)]">{d.what}</p>
+                    <p className="font-[family-name:var(--font-mono)] text-[10.5px] text-[color:var(--ink-4)]">
+                      {d.code}
+                    </p>
+                  </div>
+                  <div className="relative h-1 overflow-hidden rounded-[2px] bg-[color:var(--paper-3)]">
+                    <div
+                      className="absolute bottom-0 left-0 top-0"
+                      style={{ width: `${d.pct}%`, background: d.color }}
+                    />
+                  </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         </div>
+
+        {/* ---- Stats row (demoted) ---- */}
+        <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="relative overflow-hidden rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-5 py-4 shadow-[0_2px_0_rgba(255,255,255,0.5)_inset,0_4px_14px_-6px_rgba(74,60,36,0.15)]"
+            >
+              <span
+                className="absolute left-0 right-0 top-0 h-[3px]"
+                style={{ background: 'var(--umber)', opacity: 0.35 }}
+              />
+              <div className="flex items-center justify-between">
+                <span className="font-[family-name:var(--font-heading)] text-[12.5px] italic text-[color:var(--ink-3)]">
+                  {s.label}
+                </span>
+                <span className={`rounded-[20px] px-1.5 py-[1px] font-[family-name:var(--font-mono)] text-[11px] ${deltaToneClasses(s.tone)}`}>
+                  {s.delta}
+                </span>
+              </div>
+              <div className="mt-2 font-[family-name:var(--font-heading)] text-[36px] leading-none tracking-[-1.2px] text-[color:var(--ink)]">
+                {s.value}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ---- Recent activity ---- */}
+        <section className="mt-6 rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-6 py-5 shadow-[0_2px_0_rgba(255,255,255,0.5)_inset,0_4px_14px_-6px_rgba(74,60,36,0.1)]">
+          <h2 className="mb-3 font-[family-name:var(--font-heading)] text-[22px] tracking-[-0.3px] text-[color:var(--ink)]">
+            Recent activity
+          </h2>
+          <ul>
+            {activity.map((a, i) => (
+              <li
+                key={`${a.letter}-${i}`}
+                className={`grid grid-cols-[30px_1fr_auto] items-center gap-3 py-2.5 text-[13px] ${i > 0 ? 'border-t border-[color:var(--line)]' : ''}`}
+              >
+                <span
+                  className={`grid h-7 w-7 place-items-center rounded-full font-[family-name:var(--font-heading)] text-[13px] ${a.cls === 'e'
+                    ? 'bg-[color:var(--ink)] font-[family-name:var(--font-sans)] text-[color:var(--paper)]'
+                    : 'bg-[color:var(--paper-3)] text-[color:var(--ink-2)]'}`}
+                >
+                  {a.letter}
+                </span>
+                <span className="text-[color:var(--ink-2)]">{a.text}</span>
+                <span className="font-[family-name:var(--font-mono)] text-[11px] text-[color:var(--ink-4)]">
+                  {a.when}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
     </div>
   )
 }
-

@@ -1,60 +1,53 @@
 /**
  * ============================================================================
- * PAGINA DE INICIO DE SESION (LOGIN)
+ * LOGIN — Warm Executive (AMS client-branded)
  * ============================================================================
- *
- * Esta pagina es la puerta de entrada a la aplicacion. El usuario debe
- * introducir su email y contrasena para acceder al DOA Operations Hub.
- *
- * QUE HACE:
- *   1. Muestra un formulario con campos de email y contrasena
- *   2. Cuando el usuario pulsa "Sign in", envia las credenciales a Supabase
- *   3. Si las credenciales son correctas, redirige a la pagina de inicio (/home)
- *   4. Si son incorrectas, muestra un mensaje de error en rojo
- *
- * FLUJO:
- *   Email + Password -> Supabase Auth -> Si OK -> /home
- *                                     -> Si Error -> Mensaje de error
- *
- * NOTA TECNICA: 'use client' porque necesita manejar el formulario,
- * los estados de carga/error y la autenticacion desde el navegador.
- * Usa createClient de @/lib/supabase/client (no server) porque esta
- * en el lado del cliente.
+ * Pantalla de entrada. Mantiene el flujo supabase.auth.signInWithPassword y
+ * la observabilidad (trackUiEvent) intactos; solo cambia la identidad visual.
  * ============================================================================
  */
 
 'use client'
 
-// Hook de React para manejar estados (email, password, error, carga)
 import { useState } from 'react'
 import { RouteViewTracker } from '@/components/observability/RouteViewTracker'
 import { trackUiEvent } from '@/lib/observability/client'
-// Conexion a Supabase desde el NAVEGADOR (no servidor)
 import { createClient } from '@/lib/supabase/client'
-// Hook de Next.js para navegar entre paginas
 import { useRouter } from 'next/navigation'
 
-/** Componente principal de la pagina de login */
-export default function LoginPage() {
-  // Estados del formulario: lo que el usuario escribe y el estado de la operacion
-  const [email, setEmail] = useState('')         // Email que escribe el usuario
-  const [password, setPassword] = useState('')   // Contrasena que escribe el usuario
-  const [error, setError] = useState<string | null>(null) // Mensaje de error (si hay)
-  const [loading, setLoading] = useState(false)  // Si se esta procesando el login
-  const router = useRouter()                     // Para redirigir despues del login
-  const supabase = createClient()                // Conexion a Supabase
+/** Logo AMS: placa cobalto con ala/cumbre blanca y destello dorado. */
+function AmsLogo({ size = 56 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <rect width="40" height="40" rx="11" fill="#2f4aa8" />
+      <path d="M6 28 L20 10 L34 28 L27 28 L20 19 L13 28 Z" fill="#ffffff" opacity="0.95" />
+      <circle cx="28" cy="13" r="2.3" fill="#e8b756" />
+      <path d="M6 31 L34 31" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="1" />
+    </svg>
+  )
+}
 
-  /**
-   * Funcion que se ejecuta al enviar el formulario.
-   * Intenta iniciar sesion con email y contrasena via Supabase Auth.
-   */
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()    // Evitar que el formulario recargue la pagina
-    setLoading(true)      // Mostrar estado "cargando"
-    setError(null)        // Limpiar errores anteriores
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
     const emailDomain = email.includes('@') ? email.split('@').at(-1)?.toLowerCase() ?? null : null
 
-    // Intentar autenticacion con Supabase
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
@@ -63,13 +56,8 @@ export default function LoginPage() {
         eventCategory: 'auth',
         outcome: 'failure',
         route: '/login',
-        metadata: {
-          provider: 'password',
-          email_domain: emailDomain,
-          error_name: error.name,
-        },
+        metadata: { provider: 'password', email_domain: emailDomain, error_name: error.name },
       })
-      // Si hay error: mostrar mensaje y permitir reintentar
       setError(error.message)
       setLoading(false)
     } else {
@@ -78,88 +66,90 @@ export default function LoginPage() {
         eventCategory: 'auth',
         outcome: 'success',
         route: '/login',
-        metadata: {
-          provider: 'password',
-          email_domain: emailDomain,
-        },
+        metadata: { provider: 'password', email_domain: emailDomain },
       })
-      // Si es exitoso: ir a la pagina de inicio
       router.push('/home')
       router.refresh()
     }
   }
 
   return (
-    /* Pantalla completa con fondo oscuro y formulario centrado */
-    <div className="min-h-screen flex items-center justify-center bg-[#0F1117]">
+    <div
+      className="flex min-h-screen items-center justify-center px-6"
+      style={{ background: 'linear-gradient(180deg,#edeae4 0%,#f5f3ee 60%,#ebe8e1 100%)' }}
+    >
       <RouteViewTracker scope="auth" />
-      <div className="w-full max-w-md">
-        {/* === LOGO Y NOMBRE DE LA APLICACION === */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#6366F1] mb-4">
-            <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-semibold text-[#E8E9F0]">DOA Operations Hub</h1>
-          <p className="text-sm text-[#6B7280] mt-1">Design Organization Approval</p>
+      <div className="w-full max-w-[420px]">
+        {/* Cabecera marca */}
+        <div className="mb-8 flex flex-col items-center text-center">
+          <AmsLogo size={56} />
+          <h1 className="mt-5 font-[family-name:var(--font-heading)] text-[34px] leading-[1.05] tracking-[-0.6px] text-[color:var(--ink)]">
+            DOA Operations Hub
+          </h1>
+          <p className="mt-1 font-[family-name:var(--font-heading)] text-[15px] italic text-[color:var(--ink-3)]">
+            AMS — Aeronautic Modification Spain
+          </p>
+          <p className="mt-2 font-[family-name:var(--font-mono)] text-[10.5px] uppercase tracking-[0.14em] text-[color:var(--ink-4)]">
+            EASA.21J.064 · Madrid · ES
+          </p>
         </div>
 
-        {/* === TARJETA DEL FORMULARIO DE LOGIN === */}
-        <div className="bg-[#1A1D27] border border-[#2A2D3E] rounded-xl p-8">
-          <h2 className="text-lg font-semibold text-[#E8E9F0] mb-6">Sign in to your account</h2>
+        {/* Card de login */}
+        <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] p-7 shadow-[0_2px_0_rgba(255,255,255,0.5)_inset,0_24px_60px_-28px_rgba(74,60,36,0.35)]">
+          <h2 className="mb-5 font-[family-name:var(--font-heading)] text-[22px] leading-none text-[color:var(--ink)]">
+            Sign in{' '}
+            <em className="italic text-[color:var(--ink-3)]">to continue</em>
+          </h2>
 
-          {/* Formulario: al enviar ejecuta handleLogin */}
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Campo de email */}
             <div>
-              <label className="block text-xs font-medium text-[#6B7280] uppercase tracking-wider mb-1.5">
+              <label className="mb-1.5 block font-[family-name:var(--font-mono)] text-[10.5px] uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                 Email
               </label>
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-[#0F1117] border border-[#2A2D3E] rounded-lg px-3 py-2.5 text-sm text-[#E8E9F0] placeholder-[#6B7280] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-colors"
-                placeholder="engineer@doa.aero"
+                autoComplete="email"
+                placeholder="engineer@ams.aero"
+                className="w-full rounded-[10px] border border-[color:var(--line-strong)] bg-[color:var(--paper)] px-3 py-2.5 text-sm text-[color:var(--ink)] placeholder-[color:var(--ink-4)] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] focus:border-[color:var(--umber)] focus:outline-none focus:ring-2 focus:ring-[color:var(--umber)]/25"
               />
             </div>
-            {/* Campo de contrasena */}
             <div>
-              <label className="block text-xs font-medium text-[#6B7280] uppercase tracking-wider mb-1.5">
+              <label className="mb-1.5 block font-[family-name:var(--font-mono)] text-[10.5px] uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                 Password
               </label>
               <input
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-[#0F1117] border border-[#2A2D3E] rounded-lg px-3 py-2.5 text-sm text-[#E8E9F0] placeholder-[#6B7280] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1] transition-colors"
+                autoComplete="current-password"
                 placeholder="••••••••"
+                className="w-full rounded-[10px] border border-[color:var(--line-strong)] bg-[color:var(--paper)] px-3 py-2.5 text-sm text-[color:var(--ink)] placeholder-[color:var(--ink-4)] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] focus:border-[color:var(--umber)] focus:outline-none focus:ring-2 focus:ring-[color:var(--umber)]/25"
               />
             </div>
 
-            {/* Mensaje de error: se muestra solo cuando hay un problema */}
             {error && (
-              <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-lg px-3 py-2.5 text-sm text-[#EF4444]">
+              <div className="rounded-[10px] border border-[color:var(--err)]/30 bg-[color:var(--err)]/10 px-3 py-2.5 text-sm text-[color:var(--err)]">
                 {error}
               </div>
             )}
 
-            {/* Boton de envio: se deshabilita mientras se procesa */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#6366F1] hover:bg-[#4F46E5] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-2.5 text-sm transition-colors mt-2"
+              className="mt-2 w-full rounded-[10px] border border-[color:var(--ink)] px-4 py-2.5 text-sm font-medium text-[color:var(--paper)] shadow-[0_1px_2px_rgba(74,60,36,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] transition-[filter] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ background: 'linear-gradient(180deg,#3d322a 0%,var(--ink) 100%)' }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-xs text-[#6B7280] mt-6">
-          Part 21J Design Organization — Internal workspace
+        <p className="mt-6 text-center font-[family-name:var(--font-heading)] text-[12px] italic text-[color:var(--ink-3)]">
+          Part 21J Design Organization — internal workspace
         </p>
       </div>
     </div>

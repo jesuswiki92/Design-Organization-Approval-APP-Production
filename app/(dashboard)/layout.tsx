@@ -33,8 +33,8 @@ import { Sidebar } from '@/components/layout/Sidebar'
  */
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    /* Contenedor principal: ocupa toda la pantalla, con fondo degradado azul claro */
-    <div className="flex h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef6ff_42%,#f8fafc_100%)]">
+    /* Contenedor principal: ocupa toda la pantalla. Fondo papel cálido (Warm Executive). */
+    <div className="flex h-screen overflow-hidden bg-[color:var(--paper)] text-[color:var(--ink)]">
       <RouteViewTracker scope="dashboard" />
       {/* Barra lateral izquierda con el menu de navegacion */}
       <Sidebar />

@@ -4,41 +4,57 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================================
+   WARM EXECUTIVE DIRECTION — from Anthropic design file cHfGx2Kv4nIxsBqhPvQs2Q
+   Notion/Arc-inspired, cooled-down warm neutral, AMS client-branded slot.
+   - paper: warm-gray near-white
+   - ink: near-black, no blue cast
+   - accent: umber, reserved for state and brand
+   - cobalt: single spot colour for active states & "Expert"
+   ========================================================================== */
+
 @theme inline {
+  /* Colour tokens (shadcn-compatible) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Typography — design tokens */
+  --font-sans: 'Geist', 'Inter', system-ui, sans-serif;
+  --font-heading: 'Instrument Serif', Georgia, serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -49,78 +65,115 @@
 }
 
 :root {
-  --background: #f8fbff;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #eef4ff;
-  --secondary-foreground: #0f172a;
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
-  --accent: #e0f2fe;
-  --accent-foreground: #0f172a;
-  --destructive: #dc2626;
-  --border: #dbe5f0;
-  --input: #dbe5f0;
-  --ring: #38bdf8;
+  /* ---- Warm Executive palette (from DOA Redesign.html) ---- */
+  --paper:      #f5f3ee;   /* page bg */
+  --paper-2:    #fbfaf7;   /* cards / near-white */
+  --paper-3:    #ebe8e1;   /* subtle fills, active states */
+  --ink:        #242220;   /* text on paper */
+  --ink-2:      #454340;
+  --ink-3:      #777470;
+  --ink-4:      #a5a29c;
+  --line:       rgba(36, 34, 32, 0.10);
+  --line-strong:rgba(36, 34, 32, 0.17);
+  --umber:      #8a5a2b;   /* accent, state */
+  --umber-2:    #b36f35;
+  --cobalt:     #2f4aa8;   /* spot colour for active/cobalt chips */
+  --cobalt-soft:#e7ebf6;
+  --ok:         #4f7548;
+  --warn:       #a85425;
+  --err:        #9a3834;
+
+  /* ---- shadcn mapping → Warm Executive ---- */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-2);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-2);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);              /* primary buttons are near-black */
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-3);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-3);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--paper-3);
+  --accent-foreground: var(--ink);
+  --destructive: var(--err);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--umber);
   --radius: 0.75rem;
-  --sidebar: #f3f8ff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #2563eb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eaf4ff;
-  --sidebar-accent-foreground: #0f172a;
-  --sidebar-border: #d9e7f5;
-  --sidebar-ring: #38bdf8;
-  --status-active: #2563eb;
-  --status-review: #d97706;
-  --status-approved: #059669;
-  --status-paused: #64748b;
-  --status-closed: #475569;
-  --status-alert: #dc2626;
+
+  --sidebar: #edeae4;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--umber);
+
+  /* ---- Legacy status tokens (kept for boards/chips already using them) ---- */
+  --status-active:   var(--cobalt);
+  --status-review:   var(--umber);
+  --status-approved: var(--ok);
+  --status-paused:   var(--ink-3);
+  --status-closed:   var(--ink-2);
+  --status-alert:    var(--err);
+
+  /* ---- Legacy AMS sky tokens kept so the old sky-* utility classes
+          (sprinkled across dashboards) don't flicker white on first paint.
+          They now point at the warm palette. ---- */
+  --ams-navy: var(--ink);
+  --ams-sky:  var(--umber);
 }
 
+/* Dark mode is intentionally left as the same light palette — the design
+   direction is light Warm Executive. The Tweaks-panel dark mode from the
+   prototype is out of scope for this pass. */
 .dark {
-  --background: #f8fbff;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #eef4ff;
-  --secondary-foreground: #0f172a;
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
-  --accent: #e0f2fe;
-  --accent-foreground: #0f172a;
-  --destructive: #dc2626;
-  --border: #dbe5f0;
-  --input: #dbe5f0;
-  --ring: #38bdf8;
-  --sidebar: #f3f8ff;
-  --sidebar-foreground: #0f172a;
-  --sidebar-primary: #2563eb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eaf4ff;
-  --sidebar-accent-foreground: #0f172a;
-  --sidebar-border: #d9e7f5;
-  --sidebar-ring: #38bdf8;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-2);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-2);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-3);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-3);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--paper-3);
+  --accent-foreground: var(--ink);
+  --destructive: var(--err);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--umber);
+  --sidebar: #edeae4;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: var(--paper);
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--umber);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-family: var(--font-sans);
+  }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
   }
-  html {
-    @apply font-sans;
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: -0.01em;
   }
 }
