@@ -61,6 +61,12 @@ Estas tablas existen en la base de datos y se muestran en la sección `/database
 |-------|----------------|----------|--------|
 | `doa_plantillas_compliance` | Catalogo maestro de las 44 plantillas de documentos de compliance (G12-xx, G18-xx). Cada registro tiene: code (unico), name, category, sort_order, active. Se usa para la seleccion de documentacion en consultas entrantes y se reutilizara en proyectos. | /quotations/incoming/[id] (seccion "Definir documentacion") | ✅ Conectada |
 
+### Formularios dinamicos
+
+| Tabla | Para que sirve | Usada en | Estado |
+|-------|----------------|----------|--------|
+| `doa_formularios` | Plantillas HTML de los formularios de recopilacion de datos del cliente. PK `slug` (actualmente `cliente_conocido` y `cliente_desconocido`), columna `html` con el documento completo y placeholders `{{...}}`, `descripcion`, `created_at`, `updated_at` (trigger auto). RLS con lectura anon para permitir fetch desde el webhook n8n. Reemplaza la descarga desde Google Drive. | Workflow n8n `AMS - Web Server Formularios Clientes (Dinamico)` (webhook `sswebhook.testn8n.com/webhook/doa-form`) | ✅ Activa |
+
 ### Configuracion de workflow
 
 | Tabla | Para que sirve | Usada en | Estado |

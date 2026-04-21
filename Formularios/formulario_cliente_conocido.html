@@ -236,15 +236,20 @@
               <option value="no">No</option>
             </select>
           </div>
-          <div class="field">
-            <label for="impact_pressurized">Is the installation zone pressurized? <span style="color:#ef4444">*</span></label>
-            <select id="impact_pressurized" name="impact_pressurized" required>
+        <div class="field">
+          <label for="impact_pressurized">Is the installation zone pressurized? <span style="color:#ef4444">*</span></label>
+          <select id="impact_pressurized" name="impact_pressurized" required>
               <option value="">Select...</option>
               <option value="si">Yes</option>
               <option value="no">No</option>
               <option value="no_se">Not sure</option>
             </select>
           </div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label for="installation_weight_kg">Estimated installation weight (kg)</label>
+          <input id="installation_weight_kg" name="installation_weight_kg" type="number" min="0" step="0.1" placeholder="e.g. 12.5" />
+          <p class="hint">Please indicate the estimated total weight of the installation if known.</p>
         </div>
         <div class="field" style="margin-top:16px">
           <label for="impact_operational_change">Will the modification change how the aircraft is operated? <span style="color:#ef4444">*</span></label>
@@ -307,6 +312,28 @@
               <option value="no_seguro">Not sure</option>
             </select>
           </div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label>Attach drawings / installation drawings</label>
+          <input type="hidden" name="installation_drawings" id="installation_drawings" />
+          <div id="drawings-zone" style="border:2px dashed var(--line);border-radius:14px;padding:24px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:#fafbfd">
+            <div id="drawings-text">
+              <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px">Drag & drop drawings here or click to browse</p>
+              <p style="font-size:12px;color:var(--soft)">PDF, images, DWG, DXF or ZIP files. Multiple files allowed.</p>
+            </div>
+            <div id="drawings-loading" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:var(--sky)">Uploading drawings...</p>
+            </div>
+            <div id="drawings-success" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#16a34a" id="drawings-list">Files attached</p>
+              <p style="font-size:12px;color:var(--soft);margin-top:4px">Stored in Supabase. You can replace them by dropping new files.</p>
+            </div>
+            <div id="drawings-error" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#dc2626" id="drawings-error-msg">Error</p>
+            </div>
+          </div>
+          <input type="file" id="installation_drawings_input" accept=".pdf,.png,.jpg,.jpeg,.webp,.svg,.dwg,.dxf,.zip" multiple style="display:none" />
+          <p class="hint">Attach any drawings, sketches or CAD reference files relevant to the installation.</p>
         </div>
         <div class="field hidden" id="field-previous-mod-ref" style="margin-top:16px">
           <label for="previous_mod_ref">Previous modification reference</label>
@@ -383,6 +410,15 @@
     var errorEl=document.getElementById('drop-error');
     var filenameEl=document.getElementById('drop-filename');
     var errorMsg=document.getElementById('drop-error-msg');
+    var drawingsZone=document.getElementById('drawings-zone');
+    var drawingsInput=document.getElementById('installation_drawings_input');
+    var drawingsHidden=document.getElementById('installation_drawings');
+    var drawingsTextEl=document.getElementById('drawings-text');
+    var drawingsSuccessEl=document.getElementById('drawings-success');
+    var drawingsLoadingEl=document.getElementById('drawings-loading');
+    var drawingsErrorEl=document.getElementById('drawings-error');
+    var drawingsListEl=document.getElementById('drawings-list');
+    var drawingsErrorMsg=document.getElementById('drawings-error-msg');
 
     function showState(s,msg){
       textEl.style.display=s==='idle'?'':'none';
@@ -399,7 +435,8 @@
       showState('loading');
       var ts=Date.now();
       var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      var path='tcds/'+ts+'_'+safeName;
+      var consultaId=(document.getElementById('consulta_id')||{}).value||'sin-consulta';
+      var path=consultaId+'/tcds/'+ts+'_'+safeName;
       try{
         var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
           method:'POST',
@@ -424,6 +461,54 @@
     zone.addEventListener('drop',function(e){
       e.preventDefault();zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';
       if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0]);
+    });
+
+    function showDrawingsState(s,msg){
+      drawingsTextEl.style.display=s==='idle'?'':'none';
+      drawingsLoadingEl.style.display=s==='loading'?'':'none';
+      drawingsSuccessEl.style.display=s==='success'?'':'none';
+      drawingsErrorEl.style.display=s==='error'?'':'none';
+      if(s==='success')drawingsListEl.textContent=msg;
+      if(s==='error')drawingsErrorMsg.textContent=msg;
+    }
+
+    async function uploadDrawings(files){
+      if(!files||!files.length){showDrawingsState('error','Please choose at least one file.');return;}
+      showDrawingsState('loading');
+      var urls=[];var names=[];
+      try{
+        for(var i=0;i<files.length;i++){
+          var file=files[i];
+          if(file.size>25*1024*1024){throw new Error('Each file must be 25 MB or smaller.');}
+          var ts=Date.now();
+          var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+          var consultaId=(document.getElementById('consulta_id')||{}).value||'sin-consulta';
+          var path=consultaId+'/drawings/'+ts+'_'+i+'_'+safeName;
+          var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
+            method:'POST',
+            headers:{'Authorization':'Bearer '+SB_KEY,'apikey':SB_KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+            body:file
+          });
+          if(!r.ok){var e=await r.text();throw new Error(e);}
+          urls.push(SB_URL+'/storage/v1/object/public/'+BUCKET+'/'+path);
+          names.push(file.name);
+        }
+        drawingsHidden.value=JSON.stringify(urls);
+        showDrawingsState('success',names.join(', '));
+        drawingsZone.style.borderColor='#16a34a';drawingsZone.style.background='#f0fdf4';
+      }catch(err){
+        showDrawingsState('error','Upload failed: '+err.message);
+        drawingsZone.style.borderColor='#dc2626';
+      }
+    }
+
+    drawingsZone.addEventListener('click',function(){drawingsInput.click();});
+    drawingsInput.addEventListener('change',function(){if(drawingsInput.files&&drawingsInput.files.length)uploadDrawings(Array.prototype.slice.call(drawingsInput.files));});
+    drawingsZone.addEventListener('dragover',function(e){e.preventDefault();drawingsZone.style.borderColor='var(--sky)';drawingsZone.style.background='#eff6ff';});
+    drawingsZone.addEventListener('dragleave',function(){drawingsZone.style.borderColor='var(--line)';drawingsZone.style.background='#fafbfd';});
+    drawingsZone.addEventListener('drop',function(e){
+      e.preventDefault();drawingsZone.style.borderColor='var(--line)';drawingsZone.style.background='#fafbfd';
+      if(e.dataTransfer.files&&e.dataTransfer.files.length)uploadDrawings(Array.prototype.slice.call(e.dataTransfer.files));
     });
 
     var SUBMIT_URL='https://sswebhook.testn8n.com/webhook/doa-form-submit';
@@ -573,6 +658,7 @@
         fuselage_position:document.getElementById('fuselage_position').value,
         sta_location:document.getElementById('sta_location').value.trim()||'',
         items_weight_list:document.getElementById('items_weight_list').value,
+        installation_weight_kg:document.getElementById('installation_weight_kg').value||'',
         impact_electrical:document.getElementById('impact_electrical').value,
         impact_avionics:document.getElementById('impact_avionics').value,
         impact_cabin_layout:document.getElementById('impact_cabin_layout').value,
@@ -583,6 +669,7 @@
         has_equipment:document.getElementById('has_equipment').value,
         equipment_details:document.getElementById('equipment_details').value.trim()||'',
         has_drawings:document.getElementById('has_drawings').value,
+        installation_drawings:document.getElementById('installation_drawings').value||'',
         has_previous_mod:document.getElementById('has_previous_mod').value,
         previous_mod_ref:document.getElementById('previous_mod_ref').value.trim()||'',
         has_manufacturer_docs:document.getElementById('has_manufacturer_docs').value,

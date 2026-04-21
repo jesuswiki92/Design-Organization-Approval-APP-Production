@@ -123,24 +123,24 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
  */
 function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
   return (
-    <div className="space-y-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-3 py-2.5">
+    <div className="space-y-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2.5 shadow-[0_4px_10px_rgba(74,60,36,0.06)]">
       {/* Motor */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">Motor</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">Motor</span>
         <span className="text-sm font-medium text-[color:var(--ink)]">{variant.motor || '—'}</span>
       </div>
 
       {/* MTOW y MLW en la misma fila */}
       <div className="flex items-baseline gap-4">
         <div className="flex items-baseline gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">MTOW</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">MTOW</span>
           <span className="font-mono text-sm font-medium text-[color:var(--ink)]">
             {variant.mtow_kg != null ? `${variant.mtow_kg.toLocaleString()} kg` : '—'}
           </span>
         </div>
         <span className="text-[color:var(--ink-4)]">|</span>
         <div className="flex items-baseline gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">MLW</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">MLW</span>
           <span className="font-mono text-sm font-medium text-[color:var(--ink)]">
             {variant.mlw_kg != null ? `${variant.mlw_kg.toLocaleString()} kg` : '—'}
           </span>
@@ -149,9 +149,9 @@ function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
 
       {/* Regulacion base — resaltada en ambar porque es critica */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">Regulacion Base</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">Regulacion Base</span>
         {variant.regulacion_base ? (
-          <span className="inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
+          <span className="inline-flex rounded border border-amber-200 bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-900">
             {variant.regulacion_base}
           </span>
         ) : (
@@ -161,13 +161,13 @@ function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
 
       {/* Categoria */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">Categoria</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">Categoria</span>
         <span className="text-sm font-medium text-[color:var(--ink-2)]">{variant.categoria || '—'}</span>
       </div>
 
       {/* MSN Elegibles */}
       <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">MSN Elegibles</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">MSN Elegibles</span>
         <span className="text-sm text-[color:var(--ink-3)]">{variant.msn_elegibles || '—'}</span>
       </div>
     </div>
@@ -206,7 +206,7 @@ export function TcdsStatusBanner({
     const hasExactMatch = matchedVariant != null
 
     return (
-      <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
+      <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_8px_18px_rgba(74,60,36,0.08)]">
         {/* === CABECERA: Badge de verificado + codigo TCDS + issue/fecha === */}
         <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />

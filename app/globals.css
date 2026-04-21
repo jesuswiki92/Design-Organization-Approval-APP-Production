@@ -66,15 +66,15 @@
 
 :root {
   /* ---- Warm Executive palette (from DOA Redesign.html) ---- */
-  --paper:      #f5f3ee;   /* page bg */
-  --paper-2:    #fbfaf7;   /* cards / near-white */
-  --paper-3:    #ebe8e1;   /* subtle fills, active states */
+  --paper:      #efeadf;   /* page bg */
+  --paper-2:    #fcfbf8;   /* cards / near-white */
+  --paper-3:    #e6dfd3;   /* subtle fills, active states */
   --ink:        #242220;   /* text on paper */
   --ink-2:      #454340;
   --ink-3:      #777470;
   --ink-4:      #a5a29c;
-  --line:       rgba(36, 34, 32, 0.10);
-  --line-strong:rgba(36, 34, 32, 0.17);
+  --line:       rgba(36, 34, 32, 0.12);
+  --line-strong:rgba(36, 34, 32, 0.20);
   --umber:      #8a5a2b;   /* accent, state */
   --umber-2:    #b36f35;
   --cobalt:     #2f4aa8;   /* spot colour for active/cobalt chips */
@@ -118,7 +118,7 @@
   --ring: var(--umber);
   --radius: 0.75rem;
 
-  --sidebar: #edeae4;
+  --sidebar: #e8e2d6;
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--ink);
   --sidebar-primary-foreground: var(--paper);
@@ -164,7 +164,7 @@
   --border: var(--line);
   --input: var(--line-strong);
   --ring: var(--umber);
-  --sidebar: #edeae4;
+  --sidebar: #e8e2d6;
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--ink);
   --sidebar-primary-foreground: var(--paper);

@@ -93,7 +93,7 @@ export function QuotationStateSelector({
   }
 
   return (
-    <div className="space-y-0.5">
+    <div className="relative z-20 space-y-0.5 overflow-visible">
       <label className="sr-only" htmlFor={`quotation-state-${consultaId}`}>
         Cambiar estado en el pipeline
       </label>
@@ -102,10 +102,14 @@ export function QuotationStateSelector({
         value={selectedState}
         disabled={status === 'saving'}
         onChange={(event) => void handleChange(event.target.value)}
-        className="h-7 w-full truncate rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-1.5 text-[10px] font-medium uppercase tracking-wide text-[color:var(--ink-3)] outline-none transition-colors hover:border-[color:var(--ink-4)] focus:border-[color:var(--ink-4)] focus:ring-2 focus:ring-[color:var(--ink-4)] disabled:cursor-wait disabled:opacity-70"
+        className="relative z-20 h-8 w-full truncate rounded-md border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--ink)] shadow-[0_1px_0_rgba(255,255,255,0.6)_inset] outline-none transition-colors hover:border-[color:var(--umber)] focus:border-[color:var(--umber)] focus:ring-2 focus:ring-[color:var(--umber)]/20 disabled:cursor-wait disabled:opacity-70 [color-scheme:light]"
       >
         {BOARD_STATE_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option
+            key={option.value}
+            value={option.value}
+            className="bg-[color:var(--paper-2)] text-[color:var(--ink)]"
+          >
             {option.label}
           </option>
         ))}

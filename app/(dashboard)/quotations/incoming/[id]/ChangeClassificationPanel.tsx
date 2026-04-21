@@ -275,7 +275,7 @@ export default function ChangeClassificationPanel({
   const criticalYes = answers.filter((a) => a.question_number <= 3 && a.answer === 'yes').length
 
   return (
-    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
       {/* Header - clickable to toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -289,12 +289,12 @@ export default function ChangeClassificationPanel({
           {/* Result badge */}
           {answeredCount > 0 && (
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
                 result === 'major'
-                  ? 'bg-red-50 text-red-700'
+                  ? 'border-red-200 bg-red-100 text-red-800'
                   : result === 'minor'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)]'
+                    ? 'border-emerald-200 bg-emerald-100 text-emerald-800'
+                    : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]'
               }`}
             >
               {result === 'major' ? 'MAJOR' : result === 'minor' ? 'MINOR' : `${answeredCount}/16`}
@@ -302,7 +302,7 @@ export default function ChangeClassificationPanel({
           )}
 
           {criticalYes > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
               <AlertTriangle className="h-3 w-3" />
               CONTACT EASA
             </span>
@@ -322,7 +322,7 @@ export default function ChangeClassificationPanel({
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="flex items-center gap-1.5 rounded-md bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {analyzing ? (
                     <>
@@ -339,12 +339,12 @@ export default function ChangeClassificationPanel({
 
                 <div className="flex items-center gap-2">
                   {saved && (
-                    <span className="text-xs text-emerald-600">Guardado</span>
+                    <span className="text-xs font-medium text-emerald-700">Guardado</span>
                   )}
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+                    className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-800 disabled:opacity-50"
                   >
                     {saving ? 'Guardando...' : 'Guardar'}
                   </button>
@@ -352,7 +352,7 @@ export default function ChangeClassificationPanel({
               </div>
 
               {error && (
-                <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                   {error}
                 </div>
@@ -362,7 +362,7 @@ export default function ChangeClassificationPanel({
               <div className="mb-3">
                 <div className="mb-2 flex items-center gap-1.5">
                   <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
                     Critical -- If YES, contact EASA
                   </span>
                 </div>
@@ -389,7 +389,7 @@ export default function ChangeClassificationPanel({
               {/* Standard questions */}
               <div>
                 <div className="mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--ink-2)]">
                     Classification -- Any YES = Major
                   </span>
                 </div>
@@ -410,19 +410,19 @@ export default function ChangeClassificationPanel({
               </div>
 
               {/* Summary */}
-              <div className="mt-5 flex items-center justify-between rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+              <div className="mt-5 flex items-center justify-between rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-[color:var(--ink-3)]">
+                  <span className="text-xs text-[color:var(--ink-2)]">
                     {answeredCount}/16 respondidas · {yesCount} YES · {answeredCount - yesCount} NO
                   </span>
                 </div>
                 <div
-                  className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  className={`rounded-full border px-3 py-1 text-xs font-bold ${
                     result === 'major'
-                      ? 'bg-red-100 text-red-700'
+                      ? 'border-red-200 bg-red-100 text-red-800'
                       : result === 'minor'
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
+                        ? 'border-emerald-200 bg-emerald-100 text-emerald-800'
+                        : 'border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)]'
                   }`}
                 >
                   {result === 'major'

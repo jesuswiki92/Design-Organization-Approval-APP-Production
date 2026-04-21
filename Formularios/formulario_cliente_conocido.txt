@@ -157,6 +157,49 @@
           <label for="impact_structural_interface">Describe the structural interface</label>
           <textarea id="impact_structural_interface" name="impact_structural_interface" rows="2" placeholder="e.g. External POD mounted on belly, fuselage skin panel, seat tracks..."></textarea>
         </div>
+        <div class="field hidden" id="field-primary-structure" style="margin-top:16px">
+          <label for="affects_primary_structure">Does the modification affect primary structure (PSE)? / &iquest;La modificaci&oacute;n afecta a estructura primaria (PSE)? <span style="color:#ef4444">*</span></label>
+          <p class="hint">Primary Structural Elements &mdash; load-bearing members whose failure could be catastrophic</p>
+          <select id="affects_primary_structure" name="affects_primary_structure">
+            <option value="">Select...</option>
+            <option value="si">Yes / S&iacute;</option>
+            <option value="no">No</option>
+            <option value="no_se">Not sure / No estoy seguro</option>
+          </select>
+        </div>
+
+        <!-- STA / POSITION -->
+        <div class="grid cols2" style="margin-top:16px">
+          <div class="field">
+            <label for="fuselage_position">General fuselage position / Posici&oacute;n general en el fuselaje <span style="color:#ef4444">*</span></label>
+            <select id="fuselage_position" name="fuselage_position" required>
+              <option value="">Select...</option>
+              <option value="fwd">Forward (Fwd)</option>
+              <option value="mid">Mid</option>
+              <option value="aft">Aft</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sta_location">Station (STA) if known / Estaci&oacute;n (STA) si la conoce</label>
+            <input id="sta_location" name="sta_location" type="text" placeholder="e.g. STA 250" />
+          </div>
+        </div>
+
+        <!-- EQUIPMENT / ITEMS TO INSTALL -->
+        <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--soft)">Equipment / Items to install &mdash; Equipos / &Iacute;tems a instalar</p>
+        </div>
+        <p class="hintcopy">List each item/equipment to be installed or replaced. Indicate weight added and weight removed (if replacing existing equipment).</p>
+        <input type="hidden" id="items_weight_list" name="items_weight_list" value="[]" />
+        <div id="items-list-container" style="margin-top:12px">
+          <div class="item-row" style="display:grid;grid-template-columns:1fr .4fr .4fr 40px;gap:10px;align-items:end;margin-bottom:10px">
+            <div class="field"><label>Item description <span style="color:#ef4444">*</span></label><input type="text" class="item-name" required placeholder="e.g. GPS antenna, cargo net..." /></div>
+            <div class="field"><label>Weight added (kg) <span style="color:#ef4444">*</span></label><input type="number" class="item-weight-add" step="0.1" min="0" required placeholder="0.0" /></div>
+            <div class="field"><label>Weight removed (kg)</label><input type="number" class="item-weight-rem" step="0.1" min="0" value="0" placeholder="0.0" /></div>
+            <button type="button" class="btn-remove-item" onclick="removeItemRow(this)" style="width:36px;height:36px;border:1px solid #fecaca;border-radius:10px;background:#fef2f2;color:#dc2626;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px" title="Remove item">&times;</button>
+          </div>
+        </div>
+        <button type="button" onclick="addItemRow()" style="margin-top:4px;padding:10px 18px;border:1px dashed var(--line);border-radius:14px;background:#f8fbff;color:var(--sky2);font-size:13px;font-weight:700;cursor:pointer">+ Add item</button>
 
         <!-- WHAT DOES IT INVOLVE -->
         <div style="margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
@@ -193,15 +236,20 @@
               <option value="no">No</option>
             </select>
           </div>
-          <div class="field">
-            <label for="impact_pressurized">Is the installation zone pressurized? <span style="color:#ef4444">*</span></label>
-            <select id="impact_pressurized" name="impact_pressurized" required>
+        <div class="field">
+          <label for="impact_pressurized">Is the installation zone pressurized? <span style="color:#ef4444">*</span></label>
+          <select id="impact_pressurized" name="impact_pressurized" required>
               <option value="">Select...</option>
               <option value="si">Yes</option>
               <option value="no">No</option>
               <option value="no_se">Not sure</option>
             </select>
           </div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label for="installation_weight_kg">Estimated installation weight (kg)</label>
+          <input id="installation_weight_kg" name="installation_weight_kg" type="number" min="0" step="0.1" placeholder="e.g. 12.5" />
+          <p class="hint">Please indicate the estimated total weight of the installation if known.</p>
         </div>
         <div class="field" style="margin-top:16px">
           <label for="impact_operational_change">Will the modification change how the aircraft is operated? <span style="color:#ef4444">*</span></label>
@@ -212,6 +260,19 @@
             <option value="no">No</option>
             <option value="no_se">Not sure</option>
           </select>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label for="motivated_by_ad">Is the modification driven by an Airworthiness Directive (AD)? / &iquest;La modificaci&oacute;n viene motivada por una Directiva de Aeronavegabilidad (AD)? <span style="color:#ef4444">*</span></label>
+          <select id="motivated_by_ad" name="motivated_by_ad" required onchange="toggleAD()">
+            <option value="">Select...</option>
+            <option value="si">Yes / S&iacute;</option>
+            <option value="no">No</option>
+            <option value="no_se">Not sure / No estoy seguro</option>
+          </select>
+        </div>
+        <div class="field hidden" id="field-ad-reference" style="margin-top:16px">
+          <label for="ad_reference">AD Reference / Referencia de la AD</label>
+          <input id="ad_reference" name="ad_reference" type="text" placeholder="e.g. EASA AD 2024-0123" />
         </div>
 
         <!-- WHAT DO YOU HAVE -->
@@ -251,6 +312,28 @@
               <option value="no_seguro">Not sure</option>
             </select>
           </div>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label>Attach drawings / installation drawings</label>
+          <input type="hidden" name="installation_drawings" id="installation_drawings" />
+          <div id="drawings-zone" style="border:2px dashed var(--line);border-radius:14px;padding:24px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:#fafbfd">
+            <div id="drawings-text">
+              <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px">Drag & drop drawings here or click to browse</p>
+              <p style="font-size:12px;color:var(--soft)">PDF, images, DWG, DXF or ZIP files. Multiple files allowed.</p>
+            </div>
+            <div id="drawings-loading" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:var(--sky)">Uploading drawings...</p>
+            </div>
+            <div id="drawings-success" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#16a34a" id="drawings-list">Files attached</p>
+              <p style="font-size:12px;color:var(--soft);margin-top:4px">Stored in Supabase. You can replace them by dropping new files.</p>
+            </div>
+            <div id="drawings-error" style="display:none">
+              <p style="font-size:14px;font-weight:600;color:#dc2626" id="drawings-error-msg">Error</p>
+            </div>
+          </div>
+          <input type="file" id="installation_drawings_input" accept=".pdf,.png,.jpg,.jpeg,.webp,.svg,.dwg,.dxf,.zip" multiple style="display:none" />
+          <p class="hint">Attach any drawings, sketches or CAD reference files relevant to the installation.</p>
         </div>
         <div class="field hidden" id="field-previous-mod-ref" style="margin-top:16px">
           <label for="previous_mod_ref">Previous modification reference</label>
@@ -327,6 +410,15 @@
     var errorEl=document.getElementById('drop-error');
     var filenameEl=document.getElementById('drop-filename');
     var errorMsg=document.getElementById('drop-error-msg');
+    var drawingsZone=document.getElementById('drawings-zone');
+    var drawingsInput=document.getElementById('installation_drawings_input');
+    var drawingsHidden=document.getElementById('installation_drawings');
+    var drawingsTextEl=document.getElementById('drawings-text');
+    var drawingsSuccessEl=document.getElementById('drawings-success');
+    var drawingsLoadingEl=document.getElementById('drawings-loading');
+    var drawingsErrorEl=document.getElementById('drawings-error');
+    var drawingsListEl=document.getElementById('drawings-list');
+    var drawingsErrorMsg=document.getElementById('drawings-error-msg');
 
     function showState(s,msg){
       textEl.style.display=s==='idle'?'':'none';
@@ -343,7 +435,8 @@
       showState('loading');
       var ts=Date.now();
       var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      var path='tcds/'+ts+'_'+safeName;
+      var consultaId=(document.getElementById('consulta_id')||{}).value||'sin-consulta';
+      var path=consultaId+'/tcds/'+ts+'_'+safeName;
       try{
         var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
           method:'POST',
@@ -368,6 +461,54 @@
     zone.addEventListener('drop',function(e){
       e.preventDefault();zone.style.borderColor='var(--line)';zone.style.background='#fafbfd';
       if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0]);
+    });
+
+    function showDrawingsState(s,msg){
+      drawingsTextEl.style.display=s==='idle'?'':'none';
+      drawingsLoadingEl.style.display=s==='loading'?'':'none';
+      drawingsSuccessEl.style.display=s==='success'?'':'none';
+      drawingsErrorEl.style.display=s==='error'?'':'none';
+      if(s==='success')drawingsListEl.textContent=msg;
+      if(s==='error')drawingsErrorMsg.textContent=msg;
+    }
+
+    async function uploadDrawings(files){
+      if(!files||!files.length){showDrawingsState('error','Please choose at least one file.');return;}
+      showDrawingsState('loading');
+      var urls=[];var names=[];
+      try{
+        for(var i=0;i<files.length;i++){
+          var file=files[i];
+          if(file.size>25*1024*1024){throw new Error('Each file must be 25 MB or smaller.');}
+          var ts=Date.now();
+          var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+          var consultaId=(document.getElementById('consulta_id')||{}).value||'sin-consulta';
+          var path=consultaId+'/drawings/'+ts+'_'+i+'_'+safeName;
+          var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
+            method:'POST',
+            headers:{'Authorization':'Bearer '+SB_KEY,'apikey':SB_KEY,'Content-Type':file.type||'application/octet-stream','x-upsert':'true'},
+            body:file
+          });
+          if(!r.ok){var e=await r.text();throw new Error(e);}
+          urls.push(SB_URL+'/storage/v1/object/public/'+BUCKET+'/'+path);
+          names.push(file.name);
+        }
+        drawingsHidden.value=JSON.stringify(urls);
+        showDrawingsState('success',names.join(', '));
+        drawingsZone.style.borderColor='#16a34a';drawingsZone.style.background='#f0fdf4';
+      }catch(err){
+        showDrawingsState('error','Upload failed: '+err.message);
+        drawingsZone.style.borderColor='#dc2626';
+      }
+    }
+
+    drawingsZone.addEventListener('click',function(){drawingsInput.click();});
+    drawingsInput.addEventListener('change',function(){if(drawingsInput.files&&drawingsInput.files.length)uploadDrawings(Array.prototype.slice.call(drawingsInput.files));});
+    drawingsZone.addEventListener('dragover',function(e){e.preventDefault();drawingsZone.style.borderColor='var(--sky)';drawingsZone.style.background='#eff6ff';});
+    drawingsZone.addEventListener('dragleave',function(){drawingsZone.style.borderColor='var(--line)';drawingsZone.style.background='#fafbfd';});
+    drawingsZone.addEventListener('drop',function(e){
+      e.preventDefault();drawingsZone.style.borderColor='var(--line)';drawingsZone.style.background='#fafbfd';
+      if(e.dataTransfer.files&&e.dataTransfer.files.length)uploadDrawings(Array.prototype.slice.call(e.dataTransfer.files));
     });
 
     var SUBMIT_URL='https://sswebhook.testn8n.com/webhook/doa-form-submit';
@@ -411,8 +552,55 @@
     window.toggleStructuralAttachment=function(){
       var v=document.getElementById('impact_structural_attachment').value;
       var f=document.getElementById('field-structural-interface');
+      var p=document.getElementById('field-primary-structure');
       f.classList.toggle('hidden',v!=='si');
+      p.classList.toggle('hidden',v!=='si');
+      if(v!=='si'){document.getElementById('affects_primary_structure').value='';}
     };
+    window.toggleAD=function(){
+      var v=document.getElementById('motivated_by_ad').value;
+      var f=document.getElementById('field-ad-reference');
+      f.classList.toggle('hidden',v!=='si');
+      if(v!=='si'){document.getElementById('ad_reference').value='';}
+    };
+
+    /* --- Dynamic item list --- */
+    window.addItemRow=function(){
+      var container=document.getElementById('items-list-container');
+      var row=document.createElement('div');
+      row.className='item-row';
+      row.style.cssText='display:grid;grid-template-columns:1fr .4fr .4fr 40px;gap:10px;align-items:end;margin-bottom:10px';
+      row.innerHTML='<div class="field"><label>Item description <span style="color:#ef4444">*</span></label><input type="text" class="item-name" required placeholder="e.g. GPS antenna, cargo net..." /></div>'
+        +'<div class="field"><label>Weight added (kg) <span style="color:#ef4444">*</span></label><input type="number" class="item-weight-add" step="0.1" min="0" required placeholder="0.0" /></div>'
+        +'<div class="field"><label>Weight removed (kg)</label><input type="number" class="item-weight-rem" step="0.1" min="0" value="0" placeholder="0.0" /></div>'
+        +'<button type="button" class="btn-remove-item" onclick="removeItemRow(this)" style="width:36px;height:36px;border:1px solid #fecaca;border-radius:10px;background:#fef2f2;color:#dc2626;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px" title="Remove item">&times;</button>';
+      container.appendChild(row);
+    };
+    window.removeItemRow=function(btn){
+      var container=document.getElementById('items-list-container');
+      if(container.querySelectorAll('.item-row').length>1){
+        btn.closest('.item-row').remove();
+      }else{
+        /* Don't remove the last row, just clear it */
+        var row=btn.closest('.item-row');
+        row.querySelector('.item-name').value='';
+        row.querySelector('.item-weight-add').value='';
+        row.querySelector('.item-weight-rem').value='0';
+      }
+    };
+    function serializeItemsList(){
+      var rows=document.querySelectorAll('#items-list-container .item-row');
+      var items=[];
+      for(var i=0;i<rows.length;i++){
+        var name=rows[i].querySelector('.item-name').value.trim();
+        var wAdd=parseFloat(rows[i].querySelector('.item-weight-add').value)||0;
+        var wRem=parseFloat(rows[i].querySelector('.item-weight-rem').value)||0;
+        if(name){items.push({name:name,weight_added_kg:wAdd,weight_removed_kg:wRem});}
+      }
+      document.getElementById('items_weight_list').value=JSON.stringify(items);
+      return items;
+    }
+
     window.togglePreviousMod=function(){
       var v=document.getElementById('has_previous_mod').value;
       var f=document.getElementById('field-previous-mod-ref');
@@ -434,7 +622,7 @@
       }
 
       /* Validate technical + impact fields (merged) */
-      var requiredTech=['work_type','modification_summary','operational_goal','impact_location','impact_structural_attachment','impact_electrical','impact_avionics','impact_cabin_layout','impact_pressurized','impact_operational_change','has_equipment','has_drawings','has_previous_mod','has_manufacturer_docs','is_aog'];
+      var requiredTech=['work_type','modification_summary','operational_goal','impact_location','impact_structural_attachment','impact_electrical','impact_avionics','impact_cabin_layout','impact_pressurized','impact_operational_change','motivated_by_ad','has_equipment','has_drawings','has_previous_mod','has_manufacturer_docs','is_aog','fuselage_position'];
       for(var i=0;i<requiredTech.length;i++){
         var el=document.getElementById(requiredTech[i]);
         if(!el.value.trim()){el.focus();errTech.textContent='Please fill in all required fields.';errTech.style.display='block';return;}
@@ -453,6 +641,9 @@
         tcds_pdf_url:document.getElementById('tcds_pdf_url').value||''
       };
 
+      /* Serialize item list before building payload */
+      serializeItemsList();
+
       var techData={
         section:'technical',
         consulta_id:consultaId,
@@ -463,14 +654,22 @@
         impact_location:document.getElementById('impact_location').value,
         impact_structural_attachment:document.getElementById('impact_structural_attachment').value,
         impact_structural_interface:document.getElementById('impact_structural_interface').value.trim()||'',
+        affects_primary_structure:document.getElementById('affects_primary_structure').value||'',
+        fuselage_position:document.getElementById('fuselage_position').value,
+        sta_location:document.getElementById('sta_location').value.trim()||'',
+        items_weight_list:document.getElementById('items_weight_list').value,
+        installation_weight_kg:document.getElementById('installation_weight_kg').value||'',
         impact_electrical:document.getElementById('impact_electrical').value,
         impact_avionics:document.getElementById('impact_avionics').value,
         impact_cabin_layout:document.getElementById('impact_cabin_layout').value,
         impact_pressurized:document.getElementById('impact_pressurized').value,
         impact_operational_change:document.getElementById('impact_operational_change').value,
+        motivated_by_ad:document.getElementById('motivated_by_ad').value,
+        ad_reference:document.getElementById('ad_reference').value.trim()||'',
         has_equipment:document.getElementById('has_equipment').value,
         equipment_details:document.getElementById('equipment_details').value.trim()||'',
         has_drawings:document.getElementById('has_drawings').value,
+        installation_drawings:document.getElementById('installation_drawings').value||'',
         has_previous_mod:document.getElementById('has_previous_mod').value,
         previous_mod_ref:document.getElementById('previous_mod_ref').value.trim()||'',
         has_manufacturer_docs:document.getElementById('has_manufacturer_docs').value,

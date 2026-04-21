@@ -85,20 +85,29 @@ export type CrearProyectoManualResult = {
 
 const INVALID_PATH_CHARS = /[\/\\:*?"<>|]/g
 
-/** Limpia un segmento de path para Windows: elimina chars invalidos y colapsa espacios. */
+/**
+ * Limpia un segmento de path para Windows: elimina chars invalidos, colapsa
+ * espacios y evita puntos/espacios finales, que Explorer no puede abrir bien.
+ */
 export function sanitizePathSegment(value: string): string {
-  return value
+  const cleaned = value
     .replace(INVALID_PATH_CHARS, '-')
     .replace(/\s+/g, ' ')
     .trim()
+    .replace(/[ .]+$/g, '')
+
+  return cleaned || 'Sin nombre'
 }
 
 /** Sanitiza un nombre de fichero conservando la extension. */
 function sanitizeFilename(value: string): string {
-  return value
+  const cleaned = value
     .replace(INVALID_PATH_CHARS, '-')
     .replace(/\s+/g, ' ')
     .trim()
+    .replace(/[ .]+$/g, '')
+
+  return cleaned || 'documento'
 }
 
 // ─── Fn principal ───────────────────────────────────────────────────────────

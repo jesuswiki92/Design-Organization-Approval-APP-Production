@@ -132,7 +132,7 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Link
                 href={`/engineering/${created.id}`}
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-800 shadow-sm transition-colors hover:bg-emerald-200"
               >
                 <FolderOpen className="h-4 w-4" />
                 Ir al proyecto
@@ -147,8 +147,8 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
   // ---------- Estado: cargando preview ----------
   if (loadingPreview) {
     return (
-      <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-        <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
+      <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
+        <div className="flex items-center gap-2 text-sm text-[color:var(--ink-2)]">
           <Loader2 className="h-4 w-4 animate-spin" />
           Calculando propuesta de proyecto...
         </div>
@@ -166,7 +166,7 @@ export function PreparaProyectoPanel({ consultaId }: Props) {
             <h2 className="text-sm font-semibold text-[color:var(--ink)]">
               No se pudo cargar la vista previa
             </h2>
-            <p className="mt-1 text-xs text-[color:var(--ink-3)]">
+            <p className="mt-1 text-xs text-[color:var(--ink-2)]">
               {previewError ?? 'Respuesta vacia del servidor.'}
             </p>
             <button

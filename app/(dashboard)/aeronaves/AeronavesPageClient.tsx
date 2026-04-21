@@ -135,63 +135,63 @@ export default function AeronavesPageClient({
         </section>
 
         {/* === TABLA DE AERONAVES: muestra cada aeronave en una fila === */}
-        <div className="min-h-0 flex-1 overflow-y-auto rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-[22px] border border-[color:var(--ink-4)]/70 bg-[color:var(--paper-2)] shadow-[0_14px_32px_rgba(74,60,36,0.08)] ring-1 ring-inset ring-[color:var(--ink-4)]/25">
           <div className="overflow-x-auto">
             <table className="min-w-[1400px] w-full text-sm">
               {/* Cabecera de la tabla con los nombres de las columnas */}
-              <thead>
-                <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-[color:var(--ink-4)]/80 bg-[color:var(--paper-2)]/96 shadow-[inset_0_-1px_0_rgba(74,60,36,0.08)] backdrop-blur-sm">
                   {/* Columnas de la tabla en el orden especificado */}
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     TCDS
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     Modelo
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     Fabricante
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     Pais
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     Motor
                   </th>
                   {/* Columnas numericas alineadas a la derecha */}
-                  <th className="whitespace-nowrap px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     MTOW (kg)
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     MLW (kg)
                   </th>
                   {/* Regulacion Base destacada en amber */}
-                  <th className="whitespace-nowrap px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-50 rounded-t-lg">
+                  <th className="whitespace-nowrap rounded-t-lg bg-amber-100/90 px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-amber-900">
                     Regulacion Base
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     Categoria
                   </th>
-                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
+                  <th className="whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">
                     MSN Elegibles
                   </th>
                 </tr>
               </thead>
 
               {/* Cuerpo de la tabla: una fila por cada aeronave filtrada */}
-              <tbody>
+              <tbody className="divide-y divide-[color:var(--ink-4)]/55">
                 {filtered.map((aeronave, index) => (
                   <tr
                     key={aeronave.id}
-                    className={`border-b border-[color:var(--ink-4)]/60 transition-colors hover:bg-[color:var(--paper-3)]/40 ${
+                    className={`transition-colors odd:bg-[color:var(--paper-2)] even:bg-[color:var(--paper)]/80 hover:bg-[color:var(--paper-3)]/45 ${
                       isFirstInGroup(index) && index !== 0
-                        ? 'border-t-2 border-t-sky-100'
+                        ? 'border-t-2 border-t-[color:var(--umber)]/18'
                         : ''
                     }`}
                   >
                     {/* Columna TCDS: badge azul cielo con codigo */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-3)] px-2.5 py-0.5 text-xs font-bold text-[color:var(--ink-2)]">
+                        <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)]/70 bg-white px-2.5 py-0.5 text-xs font-bold text-[color:var(--ink)] shadow-[0_1px_0_rgba(255,255,255,0.75)_inset]">
                           {aeronave.tcds_code_short}
                         </span>
                       </div>
@@ -199,49 +199,49 @@ export default function AeronavesPageClient({
 
                     {/* Columna Modelo */}
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-950">
+                      <p className="font-medium text-[color:var(--ink)]">
                         {aeronave.modelo ?? '--'}
                       </p>
                     </td>
 
                     {/* Columna Fabricante */}
-                    <td className="px-4 py-3 text-[color:var(--ink-3)]">
+                    <td className="px-4 py-3 text-[color:var(--ink-2)]">
                       {aeronave.fabricante ?? '--'}
                     </td>
 
                     {/* Columna Pais */}
-                    <td className="px-4 py-3 text-[color:var(--ink-3)]">
+                    <td className="px-4 py-3 text-[color:var(--ink-2)]">
                       {aeronave.pais ?? '--'}
                     </td>
 
                     {/* Columna Motor */}
-                    <td className="px-4 py-3 text-[color:var(--ink-3)]">
+                    <td className="px-4 py-3 text-[color:var(--ink-2)]">
                       {aeronave.motor ?? '--'}
                     </td>
 
                     {/* Columna MTOW alineada a la derecha */}
-                    <td className="px-4 py-3 text-right font-mono text-[color:var(--ink-3)]">
+                    <td className="px-4 py-3 text-right font-mono text-[color:var(--ink-2)]">
                       {aeronave.mtow_kg != null
                         ? aeronave.mtow_kg.toLocaleString('es-ES')
                         : '--'}
                     </td>
 
                     {/* Columna MLW alineada a la derecha */}
-                    <td className="px-4 py-3 text-right font-mono text-[color:var(--ink-3)]">
+                    <td className="px-4 py-3 text-right font-mono text-[color:var(--ink-2)]">
                       {aeronave.mlw_kg != null
                         ? aeronave.mlw_kg.toLocaleString('es-ES')
                         : '--'}
                     </td>
 
                     {/* Columna Regulacion Base destacada en amber */}
-                    <td className="px-3 py-2.5 bg-amber-50">
-                      <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    <td className="bg-amber-50/80 px-3 py-2.5">
+                      <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900 shadow-[0_1px_0_rgba(255,255,255,0.55)_inset]">
                         {aeronave.regulacion_base || '--'}
                       </span>
                     </td>
 
                     {/* Columna Categoria */}
-                    <td className="px-4 py-3 text-[color:var(--ink-3)]">
+                    <td className="px-4 py-3 text-[color:var(--ink-2)]">
                       {aeronave.categoria ?? '--'}
                     </td>
 
@@ -249,7 +249,7 @@ export default function AeronavesPageClient({
                     <td className="px-4 py-3">
                       <span
                         title={aeronave.msn_elegibles ?? ''}
-                        className="inline-block max-w-[200px] truncate text-sm text-[color:var(--ink-3)]"
+                        className="inline-block max-w-[200px] truncate text-sm text-[color:var(--ink-2)]"
                       >
                         {aeronave.msn_elegibles ?? '--'}
                       </span>
@@ -260,7 +260,7 @@ export default function AeronavesPageClient({
                 {/* Mensaje cuando no hay resultados (tabla vacia o busqueda sin coincidencias) */}
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-10 text-center text-sm text-[color:var(--ink-3)]">
+                    <td colSpan={10} className="px-4 py-10 text-center text-sm text-[color:var(--ink-2)]">
                       {search
                         ? `No se encontraron aeronaves para "${search}"`
                         : 'No hay aeronaves registradas. Ingesta un TCDS desde Herramientas para empezar.'}

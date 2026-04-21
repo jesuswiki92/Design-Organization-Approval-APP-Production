@@ -5,25 +5,16 @@
  * TARJETA COMPACTA DE PROYECTO (TABLERO)
  * ============================================================================
  *
- * Card compacta para el Tablero de proyectos. Diseñada para columnas
- * estrechas (13 columnas = mucho scroll horizontal). Muestra solo lo
- * esencial: codigo, titulo, cliente, TCDS/aeronave, owner, fecha, y un
- * badge con el progreso de deliverables si esta disponible (Sprint 1).
- *
+ * Card compacta para el Tablero de proyectos. Muestra codigo, titulo, cliente,
+ * TCDS/aeronave, owner, fecha, progreso de deliverables y acciones rapidas.
  * Clic en la card abre el detalle del proyecto.
- *
- * Si `showStateSelector` es true, se renderiza un dropdown en el footer que
- * dispara transiciones via `/api/proyectos/[id]/transicion` (patron espejo
- * de QuotationStateSelector). El Link padre sigue activo: los clicks/cambios
- * del select usan stopPropagation para no navegar al detalle.
- *
- * MATCH: mismo estilo visual que las cards de QuotationStatesBoard (BoardCard)
- * — border slate-200, bg white, sombra suave, hover con translate-y.
  * ============================================================================
  */
 
 import Link from 'next/link'
-import { Calendar, Plane, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { startTransition, useState } from 'react'
+import { Calendar, Plane, Trash2, User } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import type { Proyecto } from '@/types/database'
@@ -42,6 +33,9 @@ export function ProjectCard({
   project: ProjectCardData
   showStateSelector?: boolean
 }) {
+  const router = useRouter()
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
+  const [deleteMessage, setDeleteMessage] = useState<string | null>(null)
   const aircraft = project.tcds_code_short ?? project.aeronave ?? null
   const client = project.cliente_nombre ?? null
   const owner = project.owner ?? null
@@ -50,75 +44,128 @@ export function ProjectCard({
   const done = project.deliverables_completados ?? 0
   const hasDeliverables = total > 0
 
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      `Seguro que quieres borrar el proyecto "${project.numero_proyecto}"? Se eliminara de la app, pero no se borraran las carpetas locales del proyecto.`,
+    )
+    if (!confirmed) return
+
+    setDeleteStatus('deleting')
+    setDeleteMessage(null)
+
+    try {
+      const response = await fetch(`/api/proyectos/${project.id}`, {
+        method: 'DELETE',
+      })
+
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string }
+        | null
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo borrar el proyecto.')
+      }
+
+      setDeleteStatus('idle')
+      startTransition(() => router.refresh())
+    } catch (error) {
+      setDeleteStatus('error')
+      setDeleteMessage(
+        error instanceof Error
+          ? error.message
+          : 'Se produjo un error borrando el proyecto.',
+      )
+    }
+  }
+
   return (
-    <Link
-      href={`/engineering/projects/${project.id}`}
-      className="doa-kanban-card group block"
-    >
-      {/* Codigo + progreso deliverables */}
-      <div className="flex items-start justify-between gap-2">
-        <p className="doa-kanban-card-code">
-          {project.numero_proyecto}
-        </p>
-        {hasDeliverables ? (
-          <span
-            className={cn(
-              'doa-kanban-chip',
-              done === total && 'text-[color:var(--ok)]',
-            )}
-            title={`${done} de ${total} deliverables completados`}
-          >
-            {done}/{total}
-          </span>
+    <article className="doa-kanban-card group relative">
+      <Link
+        href={`/engineering/projects/${project.id}`}
+        className="block pr-8"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <p className="doa-kanban-card-code">
+            {project.numero_proyecto}
+          </p>
+          {hasDeliverables ? (
+            <span
+              className={cn(
+                'doa-kanban-chip',
+                done === total && 'text-[color:var(--ok)]',
+              )}
+              title={`${done} de ${total} deliverables completados`}
+            >
+              {done}/{total}
+            </span>
+          ) : null}
+        </div>
+
+        <h4 className="doa-kanban-card-title mt-1.5 line-clamp-2 transition-colors group-hover:text-[color:var(--umber)]">
+          {project.titulo}
+        </h4>
+
+        {client || aircraft ? (
+          <div className="doa-kanban-card-meta mt-2 flex flex-wrap items-center gap-1.5">
+            {aircraft ? (
+              <span className="inline-flex items-center gap-1">
+                <Plane className="h-3 w-3" />
+                {aircraft}
+              </span>
+            ) : null}
+            {aircraft && client ? <span className="text-[color:var(--ink-4)]">·</span> : null}
+            {client ? <span className="truncate">{client}</span> : null}
+          </div>
         ) : null}
-      </div>
 
-      {/* Titulo */}
-      <h4 className="doa-kanban-card-title mt-1.5 line-clamp-2 transition-colors group-hover:text-[color:var(--umber)]">
-        {project.titulo}
-      </h4>
+        {owner || start ? (
+          <div className="doa-kanban-card-meta mt-2 flex items-center justify-between">
+            {owner ? (
+              <span className="inline-flex items-center gap-1 truncate">
+                <User className="h-3 w-3" />
+                {owner}
+              </span>
+            ) : <span />}
+            {start ? (
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {start}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
-      {/* Cliente + aeronave */}
-      {(client || aircraft) ? (
-        <div className="doa-kanban-card-meta mt-2 flex flex-wrap items-center gap-1.5">
-          {aircraft ? (
-            <span className="inline-flex items-center gap-1">
-              <Plane className="h-3 w-3" />
-              {aircraft}
-            </span>
-          ) : null}
-          {aircraft && client ? <span className="text-[color:var(--ink-4)]">·</span> : null}
-          {client ? <span className="truncate">{client}</span> : null}
-        </div>
+        {showStateSelector ? (
+          <div className="mt-3 pt-2 doa-kanban-card-foot">
+            <ProjectStateSelector
+              proyectoId={project.id}
+              currentState={project.estado_v2 ?? null}
+            />
+          </div>
+        ) : null}
+      </Link>
+
+      <button
+        type="button"
+        onClick={() => void handleDelete()}
+        disabled={deleteStatus === 'deleting'}
+        className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] text-[color:var(--err)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-70"
+        aria-label={`Borrar proyecto ${project.numero_proyecto}`}
+        title="Borrar proyecto"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+
+      {deleteStatus === 'deleting' ? (
+        <p className="mt-2 text-[11px] text-[color:var(--ink-3)]">
+          Borrando proyecto...
+        </p>
       ) : null}
-
-      {/* Owner + fecha */}
-      {(owner || start) ? (
-        <div className="doa-kanban-card-meta mt-2 flex items-center justify-between">
-          {owner ? (
-            <span className="inline-flex items-center gap-1 truncate">
-              <User className="h-3 w-3" />
-              {owner}
-            </span>
-          ) : <span />}
-          {start ? (
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {start}
-            </span>
-          ) : null}
-        </div>
+      {deleteMessage ? (
+        <p className="mt-2 text-[11px] text-[color:var(--err)]">
+          {deleteMessage}
+        </p>
       ) : null}
-
-      {/* Selector de estado (opt-in) */}
-      {showStateSelector ? (
-        <div className="mt-3 pt-2 doa-kanban-card-foot">
-          <ProjectStateSelector
-            proyectoId={project.id}
-            currentState={project.estado_v2 ?? null}
-          />
-        </div>
-      ) : null}
-    </Link>
+    </article>
   )
 }

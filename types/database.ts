@@ -706,6 +706,9 @@ export interface ConsultaEntrante {
   aircraft_msn?: string | null
   // URL al PDF del TCDS descargado para referencia
   tcds_pdf_url?: string | null
+  // Lista de URLs publicas de los planos / drawings adjuntos por el cliente
+  // (columna jsonb en la tabla; array de URLs). Puede ser null si no se adjuntaron.
+  installation_drawings_urls?: string[] | null
   // Tipo de trabajo solicitado: "proyecto_nuevo" o "modificacion_existente"
   work_type?: string | null
   // Codigo del proyecto existente (solo si work_type = "modificacion_existente")

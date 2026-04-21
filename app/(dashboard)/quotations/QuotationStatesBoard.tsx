@@ -119,6 +119,12 @@ type ScopeSaveState = {
 /** Opcion de estado para el selector del pipeline de cotizaciones */
 type BoardStateOption = QuotationBoardStateOption
 
+const quotationPillBaseClass =
+  'inline-flex items-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--ink)] shadow-[0_1px_0_rgba(255,255,255,0.65)_inset]'
+
+const quotationPillEmphasisClass =
+  'inline-flex h-11 items-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-4 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--ink)] shadow-[0_1px_0_rgba(255,255,255,0.65)_inset] transition-colors hover:border-[color:var(--umber)] hover:bg-[color:var(--paper)] hover:text-[color:var(--umber)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--umber)]/25'
+
 /** Opciones de vista disponibles con sus iconos */
 const VIEW_OPTIONS: Array<{
   value: BoardView
@@ -475,7 +481,7 @@ function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
   if (card.clientIdentity.kind === 'known') {
     return (
       <div className="mt-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-3 py-2.5">
-        <p className="doa-label-mono text-[color:var(--ok)]">
+        <p className={cn(quotationPillBaseClass, 'border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[color:var(--ok)]')}>
           Cliente conocido
         </p>
         <p className="mt-1 text-sm font-semibold text-[color:var(--ink)]">
@@ -491,7 +497,7 @@ function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
 
   return (
     <div className="mt-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-3 py-2.5">
-      <p className="doa-label-mono text-[color:var(--umber)]">
+      <p className={cn(quotationPillBaseClass, 'w-fit max-w-full text-[color:var(--umber)]')}>
         {card.clientIdentity.displayLabel}
       </p>
     </div>
@@ -772,10 +778,10 @@ function ScopeEditor({
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="doa-kanban-chip">
+                <span className={cn(quotationPillBaseClass, 'text-[color:var(--ink)]')}>
                   {row.state_code}
                 </span>
-                <span className="doa-kanban-chip text-[color:var(--ok)]">
+                <span className={cn(quotationPillBaseClass, 'border-emerald-300 bg-emerald-50 text-[color:var(--ok)]')}>
                   ID técnico fijo
                 </span>
               </div>
@@ -1149,7 +1155,7 @@ export function QuotationStatesBoard({
         <div className="border-b border-[color:var(--line)] px-0 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--paper)] px-3 py-1 doa-label-mono text-[color:var(--umber)]">
+              <div className={cn(quotationPillBaseClass, 'gap-2 px-3 py-1 text-[color:var(--umber)]')}>
                 <LayoutGrid className="h-3.5 w-3.5" />
                 Quotations workspace
               </div>
@@ -1166,13 +1172,13 @@ export function QuotationStatesBoard({
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-3">
-              <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper)] px-4 py-3">
+              <div className="rounded-2xl border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-4 py-3 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset]">
                 <p className="doa-label-mono">Columns</p>
                 <p className="mt-1 text-2xl font-[family-name:var(--font-heading)] text-[color:var(--ink)]">
                   {metrics.lanes}
                 </p>
               </div>
-              <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper)] px-4 py-3">
+              <div className="rounded-2xl border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-4 py-3 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset]">
                 <p className="doa-label-mono">Cards</p>
                 <p className="mt-1 text-2xl font-[family-name:var(--font-heading)] text-[color:var(--ink)]">
                   {metrics.cards}
@@ -1181,7 +1187,7 @@ export function QuotationStatesBoard({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 rounded-xl border-[color:var(--line)] bg-[color:var(--paper)] px-4 text-[color:var(--ink-2)] shadow-sm hover:bg-[color:var(--paper-3)]"
+                className={quotationPillEmphasisClass}
                 onClick={() => setSettingsOpen((current) => !current)}
               >
                 <Settings2 className="mr-2 h-4 w-4" />
@@ -1190,7 +1196,7 @@ export function QuotationStatesBoard({
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 rounded-xl border-[color:var(--line)] bg-[color:var(--paper)] px-4 text-[color:var(--ink-2)] shadow-sm hover:bg-[color:var(--paper-3)]"
+                className={quotationPillEmphasisClass}
                 onClick={() => setComposerOpen((current) => !current)}
               >
                 <Plus className="mr-2 h-4 w-4" />

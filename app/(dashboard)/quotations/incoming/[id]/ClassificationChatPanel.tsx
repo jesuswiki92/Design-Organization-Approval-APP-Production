@@ -304,19 +304,19 @@ export default function ClassificationChatPanel({
   }, [sendingEmail, emailDraft, consultaId, remitente, clientEmail, asunto, numeroEntrada])
 
   return (
-    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)]">
-      <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] px-4 py-3">
-        <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
+    <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
+      <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3">
+        <Sparkles className="h-4 w-4 text-[color:var(--ink-2)]" />
         <span className="text-sm font-semibold text-[color:var(--ink)]">AI Assistant</span>
       </div>
 
-      <div className="flex border-b border-[color:var(--ink-4)]">
+      <div className="flex border-b border-[color:var(--ink-4)] bg-[color:var(--paper)]">
         <button
           onClick={() => setActiveTab('log')}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
             activeTab === 'log'
-              ? 'border-b-2 border-sky-500 text-[color:var(--ink-3)]'
-              : 'text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]'
+              ? 'border-b-2 border-sky-500 text-[color:var(--ink)]'
+              : 'text-[color:var(--ink-2)] hover:text-[color:var(--ink)]'
           }`}
         >
           <Terminal className="h-3.5 w-3.5" />
@@ -326,8 +326,8 @@ export default function ClassificationChatPanel({
           onClick={() => setActiveTab('chat')}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors ${
             activeTab === 'chat'
-              ? 'border-b-2 border-sky-500 text-[color:var(--ink-3)]'
-              : 'text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]'
+              ? 'border-b-2 border-sky-500 text-[color:var(--ink)]'
+              : 'text-[color:var(--ink-2)] hover:text-[color:var(--ink)]'
           }`}
         >
           <MessageSquare className="h-3.5 w-3.5" />
@@ -342,7 +342,7 @@ export default function ClassificationChatPanel({
               <div className="flex justify-end px-3 pt-2">
                 <button
                   onClick={onClearLog}
-                  className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink-2)]"
+                  className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink)]"
                 >
                   <Trash2 className="h-3 w-3" />
                   Limpiar log
@@ -357,7 +357,7 @@ export default function ClassificationChatPanel({
             >
               {logEntries.length === 0 ? (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-xs text-[color:var(--ink-3)]">
+                  <p className="text-xs text-[color:var(--ink-2)]">
                     El log aparecera cuando ejecutes &quot;Pre-rellenar con IA&quot;
                   </p>
                 </div>
@@ -365,7 +365,7 @@ export default function ClassificationChatPanel({
                 <div className="space-y-1">
                   {logEntries.map((entry, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-xs">
-                      <span className="shrink-0 text-[color:var(--ink-3)]">[{entry.timestamp}]</span>
+                      <span className="shrink-0 text-slate-300">[{entry.timestamp}]</span>
                       <span
                         className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full mt-1.5 ${
                           entry.type === 'success'
@@ -385,7 +385,7 @@ export default function ClassificationChatPanel({
                               ? 'text-red-300'
                               : entry.type === 'warning'
                                 ? 'text-yellow-300'
-                                : 'text-[color:var(--ink-4)]'
+                                : 'text-slate-300'
                         }`}
                       >
                         {entry.message}
@@ -393,7 +393,7 @@ export default function ClassificationChatPanel({
                     </div>
                   ))}
                   {analyzing && (
-                    <div className="flex items-center gap-2 text-xs text-[color:var(--ink-3)]">
+                    <div className="flex items-center gap-2 text-xs text-slate-300">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       <span>Procesando...</span>
                     </div>
@@ -406,19 +406,19 @@ export default function ClassificationChatPanel({
           <div className="flex flex-1 flex-col">
             {emailDraft ? (
               <div className="flex flex-1 flex-col">
-                <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] px-3 py-2">
+                <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2">
                   <button
                     onClick={() => {
                       setEmailDraft(null)
                       setEmailSent(false)
                       setEmailError(null)
                     }}
-                    className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink)]"
+                    className="flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] hover:text-[color:var(--ink)]"
                   >
                     <ArrowLeft className="h-3 w-3" />
                     Volver
                   </button>
-                  <span className="text-xs font-medium text-[color:var(--ink-2)]">Borrador de email</span>
+                  <span className="text-xs font-medium text-[color:var(--ink)]">Borrador de email</span>
                 </div>
 
                 {emailSent ? (
@@ -426,8 +426,8 @@ export default function ClassificationChatPanel({
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
                       <Check className="h-6 w-6 text-emerald-600" />
                     </div>
-                    <p className="text-sm font-medium text-[color:var(--ink-2)]">Email enviado correctamente</p>
-                    <p className="text-xs text-[color:var(--ink-3)]">
+                    <p className="text-sm font-medium text-[color:var(--ink)]">Email enviado correctamente</p>
+                    <p className="text-xs text-[color:var(--ink-2)]">
                       El email ha sido enviado a {clientEmail || remitente || 'el cliente'}
                     </p>
                     <button
@@ -436,7 +436,7 @@ export default function ClassificationChatPanel({
                         setEmailSent(false)
                         setEmailError(null)
                       }}
-                      className="mt-2 rounded-lg border border-[color:var(--ink-4)] px-4 py-2 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
+                      className="mt-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-xs font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
                     >
                       Volver al chat
                     </button>
@@ -445,19 +445,19 @@ export default function ClassificationChatPanel({
                   <div className="flex flex-1 flex-col overflow-y-auto" style={{ maxHeight: '360px' }}>
                     <div className="space-y-3 p-3">
                       <div>
-                        <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-3)]">
+                        <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-2)]">
                           Destinatario
                         </label>
                         <input
                           type="text"
                           value={clientEmail || remitente || ''}
                           readOnly
-                          className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 text-xs text-[color:var(--ink-3)]"
+                          className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2 text-xs text-[color:var(--ink-2)]"
                         />
                       </div>
 
                       <div>
-                        <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-3)]">
+                        <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-2)]">
                           Asunto
                         </label>
                         <input
@@ -468,12 +468,12 @@ export default function ClassificationChatPanel({
                               prev ? { ...prev, subject: e.target.value } : prev,
                             )
                           }
-                          className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2 text-xs text-[color:var(--ink-2)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
+                          className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 text-xs text-[color:var(--ink)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
                         />
                       </div>
 
                       <div>
-                        <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-3)]">
+                        <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-2)]">
                           Cuerpo del email
                         </label>
                         <textarea
@@ -483,7 +483,7 @@ export default function ClassificationChatPanel({
                               prev ? { ...prev, body: e.target.value } : prev,
                             )
                           }
-                          className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2 font-mono text-xs leading-relaxed text-[color:var(--ink-2)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
+                          className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 font-mono text-xs leading-relaxed text-[color:var(--ink)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
                           style={{ minHeight: '200px' }}
                         />
                       </div>
@@ -500,7 +500,7 @@ export default function ClassificationChatPanel({
                             setEmailError(null)
                           }}
                           disabled={sendingEmail}
-                          className="rounded-lg border border-[color:var(--ink-4)] px-3 py-2 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:opacity-50"
+                        className="rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2 text-xs font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] disabled:opacity-50"
                         >
                           Volver al chat
                         </button>
@@ -529,13 +529,13 @@ export default function ClassificationChatPanel({
             ) : (
               <>
                 <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] px-3 py-2">
-                  <p className="text-[10px] text-[color:var(--ink-3)]">
+                  <p className="text-[10px] text-[color:var(--ink-2)]">
                     Pregunta a la IA sobre la clasificacion de este cambio
                   </p>
                   <button
                     onClick={handleGenerateEmail}
                     disabled={generatingEmail || chatSending}
-                    className="flex items-center gap-1 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-1 text-[10px] font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)] disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-[10px] font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] disabled:opacity-50"
                   >
                     {generatingEmail ? (
                       <>

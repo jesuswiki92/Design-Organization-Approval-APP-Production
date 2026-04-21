@@ -18,7 +18,7 @@ export function PreliminaryScopePanel({
   model: PreliminaryScopeModel
 }) {
   return (
-    <section className="overflow-hidden rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_40px_rgba(74,60,36,0.08)]">
+    <section className="rounded-[28px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_40px_rgba(74,60,36,0.08)]">
       <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-3xl">

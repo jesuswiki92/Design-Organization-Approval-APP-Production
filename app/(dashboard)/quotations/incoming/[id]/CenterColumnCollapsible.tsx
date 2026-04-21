@@ -197,7 +197,7 @@ function EmailCard({
       {/* Cabecera clicable */}
       <div
         className={cn(
-          "flex w-full items-start gap-3 rounded-2xl border bg-[color:var(--paper)] px-4 py-3 shadow-sm transition-colors hover:bg-[color:var(--paper-3)]/80",
+          "flex w-full items-start gap-3 rounded-2xl border bg-[color:var(--paper-2)] px-4 py-3 shadow-sm transition-colors hover:bg-[color:var(--paper-3)]/80",
           isIncoming
             ? "border-l-[3px] border-l-sky-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
             : "border-r-[3px] border-r-emerald-400 border-t-slate-200 border-l-slate-200 border-b-slate-200",
@@ -209,7 +209,7 @@ function EmailCard({
           onClick={onToggle}
           className={cn(
             "mt-0.5 shrink-0 rounded-lg p-1.5",
-            isIncoming ? "bg-[color:var(--paper-2)] text-[color:var(--ink-3)]" : "bg-emerald-50 text-emerald-500",
+            isIncoming ? "bg-[color:var(--paper)] text-[color:var(--ink-2)]" : "bg-emerald-100 text-emerald-600",
           )}
         >
           {isIncoming ? (
@@ -225,7 +225,7 @@ function EmailCard({
             <p
               className={cn(
                 "text-[10px] font-semibold uppercase tracking-[0.16em]",
-                isIncoming ? "text-[color:var(--ink-3)]" : "text-emerald-500",
+                isIncoming ? "text-[color:var(--ink-2)]" : "text-emerald-600",
               )}
             >
               {email.label}
@@ -238,7 +238,7 @@ function EmailCard({
           </div>
 
           {email.subject && (
-            <p className="mt-0.5 text-sm font-semibold text-slate-950">
+            <p className="mt-0.5 text-sm font-semibold text-[color:var(--ink)]">
               {email.subject}
             </p>
           )}
@@ -265,7 +265,7 @@ function EmailCard({
                 e.stopPropagation()
                 onDelete(email.id)
               }}
-              className="rounded-lg p-1.5 text-[color:var(--ink-4)] transition-colors hover:bg-red-50 hover:text-red-500"
+              className="rounded-lg p-1.5 text-[color:var(--ink-3)] transition-colors hover:bg-red-50 hover:text-red-600"
               title="Eliminar email"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -288,8 +288,8 @@ function EmailCard({
           className={cn(
             "mt-2 rounded-2xl border p-4",
             isIncoming
-              ? "border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/30"
-              : "border-emerald-100 bg-emerald-50/30",
+              ? "border-[color:var(--ink-4)] bg-[color:var(--paper)]/80"
+              : "border-emerald-100 bg-emerald-50/40",
           )}
         >
           {email.date && (
@@ -312,13 +312,13 @@ function EmailCard({
  */
 function EmptyResponsePlaceholder() {
   return (
-    <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-4 py-6">
+    <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-6">
       <div className="text-center">
-        <Send className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
-        <p className="mt-2 text-xs font-medium text-[color:var(--ink-3)]">
+        <Send className="mx-auto h-5 w-5 text-[color:var(--ink-3)]" />
+        <p className="mt-2 text-xs font-medium text-[color:var(--ink-2)]">
           Sin respuesta enviada
         </p>
-        <p className="mt-0.5 text-[10px] text-[color:var(--ink-4)]">
+        <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
           Usa el compositor de abajo para responder
         </p>
       </div>

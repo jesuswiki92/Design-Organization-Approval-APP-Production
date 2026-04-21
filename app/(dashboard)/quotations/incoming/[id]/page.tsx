@@ -69,12 +69,12 @@ import { TcdsStatusBanner } from './TcdsStatusBanner'
 
 function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
   return (
-    <section className="flex h-full min-h-0 flex-col rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
+    <section className="flex h-full min-h-0 flex-col rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-4">
         <h2 className="text-base font-semibold text-[color:var(--ink)]">Detalle del cliente</h2>
       </div>
       <div className="flex flex-1 flex-col gap-4 px-5 py-4">
-        <div className="rounded-[20px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-5">
+        <div className="rounded-[20px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-5">
           <div className="flex items-start gap-3">
             <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             <div>
@@ -86,7 +86,7 @@ function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
             </div>
           </div>
         </div>
-        <div className="rounded-[18px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
+        <div className="rounded-[18px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
             Email remitente
           </p>
@@ -139,19 +139,19 @@ function ProjectHistoryGroup({
   const sourceBadgeClass =
     source === 'active'
       ? 'bg-emerald-100 text-emerald-700'
-      : 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
+      : 'bg-[color:var(--paper-3)] text-[color:var(--ink-2)]'
   const statusBadgeClass =
     source === 'active'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-      : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]'
+      : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-2)]'
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-2)]">
           {title}
         </span>
-        <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
+        <span className="rounded-full bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
           {projects.length}
         </span>
       </div>
@@ -213,10 +213,10 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
   const historicProjects = projects.filter((project) => project.source === 'historic')
 
   return (
-    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+    <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
+      <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-3">
         <div className="flex items-center gap-2">
-          <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
+          <FolderOpen className="h-4 w-4 text-[color:var(--ink-2)]" />
           <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
           <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
             {projects.length}
@@ -224,7 +224,7 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
         </div>
       </div>
       <details className="group">
-        <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+        <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
           <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
           Ver proyectos
         </summary>
@@ -828,7 +828,7 @@ export default async function IncomingQuotationDetailPage({
                     : 'Formulario recibido. Revisa toda la informacion para tomar una decision.'}
               </p>
             </div>
-            <div className="shrink-0 pt-1">
+            <div className="relative z-20 shrink-0 pt-1">
               <QuotationStateSelector
                 consultaId={query.id}
                 consultaCodigo={query.codigo}
@@ -843,7 +843,7 @@ export default async function IncomingQuotationDetailPage({
             ================================================================ */}
         {data.estado === CONSULTA_ESTADOS.NUEVO && (
           <>
-          <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+          <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
             <CenterColumnCollapsible
               emails={emails}
               query={{
@@ -869,8 +869,8 @@ export default async function IncomingQuotationDetailPage({
           {matchedClient ? (
             <div className="grid gap-5 lg:grid-cols-2">
               <ClientDetailPanel client={matchedClient} />
-              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-                <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
+              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
+                <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-3">
                   <div className="flex items-center gap-2">
                     <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
                     <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
@@ -941,7 +941,7 @@ export default async function IncomingQuotationDetailPage({
               </section>
             </div>
           ) : (
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
               <div className="flex items-start gap-3 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
                 <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <p className="text-sm text-[color:var(--ink-2)]">
@@ -959,7 +959,7 @@ export default async function IncomingQuotationDetailPage({
         {data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO && (
           <>
             {/* Hilo de emails (con respuesta enviada visible, sin compositor) */}
-            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
               <CenterColumnCollapsible
                 hideComposer
                 emails={emails}
@@ -1010,7 +1010,7 @@ export default async function IncomingQuotationDetailPage({
             {matchedClient ? (
               <div className="grid gap-5 lg:grid-cols-2">
                 <ClientDetailPanel client={matchedClient} />
-                <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
                   <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
@@ -1074,7 +1074,7 @@ export default async function IncomingQuotationDetailPage({
                 </section>
               </div>
             ) : (
-              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
                 <div className="flex items-start gap-3 rounded-xl border border-dashed border-amber-200 bg-amber-50/50 px-4 py-3">
                   <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                   <p className="text-sm text-amber-800">
@@ -1103,16 +1103,10 @@ export default async function IncomingQuotationDetailPage({
             />
 
             {/* --- Comunicaciones (ancho completo, colapsable) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--umber), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--umber) 14%, transparent)' }}
-                >
-                  <Mail className="h-4 w-4" style={{ color: 'var(--umber)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--umber)]/15">
+                  <Mail className="h-4 w-4 text-[color:var(--umber)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Comunicaciones</h2>
               </div>
@@ -1147,16 +1141,10 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos del cliente (ancho completo, colapsable) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--cobalt), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--cobalt)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--cobalt) 14%, transparent)' }}
-                >
-                  <UserRound className="h-4 w-4" style={{ color: 'var(--cobalt)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--cobalt)]/15">
+                  <UserRound className="h-4 w-4 text-[color:var(--cobalt)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
               </div>
@@ -1179,7 +1167,7 @@ export default async function IncomingQuotationDetailPage({
                 <>
                   <ClientProjectsPanel projects={projectHistory} />
                   {false && (
-                <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+                <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
                   <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
@@ -1260,16 +1248,10 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--terracotta), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--terracotta)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--terracotta) 14%, transparent)' }}
-                >
-                  <Plane className="h-4 w-4" style={{ color: 'var(--terracotta)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--terracotta)]/15">
+                  <Plane className="h-4 w-4 text-[color:var(--terracotta)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
               </div>
@@ -1379,6 +1361,59 @@ export default async function IncomingQuotationDetailPage({
                         </div>
                       </div>
 
+                      {(() => {
+                        const raw = data.installation_drawings_urls as unknown
+                        let urls: string[] = []
+                        if (Array.isArray(raw)) {
+                          urls = raw.filter((u): u is string => typeof u === 'string' && u.length > 0)
+                        } else if (typeof raw === 'string' && raw.trim() !== '') {
+                          try {
+                            const parsed = JSON.parse(raw)
+                            if (Array.isArray(parsed)) {
+                              urls = parsed.filter(
+                                (u): u is string => typeof u === 'string' && u.length > 0,
+                              )
+                            }
+                          } catch {
+                            urls = []
+                          }
+                        }
+                        if (urls.length === 0) return null
+                        return (
+                          <div className="mt-3 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/70 p-4">
+                            <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
+                              Drawings adjuntos
+                            </p>
+                            <ul className="mt-2 flex flex-col gap-1.5">
+                              {urls.map((url, idx) => {
+                                const fileName = (() => {
+                                  try {
+                                    const pathname = new URL(url).pathname
+                                    const last = pathname.split('/').filter(Boolean).pop() ?? url
+                                    return decodeURIComponent(last)
+                                  } catch {
+                                    const last = url.split('/').filter(Boolean).pop() ?? url
+                                    return last
+                                  }
+                                })()
+                                return (
+                                  <li key={`${url}-${idx}`}>
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 text-sm text-[color:var(--ink-2)] underline decoration-[color:var(--ink-4)] underline-offset-2 hover:text-[color:var(--ink)] hover:decoration-[color:var(--ink-3)]"
+                                    >
+                                      {fileName}
+                                    </a>
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          </div>
+                        )
+                      })()}
+
                       {false && (
                     <>
                       <TcdsStatusBanner
@@ -1439,16 +1474,10 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--parchment-gold), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--parchment-gold)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--parchment-gold) 14%, transparent)' }}
-                >
-                  <ClipboardList className="h-4 w-4" style={{ color: 'var(--parchment-gold)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--parchment-gold)]/15">
+                  <ClipboardList className="h-4 w-4 text-[color:var(--parchment-gold)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
               </div>
@@ -1833,16 +1862,10 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir alcance preliminar (ancho completo) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--ok), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--ok)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--ok) 14%, transparent)' }}
-                >
-                  <Sparkles className="h-4 w-4" style={{ color: 'var(--ok)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--ok)]/15">
+                  <Sparkles className="h-4 w-4 text-[color:var(--ok)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
               </div>
@@ -2026,16 +2049,10 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Definir documentacion (ancho completo, colapsable) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--slate-warm), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--slate-warm)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--slate-warm) 14%, transparent)' }}
-                >
-                  <FileText className="h-4 w-4" style={{ color: 'var(--slate-warm)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--slate-warm)]/15">
+                  <FileText className="h-4 w-4 text-[color:var(--slate-warm)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Definir documentacion</h2>
               </div>
@@ -2057,16 +2074,10 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Informacion de Quotation (ancho completo, colapsable) --- */}
-            <section
-              className="overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]"
-              style={{ boxShadow: 'inset 4px 0 0 var(--cobalt), 0 10px 24px rgba(74,60,36,0.08)' }}
-            >
+            <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--cobalt)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-                <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full"
-                  style={{ background: 'color-mix(in oklab, var(--cobalt) 14%, transparent)' }}
-                >
-                  <Receipt className="h-4 w-4" style={{ color: 'var(--cobalt)' }} />
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--cobalt)]/15">
+                  <Receipt className="h-4 w-4 text-[color:var(--cobalt)]" />
                 </span>
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Oferta / Quotation</h2>
               </div>
@@ -2091,16 +2102,16 @@ export default async function IncomingQuotationDetailPage({
                 currentState={data.estado ?? ''}
               />
             ) : (
-              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
+              <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
                 <h2 className="text-sm font-semibold text-[color:var(--ink)]">Panel de decision</h2>
-                <p className="mt-1 text-xs text-[color:var(--ink-3)]">
+                <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                   Revisa toda la informacion y decide como proceder con esta consulta.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   {/* TODO: implement crear proyecto action */}
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition-colors hover:bg-emerald-100"
+                    className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-100 px-5 py-2.5 text-sm font-semibold text-emerald-800 shadow-sm transition-colors hover:bg-emerald-200"
                   >
                     <CheckCircle2 className="h-4 w-4" />
                     Crear proyecto
@@ -2108,7 +2119,7 @@ export default async function IncomingQuotationDetailPage({
                   {/* TODO: implement solicitar mas informacion action */}
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-5 py-2.5 text-sm font-semibold text-amber-700 shadow-sm transition-colors hover:bg-amber-100"
+                    className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-100 px-5 py-2.5 text-sm font-semibold text-amber-800 shadow-sm transition-colors hover:bg-amber-200"
                   >
                     <MessageSquarePlus className="h-4 w-4" />
                     Solicitar mas informacion
@@ -2116,7 +2127,7 @@ export default async function IncomingQuotationDetailPage({
                   {/* TODO: implement rechazar action */}
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700 shadow-sm transition-colors hover:bg-red-100"
+                    className="inline-flex items-center gap-2 rounded-xl border border-red-300 bg-red-100 px-5 py-2.5 text-sm font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-200"
                   >
                     <XCircle className="h-4 w-4" />
                     Rechazar
@@ -2130,4 +2141,5 @@ export default async function IncomingQuotationDetailPage({
     </div>
   )
 }
+
 
