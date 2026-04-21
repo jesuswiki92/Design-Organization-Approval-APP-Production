@@ -8,20 +8,20 @@ This spec defines how incoming consultation cards behave in the Quotations board
 
 ### Requirement: Incoming cards follow their real state
 
-The system MUST render each card created from `doa_consultas_entrantes` in the board lane that matches its normalized backend state. The system MUST NOT force all incoming cards into `entrada_recibida`.
+The system MUST render each card created from `doa_incoming_requests` in the board lane that matches its normalized backend state. The system MUST NOT force all incoming cards into `request_received`.
 
 #### Scenario: Card loads in the matching lane
 
 - GIVEN a consultation row exists with a normalized incoming state
 - WHEN the Quotations board loads
 - THEN the card appears in the lane for that state
-- AND the card does not appear in `entrada_recibida` unless that is its mapped lane
+- AND the card does not appear in `request_received` unless that is its mapped lane
 
 #### Scenario: No matching lane exists
 
 - GIVEN a consultation row exists whose state has no visible lane
 - WHEN the board loads
-- THEN the card is not silently forced into `entrada_recibida`
+- THEN the card is not silently forced into `request_received`
 - AND the UI keeps the item distinguishable from other lanes
 
 ### Requirement: Cards expose manual state control
@@ -37,13 +37,13 @@ The system MUST show a state control next to `Más detalle` for incoming consult
 
 ### Requirement: State changes persist and update placement
 
-The system MUST persist a selected state change to `doa_consultas_entrantes.estado` and MUST refresh the board so the card appears in the lane for the new state.
+The system MUST persist a selected state change to `doa_incoming_requests.status` and MUST refresh the board so the card appears in the lane for the new state.
 
 #### Scenario: User changes the state
 
 - GIVEN an incoming consultation card is visible
 - WHEN the user selects a different valid state from the state control
-- THEN the new state is saved to `doa_consultas_entrantes.estado`
+- THEN the new state is saved to `doa_incoming_requests.status`
 - AND the card is shown in the lane for that state after refresh
 
 #### Scenario: Invalid state selection is not accepted

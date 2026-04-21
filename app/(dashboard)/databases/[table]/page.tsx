@@ -24,11 +24,11 @@ export default async function DatabaseTablePage({
   }>
   const tableDescription =
     tableEntries.find((entry) => entry.table === allowedTable)?.description ??
-    'Vista detallada de la tabla'
+    'Vista detallada de la table'
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
-      <TopBar title="Bases de datos" subtitle="Gestion de datos estructurados y vectoriales" />
+      <TopBar title="Bases de data" subtitle="Gestion de data estructurados y vectoriales" />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-6 text-[color:var(--ink)]">
         <div className="mb-6 space-y-3">
@@ -37,7 +37,7 @@ export default async function DatabaseTablePage({
             className="inline-flex items-center gap-2 text-sm text-[color:var(--ink-3)] transition-colors hover:text-slate-950"
           >
             <ArrowLeft size={16} />
-            Volver a Bases de datos
+            Volver a Bases de data
           </Link>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -49,7 +49,7 @@ export default async function DatabaseTablePage({
 
         <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <div className="flex h-full min-h-64 items-center justify-center px-6 text-sm text-[color:var(--ink-3)]">
-            Tabla desconectada durante reestructuracion. Consulta BASES-DE-DATOS.md para reconectar.
+            Table desconectada durante reestructuracion. Request BASES-DE-DATOS.md para reconectar.
           </div>
         </section>
       </div>

@@ -5,8 +5,8 @@
  * COLUMNA DE ESTADO DEL TABLERO DE PROYECTOS
  * ============================================================================
  *
- * Una columna por estado de la maquina v2 (13 en total). Muestra la cabecera
- * con el color/etiqueta del estado y la lista de cards. Ancho fijo estrecho
+ * Una columna por status de la maquina v2 (13 en total). Muestra la cabecera
+ * con el color/etiqueta del status y la lista de cards. Ancho fijo estrecho
  * (para que quepan 13 columnas con scroll horizontal comodo).
  *
  * MATCH: mismo patron que BoardLane de QuotationStatesBoard (border en
@@ -46,7 +46,7 @@ export function StateColumn({
       <div className="mt-3 flex-1 space-y-3">
         {projects.length === 0 ? (
           <div className="doa-kanban-empty">
-            <p>Sin proyectos</p>
+            <p>Sin projects</p>
           </div>
         ) : (
           projects.map((project) => (

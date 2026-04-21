@@ -2,7 +2,7 @@
   "updatedAt": "2026-04-02T17:07:43.029Z",
   "createdAt": "2026-04-02T16:35:20.534Z",
   "id": "GCLA8OK26yNr90cd",
-  "name": "DOA - Web Server Formularios Clientes (Dinámico)",
+  "name": "DOA - Web Server Forms Clients (Dinámico)",
   "description": null,
   "active": true,
   "isArchived": false,
@@ -27,7 +27,7 @@
     {
       "parameters": {
         "operation": "get",
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "filters": {
           "conditions": [
             {
@@ -44,7 +44,7 @@
         300
       ],
       "id": "buscar_consulta_srv",
-      "name": "Buscar Consulta",
+      "name": "Buscar Request",
       "credentials": {
         "supabaseApi": {
           "id": "H1ZHvBDstWZ1K6KS",
@@ -55,12 +55,12 @@
     {
       "parameters": {
         "operation": "get",
-        "tableId": "doa_clientes_contactos",
+        "tableId": "doa_client_contacts",
         "filters": {
           "conditions": [
             {
               "keyName": "email",
-              "keyValue": "={{ $json.remitente.trim() }}"
+              "keyValue": "={{ $json.sender.trim() }}"
             }
           ]
         }
@@ -83,12 +83,12 @@
     {
       "parameters": {
         "operation": "get",
-        "tableId": "doa_clientes_datos_generales",
+        "tableId": "doa_clients",
         "filters": {
           "conditions": [
             {
               "keyName": "id",
-              "keyValue": "={{ $json.cliente_id }}"
+              "keyValue": "={{ $json.client_id }}"
             }
           ]
         }
@@ -151,7 +151,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// 1. HTML base desde el archivo\nlet html = $input.first().json.data;\n\n// 2. Datos de la empresa (desde Buscar Empresa)\nlet nombreEmpresa = '';\ntry { nombreEmpresa = $('Buscar Empresa').first().json.nombre || ''; } catch(e){}\n\n// 3. Datos del contacto (desde Buscar Contacto)\nlet nombreContacto = '';\nlet apellidosContacto = '';\nlet emailContacto = '';\ntry {\n  const c = $('Buscar Contacto').first().json;\n  nombreContacto = c.nombre || '';\n  apellidosContacto = c.apellidos || '';\n  emailContacto = c.email || '';\n} catch(e){}\n\nconst nombreCompleto = `${nombreContacto} ${apellidosContacto}`.trim();\n\n// 4. Reemplazar las etiquetas en el HTML\nhtml = html.replace('{{CLIENT_COMPANY_NAME}}', nombreEmpresa);\nhtml = html.replace('{{CLIENT_CONTACT_FULL_NAME}}', nombreCompleto);\nhtml = html.replace('{{CLIENT_CONTACT_EMAIL}}', emailContacto);\n\n// 5. Inyectar el ID oculto para el POST del formulario\nconst consulta_id = $('Webhook Servidor GET').first().json.query.id || '';\nhtml = html.replace('</form>', '<input type=\"hidden\" name=\"consulta_id\" value=\"' + consulta_id + '\"></form>');\n\nreturn { html_final: html };"
+        "jsCode": "// 1. HTML base desde el archivo\nlet html = $input.first().json.data;\n\n// 2. Data de la empresa (desde Buscar Empresa)\nlet nombreEmpresa = '';\ntry { nombreEmpresa = $('Buscar Empresa').first().json.name || ''; } catch(e){}\n\n// 3. Data del contacto (desde Buscar Contacto)\nlet nombreContacto = '';\nlet apellidosContacto = '';\nlet emailContacto = '';\ntry {\n  const c = $('Buscar Contacto').first().json;\n  nombreContacto = c.name || '';\n  apellidosContacto = c.last_name || '';\n  emailContacto = c.email || '';\n} catch(e){}\n\nconst nombreCompleto = `${nombreContacto} ${apellidosContacto}`.trim();\n\n// 4. Reemplazar las etiquetas en el HTML\nhtml = html.replace('{{CLIENT_COMPANY_NAME}}', nombreEmpresa);\nhtml = html.replace('{{CLIENT_CONTACT_FULL_NAME}}', nombreCompleto);\nhtml = html.replace('{{CLIENT_CONTACT_EMAIL}}', emailContacto);\n\n// 5. Inyectar el ID oculto para el POST del form\nconst incoming_request_id = $('Webhook Servidor GET').first().json.query.id || '';\nhtml = html.replace('</form>', '<input type=\"hidden\" name=\"incoming_request_id\" value=\"' + incoming_request_id + '\"></form>');\n\nreturn { html_final: html };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -160,7 +160,7 @@
         300
       ],
       "id": "inyectar_datos_srv",
-      "name": "Inyectar Datos en HTML"
+      "name": "Inyectar Data en HTML"
     },
     {
       "parameters": {
@@ -193,14 +193,14 @@
       "main": [
         [
           {
-            "node": "Buscar Consulta",
+            "node": "Buscar Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Buscar Consulta": {
+    "Buscar Request": {
       "main": [
         [
           {
@@ -248,14 +248,14 @@
       "main": [
         [
           {
-            "node": "Inyectar Datos en HTML",
+            "node": "Inyectar Data en HTML",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Inyectar Datos en HTML": {
+    "Inyectar Data en HTML": {
       "main": [
         [
           {
@@ -365,7 +365,7 @@
       {
         "parameters": {
           "operation": "get",
-          "tableId": "doa_consultas_entrantes",
+          "tableId": "doa_incoming_requests",
           "filters": {
             "conditions": [
               {
@@ -382,7 +382,7 @@
           300
         ],
         "id": "buscar_consulta_srv",
-        "name": "Buscar Consulta",
+        "name": "Buscar Request",
         "credentials": {
           "supabaseApi": {
             "id": "H1ZHvBDstWZ1K6KS",
@@ -393,12 +393,12 @@
       {
         "parameters": {
           "operation": "get",
-          "tableId": "doa_clientes_contactos",
+          "tableId": "doa_client_contacts",
           "filters": {
             "conditions": [
               {
                 "keyName": "email",
-                "keyValue": "={{ $json.remitente.trim() }}"
+                "keyValue": "={{ $json.sender.trim() }}"
               }
             ]
           }
@@ -421,12 +421,12 @@
       {
         "parameters": {
           "operation": "get",
-          "tableId": "doa_clientes_datos_generales",
+          "tableId": "doa_clients",
           "filters": {
             "conditions": [
               {
                 "keyName": "id",
-                "keyValue": "={{ $json.cliente_id }}"
+                "keyValue": "={{ $json.client_id }}"
               }
             ]
           }
@@ -489,7 +489,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// 1. HTML base desde el archivo\nlet html = $input.first().json.data;\n\n// 2. Datos de la empresa (desde Buscar Empresa)\nlet nombreEmpresa = '';\ntry { nombreEmpresa = $('Buscar Empresa').first().json.nombre || ''; } catch(e){}\n\n// 3. Datos del contacto (desde Buscar Contacto)\nlet nombreContacto = '';\nlet apellidosContacto = '';\nlet emailContacto = '';\ntry {\n  const c = $('Buscar Contacto').first().json;\n  nombreContacto = c.nombre || '';\n  apellidosContacto = c.apellidos || '';\n  emailContacto = c.email || '';\n} catch(e){}\n\nconst nombreCompleto = `${nombreContacto} ${apellidosContacto}`.trim();\n\n// 4. Reemplazar las etiquetas en el HTML\nhtml = html.replace('{{CLIENT_COMPANY_NAME}}', nombreEmpresa);\nhtml = html.replace('{{CLIENT_CONTACT_FULL_NAME}}', nombreCompleto);\nhtml = html.replace('{{CLIENT_CONTACT_EMAIL}}', emailContacto);\n\n// 5. Inyectar el ID oculto para el POST del formulario\nconst consulta_id = $('Webhook Servidor GET').first().json.query.id || '';\nhtml = html.replace('</form>', '<input type=\"hidden\" name=\"consulta_id\" value=\"' + consulta_id + '\"></form>');\n\nreturn { html_final: html };"
+          "jsCode": "// 1. HTML base desde el archivo\nlet html = $input.first().json.data;\n\n// 2. Data de la empresa (desde Buscar Empresa)\nlet nombreEmpresa = '';\ntry { nombreEmpresa = $('Buscar Empresa').first().json.name || ''; } catch(e){}\n\n// 3. Data del contacto (desde Buscar Contacto)\nlet nombreContacto = '';\nlet apellidosContacto = '';\nlet emailContacto = '';\ntry {\n  const c = $('Buscar Contacto').first().json;\n  nombreContacto = c.name || '';\n  apellidosContacto = c.last_name || '';\n  emailContacto = c.email || '';\n} catch(e){}\n\nconst nombreCompleto = `${nombreContacto} ${apellidosContacto}`.trim();\n\n// 4. Reemplazar las etiquetas en el HTML\nhtml = html.replace('{{CLIENT_COMPANY_NAME}}', nombreEmpresa);\nhtml = html.replace('{{CLIENT_CONTACT_FULL_NAME}}', nombreCompleto);\nhtml = html.replace('{{CLIENT_CONTACT_EMAIL}}', emailContacto);\n\n// 5. Inyectar el ID oculto para el POST del form\nconst incoming_request_id = $('Webhook Servidor GET').first().json.query.id || '';\nhtml = html.replace('</form>', '<input type=\"hidden\" name=\"incoming_request_id\" value=\"' + incoming_request_id + '\"></form>');\n\nreturn { html_final: html };"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -498,7 +498,7 @@
           300
         ],
         "id": "inyectar_datos_srv",
-        "name": "Inyectar Datos en HTML"
+        "name": "Inyectar Data en HTML"
       },
       {
         "parameters": {
@@ -531,14 +531,14 @@
         "main": [
           [
             {
-              "node": "Buscar Consulta",
+              "node": "Buscar Request",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Buscar Consulta": {
+      "Buscar Request": {
         "main": [
           [
             {
@@ -586,14 +586,14 @@
         "main": [
           [
             {
-              "node": "Inyectar Datos en HTML",
+              "node": "Inyectar Data en HTML",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Inyectar Datos en HTML": {
+      "Inyectar Data en HTML": {
         "main": [
           [
             {

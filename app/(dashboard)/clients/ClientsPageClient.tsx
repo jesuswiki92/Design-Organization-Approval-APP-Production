@@ -7,8 +7,8 @@
  *   - Headline serif con metrica ("{N} clients, {M} active this year.")
  *   - Subtitulo en sans corta
  *   - Botones "Export CSV" (outline) + "+ Add client" (ink filled)
- *   - Grid 3 columnas de cards con avatar circular de color por cliente
- *     y footer "N contactos" / "Since YYYY" (italic serif)
+ *   - Grid 3 columnas de cards con avatar circular de color por client
+ *     y footer "N contacts" / "Since YYYY" (italic serif)
  *
  * Al hacer click en una card se abre el ClientDetailPanel existente
  * en un overlay lateral (se conserva la logica previa).
@@ -22,7 +22,7 @@ import { Search, Plus, Download } from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { cn } from '@/lib/utils'
-import type { ClienteWithContactos } from '@/types/database'
+import type { ClientWithContacts } from '@/types/database'
 
 import { ClientDetailPanel } from './ClientDetailPanel'
 
@@ -38,7 +38,7 @@ const AVATAR_PALETTE: ReadonlyArray<{ bg: string; fg: string }> = [
   { bg: '#3d322a', fg: '#f5f3ee' }, // ink deep
 ]
 
-/** Hash estable -> indice de paleta, da un color consistente por cliente */
+/** Hash estable -> indice de paleta, da un color consistente por client */
 function colorForClient(key: string): { bg: string; fg: string } {
   let hash = 0
   for (let i = 0; i < key.length; i += 1) {
@@ -65,30 +65,30 @@ function yearOf(iso: string | null | undefined): string {
 export default function ClientsPageClient({
   clients,
 }: {
-  clients: ClienteWithContactos[]
+  clients: ClientWithContacts[]
 }) {
   const [search, setSearch] = useState('')
-  const [selectedClient, setSelectedClient] = useState<ClienteWithContactos | null>(null)
+  const [selectedClient, setSelectedClient] = useState<ClientWithContacts | null>(null)
 
   const filtered = useMemo(() => {
     if (search === '') return clients
     const q = search.toLowerCase()
     return clients.filter((client) => {
       return (
-        client.nombre.toLowerCase().includes(q) ||
-        (client.ciudad ?? '').toLowerCase().includes(q) ||
-        (client.pais ?? '').toLowerCase().includes(q) ||
-        (client.cif_vat ?? '').toLowerCase().includes(q)
+        client.name.toLowerCase().includes(q) ||
+        (client.city ?? '').toLowerCase().includes(q) ||
+        (client.country ?? '').toLowerCase().includes(q) ||
+        (client.vat_tax_id ?? '').toLowerCase().includes(q)
       )
     })
   }, [clients, search])
 
   const total = clients.length
-  const activeThisYear = clients.filter((c) => c.activo).length
+  const activeThisYear = clients.filter((c) => c.is_active).length
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
-      <TopBar title="Clients" subtitle="Base de datos de clientes" />
+      <TopBar title="Clients" subtitle="Base de data de clients" />
 
       <div className="flex min-h-0 flex-1 gap-5 p-5 text-[color:var(--ink)]">
         <div className="flex min-h-0 flex-1 flex-col gap-5">
@@ -144,19 +144,19 @@ export default function ClientsPageClient({
             {filtered.length === 0 ? (
               <div className="rounded-[22px] border border-dashed border-[color:var(--line)] bg-transparent px-6 py-16 text-center text-sm text-[color:var(--ink-3)]">
                 {search
-                  ? `No se encontraron clientes para "${search}"`
-                  : 'No hay clientes registrados.'}
+                  ? `No se encontraron clients para "${search}"`
+                  : 'No hay clients registrados.'}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((client) => {
-                  const { bg, fg } = colorForClient(client.id || client.nombre)
-                  const city = client.ciudad ?? ''
-                  const country = client.pais ?? ''
+                  const { bg, fg } = colorForClient(client.id || client.name)
+                  const city = client.city ?? ''
+                  const country = client.country ?? ''
                   const locationLine = [city, country].filter(Boolean).join(' · ').toUpperCase()
                   const isSelected = selectedClient?.id === client.id
-                  const contactsCount = client.contactos.length
-                  const activeContacts = client.contactos.filter((c) => c.activo).length
+                  const contactsCount = client.contacts.length
+                  const activeContacts = client.contacts.filter((c) => c.is_active).length
 
                   return (
                     <button
@@ -176,11 +176,11 @@ export default function ClientsPageClient({
                           style={{ backgroundColor: bg, color: fg }}
                           aria-hidden="true"
                         >
-                          {getInitials(client.nombre)}
+                          {getInitials(client.name)}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-[family-name:var(--font-heading)] text-[17px] leading-tight text-[color:var(--ink)]">
-                            {client.nombre}
+                            {client.name}
                           </p>
                           {locationLine ? (
                             <p className="mt-1 truncate font-[family-name:var(--font-mono)] text-[10px] font-medium uppercase tracking-[0.14em] text-[color:var(--ink-3)]">

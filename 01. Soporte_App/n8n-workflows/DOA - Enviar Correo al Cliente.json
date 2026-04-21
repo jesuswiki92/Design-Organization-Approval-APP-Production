@@ -2,7 +2,7 @@
   "updatedAt": "2026-04-02T11:29:31.581Z",
   "createdAt": "2026-03-15T11:10:10.527Z",
   "id": "I59H3jFoXXPkRCGc",
-  "name": "DOA - Enviar Correo al Cliente",
+  "name": "DOA - Send Email al Client",
   "description": null,
   "active": true,
   "isArchived": false,
@@ -15,7 +15,7 @@
         "options": {}
       },
       "id": "webhook_send_client_email",
-      "name": "Webhook Enviar Correo Cliente",
+      "name": "Webhook Send Email Client",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
@@ -27,15 +27,15 @@
     },
     {
       "parameters": {
-        "toRecipients": "={{ $json.body.consulta.remitente }}",
-        "subject": "={{ $json.body.consulta.asunto }}",
+        "toRecipients": "={{ $json.body.request.sender }}",
+        "subject": "={{ $json.body.request.subject }}",
         "bodyContent": "={{ $json.body.body }}",
         "additionalFields": {
           "bodyContentType": "Text"
         }
       },
       "id": "send_email_outlook",
-      "name": "Enviar Correo Outlook",
+      "name": "Send Email Outlook",
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
@@ -70,21 +70,21 @@
     {
       "parameters": {
         "operation": "update",
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "filters": {
           "conditions": [
             {
               "keyName": "id",
               "condition": "eq",
-              "keyValue": "={{ $('Edit Fields').item.json.body.consulta.id }}"
+              "keyValue": "={{ $('Edit Fields').item.json.body.request.id }}"
             }
           ]
         },
         "fieldsUi": {
           "fieldValues": [
             {
-              "fieldId": "estado",
-              "fieldValue": "esperando_formulario"
+              "fieldId": "status",
+              "fieldValue": "awaiting_form"
             }
           ]
         }
@@ -110,20 +110,20 @@
           "assignments": [
             {
               "id": "56a5c31a-6c6d-471d-bb67-f99d9db56625",
-              "name": "body.consulta.clasificacion",
-              "value": "={{ $json.body.consulta.clasificacion }}",
+              "name": "body.request.classification",
+              "value": "={{ $json.body.request.classification }}",
               "type": "string"
             },
             {
               "id": "b1ae1ed5-687d-4046-85b4-39130133b838",
-              "name": "body.consulta.remitente",
-              "value": "={{ $json.body.consulta.remitente }}",
+              "name": "body.request.sender",
+              "value": "={{ $json.body.request.sender }}",
               "type": "string"
             },
             {
               "id": "f1ee9135-1560-4dd1-af44-d360fa6c124e",
-              "name": "body.consulta.asunto",
-              "value": "={{ $json.body.consulta.asunto }}",
+              "name": "body.request.subject",
+              "value": "={{ $json.body.request.subject }}",
               "type": "string"
             },
             {
@@ -134,14 +134,14 @@
             },
             {
               "id": "2ea55c2d-efa6-4dc2-978a-2d9275d81f83",
-              "name": "body.consulta.id",
-              "value": "={{ $json.body.consulta.id }}",
+              "name": "body.request.id",
+              "value": "={{ $json.body.request.id }}",
               "type": "string"
             },
             {
               "id": "dea307a9-fde8-4bab-8310-7a0ee0961af9",
-              "name": "body.consulta.codigo",
-              "value": "={{ $json.body.consulta.codigo }}",
+              "name": "body.request.codigo",
+              "value": "={{ $json.body.request.codigo }}",
               "type": "string"
             }
           ]
@@ -159,7 +159,7 @@
     }
   ],
   "connections": {
-    "Webhook Enviar Correo Cliente": {
+    "Webhook Send Email Client": {
       "main": [
         [
           {
@@ -170,7 +170,7 @@
         ]
       ]
     },
-    "Enviar Correo Outlook": {
+    "Send Email Outlook": {
       "main": [
         [
           {
@@ -201,7 +201,7 @@
       "main": [
         [
           {
-            "node": "Enviar Correo Outlook",
+            "node": "Send Email Outlook",
             "type": "main",
             "index": 0
           }
@@ -297,7 +297,7 @@
           "options": {}
         },
         "id": "webhook_send_client_email",
-        "name": "Webhook Enviar Correo Cliente",
+        "name": "Webhook Send Email Client",
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
@@ -309,15 +309,15 @@
       },
       {
         "parameters": {
-          "toRecipients": "={{ $json.body.consulta.remitente }}",
-          "subject": "={{ $json.body.consulta.asunto }}",
+          "toRecipients": "={{ $json.body.request.sender }}",
+          "subject": "={{ $json.body.request.subject }}",
           "bodyContent": "={{ $json.body.body }}",
           "additionalFields": {
             "bodyContentType": "Text"
           }
         },
         "id": "send_email_outlook",
-        "name": "Enviar Correo Outlook",
+        "name": "Send Email Outlook",
         "type": "n8n-nodes-base.microsoftOutlook",
         "typeVersion": 2,
         "position": [
@@ -352,21 +352,21 @@
       {
         "parameters": {
           "operation": "update",
-          "tableId": "doa_consultas_entrantes",
+          "tableId": "doa_incoming_requests",
           "filters": {
             "conditions": [
               {
                 "keyName": "id",
                 "condition": "eq",
-                "keyValue": "={{ $('Edit Fields').item.json.body.consulta.id }}"
+                "keyValue": "={{ $('Edit Fields').item.json.body.request.id }}"
               }
             ]
           },
           "fieldsUi": {
             "fieldValues": [
               {
-                "fieldId": "estado",
-                "fieldValue": "esperando_formulario"
+                "fieldId": "status",
+                "fieldValue": "awaiting_form"
               }
             ]
           }
@@ -392,20 +392,20 @@
             "assignments": [
               {
                 "id": "56a5c31a-6c6d-471d-bb67-f99d9db56625",
-                "name": "body.consulta.clasificacion",
-                "value": "={{ $json.body.consulta.clasificacion }}",
+                "name": "body.request.classification",
+                "value": "={{ $json.body.request.classification }}",
                 "type": "string"
               },
               {
                 "id": "b1ae1ed5-687d-4046-85b4-39130133b838",
-                "name": "body.consulta.remitente",
-                "value": "={{ $json.body.consulta.remitente }}",
+                "name": "body.request.sender",
+                "value": "={{ $json.body.request.sender }}",
                 "type": "string"
               },
               {
                 "id": "f1ee9135-1560-4dd1-af44-d360fa6c124e",
-                "name": "body.consulta.asunto",
-                "value": "={{ $json.body.consulta.asunto }}",
+                "name": "body.request.subject",
+                "value": "={{ $json.body.request.subject }}",
                 "type": "string"
               },
               {
@@ -416,14 +416,14 @@
               },
               {
                 "id": "2ea55c2d-efa6-4dc2-978a-2d9275d81f83",
-                "name": "body.consulta.id",
-                "value": "={{ $json.body.consulta.id }}",
+                "name": "body.request.id",
+                "value": "={{ $json.body.request.id }}",
                 "type": "string"
               },
               {
                 "id": "dea307a9-fde8-4bab-8310-7a0ee0961af9",
-                "name": "body.consulta.codigo",
-                "value": "={{ $json.body.consulta.codigo }}",
+                "name": "body.request.codigo",
+                "value": "={{ $json.body.request.codigo }}",
                 "type": "string"
               }
             ]
@@ -441,7 +441,7 @@
       }
     ],
     "connections": {
-      "Webhook Enviar Correo Cliente": {
+      "Webhook Send Email Client": {
         "main": [
           [
             {
@@ -452,7 +452,7 @@
           ]
         ]
       },
-      "Enviar Correo Outlook": {
+      "Send Email Outlook": {
         "main": [
           [
             {
@@ -483,7 +483,7 @@
         "main": [
           [
             {
-              "node": "Enviar Correo Outlook",
+              "node": "Send Email Outlook",
               "type": "main",
               "index": 0
             }

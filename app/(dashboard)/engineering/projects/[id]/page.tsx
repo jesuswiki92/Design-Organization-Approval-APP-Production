@@ -3,11 +3,11 @@
  * PAGINA SERVIDOR DE DETALLE DE UN PROYECTO
  * ============================================================================
  *
- * Carga el proyecto desde doa_proyectos y sus entradas de conteo de horas
- * desde doa_conteo_horas_proyectos, y pasa ambos al componente visual
+ * Carga el project desde doa_projects y sus entradas de conteo de horas
+ * desde doa_project_time_entries, y pasa ambos al componente visual
  * ProjectDetailClient.
  *
- * Si el proyecto no existe, redirige a /engineering/portfolio.
+ * Si el project no existe, redirige a /engineering/portfolio.
  * ============================================================================
  */
 
@@ -15,7 +15,7 @@ import { redirect } from 'next/navigation'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
-import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
+import type { Project, ProjectTimeEntry } from '@/types/database'
 
 import { ProjectDetailClient } from './ProjectDetailClient'
 
@@ -29,37 +29,37 @@ export default async function ProjectDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Cargar proyecto y entradas de horas en paralelo
+  // Cargar project y entradas de horas en paralelo
   const [proyectoResult, horasResult] = await Promise.all([
     supabase
-      .from('doa_proyectos')
+      .from('doa_projects')
       .select('*')
       .eq('id', id)
       .single(),
     supabase
-      .from('doa_conteo_horas_proyectos')
+      .from('doa_project_time_entries')
       .select('*')
-      .eq('proyecto_id', id)
-      .order('inicio', { ascending: false }),
+      .eq('project_id', id)
+      .order('started_at', { ascending: false }),
   ])
 
   if (proyectoResult.error || !proyectoResult.data) {
-    console.error('Proyecto no encontrado o error:', proyectoResult.error)
+    console.error('Project no encontrado o error:', proyectoResult.error)
     redirect('/engineering/portfolio')
   }
 
   if (horasResult.error) {
-    console.error('Error cargando horas del proyecto:', horasResult.error)
+    console.error('Error cargando horas del project:', horasResult.error)
   }
 
-  const project = proyectoResult.data as Proyecto
-  const timeEntries = (horasResult.data ?? []) as ConteoHorasProyecto[]
+  const project = proyectoResult.data as Project
+  const timeEntries = (horasResult.data ?? []) as ProjectTimeEntry[]
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar
-        title={project.numero_proyecto}
-        subtitle={project.titulo}
+        title={project.project_number}
+        subtitle={project.title}
       />
       <ProjectDetailClient project={project} timeEntries={timeEntries} />
     </div>

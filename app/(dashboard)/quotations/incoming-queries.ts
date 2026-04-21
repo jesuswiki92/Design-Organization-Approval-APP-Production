@@ -1,34 +1,34 @@
 import type {
-  Cliente,
-  ClienteContacto,
-  ClienteWithContactos,
-  ConsultaEntrante,
+  Client,
+  ClientContact,
+  ClientWithContacts,
+  IncomingRequest,
   WorkflowStateConfigRow,
 } from '@/types/database'
-import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
+import { INCOMING_REQUEST_STATUSES } from '@/lib/workflow-states'
 import {
   resolveWorkflowStateRows,
   WORKFLOW_STATE_SCOPES,
 } from '@/lib/workflow-state-config'
 
 export type IncomingQueryStatus =
-  | 'nuevo'
-  | 'esperando_formulario'
-  | 'formulario_recibido'
-  | 'archivado'
+  | 'new'
+  | 'awaiting_form'
+  | 'form_received'
+  | 'archived'
 
 export type IncomingQuery = {
   id: string
   codigo: string
-  asunto: string
-  remitente: string
+  subject: string
+  sender: string
   urlFormulario: string | null
   resumen: string
   cuerpoOriginal: string
-  clasificacion: string | null
+  classification: string | null
   respuestaIa: string | null
   recibidoEn: string
-  estado: IncomingQueryStatus
+  status: IncomingQueryStatus
   estadoBackend: string
   clientIdentity: IncomingClientIdentity
 }
@@ -43,16 +43,16 @@ export type IncomingClientIdentity =
     }
   | {
       kind: 'unknown'
-      displayLabel: 'cliente desconocido'
+      displayLabel: 'client desconocido'
       senderEmail: string | null
     }
 
 type KnownClientRecord = Extract<IncomingClientIdentity, { kind: 'known' }>
 
 export const INCOMING_QUERY_STATE_ORDER: IncomingQueryStatus[] = [
-  CONSULTA_ESTADOS.NUEVO,
-  CONSULTA_ESTADOS.ESPERANDO_FORMULARIO,
-  CONSULTA_ESTADOS.FORMULARIO_RECIBIDO,
+  INCOMING_REQUEST_STATUSES.NEW,
+  INCOMING_REQUEST_STATUSES.AWAITING_FORM,
+  INCOMING_REQUEST_STATUSES.FORM_RECEIVED,
 ] as IncomingQueryStatus[]
 
 export function normalizeIncomingStatus(
@@ -60,23 +60,23 @@ export function normalizeIncomingStatus(
 ): IncomingQueryStatus {
   const normalized = value?.trim().toLowerCase()
 
-  if (!normalized || normalized === 'new_entry' || normalized === 'pendiente' || normalized === 'pending') {
-    return CONSULTA_ESTADOS.NUEVO as IncomingQueryStatus
+  if (!normalized || normalized === 'new_entry' || normalized === 'pending' || normalized === 'pending') {
+    return INCOMING_REQUEST_STATUSES.NEW as IncomingQueryStatus
   }
 
-  if (normalized === 'esperando_formulario' || normalized === 'espera_formulario_cliente' || normalized === 'awaiting_client_form' || normalized === 'waiting_customer_form') {
-    return CONSULTA_ESTADOS.ESPERANDO_FORMULARIO as IncomingQueryStatus
+  if (normalized === 'awaiting_form' || normalized === 'espera_formulario_cliente' || normalized === 'awaiting_client_form' || normalized === 'waiting_customer_form') {
+    return INCOMING_REQUEST_STATUSES.AWAITING_FORM as IncomingQueryStatus
   }
 
-  if (normalized === 'formulario_recibido') {
-    return CONSULTA_ESTADOS.FORMULARIO_RECIBIDO as IncomingQueryStatus
+  if (normalized === 'form_received') {
+    return INCOMING_REQUEST_STATUSES.FORM_RECEIVED as IncomingQueryStatus
   }
 
-  if (normalized === CONSULTA_ESTADOS.ARCHIVADO || normalized === 'archived') {
-    return CONSULTA_ESTADOS.ARCHIVADO as IncomingQueryStatus
+  if (normalized === INCOMING_REQUEST_STATUSES.ARCHIVED || normalized === 'archived') {
+    return INCOMING_REQUEST_STATUSES.ARCHIVED as IncomingQueryStatus
   }
 
-  return CONSULTA_ESTADOS.NUEVO as IncomingQueryStatus
+  return INCOMING_REQUEST_STATUSES.NEW as IncomingQueryStatus
 }
 
 export function getIncomingQueryLaneId(state: IncomingQueryStatus) {
@@ -120,7 +120,7 @@ export function getQuotationBoardStateOptions(
 }
 
 export function isIncomingQueryPending(q: IncomingQuery) {
-  return q.estado === CONSULTA_ESTADOS.NUEVO || !q.estado
+  return q.status === INCOMING_REQUEST_STATUSES.NEW || !q.status
 }
 
 function normalizeEmailCandidate(value: string | null | undefined) {
@@ -128,8 +128,8 @@ function normalizeEmailCandidate(value: string | null | undefined) {
   return normalized.length > 0 ? normalized : null
 }
 
-function extractSenderEmail(remitente: string | null | undefined) {
-  const raw = remitente?.trim() ?? ''
+function extractSenderEmail(sender: string | null | undefined) {
+  const raw = sender?.trim() ?? ''
   if (!raw) return null
 
   const angleMatch = raw.match(/<\s*([^>]+?)\s*>/)
@@ -145,21 +145,21 @@ function extractSenderEmail(remitente: string | null | undefined) {
   return normalizeEmailCandidate(raw)
 }
 
-function buildContactName(contact: ClienteContacto) {
-  const fullName = [contact.nombre?.trim(), contact.apellidos?.trim()]
+function buildContactName(contact: ClientContact) {
+  const fullName = [contact.name?.trim(), contact.last_name?.trim()]
     .filter(Boolean)
     .join(' ')
 
   return fullName || contact.email.trim()
 }
 
-function compareContactPriority(left: ClienteContacto, right: ClienteContacto) {
-  if (left.activo !== right.activo) {
-    return left.activo ? -1 : 1
+function compareContactPriority(left: ClientContact, right: ClientContact) {
+  if (left.is_active !== right.is_active) {
+    return left.is_active ? -1 : 1
   }
 
-  if (left.es_principal !== right.es_principal) {
-    return left.es_principal ? -1 : 1
+  if (left.is_primary !== right.is_primary) {
+    return left.is_primary ? -1 : 1
   }
 
   const createdDelta =
@@ -171,21 +171,21 @@ function compareContactPriority(left: ClienteContacto, right: ClienteContacto) {
   return left.id.localeCompare(right.id)
 }
 
-function sortClientContacts(contacts: ClienteContacto[]) {
+function sortClientContacts(contacts: ClientContact[]) {
   return [...contacts].sort(compareContactPriority)
 }
 
 export function buildClientsWithContacts(
-  clients: Cliente[],
-  contacts: ClienteContacto[],
-): ClienteWithContactos[] {
-  const contactsByClientId = contacts.reduce<Record<string, ClienteContacto[]>>(
+  clients: Client[],
+  contacts: ClientContact[],
+): ClientWithContacts[] {
+  const contactsByClientId = contacts.reduce<Record<string, ClientContact[]>>(
     (acc, contact) => {
-      if (!acc[contact.cliente_id]) {
-        acc[contact.cliente_id] = []
+      if (!acc[contact.client_id]) {
+        acc[contact.client_id] = []
       }
 
-      acc[contact.cliente_id].push(contact)
+      acc[contact.client_id].push(contact)
       return acc
     },
     {},
@@ -193,16 +193,16 @@ export function buildClientsWithContacts(
 
   return clients.map((client) => ({
     ...client,
-    contactos: sortClientContacts(contactsByClientId[client.id] ?? []),
+    contacts: sortClientContacts(contactsByClientId[client.id] ?? []),
   }))
 }
 
 export function buildIncomingClientLookup(
-  clients: Cliente[],
-  contacts: ClienteContacto[],
+  clients: Client[],
+  contacts: ClientContact[],
 ) {
   const clientById = new Map(clients.map((client) => [client.id, client]))
-  const contactBuckets = new Map<string, ClienteContacto[]>()
+  const contactBuckets = new Map<string, ClientContact[]>()
 
   for (const contact of contacts) {
     const normalizedEmail = normalizeEmailCandidate(contact.email)
@@ -220,10 +220,10 @@ export function buildIncomingClientLookup(
 
   for (const [normalizedEmail, bucket] of contactBuckets) {
     const bestContact = [...bucket].sort(compareContactPriority)[0]
-    const client = clientById.get(bestContact.cliente_id)
+    const client = clientById.get(bestContact.client_id)
     if (!client) continue
 
-    const companyName = client.nombre.trim()
+    const companyName = client.name.trim()
     const contactName = buildContactName(bestContact)
     const email = bestContact.email.trim()
 
@@ -240,11 +240,11 @@ export function buildIncomingClientLookup(
 }
 
 export function resolveIncomingClientRecord(
-  remitente: string | null | undefined,
-  clients: Cliente[],
-  contacts: ClienteContacto[],
-): ClienteWithContactos | null {
-  const senderEmail = extractSenderEmail(remitente)
+  sender: string | null | undefined,
+  clients: Client[],
+  contacts: ClientContact[],
+): ClientWithContacts | null {
+  const senderEmail = extractSenderEmail(sender)
   if (!senderEmail) {
     return null
   }
@@ -259,7 +259,7 @@ export function resolveIncomingClientRecord(
 
   const clientById = new Map(clients.map((client) => [client.id, client]))
   const bestContact = sortClientContacts(matchingContacts)[0]
-  const matchedClient = clientById.get(bestContact.cliente_id)
+  const matchedClient = clientById.get(bestContact.client_id)
 
   if (!matchedClient) {
     return null
@@ -270,14 +270,14 @@ export function resolveIncomingClientRecord(
 }
 
 export function resolveIncomingClientIdentity(
-  remitente: string | null | undefined,
+  sender: string | null | undefined,
   lookup: Map<string, KnownClientRecord>,
 ): IncomingClientIdentity {
-  const senderEmail = extractSenderEmail(remitente)
+  const senderEmail = extractSenderEmail(sender)
   if (!senderEmail) {
     return {
       kind: 'unknown',
-      displayLabel: 'cliente desconocido',
+      displayLabel: 'client desconocido',
       senderEmail: null,
     }
   }
@@ -289,13 +289,13 @@ export function resolveIncomingClientIdentity(
 
   return {
     kind: 'unknown',
-    displayLabel: 'cliente desconocido',
+    displayLabel: 'client desconocido',
     senderEmail,
   }
 }
 
-function buildIncomingCode(query: ConsultaEntrante) {
-  const incomingNumber = query.numero_entrada?.trim()
+function buildIncomingCode(query: IncomingRequest) {
+  const incomingNumber = query.entry_number?.trim()
   if (incomingNumber) {
     return incomingNumber.toUpperCase()
   }
@@ -311,14 +311,14 @@ function buildSummary(body: string | null, subject: string | null) {
   }
 
   const fallback = (subject ?? '').trim()
-  return fallback.length > 0 ? fallback : 'Consulta sin contenido disponible'
+  return fallback.length > 0 ? fallback : 'Request sin contenido disponible'
 }
 
 function formatReceivedAt(value: string) {
   const date = new Date(value)
 
   if (Number.isNaN(date.getTime())) {
-    return 'Fecha no disponible'
+    return 'Date no disponible'
   }
 
   return new Intl.DateTimeFormat('es-ES', {
@@ -328,24 +328,24 @@ function formatReceivedAt(value: string) {
 }
 
 export function toIncomingQuery(
-  query: ConsultaEntrante,
+  query: IncomingRequest,
   clientLookup: Map<string, KnownClientRecord> = new Map(),
 ): IncomingQuery {
-  const rawStatus = query.estado?.trim() || CONSULTA_ESTADOS.NUEVO
+  const rawStatus = query.status?.trim() || INCOMING_REQUEST_STATUSES.NEW
 
   return {
     id: query.id,
     codigo: buildIncomingCode(query),
-    asunto: query.asunto?.trim() || 'Sin asunto',
-    remitente: query.remitente?.trim() || 'Remitente no disponible',
-    urlFormulario: query.url_formulario?.trim() || null,
-    resumen: buildSummary(query.cuerpo_original, query.asunto),
-    cuerpoOriginal: query.cuerpo_original?.trim() || 'Sin cuerpo original disponible',
-    clasificacion: query.clasificacion?.trim() || null,
-    respuestaIa: query.respuesta_ia?.trim() || null,
+    subject: query.subject?.trim() || 'Sin subject',
+    sender: query.sender?.trim() || 'Sender no disponible',
+    urlFormulario: query.form_url?.trim() || null,
+    resumen: buildSummary(query.original_body, query.subject),
+    cuerpoOriginal: query.original_body?.trim() || 'Sin body original disponible',
+    classification: query.classification?.trim() || null,
+    respuestaIa: query.ai_response?.trim() || null,
     recibidoEn: formatReceivedAt(query.created_at),
-    estado: normalizeIncomingStatus(rawStatus),
+    status: normalizeIncomingStatus(rawStatus),
     estadoBackend: rawStatus,
-    clientIdentity: resolveIncomingClientIdentity(query.remitente, clientLookup),
+    clientIdentity: resolveIncomingClientIdentity(query.sender, clientLookup),
   }
 }

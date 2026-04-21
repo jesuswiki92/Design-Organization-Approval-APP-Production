@@ -86,7 +86,7 @@ export default async function SettingsLogsPage() {
               <p className="mt-2 text-sm leading-7 text-[color:var(--ink-3)]">
                 Esta vista lee <code>doa_app_events</code> en servidor con el patron
                 autenticado y privilegiado ya usado por la app. El objetivo es soporte:
-                detectar fallos recientes, entender que flujo esta activo y revisar el
+                detectar fallos recientes, entender que flujo esta is_active y revisar el
                 contexto redacted de cada evento sin exponer contenido sensible.
               </p>
             </div>

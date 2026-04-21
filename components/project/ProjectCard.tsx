@@ -5,9 +5,9 @@
  * TARJETA COMPACTA DE PROYECTO (TABLERO)
  * ============================================================================
  *
- * Card compacta para el Tablero de proyectos. Muestra codigo, titulo, cliente,
- * TCDS/aeronave, owner, fecha, progreso de deliverables y acciones rapidas.
- * Clic en la card abre el detalle del proyecto.
+ * Card compacta para el Tablero de projects. Muestra codigo, title, client,
+ * TCDS/aircraft, owner, date, progreso de deliverables y acciones rapidas.
+ * Clic en la card abre el detalle del project.
  * ============================================================================
  */
 
@@ -17,11 +17,11 @@ import { startTransition, useState } from 'react'
 import { Calendar, Plane, Trash2, User } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import type { Proyecto } from '@/types/database'
+import type { Project } from '@/types/database'
 
 import { ProjectStateSelector } from './ProjectStateSelector'
 
-export type ProjectCardData = Proyecto & {
+export type ProjectCardData = Project & {
   deliverables_total?: number
   deliverables_completados?: number
 }
@@ -36,17 +36,17 @@ export function ProjectCard({
   const router = useRouter()
   const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null)
-  const aircraft = project.tcds_code_short ?? project.aeronave ?? null
-  const client = project.cliente_nombre ?? null
+  const aircraft = project.tcds_code_short ?? project.aircraft ?? null
+  const client = project.client_name ?? null
   const owner = project.owner ?? null
-  const start = project.fecha_inicio ?? null
+  const start = project.start_date ?? null
   const total = project.deliverables_total ?? 0
   const done = project.deliverables_completados ?? 0
   const hasDeliverables = total > 0
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `Seguro que quieres borrar el proyecto "${project.numero_proyecto}"? Se eliminara de la app, pero no se borraran las carpetas locales del proyecto.`,
+      `Seguro que quieres borrar el project "${project.project_number}"? Se eliminara de la app, pero no se borraran las carpetas locales del project.`,
     )
     if (!confirmed) return
 
@@ -54,7 +54,7 @@ export function ProjectCard({
     setDeleteMessage(null)
 
     try {
-      const response = await fetch(`/api/proyectos/${project.id}`, {
+      const response = await fetch(`/api/projects/${project.id}`, {
         method: 'DELETE',
       })
 
@@ -63,7 +63,7 @@ export function ProjectCard({
         | null
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo borrar el proyecto.')
+        throw new Error(payload?.error || 'No se pudo borrar el project.')
       }
 
       setDeleteStatus('idle')
@@ -73,7 +73,7 @@ export function ProjectCard({
       setDeleteMessage(
         error instanceof Error
           ? error.message
-          : 'Se produjo un error borrando el proyecto.',
+          : 'Se produjo un error borrando el project.',
       )
     }
   }
@@ -86,7 +86,7 @@ export function ProjectCard({
       >
         <div className="flex items-start justify-between gap-2">
           <p className="doa-kanban-card-code">
-            {project.numero_proyecto}
+            {project.project_number}
           </p>
           {hasDeliverables ? (
             <span
@@ -102,7 +102,7 @@ export function ProjectCard({
         </div>
 
         <h4 className="doa-kanban-card-title mt-1.5 line-clamp-2 transition-colors group-hover:text-[color:var(--umber)]">
-          {project.titulo}
+          {project.title}
         </h4>
 
         {client || aircraft ? (
@@ -139,7 +139,7 @@ export function ProjectCard({
           <div className="mt-3 pt-2 doa-kanban-card-foot">
             <ProjectStateSelector
               proyectoId={project.id}
-              currentState={project.estado_v2 ?? null}
+              currentState={project.execution_status ?? null}
             />
           </div>
         ) : null}
@@ -150,15 +150,15 @@ export function ProjectCard({
         onClick={() => void handleDelete()}
         disabled={deleteStatus === 'deleting'}
         className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] text-[color:var(--err)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-70"
-        aria-label={`Borrar proyecto ${project.numero_proyecto}`}
-        title="Borrar proyecto"
+        aria-label={`Borrar project ${project.project_number}`}
+        title="Borrar project"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
 
       {deleteStatus === 'deleting' ? (
         <p className="mt-2 text-[11px] text-[color:var(--ink-3)]">
-          Borrando proyecto...
+          Borrando project...
         </p>
       ) : null}
       {deleteMessage ? (

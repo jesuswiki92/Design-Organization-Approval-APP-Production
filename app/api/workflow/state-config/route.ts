@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!Array.isArray(body.states) || body.states.length === 0) {
-      return jsonResponse(400, 'Debes enviar al menos un estado para guardar.')
+      return jsonResponse(400, 'Debes send al menos un status para guardar.')
     }
 
     const allowedStateCodes = getAllowedWorkflowStateCodes(scope)
@@ -90,13 +90,13 @@ export async function POST(request: NextRequest) {
     if (states.length !== allowedStateCodes.length) {
       return jsonResponse(
         400,
-        'La configuración enviada no coincide con el conjunto esperado de estados del workflow.',
+        'La configuración sent no coincide con el conjunto esperado de statuses del workflow.',
       )
     }
 
     const uniqueCodes = new Set(states.map((state) => state.stateCode))
     if (uniqueCodes.size !== states.length) {
-      return jsonResponse(400, 'Hay estados duplicados en la configuración enviada.')
+      return jsonResponse(400, 'Hay statuses duplicados en la configuración sent.')
     }
 
     const supabase = await createClient()
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      return jsonResponse(401, 'Necesitas iniciar sesión para modificar los estados.')
+      return jsonResponse(401, 'Necesitas iniciar sesión para modificar los statuses.')
     }
 
     const payload: WorkflowStateConfigRow[] = states.map((state) => ({
@@ -131,13 +131,13 @@ export async function POST(request: NextRequest) {
       if (isMissingSchemaError(error)) {
         return jsonResponse(
           409,
-          'La tabla public.doa_workflow_state_config no está lista todavía. Aplica primero la migración de Supabase.',
+          'La table public.doa_workflow_state_config no está lista todavía. Aplica primero la migración de Supabase.',
         )
       }
 
       return jsonResponse(
         500,
-        `No se pudo guardar la configuración de estados: ${error.message}`,
+        `No se pudo guardar la configuración de statuses: ${error.message}`,
       )
     }
 

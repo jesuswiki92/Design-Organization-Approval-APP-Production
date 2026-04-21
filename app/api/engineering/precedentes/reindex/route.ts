@@ -1,12 +1,12 @@
 /**
  * POST /api/engineering/precedentes/reindex — Sprint 4
  *
- * Body: { proyecto_id?: string }
- *   - If proyecto_id is provided, reindex only that project.
- *   - Otherwise, reindex ALL projects in `cerrado | archivado_proyecto`
+ * Body: { project_id?: string }
+ *   - If project_id is provided, reindex only that project.
+ *   - Otherwise, reindex ALL projects in `closed | project_archived`
  *     (bounded to a safe limit; intended for manual refresh).
  *
- * Returns: { upserted: boolean, records: Array<{ proyecto_id, upserted, reason? }> }
+ * Returns: { upserted: boolean, records: Array<{ project_id, upserted, reason? }> }
  *
  * Fails-soft when Pinecone env vars are missing: logs a warn event, returns
  * upserted:false, still 200.
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
   }
 
   const proyectoId =
-    typeof body.proyecto_id === 'string' && body.proyecto_id.trim()
-      ? body.proyecto_id.trim()
+    typeof body.project_id === 'string' && body.project_id.trim()
+      ? body.project_id.trim()
       : null
 
   // Resolve target list
@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
     try {
       const admin = createAdminClient()
       const { data, error } = await admin
-        .from('doa_proyectos')
+        .from('doa_projects')
         .select('id')
-        .in('estado_v2', ['cerrado', 'archivado_proyecto'])
-        .order('estado_updated_at', { ascending: false })
+        .in('execution_status', ['closed', 'project_archived'])
+        .order('status_updated_at', { ascending: false })
         .limit(REINDEX_ALL_LIMIT)
       if (error) {
         return jsonResponse(500, { error: error.message })
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
   }
 
   const records: Array<{
-    proyecto_id: string
+    project_id: string
     upserted: boolean
     reason?: string
   }> = []
@@ -84,13 +84,13 @@ export async function POST(request: NextRequest) {
       const r = await reindexPrecedente(id)
       if (r.upserted) {
         anyUpserted = true
-        records.push({ proyecto_id: id, upserted: true })
+        records.push({ project_id: id, upserted: true })
       } else {
-        records.push({ proyecto_id: id, upserted: false, reason: r.reason })
+        records.push({ project_id: id, upserted: false, reason: r.reason })
       }
     } catch (e) {
       records.push({
-        proyecto_id: id,
+        project_id: id,
         upserted: false,
         reason:
           'exception:' + (e instanceof Error ? e.message : 'unknown'),
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     requestId: requestContext.requestId,
     route: requestContext.route,
     method: request.method,
-    entityType: proyectoId ? 'proyecto' : null,
+    entityType: proyectoId ? 'project' : null,
     entityId: proyectoId ?? null,
     metadata: {
       targets_count: targets.length,

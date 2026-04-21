@@ -1,14 +1,14 @@
 # n8n workflow: DOA-Project-State-Change
 
-Runbook del workflow que reacciona a cambios de estado "simples" de un proyecto disparados desde el dropdown del Tablero (card) o desde el selector del detalle.
+Runbook del workflow que reacciona a cambios de status "simples" de un project disparados desde el dropdown del Tablero (card) o desde el selector del detalle.
 
-Esto es solo un documento de referencia. El workflow en si se importa en la instancia n8n de la organizacion.
+Esto es solo un document de referencia. El workflow en si se importa en la instancia n8n de la organizacion.
 
 ## Proposito
 
-Recibir una peticion HTTP desde la app (`POST /api/proyectos/{id}/transicion`) tras una transicion inline de la maquina v2 y disparar efectos colaterales: notificaciones, side-effects en sistemas externos, y -- en el caso terminal -- alimentar el indice de precedentes.
+Recibir una peticion HTTP desde la app (`POST /api/projects/{id}/transition`) tras una transicion inline de la maquina v2 y disparar efectos colaterales: notificaciones, side-effects en sistemas externos, y -- en el caso terminal -- alimentar el indice de precedentes.
 
-El endpoint de la app **no bloquea** en la respuesta de este workflow: la transicion de estado en `doa_proyectos` ya ocurrio antes del dispatch. Si el webhook falla, la app loguea `severity=warn` pero NO revierte. Este workflow debe ser idempotente o fail-safe.
+El endpoint de la app **no bloquea** en la response de este workflow: la transicion de status en `doa_projects` ya ocurrio antes del dispatch. Si el webhook falla, la app loguea `severity=warn` pero NO revierte. Este workflow debe ser idempotente o fail-safe.
 
 ## Trigger
 
@@ -21,7 +21,7 @@ El endpoint de la app **no bloquea** en la respuesta de este workflow: la transi
 
 ```
 {
-  "proyecto_id": "<uuid>",
+  "project_id": "<uuid>",
   "from_state": "<ProjectExecutionState>",
   "to_state": "<ProjectExecutionState>",
   "user_id": "<uuid del actor>",
@@ -29,7 +29,7 @@ El endpoint de la app **no bloquea** en la respuesta de este workflow: la transi
 }
 ```
 
-Los valores de `from_state` y `to_state` pertenecen a la maquina v2 (`PROJECT_EXECUTION_STATES` en `lib/workflow-states.ts`): `proyecto_abierto`, `planificacion`, `en_ejecucion`, `revision_interna`, `listo_para_validacion`, `en_validacion`, `validado`, `devuelto_a_ejecucion`, `preparando_entrega`, `entregado`, `confirmacion_cliente`, `cerrado`, `archivado_proyecto`.
+Los valores de `from_state` y `to_state` pertenecen a la maquina v2 (`PROJECT_EXECUTION_STATES` en `lib/workflow-states.ts`): `project_opened`, `planning`, `in_execution`, `internal_review`, `ready_for_validation`, `in_validation`, `validated`, `returned_to_execution`, `preparing_delivery`, `delivered`, `client_confirmation`, `closed`, `project_archived`.
 
 ### Cabecera HMAC
 
@@ -73,21 +73,21 @@ return JSON.parse(rawBody)
 
 ### 3. Switch — Branch by `to_state`
 
-Campo: `{{$json.to_state}}`. Una salida por cada estado con side-effects; el resto pasa por el branch "fallback" (solo notifica o loguea).
+Campo: `{{$json.to_state}}`. Una salida por cada status con side-effects; el resto pasa por el branch "fallback" (solo notifica o loguea).
 
-Side-effects sugeridos por estado destino:
+Side-effects sugeridos por status destino:
 
 | `to_state`             | Side-effect                                                                                                  |
 |------------------------|--------------------------------------------------------------------------------------------------------------|
-| `en_ejecucion`         | Notificar al owner del proyecto via Slack/email ("Ejecucion retomada" si viene de `devuelto_a_ejecucion`).    |
-| `en_validacion`        | Notificar a DOH/DOS que hay un proyecto esperando su firma.                                                  |
-| `validado`             | Notificar al owner ("Validacion aprobada") y al PM.                                                          |
-| `devuelto_a_ejecucion` | Notificar al owner con enlace al detalle para ver las observaciones de la validacion devuelta.                |
-| `preparando_entrega`   | Notificar al PM y preparar plantillas de comunicacion al cliente.                                            |
-| `entregado`            | Ya lo maneja `DOA-Enviar-Entregables`. Este branch puede quedarse como NO-OP o enviar resumen al canal interno. |
-| `confirmacion_cliente` | Notificar al PM que el cliente confirmo recepcion.                                                           |
-| `cerrado`              | Notificar a Direccion, archivar referencias internas, preparar encuesta de lecciones aprendidas.             |
-| `archivado_proyecto`   | (Opcional) notificar a RAG que re-indexe precedentes — la app ya lo dispara fail-soft desde `/archivar`.     |
+| `in_execution`         | Notificar al owner del project via Slack/email ("Ejecucion retomada" si viene de `returned_to_execution`).    |
+| `in_validation`        | Notificar a DOH/DOS que hay un project awaiting su firma.                                                  |
+| `validated`             | Notificar al owner ("Validation aprobada") y al PM.                                                          |
+| `returned_to_execution` | Notificar al owner con enlace al detalle para ver las observations de la validation devuelta.                |
+| `preparing_delivery`   | Notificar al PM y prepare templates de comunicacion al client.                                            |
+| `delivered`            | Ya lo maneja `DOA-Send-Entregables`. Este branch puede quedarse como NO-OP o send resumen al canal internal. |
+| `client_confirmation` | Notificar al PM que el client confirmo recepcion.                                                           |
+| `closed`              | Notificar a Address, archive referencias internas, prepare encuesta de lecciones aprendidas.             |
+| `project_archived`   | (Opcional) notificar a RAG que re-indexe precedentes — la app ya lo dispara fail-soft desde `/archive`.     |
 
 Los branches que queden sin uso simplemente deben pasar al `Respond to Webhook` con 200 sin hacer nada.
 
@@ -95,7 +95,7 @@ Los branches que queden sin uso simplemente deben pasar al `Respond to Webhook` 
 
 - **Slack** (`n8n-nodes-base.slack`): mensaje al canal operativo segun branch. Usar credenciales OAuth2 de un bot dedicado.
 - **Gmail / SMTP**: si aplica notificacion a owners externos.
-- **HTTP Request**: por ejemplo al endpoint interno `/api/engineering/precedentes/reindex` para reforzar el re-index tras `archivado_proyecto` (ya se dispara desde la app fail-soft, esto es redundancia opcional).
+- **HTTP Request**: por ejemplo al endpoint internal `/api/engineering/precedentes/reindex` para reforzar el re-index tras `project_archived` (ya se dispara desde la app fail-soft, esto es redundancia opcional).
 
 ### 5. Respond to Webhook
 - Status: 200
@@ -103,12 +103,12 @@ Los branches que queden sin uso simplemente deben pasar al `Respond to Webhook` 
 
 La app NO espera este body (fire-and-forget), pero devolver el `execution_id` facilita la observabilidad cruzada.
 
-## Ruta de error
+## Path de error
 
 - Wrap de los nodos sensibles con "Continue On Fail" desactivado.
-- Al final del workflow, anade un nodo "Error Trigger" (o un branch con "IF" tras cada nodo critico) que apunte a un `Respond to Webhook` con status 500 y un cuerpo:
+- Al final del workflow, anade un nodo "Error Trigger" (o un branch con "IF" tras cada nodo critico) que apunte a un `Respond to Webhook` con status 500 y un body:
   `{ "error": "<mensaje>" }`.
-- La app interpreta cualquier respuesta no-2xx como warn (no error) y registra el evento `project.state.transicion.webhook_failed`. La transicion ya esta aplicada en BD.
+- La app interpreta cualquier response no-2xx como warn (no error) y registra el evento `project.state.transicion.webhook_failed`. La transicion ya esta aplicada en BD.
 
 ## Variables de entorno en n8n
 
@@ -133,13 +133,13 @@ La app emite los siguientes eventos en `doa_app_events`:
 
 ## Pruebas manuales
 
-1. En la app, abrir un proyecto en `cerrado` y usar el dropdown del Tablero para llevarlo a `archivado_proyecto`.
+1. En la app, abrir un project en `closed` y usar el dropdown del Tablero para llevarlo a `project_archived`.
 2. Verificar que la app devolvio 200 y la card refresco.
-3. En n8n comprobar que la ejecucion entro (headers incluyen `x-doa-signature`).
-4. Probar el camino `requires_input` moviendo un proyecto `validado` a `preparando_entrega` — la app debe redirigir al detalle (`?tab=entrega`) y NO disparar el webhook.
+3. En n8n comprobar que la execution entro (headers incluyen `x-doa-signature`).
+4. Probar el camino `requires_input` moviendo un project `validated` a `preparing_delivery` — la app debe redirigir al detalle (`?tab=delivery`) y NO disparar el webhook.
 
 ## TODO
 
-- Definir plantillas finales de notificacion por branch (Slack/email).
-- Considerar un único canal Slack "estado-proyectos" con un formato unificado (from → to, owner, enlace al detalle).
-- Evaluar deduplicacion: si un proyecto cambia de estado varias veces en pocos segundos, evitar notificaciones duplicadas.
+- Definir templates finales de notificacion por branch (Slack/email).
+- Considerar un único canal Slack "status-projects" con un formato unificado (from → to, owner, enlace al detalle).
+- Evaluar deduplicacion: si un project cambia de status varias veces en pocos segundos, evitar notificaciones duplicadas.

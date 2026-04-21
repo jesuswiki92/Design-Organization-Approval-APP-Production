@@ -3,24 +3,24 @@
  * PAGINA DEL CATALOGO DE FORMULARIOS DE QUOTATIONS
  * ============================================================================
  *
- * Esta pagina muestra un listado de todas las consultas que ya tienen un
- * formulario generado por n8n (automatizacion). Permite al equipo comercial
- * ver y acceder a las URLs publicas de los formularios que se envian a
- * los clientes como parte del proceso de intake.
+ * Esta page muestra un listado de todas las requests que ya tienen un
+ * form generado por n8n (automatizacion). Permite al equipo commercial
+ * ver y acceder a las URLs publicas de los forms que se envian a
+ * los clients como parte del process de intake.
  *
  * QUE CARGA:
- *   1. Consultas entrantes que tienen URL de formulario (no archivadas)
- *   2. Lista de clientes para emparejar con las consultas
- *   3. Contactos de los clientes
+ *   1. Consultas entrantes que tienen URL de form (no archivadas)
+ *   2. Lista de clients para emparejar con las requests
+ *   3. Contactos de los clients
  *
  * QUE MUESTRA:
  *   - Boton "Volver a quotations" para regresar
- *   - Cabecera con titulo y descripcion
- *   - Tabla con columnas: Consulta, Cliente, Estado, Creado, URL, Accion
- *   - En cada fila, un boton "Abrir" que abre la URL del formulario
+ *   - Cabecera con title y description
+ *   - Table con columnas: Request, Client, Status, Creado, URL, Accion
+ *   - En cada fila, un boton "Abrir" que abre la URL del form
  *
- * NOTA TECNICA: Es un Server Component que carga datos en paralelo
- * desde Supabase. Solo muestra consultas que tienen url_formulario
+ * NOTA TECNICA: Es un Server Component que carga data en paralelo
+ * desde Supabase. Solo muestra requests que tienen form_url
  * (no es null) y no estan archivadas.
  * ============================================================================
  */
@@ -29,15 +29,15 @@
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, FileText } from 'lucide-react'
 
-// Barra superior de la pagina
+// Barra superior de la page
 import { TopBar } from '@/components/layout/TopBar'
 // Conexion a Supabase desde el servidor
 import { createClient } from '@/lib/supabase/server'
-// Constantes de estados (para excluir archivados)
-import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
-// Tipos de datos
-import type { Cliente, ClienteContacto, ConsultaEntrante } from '@/types/database'
-// Funciones para emparejar consultas con clientes
+// Constantes de statuses (para excluir archivados)
+import { INCOMING_REQUEST_STATUSES } from '@/lib/workflow-states'
+// Tipos de data
+import type { Client, ClientContact, IncomingRequest } from '@/types/database'
+// Funciones para emparejar requests con clients
 import {
   buildIncomingClientLookup,
   resolveIncomingClientIdentity,
@@ -47,9 +47,9 @@ import {
 export const dynamic = 'force-dynamic'
 
 /**
- * Funcion auxiliar para formatear fechas en formato espanol corto.
+ * Funcion auxiliar para formatear dates en formato espanol corto.
  * Ejemplo: "03/04/2026 14:30"
- * Si la fecha es invalida o no existe, devuelve "-".
+ * Si la date es invalida o no existe, devuelve "-".
  */
 function formatDate(value: string | null | undefined) {
   if (!value) return '-'
@@ -64,45 +64,45 @@ function formatDate(value: string | null | undefined) {
 }
 
 /**
- * Funcion principal de la pagina del catalogo de formularios.
+ * Funcion primary de la page del catalogo de forms.
  * Se ejecuta en el servidor cuando alguien visita /quotations/forms.
  */
 export default async function QuotationsFormsCatalogPage() {
   const supabase = await createClient()
 
-  // Cargar datos en paralelo: consultas con formulario, clientes y contactos
+  // Cargar data en paralelo: requests con form, clients y contacts
   const [consultasResult, clientsResult, contactsResult] = await Promise.all([
-    // Solo consultas no archivadas que tienen URL de formulario
+    // Solo requests no archivadas que tienen URL de form
     supabase
-      .from('doa_consultas_entrantes')
+      .from('doa_incoming_requests')
       .select('*')
-      .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
-      .not('url_formulario', 'is', null)
+      .neq('status', INCOMING_REQUEST_STATUSES.ARCHIVED)
+      .not('form_url', 'is', null)
       .order('created_at', { ascending: false }),
-    // Todos los clientes ordenados alfabeticamente
+    // Todos los clients ordenados alfabeticamente
     supabase
-      .from('doa_clientes_datos_generales')
+      .from('doa_clients')
       .select('*')
-      .order('nombre', { ascending: true }),
-    // Contactos de clientes
+      .order('name', { ascending: true }),
+    // Contactos de clients
     supabase
-      .from('doa_clientes_contactos')
+      .from('doa_client_contacts')
       .select('*')
-      .order('es_principal', { ascending: false })
-      .order('activo', { ascending: false })
+      .order('is_primary', { ascending: false })
+      .order('active', { ascending: false })
       .order('created_at', { ascending: true }),
   ])
 
-  // Preparar datos con tipos correctos
-  const consultas = (consultasResult.data ?? []) as ConsultaEntrante[]
-  const clients = (clientsResult.data ?? []) as Cliente[]
-  const contacts = (contactsResult.data ?? []) as ClienteContacto[]
-  // Mapa de busqueda para emparejar consultas con clientes por email
+  // Prepare data con tipos correctos
+  const requests = (consultasResult.data ?? []) as IncomingRequest[]
+  const clients = (clientsResult.data ?? []) as Client[]
+  const contacts = (contactsResult.data ?? []) as ClientContact[]
+  // Mapa de search para emparejar requests con clients por email
   const clientLookup = buildIncomingClientLookup(clients, contacts)
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
-      <TopBar title="Formularios" subtitle="Catalogo interno de formularios de quotations" />
+      <TopBar title="Forms" subtitle="Catalogo internal de forms de quotations" />
 
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -123,21 +123,21 @@ export default async function QuotationsFormsCatalogPage() {
         <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(14,165,233,0.10)]">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-              Formularios disponibles
+              Forms disponibles
             </h1>
             <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
-              Aqui puedes ver las consultas que ya tienen `url_formulario`
-              generada por n8n y abrir exactamente la URL publica que recibiria el cliente.
+              Aqui puedes ver las requests que ya tienen `form_url`
+              generada por n8n y abrir exactamente la URL publica que recibiria el client.
             </p>
           </div>
         </section>
 
         <section className="overflow-hidden rounded-[30px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
           <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-950">Tabla de formularios</h2>
+            <h2 className="text-base font-semibold text-slate-950">Table de forms</h2>
             <p className="mt-1 text-sm text-[color:var(--ink-3)]">
-              Cada fila corresponde a una consulta con URL de formulario persistida en
-              `doa_consultas_entrantes`.
+              Cada fila corresponde a una request con URL de form persistida en
+              `doa_incoming_requests`.
             </p>
           </div>
 
@@ -145,7 +145,7 @@ export default async function QuotationsFormsCatalogPage() {
             <table className="min-w-[1040px] w-full border-separate border-spacing-0 text-left">
               <thead className="sticky top-0 z-10 bg-[color:var(--paper)]">
                 <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
-                  {['Consulta', 'Cliente', 'Estado', 'Creado', 'URL', 'Accion'].map((label) => (
+                  {['Request', 'Client', 'Status', 'Creado', 'URL', 'Accion'].map((label) => (
                     <th
                       key={label}
                       className="whitespace-nowrap border-b border-[color:var(--ink-4)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]"
@@ -156,49 +156,49 @@ export default async function QuotationsFormsCatalogPage() {
                 </tr>
               </thead>
               <tbody>
-                {consultas.length === 0 ? (
+                {requests.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
                       className="px-5 py-10 text-center text-sm text-[color:var(--ink-3)]"
                     >
-                      Todavia no hay formularios generados.
+                      Todavia no hay forms generados.
                     </td>
                   </tr>
                 ) : (
-                  consultas.map((consulta) => {
+                  requests.map((request) => {
                     const clientIdentity = resolveIncomingClientIdentity(
-                      consulta.remitente,
+                      request.sender,
                       clientLookup,
                     )
-                    const formHref = consulta.url_formulario?.trim() ?? ''
+                    const formHref = request.form_url?.trim() ?? ''
 
                     return (
                       <tr
-                        key={consulta.id}
+                        key={request.id}
                         className="border-b border-[color:var(--ink-4)]/70 bg-[color:var(--paper)] transition-colors hover:bg-[color:var(--paper-3)]/50"
                       >
                         <td className="px-4 py-3 align-top">
                           <p className="font-medium text-slate-950">
-                            {consulta.asunto ?? 'Consulta sin asunto'}
+                            {request.subject ?? 'Request sin subject'}
                           </p>
                           <p className="mt-1 font-mono text-[11px] text-[color:var(--ink-3)]">
-                            {consulta.id}
+                            {request.id}
                           </p>
                         </td>
                         <td className="px-4 py-3 align-top">
                           <p className="font-medium text-[color:var(--ink)]">
                             {clientIdentity.kind === 'known'
                               ? `${clientIdentity.companyName} · ${clientIdentity.contactName}`
-                              : 'cliente desconocido'}
+                              : 'client desconocido'}
                           </p>
-                          <p className="mt-1 text-xs text-[color:var(--ink-3)]">{consulta.remitente}</p>
+                          <p className="mt-1 text-xs text-[color:var(--ink-3)]">{request.sender}</p>
                         </td>
                         <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">
-                          {consulta.estado}
+                          {request.status}
                         </td>
                         <td className="px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">
-                          {formatDate(consulta.created_at)}
+                          {formatDate(request.created_at)}
                         </td>
                         <td className="max-w-[320px] px-4 py-3 align-top text-sm text-[color:var(--ink-3)]">
                           <p className="break-all">{formHref || '-'}</p>

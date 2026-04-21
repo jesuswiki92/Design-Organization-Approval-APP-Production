@@ -3,17 +3,17 @@
  * HOME — "Your morning" (Warm Executive redesign)
  * ============================================================================
  *
- * Rediseño basado en el prototipo DOA Redesign.html (dirección "Warm
+ * Rediseño basado en el prototipo DOA Redesign.html (address "Warm
  * Executive", ajuste cool-neutral). Estructura:
  *
  *   1. Saludo serif grande + una frase que dice qué hay que mirar hoy.
- *   2. Tarjeta hero "urgente" con el item overdue.
+ *   2. Tarjeta hero "urgent" con el item overdue.
  *   3. Dos columnas: "Today" (lista priorizada) + "Deliveries · next 14 days".
  *   4. Fila de stats demotada (4 tiles pequeños).
  *   5. "Recent activity" compacto.
  *
- * Es un Server Component: los datos son estáticos para esta iteración del
- * rediseño; el handoff a datos reales lo hará la siguiente fase.
+ * Es un Server Component: los data son estáticos para esta iteración del
+ * rediseño; el handoff a data reales lo hará la siguiente fase.
  * ============================================================================
  */
 
@@ -25,7 +25,7 @@ import { APP_RELEASE } from '@/lib/app-release'
 // Contenidos (estáticos — reflejan el prototipo tal cual)
 // ---------------------------------------------------------------------------
 
-/** Item "urgente" que protagoniza la tarjeta hero. */
+/** Item "urgent" que protagoniza la tarjeta hero. */
 const urgent = {
   code: 'Q-26-11',
   label: 'OVERDUE 2 DAYS',
@@ -42,7 +42,7 @@ const today = [
   { code: 'Q-26-09',  title: 'Binter MRO — TCDS lookup',        color: 'var(--ink-3)',  time: '—' },
 ] as const
 
-/** Timeline de entregas, 14 días. */
+/** Timeline de deliveries, 14 días. */
 const deliveries = [
   { date: 'Wed 21', code: 'PRJ-0418', what: 'DOS signoff',    color: 'var(--cobalt)', pct: 18 },
   { date: 'Fri 23', code: 'PRJ-0401', what: 'Client handoff', color: 'var(--ok)',     pct: 32 },
@@ -83,7 +83,7 @@ function deltaToneClasses(tone: 'up' | 'down' | 'flat') {
 // ---------------------------------------------------------------------------
 
 export default function HomePage() {
-  // Fecha fija del prototipo — en producción vendrá del servidor.
+  // Date fija del prototipo — en producción vendrá del servidor.
   const dateLabel = 'Monday, 19 April'
 
   return (
@@ -105,7 +105,7 @@ export default function HomePage() {
           </p>
         </header>
 
-        {/* ---- Tarjeta hero "urgente" ---- */}
+        {/* ---- Tarjeta hero "urgent" ---- */}
         <Link
           href={urgent.href}
           className="mb-6 block rounded-2xl border border-[color:var(--umber)] bg-[color:var(--paper-2)] shadow-[0_0_0_1px_var(--umber)_inset,0_4px_14px_-6px_rgba(138,90,43,0.25)] transition-shadow hover:shadow-[0_0_0_1px_var(--umber)_inset,0_8px_22px_-6px_rgba(138,90,43,0.35)]"

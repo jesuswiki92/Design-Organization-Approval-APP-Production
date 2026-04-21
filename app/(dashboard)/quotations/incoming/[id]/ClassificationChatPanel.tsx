@@ -48,8 +48,8 @@ type Props = {
   clientEmail?: string
   clientName?: string
   numeroEntrada?: string
-  remitente?: string
-  asunto?: string
+  sender?: string
+  subject?: string
 }
 
 function createChatId() {
@@ -78,8 +78,8 @@ export default function ClassificationChatPanel({
   clientEmail,
   clientName,
   numeroEntrada,
-  remitente,
-  asunto,
+  sender,
+  subject,
 }: Props) {
   const [activeTab, setActiveTab] = useState<'log' | 'chat'>('log')
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
@@ -131,7 +131,7 @@ export default function ClassificationChatPanel({
         justification: a.justification,
       }))
 
-      const res = await fetch(`/api/consultas/${consultaId}/change-classification/chat`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/change-classification/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -143,7 +143,7 @@ export default function ClassificationChatPanel({
 
       if (!res.ok || !res.body) {
         const payload = (await res.json().catch(() => null)) as { error?: string } | null
-        throw new Error(payload?.error || 'No se pudo obtener respuesta del chat.')
+        throw new Error(payload?.error || 'No se pudo obtener response del chat.')
       }
 
       const reader = res.body.getReader()
@@ -215,7 +215,7 @@ export default function ClassificationChatPanel({
           entry.id === assistantMessage.id
             ? {
                 ...entry,
-                content: entry.content || 'No he podido completar la respuesta en este momento.',
+                content: entry.content || 'No he podido completar la response en este momento.',
               }
             : entry,
         ),
@@ -245,7 +245,7 @@ export default function ClassificationChatPanel({
         confidence: a.confidence,
       }))
 
-      const res = await fetch(`/api/consultas/${consultaId}/change-classification/generate-email`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/change-classification/generate-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -276,14 +276,14 @@ export default function ClassificationChatPanel({
     setEmailError(null)
 
     try {
-      const res = await fetch(`/api/consultas/${consultaId}/send-client`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/send-client`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: emailDraft.body,
           query: {
-            remitente: remitente || clientEmail,
-            asunto: emailDraft.subject || asunto,
+            sender: sender || clientEmail,
+            subject: emailDraft.subject || subject,
             codigo: numeroEntrada,
           },
         }),
@@ -291,17 +291,17 @@ export default function ClassificationChatPanel({
 
       if (!res.ok) {
         const payload = (await res.json().catch(() => null)) as { error?: string } | null
-        throw new Error(payload?.error || 'No se pudo enviar el email.')
+        throw new Error(payload?.error || 'No se pudo send el email.')
       }
 
       setEmailSent(true)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error inesperado enviando el email.'
+      const message = err instanceof Error ? err.message : 'Error inesperado sending el email.'
       setEmailError(message)
     } finally {
       setSendingEmail(false)
     }
-  }, [sendingEmail, emailDraft, consultaId, remitente, clientEmail, asunto, numeroEntrada])
+  }, [sendingEmail, emailDraft, consultaId, sender, clientEmail, subject, numeroEntrada])
 
   return (
     <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
@@ -426,9 +426,9 @@ export default function ClassificationChatPanel({
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
                       <Check className="h-6 w-6 text-emerald-600" />
                     </div>
-                    <p className="text-sm font-medium text-[color:var(--ink)]">Email enviado correctamente</p>
+                    <p className="text-sm font-medium text-[color:var(--ink)]">Email sent correctamente</p>
                     <p className="text-xs text-[color:var(--ink-2)]">
-                      El email ha sido enviado a {clientEmail || remitente || 'el cliente'}
+                      El email ha sido sent a {clientEmail || sender || 'el client'}
                     </p>
                     <button
                       onClick={() => {
@@ -450,7 +450,7 @@ export default function ClassificationChatPanel({
                         </label>
                         <input
                           type="text"
-                          value={clientEmail || remitente || ''}
+                          value={clientEmail || sender || ''}
                           readOnly
                           className="w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2 text-xs text-[color:var(--ink-2)]"
                         />
@@ -458,7 +458,7 @@ export default function ClassificationChatPanel({
 
                       <div>
                         <label className="mb-1 block text-[10px] font-medium text-[color:var(--ink-2)]">
-                          Asunto
+                          Subject
                         </label>
                         <input
                           type="text"
@@ -517,7 +517,7 @@ export default function ClassificationChatPanel({
                           ) : (
                             <>
                               <Send className="h-3 w-3" />
-                              Enviar email
+                              Send email
                             </>
                           )}
                         </button>
@@ -530,7 +530,7 @@ export default function ClassificationChatPanel({
               <>
                 <div className="flex items-center justify-between border-b border-[color:var(--ink-4)] px-3 py-2">
                   <p className="text-[10px] text-[color:var(--ink-2)]">
-                    Pregunta a la IA sobre la clasificacion de este cambio
+                    Pregunta a la IA sobre la classification de este cambio
                   </p>
                   <button
                     onClick={handleGenerateEmail}
@@ -627,7 +627,7 @@ export default function ClassificationChatPanel({
                           handleChatSend()
                         }
                       }}
-                      placeholder="Pregunta sobre la clasificacion..."
+                      placeholder="Pregunta sobre la classification..."
                       disabled={chatSending}
                       className="flex-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 text-xs text-[color:var(--ink-2)] placeholder-[color:var(--ink-4)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)] disabled:opacity-50"
                     />

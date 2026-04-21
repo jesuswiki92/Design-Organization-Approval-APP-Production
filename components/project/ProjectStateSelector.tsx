@@ -6,16 +6,16 @@
  * ============================================================================
  *
  * Espejo visual/funcional de `QuotationStateSelector` adaptado a la maquina
- * de 13 estados de la ejecucion de proyectos. Se renderiza dentro de cada
+ * de 13 statuses de la execution de projects. Se renderiza dentro de cada
  * `ProjectCard` del Tablero.
  *
  * Comportamiento:
- *   - Muestra solo estados permitidos desde el actual via
+ *   - Muestra solo statuses permitidos desde el actual via
  *     `PROJECT_EXECUTION_TRANSITIONS` (DAG) + el propio actual (disabled).
- *   - Al cambiar, hace POST a `/api/proyectos/[id]/transicion`.
- *       - 200 → update optimistico confirmado, refresca la ruta.
+ *   - Al cambiar, hace POST a `/api/projects/[id]/transition`.
+ *       - 200 → update optimistico confirmado, refresca la path.
  *       - 409 con `requires_input` → redirige a `redirect_url` (tab del
- *         detalle del proyecto) para completar el formulario.
+ *         detalle del project) para completar el form.
  *       - error → revierte y muestra mensaje.
  *   - `stopPropagation` en clicks y cambios para que el Link padre de la
  *     card NO se dispare.
@@ -59,7 +59,7 @@ export function ProjectStateSelector({
     setMessage(null)
   }, [currentState])
 
-  // Si no tenemos estado_v2 valido, no renderizamos selector (el padre
+  // Si no tenemos execution_status valido, no renderizamos selector (el padre
   // muestra el badge legacy si acaso). Esto evita seleccionar sobre null.
   if (!selectedState) return null
 
@@ -94,7 +94,7 @@ export function ProjectStateSelector({
     setMessage(null)
 
     try {
-      const response = await fetch(`/api/proyectos/${proyectoId}/transicion`, {
+      const response = await fetch(`/api/projects/${proyectoId}/transition`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_state: nextState }),
@@ -109,7 +109,7 @@ export function ProjectStateSelector({
         }
         if (data?.requires_input && typeof data.redirect_url === 'string') {
           // Revertimos el optimistic porque la transicion NO ocurrio aun
-          // — se completa en el formulario del detalle.
+          // — se completa en el form del detalle.
           setSelectedState(previousState)
           setStatus('idle')
           router.push(data.redirect_url)
@@ -129,7 +129,7 @@ export function ProjectStateSelector({
       setSelectedState(previousState)
       setStatus('error')
       setMessage(
-        error instanceof Error ? error.message : 'Error al cambiar el estado.',
+        error instanceof Error ? error.message : 'Error al cambiar el status.',
       )
     }
   }
@@ -137,7 +137,7 @@ export function ProjectStateSelector({
   return (
     <div className="space-y-0.5" onClick={stopProp}>
       <label className="sr-only" htmlFor={`project-state-${proyectoId}`}>
-        Cambiar estado del proyecto
+        Cambiar status del project
       </label>
       <select
         id={`project-state-${proyectoId}`}

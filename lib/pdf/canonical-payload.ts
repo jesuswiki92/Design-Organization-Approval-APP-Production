@@ -8,7 +8,7 @@
  *   - signed via HMAC-SHA256 (lib/signatures/hmac.ts) on the
  *     `delivery_release` signature row.
  *
- * Therefore the shape MUST be deterministic: given the same proyecto +
+ * Therefore the shape MUST be deterministic: given the same project +
  * validation + deliverables snapshot, the builder produces the exact same
  * payload, which canonicalizes (via canonicalJSON) to the exact same bytes,
  * which in turn produce the exact same SHA-256 hash and HMAC.
@@ -21,7 +21,7 @@
 import 'server-only'
 
 import type {
-  DeliverableEstado,
+  DeliverableStatus,
   DeliverableSnapshot,
   StatementOfCompliancePayload,
   ValidationDecision,
@@ -38,12 +38,12 @@ export type BuildSoCParams = {
       approval_no: string
     }
   }
-  proyecto: {
+  project: {
     id: string
-    numero_proyecto: string
-    titulo: string
-    descripcion: string | null
-    cliente_nombre: string | null
+    project_number: string
+    title: string
+    description: string | null
+    client_name: string | null
   }
   validation: {
     id: string
@@ -56,10 +56,10 @@ export type BuildSoCParams = {
   deliverables: Array<{
     id: string
     template_code: string | null
-    titulo: string
+    title: string
     subpart_easa: string | null
-    version_actual: number
-    estado: DeliverableEstado
+    current_version: number
+    status: DeliverableStatus
   }>
   signature: {
     validation_signature_id: string
@@ -72,7 +72,7 @@ export type BuildSoCParams = {
 
 /**
  * Build the canonical SoC payload. The function normalizes the deliverables
- * order (by template_code then titulo) so the output is stable regardless of
+ * order (by template_code then title) so the output is stable regardless of
  * how the caller provides them.
  */
 export function buildSoCCanonicalPayload(
@@ -82,14 +82,14 @@ export function buildSoCCanonicalPayload(
     .map((d) => ({
       id: d.id,
       template_code: d.template_code,
-      titulo: d.titulo,
+      title: d.title,
       subpart_easa: d.subpart_easa,
-      version_actual: d.version_actual,
-      estado: d.estado,
+      current_version: d.current_version,
+      status: d.status,
     }))
     .sort((a, b) => {
-      const ka = a.template_code ?? a.titulo
-      const kb = b.template_code ?? b.titulo
+      const ka = a.template_code ?? a.title
+      const kb = b.template_code ?? b.title
       if (ka < kb) return -1
       if (ka > kb) return 1
       return 0
@@ -109,12 +109,12 @@ export function buildSoCCanonicalPayload(
         approval_no: params.document.company.approval_no,
       },
     },
-    proyecto: {
-      id: params.proyecto.id,
-      numero_proyecto: params.proyecto.numero_proyecto,
-      titulo: params.proyecto.titulo,
-      descripcion: params.proyecto.descripcion,
-      cliente_nombre: params.proyecto.cliente_nombre,
+    project: {
+      id: params.project.id,
+      project_number: params.project.project_number,
+      title: params.project.title,
+      description: params.project.description,
+      client_name: params.project.client_name,
     },
     validation: {
       id: params.validation.id,
@@ -152,9 +152,9 @@ export function snapshotToSoCDeliverables(
 ): BuildSoCParams['deliverables'] {
   return snapshot.map((d) => ({
     id: d.id,
-    titulo: d.titulo,
-    estado: d.estado,
-    version_actual: d.version_actual,
+    title: d.title,
+    status: d.status,
+    current_version: d.current_version,
     template_code: extraByDeliverableId?.get(d.id)?.template_code ?? null,
     subpart_easa: extraByDeliverableId?.get(d.id)?.subpart_easa ?? null,
   }))

@@ -108,29 +108,29 @@ async function main() {
     await expectPage('/home', { statuses: [200], bodyIncludes: 'DOA Operations Hub' })
     await expectPage('/quotations', { statuses: [200], bodyIncludes: 'Quotation' })
     await expectPage('/engineering/portfolio', { statuses: [200], bodyIncludes: 'Portfolio' })
-    await expectPage('/tools/experto', { statuses: [200], bodyIncludes: 'OpenRouter' })
+    await expectPage('/tools/expert', { statuses: [200], bodyIncludes: 'OpenRouter' })
   } else {
     await expectPage('/login', { statuses: [200], bodyIncludes: 'DOA Operations Hub' })
     await expectPage('/home', { statuses: [307], locationIncludes: '/login' })
     await expectPage('/quotations', { statuses: [307], locationIncludes: '/login' })
     await expectPage('/engineering/portfolio', { statuses: [307], locationIncludes: '/login' })
-    await expectPage('/tools/experto', { statuses: [307], locationIncludes: '/login' })
+    await expectPage('/tools/expert', { statuses: [307], locationIncludes: '/login' })
 
     // Fase 3b: protected API routes must return JSON 401 when called without
     // a session cookie. The check must run BEFORE any DB lookup or body
     // validation, so a fake/empty body is enough to trigger the auth gate.
     await expectUnauthorized('POST', '/api/tools/chat', { question: 'Hello', history: [] })
-    await expectUnauthorized('DELETE', '/api/consultas/test-id')
-    await expectUnauthorized('PATCH', '/api/consultas/test-id/state', { estado: 'NUEVO' })
-    await expectUnauthorized('POST', '/api/consultas/test-id/send-client', {})
-    await expectUnauthorized('DELETE', '/api/consultas/test-id/referencias', { proyecto_id: 'x' })
-    await expectUnauthorized('POST', '/api/consultas/test-id/documentos', { docs: {} })
-    await expectUnauthorized('POST', '/api/consultas/test-id/quotation', {})
-    await expectUnauthorized('PATCH', '/api/proyectos/test-id/state', { estado: 'NUEVO' })
-    await expectUnauthorized('DELETE', '/api/proyectos/test-id', {})
-    await expectUnauthorized('POST', '/api/proyectos/test-id/precedentes', {})
-    await expectUnauthorized('GET', '/api/proyectos-historico/search?q=test')
-    await expectUnauthorized('GET', '/api/proyectos-historico/test-id/summary')
+    await expectUnauthorized('DELETE', '/api/incoming-requests/test-id')
+    await expectUnauthorized('PATCH', '/api/incoming-requests/test-id/state', { status: 'NEW' })
+    await expectUnauthorized('POST', '/api/incoming-requests/test-id/send-client', {})
+    await expectUnauthorized('DELETE', '/api/incoming-requests/test-id/references', { project_id: 'x' })
+    await expectUnauthorized('POST', '/api/incoming-requests/test-id/documents', { docs: {} })
+    await expectUnauthorized('POST', '/api/incoming-requests/test-id/quotation', {})
+    await expectUnauthorized('PATCH', '/api/projects/test-id/state', { status: 'NEW' })
+    await expectUnauthorized('DELETE', '/api/projects/test-id', {})
+    await expectUnauthorized('POST', '/api/projects/test-id/precedentes', {})
+    await expectUnauthorized('GET', '/api/historical-projects/search?q=test')
+    await expectUnauthorized('GET', '/api/historical-projects/test-id/summary')
     await expectUnauthorized('POST', '/api/workflow/transition', {})
 
     // Fase 3d: webhook proxy routes must also return JSON 401 without a session.
@@ -138,7 +138,7 @@ async function main() {
     // URLs never leak into the client bundle.
     await expectUnauthorized('POST', '/api/webhooks/quotation-state', {})
     await expectUnauthorized('POST', '/api/webhooks/project-state', {})
-    await expectUnauthorized('POST', '/api/webhooks/conteo-horas', {})
+    await expectUnauthorized('POST', '/api/webhooks/time-tracking', {})
   }
 
   if (ENABLE_CHAT) {

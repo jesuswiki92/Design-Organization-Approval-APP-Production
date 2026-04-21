@@ -60,8 +60,8 @@ type Props = {
   clientEmail?: string
   clientName?: string
   numeroEntrada?: string
-  remitente?: string
-  asunto?: string
+  sender?: string
+  subject?: string
 }
 
 export default function ClassificationWorkspaceClient({
@@ -72,8 +72,8 @@ export default function ClassificationWorkspaceClient({
   clientEmail,
   clientName,
   numeroEntrada,
-  remitente,
-  asunto,
+  sender,
+  subject,
 }: Props) {
   const [currentAnswers, setCurrentAnswers] = useState<Answer[]>([])
   const [logEntries, setLogEntries] = useState<LogEntry[]>([])
@@ -118,8 +118,8 @@ export default function ClassificationWorkspaceClient({
           clientEmail={clientEmail}
           clientName={clientName}
           numeroEntrada={numeroEntrada}
-          remitente={remitente}
-          asunto={asunto}
+          sender={sender}
+          subject={subject}
         />
 
         <ChangeClassificationPanel

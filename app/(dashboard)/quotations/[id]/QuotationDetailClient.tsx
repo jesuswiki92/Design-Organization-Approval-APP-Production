@@ -3,27 +3,27 @@
  * COMPONENTE VISUAL DE DETALLE DE UNA QUOTATION
  * ============================================================================
  *
- * Este componente muestra la ficha completa de una quotation (oferta
- * comercial) con toda su informacion operativa. Es la vista a la que
- * llega el usuario cuando pulsa "Ver detalle" en el tablero.
+ * Este componente muestra la ficha completa de una quotation (quote
+ * commercial) con toda su informacion operativa. Es la vista a la que
+ * llega el user_label cuando pulsa "Ver detalle" en el tablero.
  *
  * QUE MUESTRA:
  *   - Boton "Volver a Quotations" para regresar al listado
- *   - Insignia con el estado actual de la quotation (ej: "En revision")
- *   - Cabecera con codigo, titulo, nota y etiquetas de metadata
+ *   - Insignia con el status actual de la quotation (ej: "En review")
+ *   - Cabecera con codigo, title, nota y etiquetas de metadata
  *   - Metricas clave: Owner, Due date, Amount, Requested date
  *   - Bloque 01: Resumen ejecutivo (contexto, objetivo, restricciones)
- *   - Bloque 02: Alcance tecnico (scope, assumptions, inputs pendientes)
- *   - Bloque 03: Pricing y estrategia comercial (precio, horas, hitos)
- *   - Snapshot: Estado operativo actual (estado, canal, siguiente paso)
+ *   - Bloque 02: Alcance technical (scope, assumptions, inputs pendientes)
+ *   - Bloque 03: Pricing y estrategia commercial (precio, horas, hitos)
+ *   - Snapshot: Status operativo actual (status, canal, siguiente paso)
  *   - Bloque 04: Historial y coordinacion (timeline, checklist)
  *
  * NOTA: Actualmente la ficha busca la quotation en los "lanes" (columnas)
  * del tablero visual. Cuando se conecte el backend real, se cargara
  * directamente desde Supabase.
  *
- * NOTA TECNICA: 'use client' porque necesita cargar datos del localStorage
- * (columnas personalizadas) y recalcular la vista al cambiar datos.
+ * NOTA TECNICA: 'use client' porque necesita cargar data del localStorage
+ * (columnas personalizadas) y recalcular la vista al cambiar data.
  * ============================================================================
  */
 
@@ -31,39 +31,39 @@
 
 // Link: navegacion entre paginas sin recargar
 import Link from 'next/link'
-// Hooks de React para manejar estados, efectos y calculos optimizados
+// Hooks de React para manejar statuses, efectos y calculos optimizados
 import { useEffect, useMemo, useState } from 'react'
 // Iconos decorativos para las metricas y secciones
 import {
   ArrowLeft,        // Flecha de "volver atras"
-  Blocks,           // Icono de bloques (campo cliente/customer)
+  Blocks,           // Icono de bloques (campo client/customer)
   BriefcaseBusiness, // Maletin (campo owner)
   CircleGauge,      // Medidor circular (campo amount/importe)
   Clock3,           // Reloj (campo due date)
-  FileSpreadsheet,  // Hoja de calculo (campo fecha de solicitud)
-  Layers3,          // Capas (campo estado)
+  FileSpreadsheet,  // Hoja de calculo (campo date de solicitud)
+  Layers3,          // Capas (campo status)
   NotebookTabs,     // Libreta (campo canal)
   Radar,            // Radar (campo siguiente paso)
 } from 'lucide-react'
 
 // Utilidad para combinar clases CSS condicionalmente
 import { cn } from '@/lib/utils'
-// Tipo de datos para la configuracion de estados del workflow
+// Tipo de data para la configuracion de statuses del workflow
 import type { WorkflowStateConfigRow } from '@/types/database'
 
-// Tipo de consulta entrante (datos reales del tablero)
+// Tipo de request entrante (data reales del tablero)
 import type { IncomingQuery } from '../incoming-queries'
-// Funciones para trabajar con los datos del tablero de quotations
+// Funciones para trabajar con los data del tablero de quotations
 import {
   defaultQuotationLanes,             // Genera las columnas por defecto del tablero
   findQuotationCardById,             // Busca una tarjeta por ID en todas las columnas
   loadStoredCustomQuotationLanes,    // Carga columnas personalizadas del localStorage
-  type QuotationLane,                // Tipo de datos de una columna del tablero
+  type QuotationLane,                // Tipo de data de una columna del tablero
 } from '../quotation-board-data'
 
 /**
  * Bloque reutilizable para mostrar una seccion de informacion.
- * Cada bloque tiene: etiqueta superior (eyebrow), titulo, texto descriptivo
+ * Cada bloque tiene: etiqueta superior (eyebrow), title, text descriptivo
  * y una lista de items. Se usa para los bloques 01, 02, 03 y 04 de la ficha.
  */
 function DetailBlock({
@@ -99,8 +99,8 @@ function DetailBlock({
 }
 
 /**
- * Componente principal de la ficha de detalle de una quotation.
- * Recibe el ID de la quotation y la configuracion de estados.
+ * Componente primary de la ficha de detalle de una quotation.
+ * Recibe el ID de la quotation y la configuracion de statuses.
  * Busca la tarjeta correspondiente en las columnas del tablero y muestra
  * toda su informacion organizada en bloques.
  */
@@ -113,7 +113,7 @@ export function QuotationDetailClient({
   initialStateConfigRows: WorkflowStateConfigRow[]
   initialIncomingQueries: IncomingQuery[]
 }) {
-  // Estado para las columnas personalizadas creadas por el usuario
+  // Status para las columnas personalizadas creadas por el user_label
   const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
 
   // Cargar las columnas personalizadas del navegador al montar el componente
@@ -123,7 +123,7 @@ export function QuotationDetailClient({
     setCustomLanes(loadStoredCustomQuotationLanes())
   }, [])
 
-  // Combinar columnas por defecto (con las consultas entrantes reales) con las personalizadas
+  // Combinar columnas por defecto (con las requests entrantes reales) con las personalizadas
   const lanes = useMemo(
     () => [
       ...defaultQuotationLanes(initialStateConfigRows, initialIncomingQueries),
@@ -152,7 +152,7 @@ export function QuotationDetailClient({
             </h1>
             <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-3)]">
               No hemos encontrado una quotation con ese identificador en la capa visual
-              actual. Cuando conectemos backend, esta página leerá el detalle real.
+              actual. Cuando conectemos backend, esta page leerá el detalle real.
             </p>
           </div>
         </section>
@@ -258,9 +258,9 @@ export function QuotationDetailClient({
           <DetailBlock
             eyebrow="Bloque 01"
             title="Resumen ejecutivo de la quotation"
-            body="Este bloque concentrará la visión completa de la oportunidad comercial: contexto, necesidad del cliente, tipo de modificación y mensaje ejecutivo."
+            body="Este bloque concentrará la visión completa de la oportunidad commercial: contexto, necesidad del client, type de modificación y mensaje ejecutivo."
             items={[
-              'Contexto comercial de entrada',
+              'Contexto commercial de entrada',
               'Objetivo y deliverable esperado',
               'Restricciones principales detectadas',
             ]}
@@ -268,21 +268,21 @@ export function QuotationDetailClient({
 
           <DetailBlock
             eyebrow="Bloque 02"
-            title="Alcance técnico y supuestos"
+            title="Alcance technical y supuestos"
             body="Aquí prepararemos el alcance confirmado, límites de responsabilidad, assumptions de certificación y cualquier dependencia externa."
             items={[
               'Scope breakdown por disciplina',
               'Assumptions técnicas y regulatorias',
-              'Inputs pendientes del cliente o de partners',
+              'Inputs pendientes del client o de partners',
             ]}
           />
 
           <DetailBlock
             eyebrow="Bloque 03"
-            title="Pricing, esfuerzo y estrategia comercial"
-            body="Este módulo servirá para fijar precio, esfuerzo interno, estructura de hitos y razonamiento económico antes del envío."
+            title="Pricing, esfuerzo y estrategia commercial"
+            body="Este módulo servirá para fijar precio, esfuerzo internal, estructura de hitos y razonamiento económico antes del send."
             items={[
-              'Modelo de pricing y margen objetivo',
+              'Model de pricing y margen objetivo',
               'Horas por disciplina y buffers',
               'Hitos de facturación y condiciones comerciales',
             ]}
@@ -295,11 +295,11 @@ export function QuotationDetailClient({
               Snapshot
             </p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">
-              Estado operativo actual
+              Status operativo actual
             </h2>
             <div className="mt-4 space-y-3">
               {[
-                { label: 'Estado', value: lane.title, icon: Layers3 },
+                { label: 'Status', value: lane.title, icon: Layers3 },
                 { label: 'Canal', value: card.channel, icon: NotebookTabs },
                 { label: 'Siguiente paso', value: card.nextStep, icon: Radar },
                 { label: 'Customer', value: card.customer, icon: Blocks },
@@ -325,11 +325,11 @@ export function QuotationDetailClient({
           <DetailBlock
             eyebrow="Bloque 04"
             title="Historial, coordinación y próximos pasos"
-            body="Dejamos preparado un espacio para timeline de actividad, comentarios internos, dependencias y tareas necesarias para avanzar."
+            body="Dejamos preparado un espacio para timeline de actividad, comments internos, dependencias y tareas necesarias para avanzar."
             items={[
               'Timeline de interacciones',
               'Coordinación con ingeniería y ventas',
-              'Checklist de cierre o envío',
+              'Checklist de closure o send',
             ]}
           />
         </div>

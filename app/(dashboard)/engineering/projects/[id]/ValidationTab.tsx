@@ -1,16 +1,16 @@
 'use client'
 
 /**
- * Tab "Validacion" del detalle de proyecto (Sprint 2).
+ * Tab "Validation" del detalle de project (Sprint 2).
  *
- * - Timeline de validaciones previas (GET /api/proyectos/[id]/validations).
- * - Formulario de decision cuando estado_v2 = 'en_validacion'.
- * - CTA "Enviar a validacion" cuando estado_v2 = 'listo_para_validacion'.
- * - CTA "Retomar ejecucion" cuando estado_v2 = 'devuelto_a_ejecucion'.
- * - En otros estados: read-only del timeline.
+ * - Timeline de validaciones previas (GET /api/projects/[id]/validations).
+ * - Form de decision cuando execution_status = 'in_validation'.
+ * - CTA "Send a validation" cuando execution_status = 'ready_for_validation'.
+ * - CTA "Retomar execution" cuando execution_status = 'returned_to_execution'.
+ * - En otros statuses: read-only del timeline.
  *
- * TODO(RLS): restringir quien puede decidir ("approve"/"return") segun rol
- * del usuario (DOH/DOS) - por ahora cualquier usuario autenticado puede.
+ * TODO(RLS): restringir quien puede decidir ("approve"/"return") segun role
+ * del user_label (DOH/DOS) - por ahora cualquier user_label autenticado puede.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -54,8 +54,8 @@ type ValidationWithEmail = ProjectValidation & {
 
 type ObservationDraft = {
   deliverable_id: string
-  texto: string
-  severidad: ObservationSeverity
+  text: string
+  severity: ObservationSeverity
 }
 
 function formatDateTime(iso: string): string {
@@ -84,20 +84,20 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
 
   // Form state
   const [role, setRole] = useState<ValidationRole>('doh')
-  const [comentarios, setComentarios] = useState('')
+  const [comments, setComentarios] = useState('')
   const [observations, setObservations] = useState<ObservationDraft[]>([])
 
-  const canDecide = currentState === PROJECT_EXECUTION_STATES.EN_VALIDACION
-  const canSend = currentState === PROJECT_EXECUTION_STATES.LISTO_PARA_VALIDACION
-  const canResume = currentState === PROJECT_EXECUTION_STATES.DEVUELTO_A_EJECUCION
+  const canDecide = currentState === PROJECT_EXECUTION_STATES.IN_VALIDATION
+  const canSend = currentState === PROJECT_EXECUTION_STATES.READY_FOR_VALIDATION
+  const canResume = currentState === PROJECT_EXECUTION_STATES.RETURNED_TO_EXECUTION
 
   const loadAll = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const [vRes, dRes] = await Promise.all([
-        fetch(`/api/proyectos/${proyectoId}/validations`, { method: 'GET' }),
-        fetch(`/api/proyectos/${proyectoId}/deliverables`, { method: 'GET' }),
+        fetch(`/api/projects/${proyectoId}/validations`, { method: 'GET' }),
+        fetch(`/api/projects/${proyectoId}/deliverables`, { method: 'GET' }),
       ])
       const vJson = (await vRes.json().catch(() => ({}))) as {
         validations?: ValidationWithEmail[]
@@ -123,13 +123,13 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
   }, [loadAll])
 
   const lastReturn = useMemo(() => {
-    return validations.find((v) => v.decision === 'devuelto') ?? null
+    return validations.find((v) => v.decision === 'returned') ?? null
   }, [validations])
 
   const addObservation = useCallback(() => {
     setObservations((prev) => [
       ...prev,
-      { deliverable_id: '', texto: '', severidad: 'info' },
+      { deliverable_id: '', text: '', severity: 'info' },
     ])
   }, [])
 
@@ -155,25 +155,25 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
     setSubmitting('send')
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/enviar-a-validacion`, {
+      const res = await fetch(`/api/projects/${proyectoId}/send-to-validation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       })
       const json = (await res.json().catch(() => ({}))) as {
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         error?: string
         blockers?: unknown
       }
       if (!res.ok) {
         throw new Error(json.error || `HTTP ${res.status}`)
       }
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       await loadAll()
     } catch (e) {
-      console.error('enviar-a-validacion error:', e)
-      setError(e instanceof Error ? e.message : 'No se pudo enviar a validacion.')
+      console.error('send-a-validation error:', e)
+      setError(e instanceof Error ? e.message : 'No se pudo send a validation.')
     } finally {
       setSubmitting(null)
     }
@@ -183,16 +183,16 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
     setSubmitting('resume')
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/retomar`, {
+      const res = await fetch(`/api/projects/${proyectoId}/resume`, {
         method: 'POST',
       })
       const json = (await res.json().catch(() => ({}))) as {
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         error?: string
       }
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       await loadAll()
     } catch (e) {
@@ -204,44 +204,44 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
   }, [proyectoId, loadAll, onStateChange])
 
   const handleDecide = useCallback(
-    async (decision: 'aprobado' | 'devuelto') => {
-      if (decision === 'devuelto' && observations.length === 0) {
-        setError('Para devolver a ejecucion necesitas al menos una observacion.')
+    async (decision: 'approved' | 'returned') => {
+      if (decision === 'returned' && observations.length === 0) {
+        setError('Para devolver a execution necesitas al menos una observation.')
         return
       }
 
-      setSubmitting(decision === 'aprobado' ? 'approve' : 'return')
+      setSubmitting(decision === 'approved' ? 'approve' : 'return')
       setError(null)
 
       const cleanObservations: ValidationObservation[] = []
       for (const o of observations) {
-        const texto = o.texto.trim()
-        if (!texto) continue
+        const text = o.text.trim()
+        if (!text) continue
         cleanObservations.push({
           deliverable_id: o.deliverable_id || undefined,
-          texto,
-          severidad: o.severidad,
+          text,
+          severity: o.severity,
         })
       }
 
       try {
-        const res = await fetch(`/api/proyectos/${proyectoId}/validar`, {
+        const res = await fetch(`/api/projects/${proyectoId}/validate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             decision,
             role,
-            comentarios: comentarios.trim() || undefined,
-            observaciones: cleanObservations,
+            comments: comments.trim() || undefined,
+            observations: cleanObservations,
           }),
         })
         const json = (await res.json().catch(() => ({}))) as {
-          proyecto?: { estado_v2?: string }
+          project?: { execution_status?: string }
           error?: string
         }
         if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
-        if (json.proyecto?.estado_v2 && onStateChange) {
-          onStateChange(json.proyecto.estado_v2)
+        if (json.project?.execution_status && onStateChange) {
+          onStateChange(json.project.execution_status)
         }
         clearForm()
         await loadAll()
@@ -252,7 +252,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
         setSubmitting(null)
       }
     },
-    [proyectoId, role, comentarios, observations, loadAll, clearForm, onStateChange],
+    [proyectoId, role, comments, observations, loadAll, clearForm, onStateChange],
   )
 
   return (
@@ -260,7 +260,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
       <header className="flex items-center gap-2">
         <ShieldCheck className="h-4 w-4 text-[color:var(--ink-3)]" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-          Validacion DOH/DOS
+          Validation DOH/DOS
         </h2>
       </header>
 
@@ -270,17 +270,17 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
         </div>
       )}
 
-      {/* CTA: Enviar a validacion */}
+      {/* CTA: Send a validation */}
       {canSend && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Listo para validacion
+                Ready for validation
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-2)]">
-                Todos los deliverables estan completos. Envia el proyecto a
-                DOH/DOS para que firmen la aprobacion.
+                Todos los deliverables estan completos. Envia el project a
+                DOH/DOS para que firmen la approval.
               </p>
             </div>
             <button
@@ -294,19 +294,19 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              Enviar a validacion
+              Send a validation
             </button>
           </div>
         </section>
       )}
 
-      {/* CTA: Retomar ejecucion + mostrar ultimo return */}
+      {/* CTA: Retomar execution + mostrar ultimo return */}
       {canResume && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Devuelto a ejecucion
+                Returned to execution
               </h3>
               {lastReturn ? (
                 <div className="mt-2 space-y-2 text-xs text-[color:var(--ink-2)]">
@@ -316,17 +316,17 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                     ({VALIDATION_ROLE_LABELS[lastReturn.role]}) el{' '}
                     {formatDateTime(lastReturn.created_at)}
                   </p>
-                  {lastReturn.comentarios && (
-                    <p className="italic">&quot;{lastReturn.comentarios}&quot;</p>
+                  {lastReturn.comments && (
+                    <p className="italic">&quot;{lastReturn.comments}&quot;</p>
                   )}
-                  {lastReturn.observaciones.length > 0 && (
+                  {lastReturn.observations.length > 0 && (
                     <ul className="list-disc space-y-0.5 pl-5">
-                      {lastReturn.observaciones.map((o, i) => (
+                      {lastReturn.observations.map((o, i) => (
                         <li key={i}>
                           <span className="font-mono text-[10px] uppercase">
-                            [{o.severidad ?? 'info'}]
+                            [{o.severity ?? 'info'}]
                           </span>{' '}
-                          {o.texto}
+                          {o.text}
                         </li>
                       ))}
                     </ul>
@@ -334,7 +334,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                 </div>
               ) : (
                 <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-                  Atiende las observaciones y retoma cuando esten resueltas.
+                  Atiende las observations y retoma cuando esten resueltas.
                 </p>
               )}
             </div>
@@ -349,13 +349,13 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
               ) : (
                 <RotateCcw className="h-4 w-4" />
               )}
-              Retomar ejecucion
+              Retomar execution
             </button>
           </div>
         </section>
       )}
 
-      {/* Formulario de decision */}
+      {/* Form de decision */}
       {canDecide && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <h3 className="text-sm font-semibold text-[color:var(--ink)]">
@@ -387,9 +387,9 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
             <label className="block text-xs font-medium text-[color:var(--ink-2)]">
               Comentarios
               <Textarea
-                value={comentarios}
+                value={comments}
                 onChange={(e) => setComentarios(e.target.value)}
-                placeholder="Resumen de la revision..."
+                placeholder="Resumen de la review..."
                 className="mt-1 bg-[color:var(--paper)]"
               />
             </label>
@@ -410,7 +410,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
               </div>
               {observations.length === 0 && (
                 <p className="mt-1 text-[11px] text-[color:var(--ink-3)]">
-                  Para devolver a ejecucion hace falta al menos una observacion.
+                  Para devolver a execution hace falta al menos una observation.
                 </p>
               )}
               <div className="mt-2 space-y-2">
@@ -426,19 +426,19 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                       }
                       className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] md:col-span-4"
                     >
-                      <option value="">(Proyecto completo)</option>
+                      <option value="">(Project completo)</option>
                       {deliverables.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.template_code ? `${d.template_code} — ` : ''}
-                          {d.titulo}
+                          {d.title}
                         </option>
                       ))}
                     </select>
                     <select
-                      value={o.severidad}
+                      value={o.severity}
                       onChange={(e) =>
                         updateObservation(idx, {
-                          severidad: e.target.value as ObservationSeverity,
+                          severity: e.target.value as ObservationSeverity,
                         })
                       }
                       className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] md:col-span-2"
@@ -453,11 +453,11 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                     </select>
                     <input
                       type="text"
-                      value={o.texto}
+                      value={o.text}
                       onChange={(e) =>
-                        updateObservation(idx, { texto: e.target.value })
+                        updateObservation(idx, { text: e.target.value })
                       }
-                      placeholder="Describe la observacion"
+                      placeholder="Describe la observation"
                       className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)] md:col-span-5"
                     />
                     <button
@@ -476,7 +476,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
             <div className="flex flex-wrap gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => handleDecide('aprobado')}
+                onClick={() => handleDecide('approved')}
                 disabled={submitting !== null}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
               >
@@ -489,7 +489,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
               </button>
               <button
                 type="button"
-                onClick={() => handleDecide('devuelto')}
+                onClick={() => handleDecide('returned')}
                 disabled={submitting !== null || observations.length === 0}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
               >
@@ -498,7 +498,7 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                 ) : (
                   <XCircle className="h-4 w-4" />
                 )}
-                Devolver a ejecucion
+                Devolver a execution
               </button>
             </div>
           </div>
@@ -517,15 +517,15 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
           </div>
         ) : validations.length === 0 ? (
           <p className="text-sm text-[color:var(--ink-3)]">
-            Aun no hay decisiones registradas para este proyecto.
+            Aun no hay decisiones registradas para este project.
           </p>
         ) : (
           <ol className="space-y-3">
             {validations.map((v) => {
               const badge =
-                v.decision === 'aprobado'
+                v.decision === 'approved'
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : v.decision === 'devuelto'
+                  : v.decision === 'returned'
                     ? 'bg-rose-50 text-rose-700 border-rose-200'
                     : 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]'
               return (
@@ -555,17 +555,17 @@ export function ValidationTab({ proyectoId, currentState, onStateChange }: Props
                     <ChevronRight className="mr-1 inline h-3 w-3" />
                     {v.validator_email ?? v.validator_user_id.slice(0, 8)}
                   </p>
-                  {v.comentarios && (
-                    <p className="mt-1 text-sm text-[color:var(--ink-2)]">{v.comentarios}</p>
+                  {v.comments && (
+                    <p className="mt-1 text-sm text-[color:var(--ink-2)]">{v.comments}</p>
                   )}
-                  {Array.isArray(v.observaciones) && v.observaciones.length > 0 && (
+                  {Array.isArray(v.observations) && v.observations.length > 0 && (
                     <ul className="mt-2 space-y-0.5 text-xs text-[color:var(--ink-3)]">
-                      {v.observaciones.map((o, i) => (
+                      {v.observations.map((o, i) => (
                         <li key={i}>
                           <span className="mr-1 font-mono text-[10px] uppercase text-[color:var(--ink-3)]">
-                            [{o.severidad ?? 'info'}]
+                            [{o.severity ?? 'info'}]
                           </span>
-                          {o.texto}
+                          {o.text}
                         </li>
                       ))}
                     </ul>

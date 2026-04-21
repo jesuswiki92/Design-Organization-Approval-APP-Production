@@ -4,35 +4,35 @@
  * ============================================================================
  *
  * Este es el componente mas complejo de la seccion de Quotations. Funciona
- * como un "centro de control" que ofrece multiples vistas y herramientas:
+ * como un "centro de control" que ofrece multiples vistas y tools:
  *
  * VISTAS DISPONIBLES:
- *   1. TABLERO (Board): columnas tipo Kanban con tarjetas de quotations
- *   2. LISTA: tabla con filas para cada estado y su tarjeta principal
- *   3. CONFIGURACION: editor para personalizar estados (nombres, colores, orden)
+ *   1. TABLERO (Board): columnas type Kanban con tarjetas de quotations
+ *   2. LISTA: table con filas para cada status y su tarjeta primary
+ *   3. CONFIGURACION: editor para personalizar statuses (nombres, colores, sort_order)
  *
  * QUE PERMITE AL USUARIO:
- *   - Ver todas las quotations organizadas por estado
- *   - Cambiar el estado de una consulta entrante (selector desplegable)
- *   - Archivar consultas (moverlas a estado "archivado")
- *   - Borrar consultas (eliminarlas del tablero)
+ *   - Ver todas las quotations organizadas por status
+ *   - Cambiar el status de una request entrante (selector desplegable)
+ *   - Archive requests (moverlas a status "archived")
+ *   - Borrar requests (eliminarlas del tablero)
  *   - Crear nuevas columnas personalizadas
- *   - Personalizar nombres, colores y orden de los estados
- *   - Guardar la configuracion de estados en Supabase
+ *   - Personalizar nombres, colores y sort_order de los statuses
+ *   - Guardar la configuracion de statuses en Supabase
  *
  * COMPONENTES INTERNOS:
- *   - IncomingQueryStateControl: selector para cambiar el estado de una consulta
- *   - IncomingQueryDeleteControl: boton para borrar una consulta
- *   - IncomingQueryArchiveControl: boton para archivar una consulta
- *   - IncomingClientIdentityBlock: muestra si el cliente es conocido o desconocido
+ *   - IncomingQueryStateControl: selector para cambiar el status de una request
+ *   - IncomingQueryDeleteControl: boton para borrar una request
+ *   - IncomingQueryArchiveControl: boton para archive una request
+ *   - IncomingClientIdentityBlock: muestra si el client es conocido o desconocido
  *   - BoardCard: tarjeta individual en la vista de tablero
  *   - BoardLane: columna completa del tablero (con sus tarjetas)
  *   - ListRow: fila de la vista lista
- *   - ScopeEditor: editor de configuracion de estados
- *   - QuotationStatesBoard: componente principal que orquesta todo
+ *   - ScopeEditor: editor de configuracion de statuses
+ *   - QuotationStatesBoard: componente primary que orquesta todo
  *
  * NOTA TECNICA: Las columnas personalizadas se guardan en localStorage
- * del navegador. La configuracion de estados se guarda en Supabase.
+ * del navegador. La configuracion de statuses se guarda en Supabase.
  * ============================================================================
  */
 
@@ -42,20 +42,20 @@
 
 // Navegacion entre paginas
 import Link from 'next/link'
-// Hook para refrescar datos de la pagina
+// Hook para refrescar data de la page
 import { useRouter } from 'next/navigation'
-// Hooks de React para manejar estados, efectos y optimizaciones
+// Hooks de React para manejar statuses, efectos y optimizaciones
 import {
   startTransition,   // Marca actualizaciones como no urgentes
   useEffect,         // Ejecutar codigo al montar/cambiar el componente
   useMemo,           // Memorizar calculos costosos
   useRef,            // Referencia a elementos del DOM
-  useState,          // Manejar estados del componente
-  type FormEvent,    // Tipo para eventos de formulario
+  useState,          // Manejar statuses del componente
+  type FormEvent,    // Tipo para eventos de form
 } from 'react'
 // Iconos decorativos para botones y acciones
 import {
-  Archive,           // Archivar
+  Archive,           // Archive
   LayoutGrid,        // Vista tablero
   List,              // Vista lista
   Plus,              // Anadir / ver detalle
@@ -69,7 +69,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-// Funciones para manejar la configuracion de estados del workflow
+// Funciones para manejar la configuracion de statuses del workflow
 import {
   getWorkflowStateColorOptions,         // Opciones de colores disponibles
   replaceWorkflowStateRowsForScope,     // Reemplazar filas de un scope
@@ -78,29 +78,29 @@ import {
 } from '@/lib/workflow-state-config'
 // Utilidad para combinar clases CSS
 import { cn } from '@/lib/utils'
-// Tipos de datos
+// Tipos de data
 import type {
-  WorkflowStateConfigRow,   // Fila de configuracion de estado
+  WorkflowStateConfigRow,   // Fila de configuracion de status
   WorkflowStateScope,       // Scope: "quotation_board" o "incoming_queries"
 } from '@/types/database'
-// Constantes de estados de consultas (ej: ARCHIVADO)
-import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
-// Selector de estado reutilizable (webhook n8n)
+// Constantes de statuses de requests (ej: ARCHIVED)
+import { INCOMING_REQUEST_STATUSES } from '@/lib/workflow-states'
+// Selector de status reutilizable (webhook n8n)
 import { QuotationStateSelector } from './QuotationStateSelector'
-// Funciones y tipos para consultas entrantes
+// Funciones y tipos para requests entrantes
 import {
   getQuotationBoardStateOptions,
   type IncomingQuery,
   type QuotationBoardStateOption,
 } from './incoming-queries'
-// Tipos y funciones para los datos del tablero
+// Tipos y funciones para los data del tablero
 import type { QuotationLane } from './quotation-board-data'
 import {
   canDeleteQuotationLane,               // Verifica si una columna se puede borrar
   defaultQuotationLanes,                // Genera columnas por defecto
   loadStoredCustomQuotationLanes,       // Carga columnas personalizadas del navegador
-  makeCustomQuotationLane,              // Crea una nueva columna personalizada
-  stripQuotationLaneAccent,             // Limpia datos de color para guardar
+  makeCustomQuotationLane,              // Crea una new columna personalizada
+  stripQuotationLaneAccent,             // Limpia data de color para guardar
   type QuotationCard,                   // Tipo de tarjeta
   QUOTATION_BOARD_STORAGE_KEY,          // Clave de localStorage
 } from './quotation-board-data'
@@ -110,13 +110,13 @@ import {
 /** Vista activa: "board" (tablero) o "list" (lista) */
 type BoardView = 'board' | 'list'
 
-/** Estado de guardado de la configuracion para cada scope */
+/** Status de guardado de la configuracion para cada scope */
 type ScopeSaveState = {
   status: 'idle' | 'saving' | 'success' | 'error'
   message: string | null
 }
 
-/** Opcion de estado para el selector del pipeline de cotizaciones */
+/** Opcion de status para el selector del pipeline de cotizaciones */
 type BoardStateOption = QuotationBoardStateOption
 
 const quotationPillBaseClass =
@@ -135,29 +135,29 @@ const VIEW_OPTIONS: Array<{
   { value: 'list', label: 'Lista', icon: List },
 ]
 
-/** Textos descriptivos para cada scope de configuracion de estados */
+/** Textos descriptivos para cada scope de configuracion de statuses */
 const SCOPE_COPY: Record<
   WorkflowStateScope,
   { title: string; description: string; helper: string }
 > = {
   quotation_board: {
     title: 'Board de quotations',
-    description: 'Configura columnas, color, etiquetas cortas y orden visual del tablero.',
-    helper: 'Estos estados controlan el board y la vista lista de Quotations.',
+    description: 'Configura columnas, color, etiquetas cortas y sort_order visual del tablero.',
+    helper: 'Estos statuses controlan el board y la vista lista de Quotations.',
   },
   incoming_queries: {
     title: 'Consultas entrantes',
-    description: 'Configura cómo se muestran los estados del flujo previo a quotation.',
+    description: 'Configura cómo se muestran los statuses del flujo previo a quotation.',
     helper: 'Los códigos técnicos siguen fijos en Supabase; aquí solo cambias presentación.',
   },
   project_board: {
-    title: 'Board de proyectos',
-    description: 'Configura columnas, color, etiquetas cortas y orden visual del tablero de proyectos.',
-    helper: 'Estos estados controlan el board y la vista lista de Proyectos.',
+    title: 'Board de projects',
+    description: 'Configura columnas, color, etiquetas cortas y sort_order visual del tablero de projects.',
+    helper: 'Estos statuses controlan el board y la vista lista de Projects.',
   },
 }
 
-/** Opciones de colores disponibles para configurar estados */
+/** Opciones de colores disponibles para configurar statuses */
 const COLOR_OPTIONS = getWorkflowStateColorOptions()
 
 /**
@@ -183,7 +183,7 @@ function normalizeEditableRows(
   }
 }
 
-/** Extrae solo los campos necesarios de una fila de configuracion de estado */
+/** Extrae solo los campos necesarios de una fila de configuracion de status */
 function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
   const {
     id,
@@ -217,9 +217,9 @@ function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
 }
 
 /**
- * Selector desplegable para cambiar el estado de una consulta entrante.
- * Cuando el usuario selecciona un nuevo estado, envia el cambio a la API
- * y refresca la pagina para mostrar los datos actualizados.
+ * Selector desplegable para cambiar el status de una request entrante.
+ * Cuando el user_label selecciona un new status, envia el cambio a la API
+ * y refresca la page para mostrar los data actualizados.
  */
 function IncomingQueryStateControl({
   card,
@@ -254,12 +254,12 @@ function IncomingQueryStateControl({
     setMessage(null)
 
     try {
-      const response = await fetch(`/api/consultas/${card.id}/state`, {
+      const response = await fetch(`/api/incoming-requests/${card.id}/state`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ estado: nextState }),
+        body: JSON.stringify({ status: nextState }),
       })
 
       const payload = (await response.json().catch(() => null)) as
@@ -267,7 +267,7 @@ function IncomingQueryStateControl({
         | null
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo actualizar el estado.')
+        throw new Error(payload?.error || 'No se pudo actualizar el status.')
       }
 
       setStatus('idle')
@@ -278,7 +278,7 @@ function IncomingQueryStateControl({
       setMessage(
         error instanceof Error
           ? error.message
-          : 'Se produjo un error actualizando el estado.',
+          : 'Se produjo un error actualizando el status.',
       )
     }
   }
@@ -286,7 +286,7 @@ function IncomingQueryStateControl({
   return (
     <div className="space-y-1">
       <label className="sr-only" htmlFor={`incoming-state-${card.id}`}>
-        Cambiar estado de la consulta
+        Cambiar status de la request
       </label>
       <select
         id={`incoming-state-${card.id}`}
@@ -302,7 +302,7 @@ function IncomingQueryStateControl({
         ))}
       </select>
       {status === 'saving' ? (
-        <p className="text-[11px] text-[color:var(--ink-3)]">Guardando estado...</p>
+        <p className="text-[11px] text-[color:var(--ink-3)]">Guardando status...</p>
       ) : null}
       {message ? <p className="text-[11px] text-[color:var(--err)]">{message}</p> : null}
     </div>
@@ -310,9 +310,9 @@ function IncomingQueryStateControl({
 }
 
 /**
- * Boton para borrar una consulta entrante del tablero.
- * Pide confirmacion al usuario antes de eliminar.
- * Llama a la API DELETE y refresca la pagina.
+ * Boton para borrar una request entrante del tablero.
+ * Pide confirmacion al user_label antes de eliminar.
+ * Llama a la API DELETE y refresca la page.
  */
 function IncomingQueryDeleteControl({
   card,
@@ -331,7 +331,7 @@ function IncomingQueryDeleteControl({
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `¿Seguro que quieres borrar la consulta "${card.title}"? Esta acción eliminará la card del tablero.`,
+      `¿Seguro que quieres borrar la request "${card.title}"? Esta acción eliminará la card del tablero.`,
     )
     if (!confirmed) return
 
@@ -339,7 +339,7 @@ function IncomingQueryDeleteControl({
     setMessage(null)
 
     try {
-      const response = await fetch(`/api/consultas/${card.id}`, {
+      const response = await fetch(`/api/incoming-requests/${card.id}`, {
         method: 'DELETE',
       })
 
@@ -348,7 +348,7 @@ function IncomingQueryDeleteControl({
         | null
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo borrar la consulta.')
+        throw new Error(payload?.error || 'No se pudo borrar la request.')
       }
 
       setStatus('idle')
@@ -358,7 +358,7 @@ function IncomingQueryDeleteControl({
       setMessage(
         error instanceof Error
           ? error.message
-          : 'Se produjo un error borrando la consulta.',
+          : 'Se produjo un error borrando la request.',
       )
     }
   }
@@ -373,13 +373,13 @@ function IncomingQueryDeleteControl({
           'inline-flex items-center gap-2 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--err)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-70',
           compact ? 'h-9 px-3' : 'h-10 px-3',
         )}
-        aria-label={`Borrar consulta ${card.title}`}
+        aria-label={`Borrar request ${card.title}`}
         title="Borrar card"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
       {status === 'deleting' ? (
-        <p className="text-[11px] text-[color:var(--ink-3)]">Borrando consulta...</p>
+        <p className="text-[11px] text-[color:var(--ink-3)]">Borrando request...</p>
       ) : null}
       {message ? <p className="text-[11px] text-[color:var(--err)]">{message}</p> : null}
     </div>
@@ -387,9 +387,9 @@ function IncomingQueryDeleteControl({
 }
 
 /**
- * Boton para archivar una consulta entrante.
- * Archivar significa cambiar su estado a "archivado" en la base de datos.
- * La consulta desaparece del tablero pero sigue guardada en Supabase.
+ * Boton para archive una request entrante.
+ * Archive significa cambiar su status a "archived" en la base de data.
+ * La request desaparece del tablero pero sigue guardada en Supabase.
  */
 function IncomingQueryArchiveControl({
   card,
@@ -402,13 +402,13 @@ function IncomingQueryArchiveControl({
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
-  if (card.kind !== 'incoming_query' || card.stateCode === CONSULTA_ESTADOS.ARCHIVADO) {
+  if (card.kind !== 'incoming_query' || card.stateCode === INCOMING_REQUEST_STATUSES.ARCHIVED) {
     return null
   }
 
   async function handleArchive() {
     const confirmed = window.confirm(
-      `¿Archivar la consulta "${card.title}"? Desaparecerá de Quotations pero seguirá guardada en Supabase.`,
+      `¿Archive la request "${card.title}"? Desaparecerá de Quotations pero seguirá guardada en Supabase.`,
     )
     if (!confirmed) return
 
@@ -416,12 +416,12 @@ function IncomingQueryArchiveControl({
     setMessage(null)
 
     try {
-      const response = await fetch(`/api/consultas/${card.id}/state`, {
+      const response = await fetch(`/api/incoming-requests/${card.id}/state`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ estado: CONSULTA_ESTADOS.ARCHIVADO }),
+        body: JSON.stringify({ status: INCOMING_REQUEST_STATUSES.ARCHIVED }),
       })
 
       const payload = (await response.json().catch(() => null)) as
@@ -429,7 +429,7 @@ function IncomingQueryArchiveControl({
         | null
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo archivar la consulta.')
+        throw new Error(payload?.error || 'No se pudo archive la request.')
       }
 
       setStatus('idle')
@@ -439,7 +439,7 @@ function IncomingQueryArchiveControl({
       setMessage(
         error instanceof Error
           ? error.message
-          : 'Se produjo un error archivando la consulta.',
+          : 'Se produjo un error archivando la request.',
       )
     }
   }
@@ -454,14 +454,14 @@ function IncomingQueryArchiveControl({
           'inline-flex items-center gap-2 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-70',
           compact ? 'h-9 px-3' : 'h-10 px-3',
         )}
-        aria-label={`Archivar consulta ${card.title}`}
-        title="Archivar card"
+        aria-label={`Archive request ${card.title}`}
+        title="Archive card"
       >
         <Archive className="h-3.5 w-3.5" />
-        {!compact ? 'Archivar' : null}
+        {!compact ? 'Archive' : null}
       </button>
       {status === 'saving' ? (
-        <p className="text-[11px] text-[color:var(--ink-3)]">Archivando consulta...</p>
+        <p className="text-[11px] text-[color:var(--ink-3)]">Archivando request...</p>
       ) : null}
       {message ? <p className="text-[11px] text-[color:var(--err)]">{message}</p> : null}
     </div>
@@ -469,9 +469,9 @@ function IncomingQueryArchiveControl({
 }
 
 /**
- * Bloque que muestra la identidad del cliente en la tarjeta.
- * Si el cliente es conocido: muestra empresa, nombre y email en verde.
- * Si el cliente es desconocido: muestra una etiqueta de alerta en amarillo.
+ * Bloque que muestra la identidad del client en la tarjeta.
+ * Si el client es conocido: muestra empresa, name y email en verde.
+ * Si el client es desconocido: muestra una etiqueta de alerta en amarillo.
  */
 function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
   if (card.kind !== 'incoming_query' || !card.clientIdentity) {
@@ -482,7 +482,7 @@ function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
     return (
       <div className="mt-3 rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-3 py-2.5">
         <p className={cn(quotationPillBaseClass, 'border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[color:var(--ok)]')}>
-          Cliente conocido
+          Client conocido
         </p>
         <p className="mt-1 text-sm font-semibold text-[color:var(--ink)]">
           {card.clientIdentity.companyName}
@@ -506,8 +506,8 @@ function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
 
 /**
  * Tarjeta individual de una quotation en la vista de tablero (Board).
- * Muestra: codigo, titulo, nota, identidad del cliente, fecha de entrega,
- * selector de estado, enlace al detalle y boton de borrar.
+ * Muestra: codigo, title, nota, identidad del client, date de delivery,
+ * selector de status, enlace al detalle y boton de borrar.
  */
 function BoardCard({
   card,
@@ -537,7 +537,7 @@ function BoardCard({
         <QuotationStateSelector
           consultaId={card.id}
           consultaCodigo={card.code}
-          currentEstado={card.stateCode ?? 'entrada_recibida'}
+          currentEstado={card.stateCode ?? 'request_received'}
         />
         <div className="flex items-center justify-between gap-2">
           <Link
@@ -556,8 +556,8 @@ function BoardCard({
 
 /**
  * Columna completa del tablero (vista Board).
- * Muestra la cabecera con nombre del estado, color, contador de tarjetas,
- * y debajo todas las tarjetas que pertenecen a ese estado.
+ * Muestra la cabecera con name del status, color, contador de tarjetas,
+ * y debajo todas las tarjetas que pertenecen a ese status.
  * Si la columna es personalizada, muestra boton para borrarla.
  */
 function BoardLane({
@@ -608,8 +608,8 @@ function BoardLane({
 
 /**
  * Fila de la vista Lista.
- * Muestra una fila por cada estado/columna del tablero, con la tarjeta
- * principal (la primera) y sus controles de estado, archivar y borrar.
+ * Muestra una fila por cada status/columna del tablero, con la tarjeta
+ * primary (la primera) y sus controles de status, archive y borrar.
  */
 function ListRow({
   lane,
@@ -688,7 +688,7 @@ function ListRow({
             <QuotationStateSelector
               consultaId={leadCard.id}
               consultaCodigo={leadCard.code}
-              currentEstado={leadCard.stateCode ?? 'entrada_recibida'}
+              currentEstado={leadCard.stateCode ?? 'request_received'}
             />
           ) : null}
           {leadCard ? <IncomingQueryArchiveControl card={leadCard} compact /> : null}
@@ -715,9 +715,9 @@ function ListRow({
 }
 
 /**
- * Editor de configuracion de estados para un scope especifico.
- * Permite modificar: nombre visible, etiqueta corta, color, descripcion
- * y orden visual de cada estado. Los cambios se guardan en Supabase
+ * Editor de configuracion de statuses para un scope especifico.
+ * Permite modificar: name visible, etiqueta corta, color, description
+ * y sort_order visual de cada status. Los cambios se guardan en Supabase
  * al pulsar "Guardar" o se revierten con "Restaurar".
  */
 function ScopeEditor({
@@ -782,7 +782,7 @@ function ScopeEditor({
                   {row.state_code}
                 </span>
                 <span className={cn(quotationPillBaseClass, 'border-emerald-300 bg-emerald-50 text-[color:var(--ok)]')}>
-                  ID técnico fijo
+                  ID technical fijo
                 </span>
               </div>
 
@@ -804,14 +804,14 @@ function ScopeEditor({
             <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="doa-label-mono">Nombre visible</span>
+                  <span className="doa-label-mono">Name visible</span>
                   <input
                     value={row.label}
                     onChange={(event) =>
                       onChangeRow(scope, row.state_code, { label: event.target.value })
                     }
                     className="h-11 w-full rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-4 text-sm text-[color:var(--ink)] outline-none transition-colors placeholder:text-[color:var(--ink-4)] focus:border-[color:var(--umber)] focus:ring-2 focus:ring-[color:var(--umber)]/20"
-                    placeholder="Nombre visible del estado"
+                    placeholder="Name visible del status"
                   />
                 </label>
 
@@ -825,7 +825,7 @@ function ScopeEditor({
                       })
                     }
                     className="h-11 w-full rounded-xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-4 text-sm text-[color:var(--ink)] outline-none transition-colors placeholder:text-[color:var(--ink-4)] focus:border-[color:var(--umber)] focus:ring-2 focus:ring-[color:var(--umber)]/20"
-                    placeholder="Versión corta del estado"
+                    placeholder="Versión corta del status"
                   />
                 </label>
               </div>
@@ -865,7 +865,7 @@ function ScopeEditor({
             </div>
 
             <label className="mt-4 block space-y-2">
-              <span className="doa-label-mono">Descripción</span>
+              <span className="doa-label-mono">Description</span>
               <Textarea
                 value={row.description ?? ''}
                 onChange={(event) =>
@@ -874,7 +874,7 @@ function ScopeEditor({
                   })
                 }
                 className="min-h-[96px] rounded-xl border-[color:var(--line)] bg-[color:var(--paper-2)] px-4 py-3 text-sm leading-6 text-[color:var(--ink)]"
-                placeholder="Explica el significado operativo del estado"
+                placeholder="Explica el significado operativo del status"
               />
             </label>
           </article>
@@ -903,17 +903,17 @@ function ScopeEditor({
  * ============================================================================
  *
  * Este es el componente que orquesta todo: las vistas (tablero/lista),
- * la configuracion de estados, la creacion de columnas personalizadas,
+ * la configuracion de statuses, la creacion de columnas personalizadas,
  * y la conexion con la API para guardar cambios.
  *
  * ESTADOS INTERNOS:
- *   - stateConfigRows: configuracion actual de estados (del servidor)
+ *   - stateConfigRows: configuracion actual de statuses (del servidor)
  *   - draftConfigRows: copia de trabajo para editar en el panel de configuracion
- *   - customLanes: columnas personalizadas creadas por el usuario (localStorage)
+ *   - customLanes: columnas personalizadas creadas por el user_label (localStorage)
  *   - view: vista activa ("board" o "list")
- *   - composerOpen: si el formulario para crear nuevas columnas esta abierto
- *   - settingsOpen: si el panel de configuracion de estados esta abierto
- *   - saveState: estado de guardado para cada scope (idle/saving/success/error)
+ *   - composerOpen: si el form para crear nuevas columnas esta open
+ *   - settingsOpen: si el panel de configuracion de statuses esta open
+ *   - saveState: status de guardado para cada scope (idle/saving/success/error)
  * ============================================================================
  */
 export function QuotationStatesBoard({
@@ -931,7 +931,7 @@ export function QuotationStatesBoard({
 
   // --- ESTADOS DEL COMPONENTE ---
 
-  // Configuracion actual de estados (fuente de verdad para el tablero)
+  // Configuracion actual de statuses (fuente de verdad para el tablero)
   const [stateConfigRows, setStateConfigRows] = useState<WorkflowStateConfigRow[]>([
     ...initialEditableRows.quotation_board,
     ...initialEditableRows.incoming_queries,
@@ -939,17 +939,17 @@ export function QuotationStatesBoard({
   ])
   // Copia de trabajo para el editor de configuracion (se modifica sin guardar)
   const [draftConfigRows, setDraftConfigRows] = useState(initialEditableRows)
-  // Columnas personalizadas creadas por el usuario (se guardan en localStorage)
+  // Columnas personalizadas creadas por el user_label (se guardan en localStorage)
   const [customLanes, setCustomLanes] = useState<QuotationLane[]>([])
-  // Vista activa: "board" (tablero tipo kanban) o "list" (tabla)
+  // Vista activa: "board" (tablero type kanban) o "list" (table)
   const [view, setView] = useState<BoardView>('board')
-  // Si el formulario para crear nuevas columnas esta abierto
+  // Si el form para crear nuevas columnas esta open
   const [composerOpen, setComposerOpen] = useState(false)
-  // Si el panel de configuracion de estados esta abierto
+  // Si el panel de configuracion de statuses esta open
   const [settingsOpen, setSettingsOpen] = useState(false)
-  // Titulo de la nueva columna que se esta creando
+  // Titulo de la new columna que se esta creando
   const [draftTitle, setDraftTitle] = useState('')
-  // Estado de guardado para cada scope de configuracion
+  // Status de guardado para cada scope de configuracion
   const [saveState, setSaveState] = useState<Record<WorkflowStateScope, ScopeSaveState>>({
     quotation_board: { status: 'idle', message: null },
     incoming_queries: { status: 'idle', message: null },
@@ -957,10 +957,10 @@ export function QuotationStatesBoard({
   })
   // Referencia para saber si el componente ya se monto (evitar guardar en el primer render)
   const hasMountedRef = useRef(false)
-  // Referencia al campo de texto de nueva columna (para darle foco automatico)
+  // Referencia al campo de text de new columna (para darle foco automatico)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // --- EFECTOS (codigo que se ejecuta al montar o cambiar datos) ---
+  // --- EFECTOS (codigo que se ejecuta al montar o cambiar data) ---
 
   // Al montar el componente: cargar columnas personalizadas del localStorage
   useEffect(() => {
@@ -982,7 +982,7 @@ export function QuotationStatesBoard({
     }
   }, [customLanes])
 
-  // Cuando se abre el formulario de nueva columna: dar foco al campo de texto
+  // Cuando se abre el form de new columna: dar foco al campo de text
   useEffect(() => {
     if (composerOpen) {
       inputRef.current?.focus()
@@ -996,7 +996,7 @@ export function QuotationStatesBoard({
     () => [...defaultQuotationLanes(stateConfigRows, initialIncomingQueries), ...customLanes],
     [customLanes, initialIncomingQueries, stateConfigRows],
   )
-  // Opciones del selector de estado para consultas entrantes
+  // Opciones del selector de status para requests entrantes
   const incomingStateOptions = useMemo(
     () => getQuotationBoardStateOptions(stateConfigRows),
     [stateConfigRows],
@@ -1009,7 +1009,7 @@ export function QuotationStatesBoard({
 
   // --- FUNCIONES DE ACCION ---
 
-  /** Crear una nueva columna personalizada a partir del titulo introducido */
+  /** Crear una new columna personalizada a partir del title introducido */
   function handleAddLane(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -1111,7 +1111,7 @@ export function QuotationStatesBoard({
 
       if (!response.ok || !payload?.rows) {
         throw new Error(
-          payload?.error || 'No se pudo guardar la configuración de estados.',
+          payload?.error || 'No se pudo guardar la configuración de statuses.',
         )
       }
 
@@ -1139,7 +1139,7 @@ export function QuotationStatesBoard({
           message:
             error instanceof Error
               ? error.message
-              : 'Se produjo un error inesperado al guardar los estados.',
+              : 'Se produjo un error inesperado al guardar los statuses.',
         },
       }))
     }
@@ -1165,7 +1165,7 @@ export function QuotationStatesBoard({
                 </h2>
                 <p className="max-w-3xl text-sm leading-6 text-[color:var(--ink-2)]">
                   El board sigue usando códigos técnicos estables y ahora separa esa
-                  identidad de los nombres visibles, colores y orden que puedes ajustar
+                  identidad de los nombres visibles, colores y sort_order que puedes ajustar
                   desde la propia app.
                 </p>
               </div>
@@ -1191,7 +1191,7 @@ export function QuotationStatesBoard({
                 onClick={() => setSettingsOpen((current) => !current)}
               >
                 <Settings2 className="mr-2 h-4 w-4" />
-                {settingsOpen ? 'Cerrar configuración' : 'Configurar estados'}
+                {settingsOpen ? 'Close configuración' : 'Configurar statuses'}
               </Button>
               <Button
                 type="button"
@@ -1200,7 +1200,7 @@ export function QuotationStatesBoard({
                 onClick={() => setComposerOpen((current) => !current)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {composerOpen ? 'Cerrar editor local' : 'Nuevo estado local'}
+                {composerOpen ? 'Close editor local' : 'New status local'}
               </Button>
             </div>
           </div>
@@ -1230,11 +1230,11 @@ export function QuotationStatesBoard({
           <div className="border-b border-[color:var(--line)] bg-transparent px-0 py-5">
             <div className="mb-4 rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] px-4 py-4 text-sm text-[color:var(--ink-2)]">
               <p className="font-semibold text-[color:var(--ink)]">
-                Editor pro de estados
+                Editor pro de statuses
               </p>
               <p className="mt-1 leading-6">
-                Puedes cambiar nombre visible, etiqueta corta, color y orden desde la app.
-                El código técnico del estado queda bloqueado para no romper filtros,
+                Puedes cambiar name visible, etiqueta corta, color y sort_order desde la app.
+                El código technical del status queda blocked para no romper filtros,
                 transiciones ni integraciones con Supabase.
               </p>
             </div>

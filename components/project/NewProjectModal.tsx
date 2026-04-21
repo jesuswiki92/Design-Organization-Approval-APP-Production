@@ -2,18 +2,18 @@
 
 /**
  * ============================================================================
- * MODAL "CREAR PROYECTO NUEVO"
+ * MODAL "CREAR PROYECTO NEW"
  * ============================================================================
  *
- * Formulario para creacion MANUAL de proyectos (sin consulta origen).
- * Llama a POST /api/proyectos/crear-manual que a su vez:
- *   - calcula numero_proyecto,
+ * Form para creacion MANUAL de projects (sin request origen).
+ * Llama a POST /api/projects/create-manual que a su vez:
+ *   - calcula project_number,
  *   - crea carpetas,
- *   - inserta fila en doa_proyectos,
- *   - genera un .docx por cada plantilla G12-xx seleccionada.
+ *   - inserta fila en doa_projects,
+ *   - genera un .docx por cada template G12-xx seleccionada.
  *
  * Se renderiza como un overlay nativo (no usamos una libreria de Dialog
- * porque el proyecto no tiene shadcn/dialog instalado — ver components/ui).
+ * porque el project no tiene shadcn/dialog instalado — ver components/ui).
  * ============================================================================
  */
 
@@ -28,12 +28,12 @@ import {
   type ComplianceTemplate,
 } from '@/lib/compliance-templates'
 
-type ClienteOption = { id: string; nombre: string }
+type ClienteOption = { id: string; name: string }
 type ModeloOption = {
   id: string
-  fabricante: string
-  familia: string
-  modelo: string
+  manufacturer: string
+  family: string
+  model: string
   tcds_code: string
   tcds_code_short: string
   tcds_issue: string
@@ -49,11 +49,11 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
   const router = useRouter()
 
   // --- Form state ---
-  const [titulo, setTitulo] = useState('')
-  const [descripcion, setDescripcion] = useState('')
+  const [title, setTitulo] = useState('')
+  const [description, setDescripcion] = useState('')
   const [clienteId, setClienteId] = useState('')
-  const [fabricante, setFabricante] = useState('')
-  const [modelo, setModelo] = useState('')
+  const [manufacturer, setFabricante] = useState('')
+  const [model, setModelo] = useState('')
   const [msn, setMsn] = useState('')
   const [tcdsCode, setTcdsCode] = useState('')
   const [tcdsCodeShort, setTcdsCodeShort] = useState('')
@@ -61,13 +61,13 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
   const [checker, setChecker] = useState('')
   const [approval, setApproval] = useState('')
   const [fechaEntrega, setFechaEntrega] = useState('')
-  const [prioridad, setPrioridad] = useState<'alta' | 'media' | 'baja' | ''>('')
+  const [priority, setPrioridad] = useState<'high' | 'medium' | 'low' | ''>('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   // --- Data sources ---
-  const [clientes, setClientes] = useState<ClienteOption[]>([])
-  const [fabricantes, setFabricantes] = useState<string[]>([])
-  const [modelos, setModelos] = useState<ModeloOption[]>([])
+  const [clients, setClientes] = useState<ClienteOption[]>([])
+  const [manufacturers, setFabricantes] = useState<string[]>([])
+  const [models, setModelos] = useState<ModeloOption[]>([])
 
   // --- UI state ---
   const [loadingClientes, setLoadingClientes] = useState(false)
@@ -75,56 +75,56 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Cargar clientes y fabricantes al abrir
+  // Cargar clients y manufacturers al abrir
   useEffect(() => {
     if (!open) return
     let cancelled = false
     setLoadingClientes(true)
-    void fetch('/api/clientes')
+    void fetch('/api/clients')
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return
-        setClientes(Array.isArray(data.clientes) ? data.clientes : [])
+        setClientes(Array.isArray(data.clients) ? data.clients : [])
       })
-      .catch((err) => console.error('[NewProjectModal] clientes:', err))
+      .catch((err) => console.error('[NewProjectModal] clients:', err))
       .finally(() => !cancelled && setLoadingClientes(false))
 
-    void fetch('/api/aeronaves/fabricantes')
+    void fetch('/api/aircraft/manufacturers')
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return
-        setFabricantes(Array.isArray(data.fabricantes) ? data.fabricantes : [])
+        setFabricantes(Array.isArray(data.manufacturers) ? data.manufacturers : [])
       })
-      .catch((err) => console.error('[NewProjectModal] fabricantes:', err))
+      .catch((err) => console.error('[NewProjectModal] manufacturers:', err))
 
     return () => {
       cancelled = true
     }
   }, [open])
 
-  // Cargar modelos al cambiar fabricante
+  // Cargar models al cambiar manufacturer
   useEffect(() => {
-    if (!fabricante) {
+    if (!manufacturer) {
       setModelos([])
       setModelo('')
       return
     }
     let cancelled = false
     setLoadingModelos(true)
-    void fetch(`/api/aeronaves/modelos?fabricante=${encodeURIComponent(fabricante)}`)
+    void fetch(`/api/aircraft/models?manufacturer=${encodeURIComponent(manufacturer)}`)
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return
-        setModelos(Array.isArray(data.modelos) ? data.modelos : [])
+        setModelos(Array.isArray(data.models) ? data.models : [])
       })
-      .catch((err) => console.error('[NewProjectModal] modelos:', err))
+      .catch((err) => console.error('[NewProjectModal] models:', err))
       .finally(() => !cancelled && setLoadingModelos(false))
     return () => {
       cancelled = true
     }
-  }, [fabricante])
+  }, [manufacturer])
 
-  // Reset al cerrar
+  // Reset al close
   useEffect(() => {
     if (open) return
     setTitulo('')
@@ -153,7 +153,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
     return map
   }, [])
 
-  const clienteSeleccionado = clientes.find((c) => c.id === clienteId) ?? null
+  const clienteSeleccionado = clients.find((c) => c.id === clienteId) ?? null
 
   function toggleTemplate(code: string) {
     setSelected((prev) => {
@@ -181,32 +181,32 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
     e.preventDefault()
     setErrorMsg(null)
 
-    if (!titulo.trim()) {
-      setErrorMsg('El titulo es obligatorio.')
+    if (!title.trim()) {
+      setErrorMsg('El title es obligatorio.')
       return
     }
 
     setSubmitting(true)
     try {
       const payload = {
-        titulo: titulo.trim(),
-        descripcion: descripcion.trim() || null,
-        cliente_id: clienteId || null,
-        cliente_nombre: clienteSeleccionado?.nombre ?? null,
-        fabricante: fabricante || null,
-        modelo: modelo || null,
+        title: title.trim(),
+        description: description.trim() || null,
+        client_id: clienteId || null,
+        client_name: clienteSeleccionado?.name ?? null,
+        manufacturer: manufacturer || null,
+        model: model || null,
         msn: msn.trim() || null,
         tcds_code: tcdsCode.trim() || null,
         tcds_code_short: tcdsCodeShort.trim() || null,
         owner: owner.trim() || null,
         checker: checker.trim() || null,
         approval: approval.trim() || null,
-        fecha_entrega_estimada: fechaEntrega || null,
-        prioridad: prioridad || null,
+        estimated_delivery_date: fechaEntrega || null,
+        priority: priority || null,
         plantilla_codes: Array.from(selected),
       }
 
-      const res = await fetch('/api/proyectos/crear-manual', {
+      const res = await fetch('/api/projects/create-manual', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
@@ -218,7 +218,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
         setErrorMsg(
           typeof data?.error === 'string'
             ? data.error
-            : `Error ${res.status} creando el proyecto.`,
+            : `Error ${res.status} creando el project.`,
         )
         setSubmitting(false)
         return
@@ -251,9 +251,9 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
-            <h2 className="text-lg font-semibold text-slate-950">Crear proyecto nuevo</h2>
+            <h2 className="text-lg font-semibold text-slate-950">Crear project new</h2>
             <p className="text-xs text-slate-500">
-              Alta manual. Se generaran automaticamente las plantillas compliance
+              Alta manual. Se generaran automaticamente las templates compliance
               seleccionadas.
             </p>
           </div>
@@ -261,7 +261,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
             type="button"
             onClick={() => !submitting && onOpenChange(false)}
             className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-            aria-label="Cerrar"
+            aria-label="Close"
           >
             <X size={18} />
           </button>
@@ -279,14 +279,14 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
             </div>
           )}
 
-          {/* Titulo / descripcion */}
+          {/* Titulo / description */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-600">
               Titulo <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              value={titulo}
+              value={title}
               onChange={(e) => setTitulo(e.target.value)}
               required
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
@@ -294,18 +294,18 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Descripcion</label>
+            <label className="text-xs font-medium text-slate-600">Description</label>
             <textarea
-              value={descripcion}
+              value={description}
               onChange={(e) => setDescripcion(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
             />
           </div>
 
-          {/* Cliente */}
+          {/* Client */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-600">Cliente</label>
+            <label className="text-xs font-medium text-slate-600">Client</label>
             <select
               value={clienteId}
               onChange={(e) => setClienteId(e.target.value)}
@@ -313,27 +313,27 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
               disabled={loadingClientes}
             >
               <option value="">
-                {loadingClientes ? 'Cargando clientes…' : 'Seleccionar cliente...'}
+                {loadingClientes ? 'Cargando clients…' : 'Seleccionar client...'}
               </option>
-              {clientes.map((c) => (
+              {clients.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nombre}
+                  {c.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Fabricante / Modelo */}
+          {/* Manufacturer / Model */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Fabricante</label>
+              <label className="text-xs font-medium text-slate-600">Manufacturer</label>
               <select
-                value={fabricante}
+                value={manufacturer}
                 onChange={(e) => setFabricante(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               >
-                <option value="">Seleccionar fabricante...</option>
-                {fabricantes.map((f) => (
+                <option value="">Seleccionar manufacturer...</option>
+                {manufacturers.map((f) => (
                   <option key={f} value={f}>
                     {f}
                   </option>
@@ -341,30 +341,30 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">Modelo</label>
+              <label className="text-xs font-medium text-slate-600">Model</label>
               <select
-                value={modelo}
+                value={model}
                 onChange={(e) => {
                   const nextModelo = e.target.value
                   setModelo(nextModelo)
-                  // Auto-rellenar TCDS desde la fila del catalogo doa_aeronaves.
-                  const match = modelos.find((m) => m.modelo === nextModelo)
+                  // Auto-rellenar TCDS desde la fila del catalogo doa_aircraft.
+                  const match = models.find((m) => m.model === nextModelo)
                   setTcdsCode(match?.tcds_code ?? '')
                   setTcdsCodeShort(match?.tcds_code_short ?? '')
                 }}
-                disabled={!fabricante || loadingModelos}
+                disabled={!manufacturer || loadingModelos}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none disabled:bg-slate-50 disabled:text-slate-400"
               >
                 <option value="">
-                  {!fabricante
-                    ? 'Elige fabricante primero'
+                  {!manufacturer
+                    ? 'Elige manufacturer primero'
                     : loadingModelos
                       ? 'Cargando…'
-                      : 'Seleccionar modelo...'}
+                      : 'Seleccionar model...'}
                 </option>
-                {modelos.map((m) => (
-                  <option key={m.id} value={m.modelo}>
-                    {m.modelo}
+                {models.map((m) => (
+                  <option key={m.id} value={m.model}>
+                    {m.model}
                   </option>
                 ))}
               </select>
@@ -387,7 +387,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">
                 TCDS code
-                {modelo ? (
+                {model ? (
                   <span className="ml-2 text-[10px] font-normal uppercase tracking-wider text-emerald-600">
                     auto
                   </span>
@@ -397,14 +397,14 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
                 type="text"
                 value={tcdsCode}
                 onChange={(e) => setTcdsCode(e.target.value)}
-                placeholder="Se rellena al elegir modelo"
+                placeholder="Se rellena al elegir model"
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">
                 TCDS short
-                {modelo ? (
+                {model ? (
                   <span className="ml-2 text-[10px] font-normal uppercase tracking-wider text-emerald-600">
                     auto
                   </span>
@@ -414,7 +414,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
                 type="text"
                 value={tcdsCodeShort}
                 onChange={(e) => setTcdsCodeShort(e.target.value)}
-                placeholder="Se rellena al elegir modelo"
+                placeholder="Se rellena al elegir model"
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               />
             </div>
@@ -451,11 +451,11 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
             </div>
           </div>
 
-          {/* Fecha / prioridad */}
+          {/* Date / priority */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">
-                Fecha entrega estimada
+                Date delivery estimada
               </label>
               <input
                 type="date"
@@ -467,16 +467,16 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">Prioridad</label>
               <select
-                value={prioridad}
+                value={priority}
                 onChange={(e) =>
-                  setPrioridad(e.target.value as 'alta' | 'media' | 'baja' | '')
+                  setPrioridad(e.target.value as 'high' | 'medium' | 'low' | '')
                 }
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               >
                 <option value="">Sin definir</option>
-                <option value="alta">Alta</option>
-                <option value="media">Media</option>
-                <option value="baja">Baja</option>
+                <option value="high">Alta</option>
+                <option value="medium">Media</option>
+                <option value="low">Baja</option>
               </select>
             </div>
           </div>
@@ -488,8 +488,8 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
                 Plantillas compliance
               </h3>
               <p className="text-xs text-slate-500">
-                Las plantillas seleccionadas se generaran como .docx en la carpeta
-                &quot;01. Compliance documents&quot; del proyecto.
+                Las templates seleccionadas se generaran como .docx en la folder
+                &quot;01. Compliance documents&quot; del project.
               </p>
             </div>
             {CATEGORY_ORDER.map((cat) => {
@@ -555,7 +555,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
             className="inline-flex items-center gap-2 rounded-lg bg-[linear-gradient(135deg,#2563EB,#38BDF8)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:opacity-60"
           >
             {submitting && <Loader2 size={14} className="animate-spin" />}
-            {submitting ? 'Creando…' : 'Crear proyecto'}
+            {submitting ? 'Creando…' : 'Crear project'}
           </button>
         </div>
       </div>

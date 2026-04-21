@@ -5,13 +5,13 @@
  * COMPONENTE CLIENTE: TCDS RAG ENGINE DASHBOARD
  * ============================================================================
  *
- * Dashboard interactivo para gestionar el motor RAG de TCDS.
+ * Dashboard interactivo para gestionar el engine RAG de TCDS.
  * Conectado al backend FastAPI en localhost:3002 via lib/rag-api.ts.
  *
  * PESTANAS:
- *   1. Dashboard — estadisticas reales, stack tecnologico y estado operativo
+ *   1. Dashboard — estadisticas reales, stack tecnologico y status operativo
  *   2. Ingest — carga de PDFs, analisis, procesamiento y guardado
- *   3. Documents — listado de documentos, visor de chunks y busqueda
+ *   3. Documents — listado de documents, visor de chunks y search
  *
  * UBICACION ANTERIOR: app/(dashboard)/settings/tcds-rag/TcdsRagClient.tsx
  * Se movio a /tools porque TCDS RAG es una herramienta operativa, no un ajuste.
@@ -74,7 +74,7 @@ import {
 /** Identificadores de las pestanas disponibles */
 type TabId = 'dashboard' | 'ingest' | 'extract' | 'documents'
 
-/** Configuracion de cada pestana — orden: Dashboard | Ingest | Extraer | Documents */
+/** Configuracion de cada pestana — sort_order: Dashboard | Ingest | Extraer | Documents */
 const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'ingest', label: 'Ingest', icon: Upload },
@@ -87,8 +87,8 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
 /* -------------------------------------------------------------------------- */
 
 /**
- * Ya no se requiere autenticacion separada para el motor RAG.
- * El usuario ya esta autenticado en la app principal DOA.
+ * Ya no se requiere autenticacion separada para el engine RAG.
+ * El user_label ya esta autenticado en la app primary DOA.
  * Se pasa token vacio a las sub-pestanas; el backend se ajustara
  * para no requerir JWT en las rutas RAG.
  */
@@ -107,9 +107,9 @@ export function TcdsRagClient() {
   /** Indica si el servidor esta conectado */
   const [isConnected, setIsConnected] = useState<boolean | null>(null)
 
-  /** Estado compartido: texto de chunks del ultimo documento procesado en Ingest */
+  /** Status compartido: text de chunks del ultimo document procesado en Ingest */
   const [lastProcessedChunksText, setLastProcessedChunksText] = useState<string>('')
-  /** Estado compartido: codigo del ultimo documento procesado en Ingest */
+  /** Status compartido: codigo del ultimo document procesado en Ingest */
   const [lastProcessedDocCode, setLastProcessedDocCode] = useState<string>('')
 
   /** Verificar conexion al montar */
@@ -193,14 +193,14 @@ export function TcdsRagClient() {
 /* -------------------------------------------------------------------------- */
 
 function DashboardTab({ token }: { token: string }) {
-  /** Estado del dashboard: datos reales del backend */
+  /** Status del dashboard: data reales del backend */
   const [dashData, setDashData] = useState<RagDashboardStats | null>(null)
   const [settingsData, setSettingsData] = useState<RagSettings | null>(null)
   const [healthOk, setHealthOk] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  /** Cargar datos del dashboard al montar */
+  /** Cargar data del dashboard al montar */
   const loadDashboard = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -245,7 +245,7 @@ function DashboardTab({ token }: { token: string }) {
     loadDashboard()
   }, [loadDashboard])
 
-  /** Tarjetas de estadisticas principales — datos reales del backend */
+  /** Tarjetas de estadisticas principales — data reales del backend */
   const stats = [
     {
       label: 'Total Chunks',
@@ -255,7 +255,7 @@ function DashboardTab({ token }: { token: string }) {
       bg: dashData ? 'bg-[color:var(--paper-2)]' : 'bg-[color:var(--paper-2)]',
     },
     {
-      label: 'Documentos Unicos',
+      label: 'Documents Unicos',
       value: loading ? '...' : dashData ? String(dashData.uniqueDocuments) : '--',
       icon: FileStack,
       color: dashData ? 'text-[color:var(--ink-3)]' : 'text-[color:var(--ink-3)]',
@@ -291,7 +291,7 @@ function DashboardTab({ token }: { token: string }) {
     { label: 'OCR', value: settingsData?.capabilities.ocr ? 'Mistral OCR' : 'No configurado' },
   ]
 
-  /** Estado operativo de cada componente — derivado de las capacidades reales */
+  /** Status operativo de cada componente — derivado de las capacidades reales */
   const operationalStatus = [
     {
       label: 'Extraccion OCR de PDFs',
@@ -310,7 +310,7 @@ function DashboardTab({ token }: { token: string }) {
       status: settingsData?.capabilities.documents ? 'ok' : 'pending',
     },
     {
-      label: 'Busqueda hibrida (texto + vector)',
+      label: 'Search hibrida (text + vector)',
       status: settingsData?.capabilities.chat ? 'ok' : 'pending',
     },
     {
@@ -369,7 +369,7 @@ function DashboardTab({ token }: { token: string }) {
         })}
       </div>
 
-      {/* --- Paneles informativos: stack tecnologico y estado operativo --- */}
+      {/* --- Paneles informativos: stack tecnologico y status operativo --- */}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         {/* Panel izquierdo: Vision general del sistema */}
         <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
@@ -382,7 +382,7 @@ function DashboardTab({ token }: { token: string }) {
                 Vision general del sistema
               </h3>
               <p className="text-xs text-[color:var(--ink-3)]">
-                Stack tecnologico del motor RAG
+                Stack tecnologico del engine RAG
               </p>
             </div>
           </div>
@@ -402,7 +402,7 @@ function DashboardTab({ token }: { token: string }) {
           </div>
         </div>
 
-        {/* Panel derecho: Estado operativo */}
+        {/* Panel derecho: Status operativo */}
         <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--umber)]">
@@ -410,7 +410,7 @@ function DashboardTab({ token }: { token: string }) {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Estado operativo
+                Status operativo
               </h3>
               <p className="text-xs text-[color:var(--ink-3)]">
                 Componentes del pipeline RAG
@@ -437,12 +437,12 @@ function DashboardTab({ token }: { token: string }) {
                 {item.status === 'ok' ? (
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
                     <CheckCircle2 className="h-3 w-3" />
-                    Activo
+                    Active
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[color:var(--ink-3)]">
                     <Clock className="h-3 w-3" />
-                    Pendiente
+                    Pending
                   </span>
                 )}
               </div>
@@ -467,7 +467,7 @@ function IngestTab({
   onGoToExtract,
 }: {
   token: string
-  /** Callback para compartir el texto de chunks y codigo del documento procesado */
+  /** Callback para compartir el text de chunks y codigo del document procesado */
   onProcessComplete: (chunksText: string, docCode: string) => void
   /** Callback para navegar a la pestana Extraer */
   onGoToExtract: () => void
@@ -477,7 +477,7 @@ function IngestTab({
   /** Referencia al contenedor de logs para auto-scroll */
   const logEndRef = useRef<HTMLDivElement>(null)
 
-  /** Archivo seleccionado por el usuario */
+  /** Archivo seleccionado por el user_label */
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   /** Etapa actual del procesamiento */
@@ -489,8 +489,8 @@ function IngestTab({
   /** Resultado del procesamiento completo */
   const [processResult, setProcessResult] = useState<IngestProcessResult | null>(null)
 
-  /** Mensajes del log tipo terminal */
-  const [logs, setLogs] = useState<string[]>(['// Esperando documento para procesar...'])
+  /** Mensajes del log type terminal */
+  const [logs, setLogs] = useState<string[]>(['// Awaiting document para procesar...'])
 
   /** Error actual (si hay) */
   const [error, setError] = useState<string | null>(null)
@@ -528,7 +528,7 @@ function IngestTab({
     if (!selectedFile) return
     setStage('analyzing')
     setError(null)
-    addLog('>>> Analizando documento...')
+    addLog('>>> Analizando document...')
 
     try {
       const result = await ragAnalyze(selectedFile, token)
@@ -554,7 +554,7 @@ function IngestTab({
     if (!selectedFile) return
     setStage('processing')
     setError(null)
-    addLog('>>> Procesando documento (OCR + Chunking)...')
+    addLog('>>> Procesando document (OCR + Chunking)...')
     addLog('   Esto puede tardar varios minutos...')
 
     try {
@@ -571,7 +571,7 @@ function IngestTab({
       addLog(`   Codigo: ${result.semantic_info.official_code}`)
       addLog('   Revisa los chunks abajo. Pulsa "Guardar" para indexar.')
 
-      // Compartir texto de chunks y codigo con el componente padre para la pestana Extraer
+      // Compartir text de chunks y codigo con el componente padre para la pestana Extraer
       const fullText = result.chunks.map((c) => c.content).join('\n\n---\n\n')
       onProcessComplete(fullText, result.semantic_info.official_code)
     } catch (err) {
@@ -619,18 +619,18 @@ function IngestTab({
     }
   }
 
-  /** Resetear todo para un nuevo documento */
+  /** Resetear todo para un new document */
   function handleReset() {
     setSelectedFile(null)
     setStage('idle')
     setAnalysis(null)
     setProcessResult(null)
     setError(null)
-    setLogs(['// Esperando documento para procesar...'])
+    setLogs(['// Awaiting document para procesar...'])
   }
 
   /** Determinar si un boton de accion esta habilitado.
-   *  Se usa 'as string' para evitar que TypeScript estreche el tipo
+   *  Se usa 'as string' para evitar que TypeScript estreche el type
    *  de stage en las comparaciones posteriores del JSX.
    */
   const stageStr = stage as string
@@ -648,7 +648,7 @@ function IngestTab({
       <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-            Cargar documento PDF
+            Cargar document PDF
           </h3>
           {stage === 'saved' && (
             <button
@@ -656,7 +656,7 @@ function IngestTab({
               className="flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
             >
               <RefreshCw className="h-3 w-3" />
-              Nuevo documento
+              New document
             </button>
           )}
         </div>
@@ -711,7 +711,7 @@ function IngestTab({
               <button
                 onClick={() => {
                   setSelectedFile(null)
-                  setLogs(['// Esperando documento para procesar...'])
+                  setLogs(['// Awaiting document para procesar...'])
                 }}
                 className="text-xs text-[color:var(--ink-3)] transition-colors hover:text-rose-600"
               >
@@ -721,7 +721,7 @@ function IngestTab({
           </div>
         )}
 
-        {/* Resultado del analisis: detalles de clasificacion */}
+        {/* Resultado del analisis: detalles de classification */}
         {analysis && stage !== 'idle' && (
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
@@ -809,22 +809,22 @@ function IngestTab({
             3. Guardar
           </button>
 
-          {/* Indicador de etapa completada */}
+          {/* Indicador de etapa completed */}
           {isSaved && (
             <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
               <CheckCircle2 className="h-4 w-4" />
-              Documento indexado exitosamente
+              Document indexado exitosamente
             </div>
           )}
         </div>
 
-        {/* Sugerencia para extraer datos de aeronave despues de guardar */}
+        {/* Sugerencia para extraer data de aircraft despues de guardar */}
         {isSaved && (
           <div className="mt-4 flex items-center justify-between rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
             <div className="flex items-center gap-2">
               <Plane className="h-4 w-4 text-[color:var(--ink-3)]" />
               <span className="text-sm text-[color:var(--ink-2)]">
-                Documento procesado. ¿Extraer datos de aeronave?
+                Document procesado. ¿Extraer data de aircraft?
               </span>
             </div>
             <button
@@ -912,7 +912,7 @@ function IngestTab({
 }
 
 /* -------------------------------------------------------------------------- */
-/*                 PESTANA 3: EXTRAER (Extraccion de datos de aeronaves)       */
+/*                 PESTANA 3: EXTRAER (Extraccion de data de aircraft)       */
 /* -------------------------------------------------------------------------- */
 
 /** Etapas del flujo de extraccion */
@@ -924,9 +924,9 @@ function ExtractTab({
   lastProcessedDocCode,
 }: {
   token: string
-  /** Texto de chunks del ultimo documento procesado en Ingest */
+  /** Texto de chunks del ultimo document procesado en Ingest */
   lastProcessedChunksText: string
-  /** Codigo del ultimo documento procesado en Ingest */
+  /** Codigo del ultimo document procesado en Ingest */
   lastProcessedDocCode: string
 }) {
   /** Etapa actual del flujo de extraccion */
@@ -935,13 +935,13 @@ function ExtractTab({
   /** Texto fuente para la extraccion (pegado o proveniente de Ingest) */
   const [sourceText, setSourceText] = useState('')
 
-  /** Codigo del documento TCDS */
+  /** Codigo del document TCDS */
   const [documentCode, setDocumentCode] = useState('')
 
   /** Resultado de la extraccion por IA */
   const [extractionResult, setExtractionResult] = useState<ExtractionResult | null>(null)
 
-  /** Variantes editables (el usuario puede eliminar filas antes de guardar) */
+  /** Variantes editables (el user_label puede eliminar filas antes de guardar) */
   const [variants, setVariants] = useState<AircraftVariant[]>([])
 
   /** Numero de variantes guardadas (para confirmacion) */
@@ -950,7 +950,7 @@ function ExtractTab({
   /** Error actual */
   const [error, setError] = useState<string | null>(null)
 
-  /** Usar datos del ultimo documento procesado en Ingest */
+  /** Usar data del ultimo document procesado en Ingest */
   function handleUseLastProcessed() {
     if (lastProcessedChunksText) {
       setSourceText(lastProcessedChunksText)
@@ -961,7 +961,7 @@ function ExtractTab({
   /** Lanzar la extraccion por IA */
   async function handleExtract() {
     if (!sourceText.trim()) {
-      setError('No hay texto fuente para extraer. Pega texto o usa el ultimo documento procesado.')
+      setError('No hay text fuente para extraer. Pega text o usa el ultimo document procesado.')
       return
     }
     setStage('extracting')
@@ -984,7 +984,7 @@ function ExtractTab({
     setVariants((prev) => prev.filter((_, i) => i !== index))
   }
 
-  /** Aprobar y guardar las variantes en la base de datos */
+  /** Aprobar y guardar las variantes en la base de data */
   async function handleSave() {
     if (variants.length === 0) {
       setError('No hay variantes para guardar.')
@@ -1004,7 +1004,7 @@ function ExtractTab({
     }
   }
 
-  /** Resetear todo para una nueva extraccion */
+  /** Resetear todo para una new extraccion */
   function handleReset() {
     setStage('select')
     setSourceText('')
@@ -1015,7 +1015,7 @@ function ExtractTab({
     setError(null)
   }
 
-  /** Determinar estado para deshabilitar/habilitar botones */
+  /** Determinar status para deshabilitar/habilitar botones */
   const stageStr = stage as string
   const isExtracting = stageStr === 'extracting'
   const isReview = stageStr === 'review'
@@ -1033,21 +1033,21 @@ function ExtractTab({
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Extraer datos de aeronave
+                Extraer data de aircraft
               </h3>
               <p className="text-xs text-[color:var(--ink-3)]">
-                Usa IA para extraer datos estructurados de un TCDS
+                Usa IA para extraer data estructurados de un TCDS
               </p>
             </div>
           </div>
 
-          {/* Boton para usar el ultimo documento procesado */}
+          {/* Boton para usar el ultimo document procesado */}
           {lastProcessedChunksText && (
             <div className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 <span className="text-sm text-emerald-800">
-                  Documento disponible: <strong>{lastProcessedDocCode || 'ultimo procesado'}</strong>
+                  Document disponible: <strong>{lastProcessedDocCode || 'ultimo procesado'}</strong>
                 </span>
               </div>
               <button
@@ -1056,15 +1056,15 @@ function ExtractTab({
                 className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
               >
                 <ClipboardPaste className="h-3 w-3" />
-                Usar este documento
+                Usar este document
               </button>
             </div>
           )}
 
-          {/* Codigo del documento */}
+          {/* Codigo del document */}
           <div className="mb-4">
             <label className="mb-1.5 block text-xs font-semibold text-[color:var(--ink-3)]">
-              Codigo del documento TCDS
+              Codigo del document TCDS
             </label>
             <input
               type="text"
@@ -1076,7 +1076,7 @@ function ExtractTab({
             />
           </div>
 
-          {/* Area de texto para pegar contenido */}
+          {/* Area de text para pegar contenido */}
           <div className="mb-4">
             <label className="mb-1.5 block text-xs font-semibold text-[color:var(--ink-3)]">
               Texto fuente (contenido del TCDS)
@@ -1084,7 +1084,7 @@ function ExtractTab({
             <textarea
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value)}
-              placeholder="Pega aqui el texto del TCDS o usa el boton de arriba para cargar el ultimo documento procesado..."
+              placeholder="Pega aqui el text del TCDS o usa el boton de arriba para cargar el ultimo document procesado..."
               rows={8}
               disabled={isExtracting}
               className="w-full resize-y rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3 font-mono text-xs leading-relaxed text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)] disabled:opacity-50"
@@ -1117,12 +1117,12 @@ function ExtractTab({
             {isExtracting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Extrayendo datos con IA...
+                Extrayendo data con IA...
               </>
             ) : (
               <>
                 <Plane className="h-4 w-4" />
-                Extraer datos de aeronave
+                Extraer data de aircraft
               </>
             )}
           </button>
@@ -1134,15 +1134,15 @@ function ExtractTab({
         <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-10 text-center shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
           <Loader2 className="mx-auto h-10 w-10 animate-spin text-[color:var(--ink-3)]" />
           <p className="mt-4 text-sm font-medium text-[color:var(--ink-3)]">
-            Extrayendo datos con IA...
+            Extrayendo data con IA...
           </p>
           <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-            Analizando el contenido del TCDS para identificar variantes de aeronave
+            Analizando el contenido del TCDS para identificar variantes de aircraft
           </p>
         </div>
       )}
 
-      {/* === PASO 3: REVISION DE DATOS EXTRAIDOS === */}
+      {/* === PASO 3: REVIEW DE DATOS EXTRAIDOS === */}
       {(isReview || isSaving || isSaved) && extractionResult && (
         <div className="space-y-5">
           {/* Cabecera con informacion del TCDS */}
@@ -1154,10 +1154,10 @@ function ExtractTab({
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                    Datos extraidos del TCDS
+                    Data extraidos del TCDS
                   </h3>
                   <p className="text-xs text-[color:var(--ink-3)]">
-                    Revisa los datos antes de guardar en la base de datos
+                    Revisa los data antes de guardar en la base de data
                   </p>
                 </div>
               </div>
@@ -1167,7 +1167,7 @@ function ExtractTab({
                   className="flex items-center gap-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-[color:var(--ink-3)] transition-colors hover:bg-[color:var(--paper-3)]"
                 >
                   <RefreshCw className="h-3 w-3" />
-                  Nueva extraccion
+                  New extraccion
                 </button>
               )}
             </div>
@@ -1175,8 +1175,8 @@ function ExtractTab({
             {/* ================================================================
                TARJETA PROMINENTE DE IDENTIFICACION TCDS
                El codigo TCDS (especialmente el "short") es el identificador
-               clave para proyectos en la DOA. Se muestra grande y destacado
-               para que el usuario lo identifique de inmediato.
+               clave para projects en la DOA. Se muestra grande y destacado
+               para que el user_label lo identifique de inmediato.
                ================================================================ */}
             <div className="mb-4 rounded-xl border-2 border-[color:var(--ink-4)] bg-gradient-to-r from-[color:var(--paper-2)] via-[color:var(--paper)] to-[color:var(--paper-2)] p-4">
               <div className="flex flex-wrap items-center gap-6">
@@ -1190,11 +1190,11 @@ function ExtractTab({
                   </p>
                 </div>
 
-                {/* Codigo TCDS corto — badge destacado, es el que se usa para codigos de proyecto */}
+                {/* Codigo TCDS corto — badge destacado, es el que se usa para codigos de project */}
                 {variants.length > 0 && variants[0].tcds_code_short && (
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                      Codigo Proyecto
+                      Codigo Project
                     </p>
                     <span className="mt-0.5 inline-flex items-center rounded-lg bg-sky-600 px-3 py-1 text-lg font-bold text-white shadow-md shadow-sky-200">
                       {variants[0].tcds_code_short}
@@ -1205,7 +1205,7 @@ function ExtractTab({
                 {/* Separador vertical */}
                 <div className="hidden h-12 w-px bg-[color:var(--paper-3)] sm:block" />
 
-                {/* Issue y Fecha */}
+                {/* Issue y Date */}
                 <div className="flex flex-wrap gap-4">
                   {variants.length > 0 && variants[0].tcds_issue && (
                     <div>
@@ -1220,7 +1220,7 @@ function ExtractTab({
                   {variants.length > 0 && variants[0].tcds_date && (
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                        Fecha
+                        Date
                       </p>
                       <p className="text-sm font-medium text-[color:var(--ink-2)]">
                         {variants[0].tcds_date}
@@ -1232,25 +1232,25 @@ function ExtractTab({
                 {/* Separador vertical */}
                 <div className="hidden h-12 w-px bg-[color:var(--paper-3)] sm:block" />
 
-                {/* Fabricante y Tipo */}
+                {/* Manufacturer y Tipo */}
                 <div className="flex flex-wrap gap-4">
-                  {variants.length > 0 && variants[0].fabricante && (
+                  {variants.length > 0 && variants[0].manufacturer && (
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                        Fabricante
+                        Manufacturer
                       </p>
                       <p className="text-sm font-medium text-[color:var(--ink-2)]">
-                        {variants[0].fabricante}
+                        {variants[0].manufacturer}
                       </p>
                     </div>
                   )}
-                  {variants.length > 0 && variants[0].tipo && (
+                  {variants.length > 0 && variants[0].type && (
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Tipo
                       </p>
                       <p className="text-sm font-medium text-[color:var(--ink-2)]">
-                        {variants[0].tipo}
+                        {variants[0].type}
                       </p>
                     </div>
                   )}
@@ -1270,15 +1270,15 @@ function ExtractTab({
 
             {/* Metadata de la extraccion */}
             <div className="flex items-center gap-4 text-[10px] text-[color:var(--ink-3)]">
-              <span>Modelo IA: {extractionResult.model_used}</span>
+              <span>Model IA: {extractionResult.model_used}</span>
               <span>Tokens: {extractionResult.tokens_used.toLocaleString()}</span>
             </div>
           </div>
 
-          {/* Tabla de variantes */}
+          {/* Table de variantes */}
           <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
             <h3 className="mb-4 text-sm font-semibold text-[color:var(--ink)]">
-              Variantes de aeronave
+              Variantes de aircraft
               <span className="ml-2 text-xs font-normal text-[color:var(--ink-3)]">
                 ({variants.length} {variants.length === 1 ? 'variante' : 'variantes'})
               </span>
@@ -1286,20 +1286,20 @@ function ExtractTab({
 
             {variants.length > 0 ? (
               <div className="overflow-x-auto">
-                {/* Tabla de variantes — TCDS CODE como primera columna
-                   porque es el identificador principal de proyecto en la DOA */}
+                {/* Table de variantes — TCDS CODE como primera columna
+                   porque es el identificador primary de project en la DOA */}
                 <table className="w-full min-w-[1000px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-[color:var(--ink-4)]">
-                      {/* Primera columna: TCDS CODE — destacada porque identifica el proyecto */}
+                      {/* Primera columna: TCDS CODE — destacada porque identifica el project */}
                       <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)] bg-[color:var(--paper-2)] rounded-tl-lg">
                         TCDS Code
                       </th>
                       <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                        Modelo
+                        Model
                       </th>
                       <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                        Fabricante
+                        Manufacturer
                       </th>
                       <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                         Motor
@@ -1322,7 +1322,7 @@ function ExtractTab({
                       {/* Columna de acciones solo si no se ha guardado todavia */}
                       {!isSaved && (
                         <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                          {/* Sin titulo, solo icono de eliminar */}
+                          {/* Sin title, solo icono de eliminar */}
                         </th>
                       )}
                     </tr>
@@ -1340,14 +1340,14 @@ function ExtractTab({
                           </span>
                         </td>
                         <td className="px-3 py-2.5 font-medium text-[color:var(--ink)]">
-                          {v.modelo || '--'}
+                          {v.model || '--'}
                         </td>
                         <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
-                          {v.fabricante || '--'}
+                          {v.manufacturer || '--'}
                         </td>
                         <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
-                          <span className="max-w-[180px] truncate block" title={v.motor}>
-                            {v.motor || '--'}
+                          <span className="max-w-[180px] truncate block" title={v.engine}>
+                            {v.engine || '--'}
                           </span>
                         </td>
                         <td className="px-3 py-2.5 text-[color:var(--ink-3)] tabular-nums">
@@ -1359,15 +1359,15 @@ function ExtractTab({
                         {/* Columna destacada: Regulacion Base */}
                         <td className="px-3 py-2.5 bg-amber-50">
                           <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                            {v.regulacion_base || '--'}
+                            {v.base_regulation || '--'}
                           </span>
                         </td>
                         <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
-                          {v.categoria || '--'}
+                          {v.category || '--'}
                         </td>
                         <td className="px-3 py-2.5 text-[color:var(--ink-3)]">
-                          <span className="max-w-[140px] truncate block text-xs" title={v.msn_elegibles}>
-                            {v.msn_elegibles || '--'}
+                          <span className="max-w-[140px] truncate block text-xs" title={v.eligible_msns}>
+                            {v.eligible_msns || '--'}
                           </span>
                         </td>
                         {/* Boton de eliminar fila */}
@@ -1398,24 +1398,24 @@ function ExtractTab({
             )}
           </div>
 
-          {/* Notas de las variantes (si hay) */}
-          {variants.some((v) => v.notas) && (
+          {/* Notes de las variantes (si hay) */}
+          {variants.some((v) => v.notes) && (
             <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
               <h3 className="mb-3 text-sm font-semibold text-[color:var(--ink)]">
-                Notas adicionales
+                Notes adicionales
               </h3>
               <div className="space-y-2">
                 {variants
-                  .filter((v) => v.notas)
+                  .filter((v) => v.notes)
                   .map((v, i) => (
                     <div
                       key={i}
                       className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-2.5"
                     >
                       <span className="text-xs font-semibold text-[color:var(--ink-3)]">
-                        {v.modelo}:
+                        {v.model}:
                       </span>{' '}
-                      <span className="text-xs text-[color:var(--ink-3)]">{v.notas}</span>
+                      <span className="text-xs text-[color:var(--ink-3)]">{v.notes}</span>
                     </div>
                   ))}
               </div>
@@ -1450,7 +1450,7 @@ function ExtractTab({
                 ) : (
                   <>
                     <Save className="h-4 w-4" />
-                    Aprobar y guardar en Base de Datos
+                    Aprobar y guardar en Base de Data
                   </>
                 )}
               </button>
@@ -1460,7 +1460,7 @@ function ExtractTab({
             </div>
           )}
 
-          {/* Confirmacion de guardado exitoso */}
+          {/* Confirmacion de guardado successful */}
           {isSaved && (
             <div className="rounded-[22px] border border-emerald-200 bg-emerald-50 p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
               <div className="flex items-center justify-between">
@@ -1470,10 +1470,10 @@ function ExtractTab({
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-emerald-800">
-                      {savedCount} {savedCount === 1 ? 'variante guardada' : 'variantes guardadas'} en doa_aeronaves
+                      {savedCount} {savedCount === 1 ? 'variante guardada' : 'variantes guardadas'} en doa_aircraft
                     </h3>
                     <p className="text-xs text-emerald-600">
-                      Los datos han sido aprobados y almacenados correctamente
+                      Los data han sido aprobados y almacenados correctamente
                     </p>
                   </div>
                 </div>
@@ -1482,7 +1482,7 @@ function ExtractTab({
                   className="flex items-center gap-1 rounded-lg border border-emerald-300 bg-[color:var(--paper)] px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
                 >
                   <RefreshCw className="h-3 w-3" />
-                  Nueva extraccion
+                  New extraccion
                 </button>
               </div>
             </div>
@@ -1498,27 +1498,27 @@ function ExtractTab({
 /* -------------------------------------------------------------------------- */
 
 function DocumentsTab({ token }: { token: string }) {
-  /** Lista de documentos indexados */
+  /** Lista de documents indexados */
   const [documents, setDocuments] = useState<RagDocument[]>([])
-  /** Documento seleccionado */
+  /** Document seleccionado */
   const [selectedDoc, setSelectedDoc] = useState<RagDocument | null>(null)
-  /** Chunks del documento seleccionado */
+  /** Chunks del document seleccionado */
   const [chunks, setChunks] = useState<RagChunk[]>([])
 
-  /** Estados de carga */
+  /** Statuses de carga */
   const [loadingDocs, setLoadingDocs] = useState(true)
   const [loadingChunks, setLoadingChunks] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  /** Busqueda local en la lista de documentos */
+  /** Search local en la lista de documents */
   const [searchQuery, setSearchQuery] = useState('')
 
-  /** Busqueda semantica (chat) */
+  /** Search semantica (chat) */
   const [chatQuery, setChatQuery] = useState('')
   const [chatResult, setChatResult] = useState<ChatResponse | null>(null)
   const [searchingChat, setSearchingChat] = useState(false)
 
-  /** Cargar lista de documentos al montar */
+  /** Cargar lista de documents al montar */
   const loadDocuments = useCallback(async () => {
     setLoadingDocs(true)
     setError(null)
@@ -1526,7 +1526,7 @@ function DocumentsTab({ token }: { token: string }) {
       const docs = await ragListDocuments(token)
       setDocuments(docs)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar documentos')
+      setError(err instanceof Error ? err.message : 'Error al cargar documents')
     } finally {
       setLoadingDocs(false)
     }
@@ -1536,7 +1536,7 @@ function DocumentsTab({ token }: { token: string }) {
     loadDocuments()
   }, [loadDocuments])
 
-  /** Cargar chunks de un documento al seleccionarlo */
+  /** Cargar chunks de un document al seleccionarlo */
   async function handleSelectDoc(doc: RagDocument) {
     setSelectedDoc(doc)
     setChunks([])
@@ -1554,7 +1554,7 @@ function DocumentsTab({ token }: { token: string }) {
     }
   }
 
-  /** Busqueda semantica con el motor RAG */
+  /** Search semantica con el engine RAG */
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
     if (!chatQuery.trim()) return
@@ -1567,13 +1567,13 @@ function DocumentsTab({ token }: { token: string }) {
       const result = await ragChat(chatQuery, token)
       setChatResult(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error en la busqueda')
+      setError(err instanceof Error ? err.message : 'Error en la search')
     } finally {
       setSearchingChat(false)
     }
   }
 
-  /** Filtrar documentos por texto de busqueda local */
+  /** Filtrar documents por text de search local */
   const filteredDocs = documents.filter((doc) => {
     const q = searchQuery.toLowerCase()
     return (
@@ -1585,10 +1585,10 @@ function DocumentsTab({ token }: { token: string }) {
 
   return (
     <div className="space-y-5">
-      {/* --- Busqueda semantica RAG --- */}
+      {/* --- Search semantica RAG --- */}
       <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
         <h3 className="mb-3 text-sm font-semibold text-[color:var(--ink)]">
-          Busqueda semantica RAG
+          Search semantica RAG
         </h3>
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative flex-1">
@@ -1597,7 +1597,7 @@ function DocumentsTab({ token }: { token: string }) {
               type="text"
               value={chatQuery}
               onChange={(e) => setChatQuery(e.target.value)}
-              placeholder="Buscar en todos los documentos indexados..."
+              placeholder="Buscar en todos los documents indexados..."
               className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] py-2.5 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)]"
             />
           </div>
@@ -1615,13 +1615,13 @@ function DocumentsTab({ token }: { token: string }) {
           </button>
         </form>
 
-        {/* Resultados de busqueda semantica */}
+        {/* Resultados de search semantica */}
         {chatResult && (
           <div className="mt-4 space-y-3">
-            {/* Respuesta generada */}
+            {/* Response generada */}
             <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                Respuesta
+                Response
               </p>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-[color:var(--ink-2)]">
                 {chatResult.answer}
@@ -1665,13 +1665,13 @@ function DocumentsTab({ token }: { token: string }) {
         )}
       </div>
 
-      {/* --- Grid de documentos y chunks --- */}
+      {/* --- Grid de documents y chunks --- */}
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-        {/* Panel izquierdo: lista de documentos indexados */}
+        {/* Panel izquierdo: lista de documents indexados */}
         <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-1">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-              Documentos indexados
+              Documents indexados
               {documents.length > 0 && (
                 <span className="ml-1.5 text-xs font-normal text-[color:var(--ink-3)]">
                   ({documents.length})
@@ -1694,7 +1694,7 @@ function DocumentsTab({ token }: { token: string }) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filtrar documentos..."
+              placeholder="Filtrar documents..."
               className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] py-2 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] outline-none transition-colors focus:border-[color:var(--ink-4)] focus:ring-1 focus:ring-[color:var(--ink-4)]"
             />
           </div>
@@ -1707,7 +1707,7 @@ function DocumentsTab({ token }: { token: string }) {
             </div>
           )}
 
-          {/* Lista de documentos o estado vacio */}
+          {/* Lista de documents o status vacio */}
           {loadingDocs ? (
             <div className="flex items-center justify-center py-10">
               <Loader2 className="h-6 w-6 animate-spin text-[color:var(--ink-4)]" />
@@ -1728,7 +1728,7 @@ function DocumentsTab({ token }: { token: string }) {
                     {doc.code}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-[color:var(--ink-3)]">
-                    {doc.title || doc.doc_type || 'Sin titulo'}
+                    {doc.title || doc.doc_type || 'Sin title'}
                   </p>
                   <div className="mt-1.5 flex items-center gap-2">
                     <span className="inline-flex items-center rounded-md bg-[color:var(--paper-3)] px-1.5 py-0.5 text-[10px] font-medium text-[color:var(--ink-3)]">
@@ -1746,14 +1746,14 @@ function DocumentsTab({ token }: { token: string }) {
               <FileStack className="h-6 w-6 text-[color:var(--ink-4)]" />
               <p className="text-center text-sm text-[color:var(--ink-3)]">
                 {searchQuery
-                  ? 'No se encontraron documentos'
-                  : 'No hay documentos indexados'}
+                  ? 'No se encontraron documents'
+                  : 'No hay documents indexados'}
               </p>
             </div>
           )}
         </div>
 
-        {/* Panel derecho: visor de chunks del documento seleccionado */}
+        {/* Panel derecho: visor de chunks del document seleccionado */}
         <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-[0_10px_24px_rgba(148,163,184,0.12)] xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-[color:var(--ink)]">
@@ -1765,12 +1765,12 @@ function DocumentsTab({ token }: { token: string }) {
                   </span>
                 </>
               ) : (
-                'Chunks del documento'
+                'Chunks del document'
               )}
             </h3>
           </div>
 
-          {/* Contenido: chunks o estado vacio */}
+          {/* Contenido: chunks o status vacio */}
           {loadingChunks ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-[color:var(--ink-4)]" />
@@ -1824,7 +1824,7 @@ function DocumentsTab({ token }: { token: string }) {
                     {chunk.content}
                   </p>
 
-                  {/* Imagen de captura de pagina si existe */}
+                  {/* Imagen de captura de page si existe */}
                   {chunk.page_capture_url && (
                     <div className="mt-2">
                       <a
@@ -1833,7 +1833,7 @@ function DocumentsTab({ token }: { token: string }) {
                         rel="noopener noreferrer"
                         className="text-[10px] text-[color:var(--ink-3)] hover:underline"
                       >
-                        Ver captura de pagina
+                        Ver captura de page
                       </a>
                     </div>
                   )}
@@ -1844,7 +1844,7 @@ function DocumentsTab({ token }: { token: string }) {
             <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-16">
               <Database className="h-6 w-6 text-[color:var(--ink-4)]" />
               <p className="text-sm text-[color:var(--ink-3)]">
-                Selecciona un documento para ver sus chunks
+                Selecciona un document para ver sus chunks
               </p>
             </div>
           )}

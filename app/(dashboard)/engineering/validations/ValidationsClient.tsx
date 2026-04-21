@@ -7,9 +7,9 @@ import { cn } from '@/lib/utils'
 
 export type ValidationQueueItem = {
   id: string
-  numero_proyecto: string
-  titulo: string
-  cliente_nombre: string | null
+  project_number: string
+  title: string
+  client_name: string | null
   received_at: string | null
   deliverables_total: number
   deliverables_completed: number
@@ -53,10 +53,10 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
         <div className="max-w-md rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] p-10 text-center shadow-sm">
           <ClipboardCheck className="mx-auto h-10 w-10 text-[color:var(--ink-4)]" />
           <h2 className="mt-4 text-sm font-semibold text-[color:var(--ink-2)]">
-            No hay proyectos pendientes de validacion
+            No hay projects pendientes de validation
           </h2>
           <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-            Cuando un ingeniero envia un proyecto a validacion, aparecera aqui
+            Cuando un ingeniero envia un project a validation, aparecera aqui
             para que DOH/DOS lo revise y firme.
           </p>
         </div>
@@ -68,10 +68,10 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
     <div className="flex flex-1 flex-col gap-4 overflow-auto px-5 pb-8 pt-5">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-[color:var(--ink)]">
-          Cola de validacion
+          Cola de validation
         </h1>
         <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
-          {items.length} pendiente{items.length === 1 ? '' : 's'}
+          {items.length} pending{items.length === 1 ? '' : 's'}
         </span>
       </header>
 
@@ -87,7 +87,7 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
           return (
             <li key={item.id}>
               <Link
-                href={`/engineering/projects/${item.id}?tab=validacion`}
+                href={`/engineering/projects/${item.id}?tab=validation`}
                 className={cn(
                   'flex h-full flex-col justify-between gap-3 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm transition',
                   'hover:border-amber-300 hover:shadow-md',
@@ -96,19 +96,19 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs text-[color:var(--ink-3)]">
-                      {item.numero_proyecto}
+                      {item.project_number}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                      En validacion
+                      In validation
                     </span>
                   </div>
                   <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                    {item.titulo}
+                    {item.title}
                   </h3>
-                  {item.cliente_nombre && (
+                  {item.client_name && (
                     <p className="inline-flex items-center gap-1 text-xs text-[color:var(--ink-3)]">
                       <User className="h-3 w-3" />
-                      {item.cliente_nombre}
+                      {item.client_name}
                     </p>
                   )}
                 </div>
@@ -129,7 +129,7 @@ export function ValidationsClient({ items }: { items: ValidationQueueItem[] }) {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[color:var(--ink-4)] pt-2 text-[11px] text-[color:var(--ink-3)]">
-                  <span>Recibido: {formatDateTime(item.received_at)}</span>
+                  <span>Received: {formatDateTime(item.received_at)}</span>
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     En cola: {formatTimeInQueue(item.received_at)}

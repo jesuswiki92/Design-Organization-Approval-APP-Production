@@ -21,7 +21,7 @@ const RAG_BASE = process.env.NEXT_PUBLIC_RAG_API_URL || 'http://localhost:3002'
 
 /**
  * Wrapper generico para fetch con manejo de errores.
- * Lanza un error con el mensaje del servidor si la respuesta no es ok.
+ * Lanza un error con el mensaje del servidor si la response no es ok.
  */
 async function ragFetch<T>(
   path: string,
@@ -75,14 +75,14 @@ async function ragFetch<T>(
 /*                              HEALTH                                        */
 /* -------------------------------------------------------------------------- */
 
-/** Respuesta del endpoint de salud */
+/** Response del endpoint de salud */
 export interface RagHealthResponse {
   status: string
   service?: string
 }
 
 /**
- * Verifica si el servidor RAG esta activo.
+ * Verifica si el servidor RAG esta is_active.
  * No requiere autenticacion.
  */
 export async function ragHealth(): Promise<RagHealthResponse> {
@@ -93,7 +93,7 @@ export async function ragHealth(): Promise<RagHealthResponse> {
 /*                            AUTENTICACION                                   */
 /* -------------------------------------------------------------------------- */
 
-/** Respuesta del login */
+/** Response del login */
 export interface RagAuthResponse {
   access_token: string
   token_type: string
@@ -142,7 +142,7 @@ export interface RagDashboardStats {
 }
 
 /**
- * Obtiene las estadisticas del dashboard: total de chunks, documentos unicos, etc.
+ * Obtiene las estadisticas del dashboard: total de chunks, documents unicos, etc.
  * Requiere token de autenticacion.
  */
 export async function ragDashboard(token: string): Promise<RagDashboardStats> {
@@ -153,7 +153,7 @@ export async function ragDashboard(token: string): Promise<RagDashboardStats> {
 /*                             SETTINGS                                       */
 /* -------------------------------------------------------------------------- */
 
-/** Respuesta del endpoint de settings — capacidades y credenciales */
+/** Response del endpoint de settings — capacidades y credenciales */
 export interface RagSettings {
   python: { ok: boolean; version: string }
   capabilities: {
@@ -178,7 +178,7 @@ export async function ragSettings(token: string): Promise<RagSettings> {
 /*                            DOCUMENTS                                       */
 /* -------------------------------------------------------------------------- */
 
-/** Documento indexado en el sistema RAG */
+/** Document indexado en el sistema RAG */
 export interface RagDocument {
   code: string
   title: string
@@ -187,7 +187,7 @@ export interface RagDocument {
   chunk_count: number
 }
 
-/** Chunk individual de un documento */
+/** Chunk individual de un document */
 export interface RagChunk {
   id: number | string
   content: string
@@ -203,8 +203,8 @@ export interface RagChunk {
 }
 
 /**
- * Obtiene la lista de todos los documentos indexados.
- * Devuelve un array con codigo, titulo, agencia, tipo y cantidad de chunks.
+ * Obtiene la lista de todos los documents indexados.
+ * Devuelve un array con codigo, title, agencia, type y cantidad de chunks.
  */
 export async function ragListDocuments(token: string): Promise<RagDocument[]> {
   const res = await ragFetch<{ documents: RagDocument[] }>(
@@ -216,7 +216,7 @@ export async function ragListDocuments(token: string): Promise<RagDocument[]> {
 }
 
 /**
- * Obtiene los chunks de un documento especifico por su codigo.
+ * Obtiene los chunks de un document especifico por su codigo.
  * Devuelve el contenido completo con metadata para cada chunk.
  */
 export async function ragGetDocumentChunks(
@@ -296,7 +296,7 @@ export interface IngestSaveResult {
 }
 
 /**
- * Analiza un PDF sin procesarlo: extrae info basica (paginas, tamano, clasificacion).
+ * Analiza un PDF sin procesarlo: extrae info basica (paginas, tamano, classification).
  * Util para mostrar una vista previa antes de procesar.
  */
 export async function ragAnalyze(
@@ -315,7 +315,7 @@ export async function ragAnalyze(
 
 /**
  * Procesa un PDF completo: OCR + chunking semantico.
- * Devuelve los chunks generados y la info semantica para revision antes de guardar.
+ * Devuelve los chunks generados y la info semantica para review antes de guardar.
  */
 export async function ragProcess(
   file: File,
@@ -359,7 +359,7 @@ export async function ragSave(
 /*                               CHAT                                         */
 /* -------------------------------------------------------------------------- */
 
-/** Fuente de una respuesta del chat RAG */
+/** Fuente de una response del chat RAG */
 export interface ChatSource {
   code: string
   section: string
@@ -372,7 +372,7 @@ export interface ChatSource {
   source: string
 }
 
-/** Respuesta del endpoint de chat */
+/** Response del endpoint de chat */
 export interface ChatResponse {
   answer: string
   sources: ChatSource[]
@@ -382,8 +382,8 @@ export interface ChatResponse {
 }
 
 /**
- * Envia una pregunta al motor RAG y obtiene una respuesta con fuentes.
- * Utiliza busqueda semantica + reranking para encontrar los chunks mas relevantes.
+ * Envia una pregunta al engine RAG y obtiene una response con fuentes.
+ * Utiliza search semantica + reranking para encontrar los chunks mas relevantes.
  */
 export async function ragChat(
   question: string,
@@ -453,26 +453,26 @@ export async function ragDeleteSession(
 /*                   EXTRACCION DE DATOS DE AERONAVES                         */
 /* -------------------------------------------------------------------------- */
 
-/** Variante de aeronave extraida de un TCDS */
+/** Variante de aircraft extraida de un TCDS */
 export interface AircraftVariant {
   tcds_code: string
   tcds_code_short: string
   tcds_issue: string
   tcds_date: string
-  fabricante: string
-  pais: string
-  tipo: string
-  modelo: string
-  msn_elegibles: string
-  motor: string
+  manufacturer: string
+  country: string
+  type: string
+  model: string
+  eligible_msns: string
+  engine: string
   mtow_kg: number | null
   mlw_kg: number | null
-  regulacion_base: string
-  categoria: string
-  notas: string
+  base_regulation: string
+  category: string
+  notes: string
 }
 
-/** Resultado de la extraccion de datos de aeronaves por IA */
+/** Resultado de la extraccion de data de aircraft por IA */
 export interface ExtractionResult {
   variants: AircraftVariant[]
   model_used: string
@@ -480,9 +480,9 @@ export interface ExtractionResult {
 }
 
 /**
- * Extrae datos estructurados de aeronaves del texto del TCDS usando IA.
- * Envia el texto completo de los chunks al backend, que utiliza un LLM
- * para identificar y estructurar las variantes de aeronave.
+ * Extrae data estructurados de aircraft del text del TCDS usando IA.
+ * Envia el text completo de los chunks al backend, que utiliza un LLM
+ * para identificar y estructurar las variantes de aircraft.
  */
 export async function ragExtractAircraft(
   chunksText: string,
@@ -500,8 +500,8 @@ export async function ragExtractAircraft(
 }
 
 /**
- * Guarda las variantes de aeronave aprobadas en la tabla doa_aeronaves.
- * Solo se llama despues de que el usuario revise y apruebe los datos extraidos.
+ * Guarda las variantes de aircraft aprobadas en la table doa_aircraft.
+ * Solo se llama despues de que el user_label revise y apruebe los data extraidos.
  */
 export async function ragSaveAircraft(
   variants: AircraftVariant[],

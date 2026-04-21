@@ -5,7 +5,7 @@
  * SIDEBAR — Warm Executive (AMS client-branded slot)
  * ============================================================================
  * Rediseño basado en el prototipo DOA Redesign.html. Dos grupos etiquetados
- * ("Your work" / "Directory") con encabezado serif italic y estado activo
+ * ("Your work" / "Directory") con encabezado serif italic y status is_active
  * en papel blanco. El bloque de marca es el "client-branded slot" del diseño.
  * ============================================================================
  */
@@ -27,7 +27,7 @@ type NavItem = {
   count?: string
 }
 
-// Decision sidebar (Sprint tablero-v2) mantenido: Quotations y Proyectos
+// Decision sidebar (Sprint tablero-v2) mantenido: Quotations y Projects
 // cada uno con una sola entrada y toggle Lista/Tablero dentro.
 const navGroups: Array<{ label: string; items: NavItem[] }> = [
   {
@@ -35,7 +35,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     items: [
       { href: '/home', icon: Home, label: 'Home' },
       { href: '/engineering/portfolio', icon: Plane, label: 'Projects' },
-      { href: '/proyectos-historico', icon: Clock3, label: 'History' },
+      { href: '/historical-projects', icon: Clock3, label: 'History' },
       { href: '/quotations', icon: FileText, label: 'Quotations' },
     ],
   },
@@ -43,7 +43,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
     label: 'Directory',
     items: [
       { href: '/clients', icon: Users, label: 'Clients' },
-      { href: '/aeronaves', icon: PlaneTakeoff, label: 'Aircraft' },
+      { href: '/aircraft', icon: PlaneTakeoff, label: 'Aircraft' },
       { href: '/databases', icon: Database, label: 'Databases' },
       { href: '/tools', icon: Wrench, label: 'Tools' },
       { href: '/settings', icon: Settings, label: 'Settings' },

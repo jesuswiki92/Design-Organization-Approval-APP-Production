@@ -1,19 +1,19 @@
 'use client'
 
 /**
- * Tab "Cierre" del detalle de proyecto — Sprint 4 (close-the-loop).
+ * Tab "Cierre" del detalle de project — Sprint 4 (close-the-loop).
  *
- * Estados admitidos y comportamiento:
- *   - confirmacion_cliente -> formulario de cierre (outcome, notas, lecciones).
- *                             POST /api/proyectos/[id]/cerrar.
- *   - cerrado              -> vista read-only del closure, firma, lecciones +
- *                             boton "Archivar proyecto".
- *   - archivado_proyecto   -> vista read-only completa + boton "Reindexar
+ * Statuses admitidos y comportamiento:
+ *   - client_confirmation -> form de closure (outcome, notes, lecciones).
+ *                             POST /api/projects/[id]/close.
+ *   - closed              -> vista read-only del closure, firma, lecciones +
+ *                             boton "Archive project".
+ *   - project_archived   -> vista read-only completa + boton "Reindexar
  *                             precedente" (fail-soft).
  *   - resto                -> mensaje informativo, sin acciones.
  *
  * Siempre muestra, si hay closure_id disponible, el bloque de metricas
- * computadas al cierre y la lista de lecciones aprendidas.
+ * computadas al closure y la lista de lecciones aprendidas.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -37,15 +37,15 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   CLOSURE_OUTCOMES,
   CLOSURE_OUTCOME_LABELS,
-  LESSON_CATEGORIA_LABELS,
-  LESSON_TIPO_LABELS,
+  LESSON_CATEGORY_LABELS,
+  LESSON_TYPE_LABELS,
   PROJECT_EXECUTION_STATES,
 } from '@/lib/workflow-states'
 import type {
   ClosureMetricsSnapshot,
   ClosureOutcome,
-  LessonCategoria,
-  LessonTipo,
+  LessonCategory,
+  LessonType,
   ProjectClosure,
   ProjectLesson,
 } from '@/types/database'
@@ -68,12 +68,12 @@ type ClosureResponse = {
 
 type LessonDraft = {
   key: string
-  categoria: LessonCategoria
-  tipo: LessonTipo
-  titulo: string
-  descripcion: string
-  impacto: string
-  recomendacion: string
+  category: LessonCategory
+  type: LessonType
+  title: string
+  description: string
+  impact: string
+  recommendation: string
   tagsRaw: string
 }
 
@@ -84,24 +84,24 @@ type Props = {
 }
 
 const OUTCOME_OPTIONS: ClosureOutcome[] = [
-  CLOSURE_OUTCOMES.EXITOSO,
-  CLOSURE_OUTCOMES.EXITOSO_CON_RESERVAS,
-  CLOSURE_OUTCOMES.PROBLEMATICO,
-  CLOSURE_OUTCOMES.ABORTADO,
+  CLOSURE_OUTCOMES.SUCCESSFUL,
+  CLOSURE_OUTCOMES.SUCCESSFUL_WITH_RESERVATIONS,
+  CLOSURE_OUTCOMES.PROBLEMATIC,
+  CLOSURE_OUTCOMES.ABORTED,
 ]
 
-const CATEGORIA_OPTIONS: LessonCategoria[] = [
-  'tecnica',
-  'proceso',
-  'cliente',
-  'calidad',
-  'planificacion',
-  'herramientas',
-  'regulatoria',
-  'otro',
+const CATEGORIA_OPTIONS: LessonCategory[] = [
+  'technical',
+  'process',
+  'client',
+  'quality',
+  'planning',
+  'tools',
+  'regulatory',
+  'other',
 ]
 
-const TIPO_OPTIONS: LessonTipo[] = ['positiva', 'negativa', 'mejora', 'riesgo']
+const TIPO_OPTIONS: LessonType[] = ['positive', 'negative', 'improvement', 'risk']
 
 function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—'
@@ -128,12 +128,12 @@ function formatNumber(n: number | null | undefined, suffix = ''): string {
 function makeDraft(): LessonDraft {
   return {
     key: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    categoria: 'proceso',
-    tipo: 'mejora',
-    titulo: '',
-    descripcion: '',
-    impacto: '',
-    recomendacion: '',
+    category: 'process',
+    type: 'improvement',
+    title: '',
+    description: '',
+    impact: '',
+    recommendation: '',
     tagsRaw: '',
   }
 }
@@ -145,12 +145,12 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
   const [signature, setSignature] = useState<SignatureSummary | null>(null)
   const [lessons, setLessons] = useState<ProjectLesson[]>([])
 
-  // Form (solo en confirmacion_cliente)
-  const [outcome, setOutcome] = useState<ClosureOutcome>(CLOSURE_OUTCOMES.EXITOSO)
-  const [notas, setNotas] = useState('')
+  // Form (solo en client_confirmation)
+  const [outcome, setOutcome] = useState<ClosureOutcome>(CLOSURE_OUTCOMES.SUCCESSFUL)
+  const [notes, setNotas] = useState('')
   const [drafts, setDrafts] = useState<LessonDraft[]>([])
   const [submitting, setSubmitting] = useState<
-    null | 'cerrar' | 'archivar' | 'reindex' | 'add-lesson'
+    null | 'close' | 'archive' | 'reindex' | 'add-lesson'
   >(null)
 
   // Add-lesson form (cuando ya hay closure y queremos agregar lecciones sueltas)
@@ -159,15 +159,15 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
   const [reindexMsg, setReindexMsg] = useState<string | null>(null)
 
-  const canCerrar = currentState === PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE
-  const isCerrado = currentState === PROJECT_EXECUTION_STATES.CERRADO
-  const isArchivado = currentState === PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO
+  const canCerrar = currentState === PROJECT_EXECUTION_STATES.CLIENT_CONFIRMATION
+  const isCerrado = currentState === PROJECT_EXECUTION_STATES.CLOSED
+  const isArchivado = currentState === PROJECT_EXECUTION_STATES.PROJECT_ARCHIVED
 
   const loadClosure = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/closure`, {
+      const res = await fetch(`/api/projects/${proyectoId}/closure`, {
         method: 'GET',
       })
       const json = (await res.json().catch(() => ({}))) as
@@ -184,7 +184,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
       setLessons(payload.lessons ?? [])
     } catch (e) {
       console.error('ClosureTab load error:', e)
-      setError(e instanceof Error ? e.message : 'Error cargando cierre.')
+      setError(e instanceof Error ? e.message : 'Error cargando closure.')
     } finally {
       setLoading(false)
     }
@@ -194,7 +194,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
     loadClosure()
   }, [loadClosure])
 
-  // --- Handlers del formulario de cierre ---
+  // --- Handlers del form de closure ---
 
   const addDraft = useCallback(() => {
     setDrafts((prev) => [...prev, makeDraft()])
@@ -215,37 +215,37 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
   const draftsValid = useMemo(() => {
     return drafts.every(
-      (d) => d.titulo.trim().length > 0 && d.descripcion.trim().length > 0,
+      (d) => d.title.trim().length > 0 && d.description.trim().length > 0,
     )
   }, [drafts])
 
   const handleCerrar = useCallback(async () => {
     if (!draftsValid) {
-      setError('Todas las lecciones deben tener titulo y descripcion.')
+      setError('Todas las lecciones deben tener title y description.')
       return
     }
-    setSubmitting('cerrar')
+    setSubmitting('close')
     setError(null)
     try {
       const lecciones = drafts.map((d) => ({
-        categoria: d.categoria,
-        tipo: d.tipo,
-        titulo: d.titulo.trim(),
-        descripcion: d.descripcion.trim(),
-        impacto: d.impacto.trim() || undefined,
-        recomendacion: d.recomendacion.trim() || undefined,
+        category: d.category,
+        type: d.type,
+        title: d.title.trim(),
+        description: d.description.trim(),
+        impact: d.impact.trim() || undefined,
+        recommendation: d.recommendation.trim() || undefined,
         tags: d.tagsRaw
           .split(',')
           .map((t) => t.trim())
           .filter((t) => t.length > 0),
       }))
 
-      const res = await fetch(`/api/proyectos/${proyectoId}/cerrar`, {
+      const res = await fetch(`/api/projects/${proyectoId}/close`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           outcome,
-          notas_cierre: notas.trim() || undefined,
+          closure_notes: notes.trim() || undefined,
           lecciones,
         }),
       })
@@ -253,7 +253,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
         closure?: ProjectClosure
         signature?: SignatureSummary
         lessons?: ProjectLesson[]
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         error?: string
       }
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
@@ -261,54 +261,54 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
       if (json.closure) setClosure(json.closure)
       if (json.signature) setSignature(json.signature)
       if (json.lessons) setLessons(json.lessons)
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       setDrafts([])
       setNotas('')
       await loadClosure()
     } catch (e) {
-      console.error('cerrar error:', e)
-      setError(e instanceof Error ? e.message : 'No se pudo cerrar el proyecto.')
+      console.error('close error:', e)
+      setError(e instanceof Error ? e.message : 'No se pudo close el project.')
     } finally {
       setSubmitting(null)
     }
-  }, [draftsValid, drafts, outcome, notas, proyectoId, onStateChange, loadClosure])
+  }, [draftsValid, drafts, outcome, notes, proyectoId, onStateChange, loadClosure])
 
   const handleArchivar = useCallback(async () => {
-    setSubmitting('archivar')
+    setSubmitting('archive')
     setError(null)
     setReindexMsg(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/archivar`, {
+      const res = await fetch(`/api/projects/${proyectoId}/archive`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       })
       const json = (await res.json().catch(() => ({}))) as {
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         reindex?: { upserted: boolean; reason: string | null }
         mv_refreshed?: boolean
         error?: string
       }
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
 
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       const r = json.reindex
       if (r) {
         setReindexMsg(
           r.upserted
-            ? 'Proyecto archivado y reindexado en Pinecone.'
-            : `Proyecto archivado. Reindex de precedente pendiente: ${r.reason ?? 'sin razon'}.`,
+            ? 'Project archived y reindexado en Pinecone.'
+            : `Project archived. Reindex de precedente pending: ${r.reason ?? 'sin razon'}.`,
         )
       } else {
-        setReindexMsg('Proyecto archivado.')
+        setReindexMsg('Project archived.')
       }
     } catch (e) {
-      console.error('archivar error:', e)
-      setError(e instanceof Error ? e.message : 'No se pudo archivar el proyecto.')
+      console.error('archive error:', e)
+      setError(e instanceof Error ? e.message : 'No se pudo archive el project.')
     } finally {
       setSubmitting(null)
     }
@@ -322,11 +322,11 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
       const res = await fetch('/api/engineering/precedentes/reindex', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ proyecto_id: proyectoId }),
+        body: JSON.stringify({ project_id: proyectoId }),
       })
       const json = (await res.json().catch(() => ({}))) as {
         upserted?: boolean
-        records?: Array<{ proyecto_id: string; upserted: boolean; reason?: string }>
+        records?: Array<{ project_id: string; upserted: boolean; reason?: string }>
         error?: string
       }
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
@@ -336,7 +336,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
         setReindexMsg('Precedente reindexado correctamente en Pinecone.')
       } else {
         setReindexMsg(
-          `Reindex pendiente: ${record?.reason ?? 'sin respuesta del endpoint'}.`,
+          `Reindex pending: ${record?.reason ?? 'sin response del endpoint'}.`,
         )
       }
     } catch (e) {
@@ -348,26 +348,26 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
   }, [proyectoId])
 
   const handleAddLesson = useCallback(async () => {
-    if (!newLesson.titulo.trim() || !newLesson.descripcion.trim()) {
-      setError('Titulo y descripcion son obligatorios.')
+    if (!newLesson.title.trim() || !newLesson.description.trim()) {
+      setError('Titulo y description son obligatorios.')
       return
     }
     setSubmitting('add-lesson')
     setError(null)
     try {
       const body = {
-        categoria: newLesson.categoria,
-        tipo: newLesson.tipo,
-        titulo: newLesson.titulo.trim(),
-        descripcion: newLesson.descripcion.trim(),
-        impacto: newLesson.impacto.trim() || undefined,
-        recomendacion: newLesson.recomendacion.trim() || undefined,
+        category: newLesson.category,
+        type: newLesson.type,
+        title: newLesson.title.trim(),
+        description: newLesson.description.trim(),
+        impact: newLesson.impact.trim() || undefined,
+        recommendation: newLesson.recommendation.trim() || undefined,
         tags: newLesson.tagsRaw
           .split(',')
           .map((t) => t.trim())
           .filter((t) => t.length > 0),
       }
-      const res = await fetch(`/api/proyectos/${proyectoId}/lessons`, {
+      const res = await fetch(`/api/projects/${proyectoId}/lessons`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -399,7 +399,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
       <header className="flex items-center gap-2">
         <Flag className="h-4 w-4 text-[color:var(--ink-3)]" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-          Cierre del proyecto
+          Cierre del project
         </h2>
       </header>
 
@@ -418,7 +418,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
       {loading && (
         <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Cargando cierre...
+          Cargando closure...
         </div>
       )}
 
@@ -427,7 +427,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <Sparkles className="h-3.5 w-3.5" />
-            Metricas del cierre
+            Metricas del closure
           </h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             <MetricCard
@@ -441,35 +441,35 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
             />
             <MetricCard
               label="Validaciones aprobadas"
-              value={`${metrics.validaciones_aprobadas ?? 0}/${metrics.validaciones_count ?? 0}`}
+              value={`${metrics.validations_approved ?? 0}/${metrics.validations_count ?? 0}`}
             />
             <MetricCard
               label="Devoluciones"
-              value={String(metrics.devoluciones_count ?? 0)}
+              value={String(metrics.returns_count ?? 0)}
             />
             <MetricCard
               label="Entregas confirmadas"
-              value={`${metrics.entregas_confirmadas ?? 0}/${metrics.entregas_count ?? 0}`}
+              value={`${metrics.deliveries_confirmed ?? 0}/${metrics.deliveries_count ?? 0}`}
             />
             <MetricCard
               label="Dias totales"
-              value={formatNumber(metrics.dias_total ?? null, ' d')}
+              value={formatNumber(metrics.total_days ?? null, ' d')}
             />
             <MetricCard
-              label="Confirmacion cliente"
+              label="Client confirmation"
               value={formatNumber(metrics.client_confirmation_days ?? null, ' d')}
             />
             <MetricCard
-              label="Cerrado el"
+              label="Closed el"
               value={formatDateTime(closure.created_at)}
             />
           </div>
-          {closure.notas_cierre && (
+          {closure.closure_notes && (
             <div className="mt-3 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-3 text-sm text-[color:var(--ink-2)]">
               <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                Notas de cierre
+                Notes de closure
               </span>
-              {closure.notas_cierre}
+              {closure.closure_notes}
             </div>
           )}
           {signature && (
@@ -492,17 +492,17 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
         </section>
       )}
 
-      {/* Formulario de cierre (solo confirmacion_cliente y sin closure) */}
+      {/* Form de closure (solo client_confirmation y sin closure) */}
       {!loading && canCerrar && !closure && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Cerrar proyecto
+                Close project
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-                Se computara un snapshot de metricas, se firmara HMAC el cierre y
-                el proyecto pasara al estado &quot;cerrado&quot;. Podras archivarlo
+                Se computara un snapshot de metricas, se firmara HMAC el closure y
+                el project pasara al status &quot;closed&quot;. Podras archivarlo
                 despues para reindexar el precedente.
               </p>
             </div>
@@ -510,7 +510,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
           <div className="mt-4 grid gap-3 lg:grid-cols-2">
             <label className="block text-xs font-medium text-[color:var(--ink-2)]">
-              Outcome del proyecto
+              Outcome del project
               <select
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value as ClosureOutcome)}
@@ -526,9 +526,9 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
           </div>
 
           <label className="mt-3 block text-xs font-medium text-[color:var(--ink-2)]">
-            Notas de cierre (opcional)
+            Notes de closure (opcional)
             <Textarea
-              value={notas}
+              value={notes}
               onChange={(e) => setNotas(e.target.value)}
               rows={3}
               className="mt-1 bg-[color:var(--paper)]"
@@ -555,7 +555,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
             {drafts.length === 0 ? (
               <p className="rounded-md border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)]/40 px-3 py-4 text-center text-xs text-[color:var(--ink-3)]">
                 No hay lecciones capturadas todavia. Puedes anadirlas aqui o
-                despues del cierre.
+                despues del closure.
               </p>
             ) : (
               <ul className="space-y-3">
@@ -567,36 +567,36 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap gap-2">
                         <select
-                          value={d.categoria}
+                          value={d.category}
                           onChange={(e) =>
                             updateDraft(
                               d.key,
-                              'categoria',
-                              e.target.value as LessonCategoria,
+                              'category',
+                              e.target.value as LessonCategory,
                             )
                           }
                           className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                         >
                           {CATEGORIA_OPTIONS.map((c) => (
                             <option key={c} value={c}>
-                              {LESSON_CATEGORIA_LABELS[c]}
+                              {LESSON_CATEGORY_LABELS[c]}
                             </option>
                           ))}
                         </select>
                         <select
-                          value={d.tipo}
+                          value={d.type}
                           onChange={(e) =>
                             updateDraft(
                               d.key,
-                              'tipo',
-                              e.target.value as LessonTipo,
+                              'type',
+                              e.target.value as LessonType,
                             )
                           }
                           className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                         >
                           {TIPO_OPTIONS.map((t) => (
                             <option key={t} value={t}>
-                              {LESSON_TIPO_LABELS[t]}
+                              {LESSON_TYPE_LABELS[t]}
                             </option>
                           ))}
                         </select>
@@ -612,35 +612,35 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                     </div>
                     <input
                       type="text"
-                      value={d.titulo}
-                      onChange={(e) => updateDraft(d.key, 'titulo', e.target.value)}
+                      value={d.title}
+                      onChange={(e) => updateDraft(d.key, 'title', e.target.value)}
                       placeholder="Titulo"
                       className="mt-2 w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-sm text-[color:var(--ink-2)]"
                     />
                     <Textarea
-                      value={d.descripcion}
+                      value={d.description}
                       onChange={(e) =>
-                        updateDraft(d.key, 'descripcion', e.target.value)
+                        updateDraft(d.key, 'description', e.target.value)
                       }
                       rows={2}
-                      placeholder="Descripcion"
+                      placeholder="Description"
                       className="mt-2 bg-[color:var(--paper)]"
                     />
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
                       <input
                         type="text"
-                        value={d.impacto}
+                        value={d.impact}
                         onChange={(e) =>
-                          updateDraft(d.key, 'impacto', e.target.value)
+                          updateDraft(d.key, 'impact', e.target.value)
                         }
                         placeholder="Impacto (opcional)"
                         className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                       />
                       <input
                         type="text"
-                        value={d.recomendacion}
+                        value={d.recommendation}
                         onChange={(e) =>
-                          updateDraft(d.key, 'recomendacion', e.target.value)
+                          updateDraft(d.key, 'recommendation', e.target.value)
                         }
                         placeholder="Recomendacion (opcional)"
                         className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
@@ -668,28 +668,28 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
               disabled={submitting !== null || !draftsValid}
               className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {submitting === 'cerrar' ? (
+              {submitting === 'close' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}
-              Cerrar proyecto
+              Close project
             </button>
           </div>
         </section>
       )}
 
-      {/* Cerrado: CTA archivar */}
+      {/* Closed: CTA archive */}
       {!loading && isCerrado && closure && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Proyecto cerrado
+                Project closed
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                 Puedes archivarlo para congelar el expediente y reindexar el
-                precedente en el motor de busqueda (Pinecone).
+                precedente en el engine de search (Pinecone).
               </p>
             </div>
             <button
@@ -698,25 +698,25 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
               disabled={submitting !== null}
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {submitting === 'archivar' ? (
+              {submitting === 'archive' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Archive className="h-4 w-4" />
               )}
-              Archivar proyecto
+              Archive project
             </button>
           </div>
         </section>
       )}
 
-      {/* Archivado: CTA reindex */}
+      {/* Archived: CTA reindex */}
       {!loading && isArchivado && closure && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[color:var(--ink)]">
                 <Lock className="h-4 w-4" />
-                Proyecto archivado
+                Project archived
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-2)]">
                 El expediente es de solo lectura. Puedes forzar un reindex del
@@ -740,11 +740,11 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
         </section>
       )}
 
-      {/* Estado no admitido */}
+      {/* Status no admitido */}
       {!loading && !canCerrar && !isCerrado && !isArchivado && !closure && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 text-sm text-[color:var(--ink-3)] shadow-sm">
-          El proyecto no esta en un estado que admita cierre. Para cerrarlo debe
-          llegar primero a &quot;confirmacion cliente&quot;.
+          El project no esta en un status que admita closure. Para cerrarlo debe
+          llegar primero a &quot;confirmacion client&quot;.
         </section>
       )}
 
@@ -773,34 +773,34 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex flex-wrap gap-2">
                   <select
-                    value={newLesson.categoria}
+                    value={newLesson.category}
                     onChange={(e) =>
                       setNewLesson((l) => ({
                         ...l,
-                        categoria: e.target.value as LessonCategoria,
+                        category: e.target.value as LessonCategory,
                       }))
                     }
                     className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                   >
                     {CATEGORIA_OPTIONS.map((c) => (
                       <option key={c} value={c}>
-                        {LESSON_CATEGORIA_LABELS[c]}
+                        {LESSON_CATEGORY_LABELS[c]}
                       </option>
                     ))}
                   </select>
                   <select
-                    value={newLesson.tipo}
+                    value={newLesson.type}
                     onChange={(e) =>
                       setNewLesson((l) => ({
                         ...l,
-                        tipo: e.target.value as LessonTipo,
+                        type: e.target.value as LessonType,
                       }))
                     }
                     className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-xs text-[color:var(--ink-2)]"
                   >
                     {TIPO_OPTIONS.map((t) => (
                       <option key={t} value={t}>
-                        {LESSON_TIPO_LABELS[t]}
+                        {LESSON_TYPE_LABELS[t]}
                       </option>
                     ))}
                   </select>
@@ -819,37 +819,37 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
               </div>
               <input
                 type="text"
-                value={newLesson.titulo}
+                value={newLesson.title}
                 onChange={(e) =>
-                  setNewLesson((l) => ({ ...l, titulo: e.target.value }))
+                  setNewLesson((l) => ({ ...l, title: e.target.value }))
                 }
                 placeholder="Titulo"
                 className="mt-2 w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-sm text-[color:var(--ink-2)]"
               />
               <Textarea
-                value={newLesson.descripcion}
+                value={newLesson.description}
                 onChange={(e) =>
-                  setNewLesson((l) => ({ ...l, descripcion: e.target.value }))
+                  setNewLesson((l) => ({ ...l, description: e.target.value }))
                 }
                 rows={2}
-                placeholder="Descripcion"
+                placeholder="Description"
                 className="mt-2 bg-[color:var(--paper)]"
               />
               <div className="mt-2 grid gap-2 md:grid-cols-2">
                 <input
                   type="text"
-                  value={newLesson.impacto}
+                  value={newLesson.impact}
                   onChange={(e) =>
-                    setNewLesson((l) => ({ ...l, impacto: e.target.value }))
+                    setNewLesson((l) => ({ ...l, impact: e.target.value }))
                   }
                   placeholder="Impacto (opcional)"
                   className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
                 />
                 <input
                   type="text"
-                  value={newLesson.recomendacion}
+                  value={newLesson.recommendation}
                   onChange={(e) =>
-                    setNewLesson((l) => ({ ...l, recomendacion: e.target.value }))
+                    setNewLesson((l) => ({ ...l, recommendation: e.target.value }))
                   }
                   placeholder="Recomendacion (opcional)"
                   className="w-full rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1.5 text-xs text-[color:var(--ink-2)]"
@@ -884,7 +884,7 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
 
           {lessons.length === 0 ? (
             <p className="text-sm text-[color:var(--ink-3)]">
-              Aun no hay lecciones registradas para este proyecto.
+              Aun no hay lecciones registradas para este project.
             </p>
           ) : (
             <ul className="space-y-3">
@@ -896,10 +896,10 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap gap-1.5">
                       <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--ink-2)]">
-                        {LESSON_CATEGORIA_LABELS[l.categoria]}
+                        {LESSON_CATEGORY_LABELS[l.category]}
                       </span>
                       <span className="inline-flex items-center rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-0.5 text-[11px] font-medium text-[color:var(--ink-2)]">
-                        {LESSON_TIPO_LABELS[l.tipo]}
+                        {LESSON_TYPE_LABELS[l.type]}
                       </span>
                     </div>
                     <span className="text-[11px] text-[color:var(--ink-3)]">
@@ -907,27 +907,27 @@ export function ClosureTab({ proyectoId, currentState, onStateChange }: Props) {
                     </span>
                   </div>
                   <h4 className="mt-2 text-sm font-semibold text-[color:var(--ink-2)]">
-                    {l.titulo}
+                    {l.title}
                   </h4>
                   <p className="mt-1 whitespace-pre-wrap text-xs text-[color:var(--ink-3)]">
-                    {l.descripcion}
+                    {l.description}
                   </p>
-                  {(l.impacto || l.recomendacion) && (
+                  {(l.impact || l.recommendation) && (
                     <div className="mt-2 grid gap-2 text-xs md:grid-cols-2">
-                      {l.impacto && (
+                      {l.impact && (
                         <div className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-2">
                           <span className="block text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                             Impacto
                           </span>
-                          {l.impacto}
+                          {l.impact}
                         </div>
                       )}
-                      {l.recomendacion && (
+                      {l.recommendation && (
                         <div className="rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-2">
                           <span className="block text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                             Recomendacion
                           </span>
-                          {l.recomendacion}
+                          {l.recommendation}
                         </div>
                       )}
                     </div>

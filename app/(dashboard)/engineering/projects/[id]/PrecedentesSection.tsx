@@ -3,21 +3,21 @@
  * SECCION "PROYECTOS SIMILARES" (PRECEDENTES)
  * ============================================================================
  *
- * Renderiza el top-3 de proyectos pasados similares al proyecto actual,
- * usando busqueda vectorial sobre PROJECT_SUMMARY.md (ver
- * `app/api/proyectos/[id]/precedentes/route.ts` y la migracion
- * `doa_proyectos_embeddings`).
+ * Renderiza el top-3 de projects pasados similares al project actual,
+ * usando search vectorial sobre PROJECT_SUMMARY.md (ver
+ * `app/api/projects/[id]/precedentes/route.ts` y la migracion
+ * `doa_project_embeddings`).
  *
- * Estados gestionados de forma elegante:
- *   - 200 con resultados   -> tarjetas con score, clasificacion, snippet
- *   - 200 con array vacio  -> "No hay proyectos similares en el indice"
+ * Statuses gestionados de forma elegante:
+ *   - 200 con resultados   -> tarjetas con score, classification, snippet
+ *   - 200 con array vacio  -> "No hay projects similares en el indice"
  *   - 503                  -> "Indice no inicializado" (migracion + backfill)
  *   - 401                  -> "Sesion expirada" + boton de refresco
  *   - otros                -> mensaje generico de error
  *
- * Filtros cliente:
+ * Filtros client:
  *   - "Minor" / "Major" toggle chips (independientes)
- *   - "Copiar ruta" copia el path absoluto al portapapeles
+ *   - "Copiar path" copia el path absoluto al portapapeles
  * ============================================================================
  */
 
@@ -49,13 +49,13 @@ type Precedente = {
   snippet: string | null
   /**
    * Sprint 4: origen del precedente.
-   *   - 'historico'  -> indice OpenAI (doa_proyectos_embeddings).
-   *   - 'archivado'  -> indice Pinecone doa-precedentes (proyectos archivados).
-   *   - 'cerrado'    -> Pinecone, proyecto cerrado pero no archivado.
+   *   - 'historical'  -> indice OpenAI (doa_project_embeddings).
+   *   - 'archived'  -> indice Pinecone doa-precedentes (projects archivados).
+   *   - 'closed'    -> Pinecone, project closed pero no archived.
    */
-  fuente?: 'historico' | 'archivado' | 'cerrado'
+  fuente?: 'historical' | 'archived' | 'closed'
   /** Sprint 4: lecciones aprendidas asociadas al precedente. */
-  lecciones_count?: number
+  lessons_count?: number
 }
 
 type Props = {
@@ -65,7 +65,7 @@ type Props = {
 
 // --- UTILIDADES ---
 
-/** Devuelve clases Tailwind para el badge de clasificacion */
+/** Devuelve clases Tailwind para el badge de classification */
 function classificationBadge(classification: string | null): {
   label: string
   cls: string
@@ -101,22 +101,22 @@ function fuenteBadge(fuente: Precedente['fuente']): {
   cls: string
   Icon: typeof Database
 } {
-  if (fuente === 'archivado') {
+  if (fuente === 'archived') {
     return {
-      label: 'Archivado',
+      label: 'Archived',
       cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
       Icon: Archive,
     }
   }
-  if (fuente === 'cerrado') {
+  if (fuente === 'closed') {
     return {
-      label: 'Cerrado',
+      label: 'Closed',
       cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       Icon: Archive,
     }
   }
   return {
-    label: 'Historico',
+    label: 'Historical',
     cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
     Icon: Database,
   }
@@ -140,7 +140,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/proyectos/${projectId}/precedentes`, {
+        const res = await fetch(`/api/projects/${projectId}/precedentes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: '{}',
@@ -149,13 +149,13 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
         if (cancelled) return
 
         if (res.status === 401) {
-          setError('Sesion expirada. Refresca la pagina para iniciar sesion de nuevo.')
+          setError('Sesion expirada. Refresca la page para iniciar sesion de new.')
           setResults([])
           return
         }
 
         if (res.status === 404) {
-          setError('Proyecto no encontrado.')
+          setError('Project no encontrado.')
           setResults([])
           return
         }
@@ -197,7 +197,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
     // si cambia.
   }, [projectId, projectNumber])
 
-  // --- Filtros cliente ---
+  // --- Filtros client ---
   const filtered = results.filter((p) => {
     if (!filterMinor && !filterMajor) return true
     const c = (p.classification ?? '').toLowerCase()
@@ -206,7 +206,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
     return false
   })
 
-  // --- Copiar ruta ---
+  // --- Copiar path ---
   async function handleCopy(sourcePath: string) {
     try {
       await navigator.clipboard.writeText(sourcePath)
@@ -227,7 +227,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
           <Sparkles className="h-4 w-4 text-[color:var(--ink-3)]" />
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-              Proyectos similares
+              Projects similares
             </h2>
             <p className="mt-0.5 text-[11px] text-[color:var(--ink-3)]">
               Top 3 segun el indice
@@ -298,8 +298,8 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
         {!loading && !error && filtered.length === 0 && (
           <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-8 text-center text-sm text-[color:var(--ink-3)]">
             {results.length === 0
-              ? 'No hay proyectos similares en el indice.'
-              : 'Ningun proyecto coincide con los filtros activos.'}
+              ? 'No hay projects similares en el indice.'
+              : 'Ningun project coincide con los filtros activos.'}
           </div>
         )}
 
@@ -327,7 +327,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
 
                   {/* Title */}
                   <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-[color:var(--ink)]">
-                    {p.project_title ?? 'Sin titulo'}
+                    {p.project_title ?? 'Sin title'}
                   </h3>
 
                   {/* Metadata row */}
@@ -344,13 +344,13 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
                       <FuenteIcon className="h-3 w-3" />
                       {fuente.label}
                     </span>
-                    {typeof p.lecciones_count === 'number' && p.lecciones_count > 0 && (
+                    {typeof p.lessons_count === 'number' && p.lessons_count > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700"
                         title="Lecciones aprendidas asociadas"
                       >
                         <BookOpen className="h-3 w-3" />
-                        {p.lecciones_count} lecciones
+                        {p.lessons_count} lecciones
                       </span>
                     )}
                     {p.family && (
@@ -388,7 +388,7 @@ export function PrecedentesSection({ projectId, projectNumber }: Props) {
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            Copiar ruta
+                            Copiar path
                           </>
                         )}
                       </button>

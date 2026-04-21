@@ -1,19 +1,19 @@
 /**
  * CLIENTE SUPABASE CON SERVICE ROLE (ADMIN)
  *
- * Este cliente usa la service_role key en lugar de la anon key.
+ * Este client usa la service_role key en lugar de la anon key.
  * Esto le permite saltarse las politicas RLS de las tablas, por lo
  * que SOLO debe usarse en el lado servidor (API routes, server actions)
- * y NUNCA exponerse al cliente.
+ * y NUNCA exponerse al client.
  *
- * Caso de uso principal: operaciones de escritura (INSERT, UPDATE, DELETE)
- * en tablas que tienen RLS habilitado sin politicas para el rol
- * 'authenticated' (por ejemplo, doa_proyectos que solo permite
+ * Caso de uso primary: operaciones de escritura (INSERT, UPDATE, DELETE)
+ * en tablas que tienen RLS habilitado sin politicas para el role
+ * 'authenticated' (por ejemplo, doa_projects que solo permite
  * SELECT publico y ALL para service_role).
  *
- * IMPORTANTE: la autenticacion del usuario ya debe haberse verificado
- * ANTES de usar este cliente (via requireUserApi / requireUserAction).
- * Este cliente NO valida sesion — solo ejecuta queries con permisos
+ * IMPORTANTE: la autenticacion del user_label ya debe haberse verificado
+ * ANTES de usar este client (via requireUserApi / requireUserAction).
+ * Este client NO valida sesion — solo ejecuta queries con permisos
  * elevados.
  */
 
@@ -22,8 +22,8 @@ import { createClient } from '@supabase/supabase-js'
 let _admin: ReturnType<typeof createClient> | null = null
 
 /**
- * Devuelve un cliente Supabase con service_role.
- * Es un singleton — se reutiliza en todas las llamadas del proceso.
+ * Devuelve un client Supabase con service_role.
+ * Es un singleton — se reutiliza en todas las llamadas del process.
  *
  * @throws Error si falta NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY
  */

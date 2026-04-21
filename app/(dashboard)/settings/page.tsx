@@ -7,7 +7,7 @@ const availableSettings = [
   {
     title: 'Logs operativos',
     description:
-      'Consulta actividad reciente de la app, fallos observados y contexto operativo redacted.',
+      'Request actividad reciente de la app, fallos observados y contexto operativo redacted.',
     icon: Activity,
     href: '/settings/logs',
     status: 'Disponible',
@@ -16,14 +16,14 @@ const availableSettings = [
 
 const plannedSettings = [
   {
-    title: 'Perfil de usuario',
-    description: 'Gestiona tu nombre, correo y preferencias de cuenta.',
+    title: 'Perfil de user_label',
+    description: 'Gestiona tu name, email y preferencias de cuenta.',
     icon: User,
     status: 'Proximamente',
   },
   {
     title: 'Notificaciones',
-    description: 'Configura alertas por correo, push y dentro de la app.',
+    description: 'Configura alertas por email, push y dentro de la app.',
     icon: Bell,
     status: 'Proximamente',
   },

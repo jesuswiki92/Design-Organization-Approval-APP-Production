@@ -7,7 +7,7 @@ Provide app-hosted public forms for consultation follow-up, with two variants dr
 ## Requirements
 
 ### Requirement: Public tokenized access
-The system MUST expose each form through a public token linked to `doa_consultas_entrantes.id`. The token MUST identify the consultation without requiring login.
+The system MUST expose each form through a public token linked to `doa_incoming_requests.id`. The token MUST identify the consultation without requiring login.
 
 #### Scenario: Open form from public URL
 - GIVEN a valid public token
@@ -37,12 +37,12 @@ The system MUST support two variants: known client and unknown client. Known cli
 - AND the form SHALL show the technical project questions
 
 ### Requirement: Client-data block
-For unknown clients, the form MUST collect company and contact data. `Dominio email` MUST NOT be asked directly and MUST be derived from the sender email. `Tipo de cliente` MUST be a dropdown.
+For unknown clients, the form MUST collect company and contact data. `Dominio email` MUST NOT be asked directly and MUST be derived from the sender email. `Tipo de client` MUST be a dropdown.
 
 #### Scenario: Unknown client data entry
 - GIVEN the form is in unknown-client mode
 - WHEN the user fills the client-data block
-- THEN the system SHALL accept empresa, CIF/VAT, país, ciudad, dirección, teléfono, web, tipo de cliente, notas, nombre contacto, apellidos, email, teléfono contacto y cargo
+- THEN the system SHALL accept empresa, CIF/VAT, country, city, address, phone, website, type de client, notes, name contacto, last_name, email, phone contacto y job_title
 - AND the system SHALL derive the email domain from the sender email
 
 ### Requirement: Technical project block
@@ -55,17 +55,17 @@ The system MUST collect the locked technical questions for all forms: project id
 - AND the submission SHALL be valid only when the required technical fields are present
 
 ### Requirement: Conditional reference field
-`Referencia interna del proyecto` MUST be shown only when `Tipo de trabajo` is `Modificación a proyecto existente`.
+`Referencia internal del project` MUST be shown only when `Tipo de trabajo` is `Modificación a project existente`.
 
 #### Scenario: Existing project modification
-- GIVEN `Tipo de trabajo` is `Modificación a proyecto existente`
+- GIVEN `Tipo de trabajo` is `Modificación a project existente`
 - WHEN the technical block is displayed
-- THEN the system SHALL require `Referencia interna del proyecto`
+- THEN the system SHALL require `Referencia internal del project`
 
 #### Scenario: New project modification
-- GIVEN `Tipo de trabajo` is `Modificación nueva`
+- GIVEN `Tipo de trabajo` is `Modificación new`
 - WHEN the technical block is displayed
-- THEN the system SHALL hide `Referencia interna del proyecto`
+- THEN the system SHALL hide `Referencia internal del project`
 
 ### Requirement: Supabase persistence
 The system MUST store form submissions in Supabase and link each response to the originating consultation.

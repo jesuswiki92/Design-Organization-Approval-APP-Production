@@ -5,9 +5,9 @@ import { logServerEvent } from '@/lib/observability/server'
 import { buildRequestContext } from '@/lib/observability/shared'
 
 /**
- * Proxy autenticado al webhook de n8n que actualiza el estado de un proyecto.
+ * Proxy autenticado al webhook de n8n que actualiza el status de un project.
  * La URL del webhook vive en `DOA_PROJECT_STATE_WEBHOOK_URL` (server-only).
- * El cliente llama a `/api/webhooks/project-state` — la URL real nunca sale al bundle.
+ * El client llama a `/api/webhooks/project-state` — la URL real nunca sale al bundle.
  */
 
 export const runtime = 'nodejs'
@@ -56,22 +56,22 @@ export async function POST(request: Request) {
   }
 
   const projectId =
-    typeof parsedBody.proyecto_id === 'string' ? parsedBody.proyecto_id : null
+    typeof parsedBody.project_id === 'string' ? parsedBody.project_id : null
   const nextState =
-    typeof parsedBody.estado === 'string' ? parsedBody.estado : null
+    typeof parsedBody.status === 'string' ? parsedBody.status : null
 
   let previousState: string | null = null
   let projectNumber: string | null = null
 
   if (projectId) {
     const current = await supabase
-      .from('doa_proyectos')
-      .select('estado, numero_proyecto')
+      .from('doa_projects')
+      .select('status, project_number')
       .eq('id', projectId)
       .maybeSingle()
 
-    previousState = current.data?.estado ?? null
-    projectNumber = current.data?.numero_proyecto ?? null
+    previousState = current.data?.status ?? null
+    projectNumber = current.data?.project_number ?? null
   }
 
   try {

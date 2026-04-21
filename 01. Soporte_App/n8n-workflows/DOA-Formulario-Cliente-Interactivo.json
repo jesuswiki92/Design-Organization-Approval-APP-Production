@@ -2,7 +2,7 @@
   "updatedAt": "2026-03-29T10:59:37.296Z",
   "createdAt": "2026-03-15T10:49:28.544Z",
   "id": "rbFKi9O5FFvXz0XL",
-  "name": "DOA-Formulario-Cliente-Interactivo",
+  "name": "DOA-Form-Client-Interactivo",
   "description": null,
   "active": false,
   "isArchived": true,
@@ -112,7 +112,7 @@
         }
       },
       "id": "form_trigger_interactive",
-      "name": "Formulario Cliente DOA Interactivo",
+      "name": "Form Client DOA Interactivo",
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.5,
       "position": [
@@ -204,7 +204,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const original = $('Formulario Cliente DOA Interactivo').item.json;\nconst output = $json.output || {};\nconst aiQuestions = Array.isArray(output.questions) ? output.questions.map((q) => (q || '').toString().trim()).filter(Boolean) : [];\nconst questions = [];\nif ((original['Project type'] || '') === 'Modification to an existing project' && !(original['Existing project code'] || '').toString().trim()) {\n  questions.push('Please provide the existing DOA project code for the project you want to modify.');\n}\nfor (const question of aiQuestions) {\n  if (!questions.includes(question)) questions.push(question);\n}\nreturn { json: { ...$json, questions, has_questions: questions.length > 0, follow_up_text: '' } };"
+        "jsCode": "const original = $('Form Client DOA Interactivo').item.json;\nconst output = $json.output || {};\nconst aiQuestions = Array.isArray(output.questions) ? output.questions.map((q) => (q || '').toString().trim()).filter(Boolean) : [];\nconst questions = [];\nif ((original['Project type'] || '') === 'Modification to an existing project' && !(original['Existing project code'] || '').toString().trim()) {\n  questions.push('Please provide the existing DOA project code for the project you want to modify.');\n}\nfor (const question of aiQuestions) {\n  if (!questions.includes(question)) questions.push(question);\n}\nreturn { json: { ...$json, questions, has_questions: questions.length > 0, follow_up_text: '' } };"
       },
       "id": "normalize_questions",
       "name": "Normalizar Preguntas",
@@ -318,10 +318,10 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const original = $('Formulario Cliente DOA Interactivo').item.json;\nconst clean = (value) => {\n  const text = (value ?? '').toString().trim();\n  return text || null;\n};\nconst required = (value, label) => {\n  const text = (value ?? '').toString().trim();\n  if (!text) throw new Error(`Missing required field: ${label}`);\n  return text;\n};\nconst companyName = required(original['Company name'], 'Company name');\nconst country = required(original['Country'], 'Country');\nconst contactFirstName = required(original['Contact first name'], 'Contact first name');\nconst contactEmail = required(original['Contact email'], 'Contact email');\nconst manufacturer = required(original['Aircraft manufacturer'], 'Aircraft manufacturer');\nconst model = required(original['Aircraft model'], 'Aircraft model');\nconst projectType = required(original['Project type'], 'Project type');\nconst description = required(original['Request description'], 'Request description');\nconst followUpText = clean($json.follow_up_text);\nconst existingProjectCode = clean(original['Existing project code']);\nconst cliente = {\n  nombre: companyName,\n  cif_vat: clean(original['VAT / Tax ID']),\n  pais: country,\n  ciudad: null,\n  direccion: null,\n  telefono: clean(original['Contact phone']),\n  web: null,\n  activo: true,\n  notas: null,\n};\nconst contacto = {\n  nombre: contactFirstName,\n  apellidos: clean(original['Contact last name']),\n  email: contactEmail,\n  telefono: clean(original['Contact phone']),\n  cargo: null,\n  es_principal: true,\n  activo: true,\n};\nconst clasificacion = projectType === 'Modification to an existing project'\n  ? 'Cliente solicita modificacion a proyecto existente'\n  : 'Cliente solicita proyecto nuevo';\nconst bodyLines = [\n  `Tipo de solicitud: ${projectType}`,\n  `Fabricante: ${manufacturer}`,\n  `Modelo: ${model}`,\n  `Matricula: ${clean(original['Registration']) || ''}`,\n  `Codigo proyecto existente: ${existingProjectCode || ''}`,\n  `Descripcion: ${description}`,\n  '',\n  `Empresa: ${companyName}`,\n  `Pais: ${country}`,\n  `Contacto: ${contactFirstName} ${clean(original['Contact last name']) || ''}`.trim(),\n  `Email contacto: ${contactEmail}`,\n];\nif (followUpText) {\n  bodyLines.push('');\n  bodyLines.push('Preguntas de seguimiento:');\n  bodyLines.push(followUpText);\n}\nconst intake = {\n  remitente: contactEmail,\n  asunto: `Formulario interactivo DOA - ${companyName} - ${model}`,\n  cuerpo_original: bodyLines.join('\\n'),\n  clasificacion,\n  respuesta_ia: '',\n};\nreturn { json: { cliente, contacto, intake } };"
+        "jsCode": "const original = $('Form Client DOA Interactivo').item.json;\nconst clean = (value) => {\n  const text = (value ?? '').toString().trim();\n  return text || null;\n};\nconst required = (value, label) => {\n  const text = (value ?? '').toString().trim();\n  if (!text) throw new Error(`Missing required field: ${label}`);\n  return text;\n};\nconst companyName = required(original['Company name'], 'Company name');\nconst country = required(original['Country'], 'Country');\nconst contactFirstName = required(original['Contact first name'], 'Contact first name');\nconst contactEmail = required(original['Contact email'], 'Contact email');\nconst manufacturer = required(original['Aircraft manufacturer'], 'Aircraft manufacturer');\nconst model = required(original['Aircraft model'], 'Aircraft model');\nconst projectType = required(original['Project type'], 'Project type');\nconst description = required(original['Request description'], 'Request description');\nconst followUpText = clean($json.follow_up_text);\nconst existingProjectCode = clean(original['Existing project code']);\nconst client = {\n  name: companyName,\n  vat_tax_id: clean(original['VAT / Tax ID']),\n  country: country,\n  city: null,\n  address: null,\n  phone: clean(original['Contact phone']),\n  website: null,\n  is_active: true,\n  notes: null,\n};\nconst contacto = {\n  name: contactFirstName,\n  last_name: clean(original['Contact last name']),\n  email: contactEmail,\n  phone: clean(original['Contact phone']),\n  job_title: null,\n  is_primary: true,\n  is_active: true,\n};\nconst classification = projectType === 'Modification to an existing project'\n  ? 'Client solicita modificacion a project existente'\n  : 'Client solicita project new';\nconst bodyLines = [\n  `Tipo de solicitud: ${projectType}`,\n  `Manufacturer: ${manufacturer}`,\n  `Model: ${model}`,\n  `Matricula: ${clean(original['Registration']) || ''}`,\n  `Codigo project existente: ${existingProjectCode || ''}`,\n  `Description: ${description}`,\n  '',\n  `Empresa: ${companyName}`,\n  `Country: ${country}`,\n  `Contacto: ${contactFirstName} ${clean(original['Contact last name']) || ''}`.trim(),\n  `Email contacto: ${contactEmail}`,\n];\nif (followUpText) {\n  bodyLines.push('');\n  bodyLines.push('Preguntas de seguimiento:');\n  bodyLines.push(followUpText);\n}\nconst intake = {\n  sender: contactEmail,\n  subject: `Form interactivo DOA - ${companyName} - ${model}`,\n  original_body: bodyLines.join('\\n'),\n  classification,\n  ai_response: '',\n};\nreturn { json: { client, contacto, intake } };"
       },
       "id": "prepare_payload_interactive",
-      "name": "Preparar Payload Interactivo",
+      "name": "Prepare Payload Interactivo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -331,7 +331,7 @@
     },
     {
       "parameters": {
-        "tableId": "doa_clientes_datos_generales"
+        "tableId": "doa_clients"
       },
       "id": "create_company_interactive",
       "name": "Crear Empresa Interactivo",
@@ -351,10 +351,10 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const createdClient = $json || {};\nconst payload = $('Preparar Payload Interactivo').item.json || {};\nconst cliente = (createdClient.id ? createdClient : (createdClient.data && createdClient.data[0]) ? createdClient.data[0] : null) || createdClient;\nif (!cliente.id) throw new Error('No se pudo recuperar el id del cliente creado.');\nreturn {\n  json: {\n    contacto: {\n      cliente_id: cliente.id,\n      nombre: payload.contacto.nombre,\n      apellidos: payload.contacto.apellidos,\n      email: payload.contacto.email,\n      telefono: payload.contacto.telefono,\n      cargo: payload.contacto.cargo,\n      es_principal: true,\n      activo: true,\n    },\n    intake: payload.intake,\n    cliente,\n  },\n};"
+        "jsCode": "const createdClient = $json || {};\nconst payload = $('Prepare Payload Interactivo').item.json || {};\nconst client = (createdClient.id ? createdClient : (createdClient.data && createdClient.data[0]) ? createdClient.data[0] : null) || createdClient;\nif (!client.id) throw new Error('No se pudo recuperar el id del client creado.');\nreturn {\n  json: {\n    contacto: {\n      client_id: client.id,\n      name: payload.contacto.name,\n      last_name: payload.contacto.last_name,\n      email: payload.contacto.email,\n      phone: payload.contacto.phone,\n      job_title: payload.contacto.job_title,\n      is_primary: true,\n      is_active: true,\n    },\n    intake: payload.intake,\n    client,\n  },\n};"
       },
       "id": "prepare_contact_interactive",
-      "name": "Preparar Contacto Interactivo",
+      "name": "Prepare Contacto Interactivo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -364,7 +364,7 @@
     },
     {
       "parameters": {
-        "tableId": "doa_clientes_contactos"
+        "tableId": "doa_client_contacts"
       },
       "id": "create_contact_interactive",
       "name": "Crear Contacto Interactivo",
@@ -383,7 +383,7 @@
     },
     {
       "parameters": {
-        "tableId": "doa_consultas_entrantes"
+        "tableId": "doa_incoming_requests"
       },
       "id": "create_intake_interactive",
       "name": "Crear Intake Interactivo",
@@ -419,7 +419,7 @@
     }
   ],
   "connections": {
-    "Formulario Cliente DOA Interactivo": {
+    "Form Client DOA Interactivo": {
       "main": [
         [
           {
@@ -496,7 +496,7 @@
         ],
         [
           {
-            "node": "Preparar Payload Interactivo",
+            "node": "Prepare Payload Interactivo",
             "type": "main",
             "index": 0
           }
@@ -547,14 +547,14 @@
       "main": [
         [
           {
-            "node": "Preparar Payload Interactivo",
+            "node": "Prepare Payload Interactivo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Payload Interactivo": {
+    "Prepare Payload Interactivo": {
       "main": [
         [
           {
@@ -569,14 +569,14 @@
       "main": [
         [
           {
-            "node": "Preparar Contacto Interactivo",
+            "node": "Prepare Contacto Interactivo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Contacto Interactivo": {
+    "Prepare Contacto Interactivo": {
       "main": [
         [
           {

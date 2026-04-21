@@ -4,11 +4,11 @@
 
 ### Requirement: Client detail includes contact records
 
-The system MUST include contacts from `doa_clientes_contactos` in the left-side client detail block when a client is selected.
+The system MUST include contacts from `doa_client_contacts` in the left-side client detail block when a client is selected.
 
 #### Scenario: Client has contacts
 
-- GIVEN a client has one or more rows in `doa_clientes_contactos`
+- GIVEN a client has one or more rows in `doa_client_contacts`
 - WHEN the user opens that client in `/clients`
 - THEN the left detail block shows the client contacts
 - AND the contacts are associated with the selected client

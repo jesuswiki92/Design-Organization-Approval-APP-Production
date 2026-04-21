@@ -1,16 +1,16 @@
 'use client'
 
 /**
- * Tab "Entrega" del detalle de proyecto (Sprint 3 - close the loop).
+ * Tab "Delivery" del detalle de project (Sprint 3 - close the loop).
  *
- * Estados:
- *   - validado             -> CTA "Preparar entrega" -> muestra PDF iframe + form.
- *   - preparando_entrega   -> carga delivery pendiente, muestra PDF iframe + form de envio.
- *   - entregado            -> "Esperando confirmacion del cliente".
- *   - confirmacion_cliente -> confirmada; timeline.
- *   - otros estados        -> read-only, solo timeline de entregas.
+ * Statuses:
+ *   - validated             -> CTA "Prepare delivery" -> muestra PDF iframe + form.
+ *   - preparing_delivery   -> carga delivery pending, muestra PDF iframe + form de send.
+ *   - delivered            -> "Awaiting confirmacion del client".
+ *   - client_confirmation -> confirmada; timeline.
+ *   - otros statuses        -> read-only, solo timeline de deliveries.
  *
- * En todos los casos se lista el timeline de entregas abajo.
+ * En todos los casos se lista el timeline de deliveries abajo.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -56,27 +56,27 @@ function formatDateTime(iso: string): string {
 }
 
 const DISPATCH_STATUS_LABEL: Record<string, { label: string; cls: string; icon: typeof Clock }> = {
-  pendiente: {
-    label: 'Pendiente',
+  pending: {
+    label: 'Pending',
     cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
     icon: Clock,
   },
-  enviando: {
+  sending: {
     label: 'Enviando',
     cls: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
     icon: Loader2,
   },
-  enviado: {
-    label: 'Enviado',
+  sent: {
+    label: 'Sent',
     cls: 'bg-amber-50 text-amber-700 border-amber-200',
     icon: Mail,
   },
-  fallo: {
+  failed: {
     label: 'Fallo',
     cls: 'bg-rose-50 text-rose-700 border-rose-200',
     icon: XCircle,
   },
-  confirmado_cliente: {
+  client_confirmed: {
     label: 'Confirmado',
     cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     icon: CheckCircle2,
@@ -97,7 +97,7 @@ export function DeliveryTab({
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<null | 'prepare' | 'send'>(null)
 
-  // Preview del PDF tras "Preparar entrega"
+  // Preview del PDF tras "Prepare delivery"
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const [pendingDelivery, setPendingDelivery] = useState<ProjectDelivery | null>(null)
 
@@ -108,10 +108,10 @@ export function DeliveryTab({
   const [formSubject, setFormSubject] = useState('')
   const [formBody, setFormBody] = useState('')
 
-  const canPrepare = currentState === PROJECT_EXECUTION_STATES.VALIDADO
-  const canSend = currentState === PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA
-  const isAwaitingClient = currentState === PROJECT_EXECUTION_STATES.ENTREGADO
-  const isConfirmed = currentState === PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE
+  const canPrepare = currentState === PROJECT_EXECUTION_STATES.VALIDATED
+  const canSend = currentState === PROJECT_EXECUTION_STATES.PREPARING_DELIVERY
+  const isAwaitingClient = currentState === PROJECT_EXECUTION_STATES.DELIVERED
+  const isConfirmed = currentState === PROJECT_EXECUTION_STATES.CLIENT_CONFIRMATION
 
   const defaultSubject = useMemo(
     () => `Statement of Compliance — ${proyectoTitulo}`,
@@ -120,7 +120,7 @@ export function DeliveryTab({
 
   const defaultBody = useMemo(
     () =>
-      `Estimado cliente,\n\nAdjuntamos el Statement of Compliance del proyecto ${proyectoNumero}.\n\nConfirma la recepcion pulsando el enlace incluido en este email.\n\nUn saludo,\nEquipo DOA`,
+      `Estimado client,\n\nAdjuntamos el Statement of Compliance del project ${proyectoNumero}.\n\nConfirma la recepcion pulsando el enlace incluido en este email.\n\nUn saludo,\nEquipo DOA`,
     [proyectoNumero],
   )
 
@@ -128,7 +128,7 @@ export function DeliveryTab({
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/deliveries`, {
+      const res = await fetch(`/api/projects/${proyectoId}/deliveries`, {
         method: 'GET',
       })
       const json = (await res.json().catch(() => ({}))) as {
@@ -139,13 +139,13 @@ export function DeliveryTab({
       const list = json.deliveries ?? []
       setDeliveries(list)
 
-      // Si estamos en preparando_entrega, buscar la delivery pendiente
-      if (currentState === PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA) {
-        const pending = list.find((d) => d.dispatch_status === 'pendiente') ?? null
+      // Si estamos en preparing_delivery, buscar la delivery pending
+      if (currentState === PROJECT_EXECUTION_STATES.PREPARING_DELIVERY) {
+        const pending = list.find((d) => d.dispatch_status === 'pending') ?? null
         setPendingDelivery(pending)
         if (pending) {
           setFormRecipientEmail(
-            pending.recipient_email && pending.recipient_email !== 'pendiente@doa.local'
+            pending.recipient_email && pending.recipient_email !== 'pending@doa.local'
               ? pending.recipient_email
               : defaultRecipientEmail ?? '',
           )
@@ -155,13 +155,13 @@ export function DeliveryTab({
           setFormBody(pending.body ?? defaultBody)
           // Cargar el PDF via endpoint (redirect a signed URL)
           setPdfPreviewUrl(
-            `/api/proyectos/${proyectoId}/deliveries/${pending.id}/soc-pdf`,
+            `/api/projects/${proyectoId}/deliveries/${pending.id}/soc-pdf`,
           )
         }
       }
     } catch (e) {
       console.error('DeliveryTab load error:', e)
-      setError(e instanceof Error ? e.message : 'Error cargando entregas.')
+      setError(e instanceof Error ? e.message : 'Error cargando deliveries.')
     } finally {
       setLoading(false)
     }
@@ -182,7 +182,7 @@ export function DeliveryTab({
     setSubmitting('prepare')
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/preparar-entrega`, {
+      const res = await fetch(`/api/projects/${proyectoId}/prepare-delivery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -190,14 +190,14 @@ export function DeliveryTab({
       const json = (await res.json().catch(() => ({}))) as {
         delivery_id?: string
         signed_url_preview?: string | null
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         error?: string
       }
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
 
       if (json.signed_url_preview) setPdfPreviewUrl(json.signed_url_preview)
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       // Prefills del form
       setFormRecipientEmail(defaultRecipientEmail ?? '')
@@ -207,8 +207,8 @@ export function DeliveryTab({
       setFormCcEmails('')
       await loadDeliveries()
     } catch (e) {
-      console.error('preparar-entrega error:', e)
-      setError(e instanceof Error ? e.message : 'No se pudo preparar la entrega.')
+      console.error('prepare-delivery error:', e)
+      setError(e instanceof Error ? e.message : 'No se pudo prepare la delivery.')
     } finally {
       setSubmitting(null)
     }
@@ -224,7 +224,7 @@ export function DeliveryTab({
 
   const handleSend = useCallback(async () => {
     if (!pendingDelivery) {
-      setError('No hay delivery pendiente de envio.')
+      setError('No hay delivery pending de send.')
       return
     }
     if (!formRecipientEmail.trim() || !formRecipientEmail.includes('@')) {
@@ -239,7 +239,7 @@ export function DeliveryTab({
         .map((s) => s.trim())
         .filter((s) => s.length > 0)
 
-      const res = await fetch(`/api/proyectos/${proyectoId}/enviar-entrega`, {
+      const res = await fetch(`/api/projects/${proyectoId}/send-delivery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -252,17 +252,17 @@ export function DeliveryTab({
         }),
       })
       const json = (await res.json().catch(() => ({}))) as {
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         error?: string
       }
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       await loadDeliveries()
     } catch (e) {
-      console.error('enviar-entrega error:', e)
-      setError(e instanceof Error ? e.message : 'No se pudo enviar la entrega.')
+      console.error('send-delivery error:', e)
+      setError(e instanceof Error ? e.message : 'No se pudo send la delivery.')
     } finally {
       setSubmitting(null)
     }
@@ -283,7 +283,7 @@ export function DeliveryTab({
       <header className="flex items-center gap-2">
         <Truck className="h-4 w-4 text-[color:var(--ink-3)]" />
         <h2 className="text-sm font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-          Entrega al cliente
+          Delivery al client
         </h2>
       </header>
 
@@ -293,13 +293,13 @@ export function DeliveryTab({
         </div>
       )}
 
-      {/* CTA preparar */}
+      {/* CTA prepare */}
       {canPrepare && !pdfPreviewUrl && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Listo para preparar la entrega
+                Listo para prepare la delivery
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-3)]">
                 Se generara el Statement of Compliance en PDF firmado (HMAC) y
@@ -317,13 +317,13 @@ export function DeliveryTab({
               ) : (
                 <FileText className="h-4 w-4" />
               )}
-              Preparar entrega
+              Prepare delivery
             </button>
           </div>
         </section>
       )}
 
-      {/* Iframe + form en preparando_entrega */}
+      {/* Iframe + form en preparing_delivery */}
       {(canSend || (canPrepare && pdfPreviewUrl)) && (
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           {/* Preview PDF */}
@@ -345,15 +345,15 @@ export function DeliveryTab({
             )}
           </div>
 
-          {/* Form envio */}
+          {/* Form send */}
           <div className="lg:col-span-2 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-[color:var(--ink)]">
               <Send className="h-4 w-4" />
-              Enviar al cliente
+              Send al client
             </h3>
             <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-              Al enviar se firma HMAC la liberacion, se dispara el workflow n8n
-              que manda el email y se transita el proyecto a &quot;entregado&quot;.
+              Al send se firma HMAC la liberacion, se dispara el workflow n8n
+              que manda el email y se transita el project a &quot;delivered&quot;.
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
@@ -363,17 +363,17 @@ export function DeliveryTab({
                   type="email"
                   value={formRecipientEmail}
                   onChange={(e) => setFormRecipientEmail(e.target.value)}
-                  placeholder="cliente@empresa.com"
+                  placeholder="client@empresa.com"
                   className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </label>
               <label className="block text-xs font-medium text-[color:var(--ink-2)]">
-                Nombre del destinatario
+                Name del destinatario
                 <input
                   type="text"
                   value={formRecipientName}
                   onChange={(e) => setFormRecipientName(e.target.value)}
-                  placeholder="Nombre (opcional)"
+                  placeholder="Name (opcional)"
                   className="mt-1 w-full rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2.5 py-2 text-sm text-[color:var(--ink-2)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </label>
@@ -388,7 +388,7 @@ export function DeliveryTab({
                 />
               </label>
               <label className="block text-xs font-medium text-[color:var(--ink-2)]">
-                Asunto
+                Subject
                 <input
                   type="text"
                   value={formSubject}
@@ -412,14 +412,14 @@ export function DeliveryTab({
                   onClick={handleSend}
                   disabled={submitting !== null || !canSend}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-60"
-                  title={canSend ? 'Enviar al cliente' : 'Primero pulsa "Preparar entrega"'}
+                  title={canSend ? 'Send al client' : 'Primero pulsa "Prepare delivery"'}
                 >
                   {submitting === 'send' ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Send className="h-4 w-4" />
                   )}
-                  Enviar entrega
+                  Send delivery
                 </button>
               </div>
             </div>
@@ -427,19 +427,19 @@ export function DeliveryTab({
         </section>
       )}
 
-      {/* Esperando cliente */}
+      {/* Awaiting client */}
       {isAwaitingClient && (
         <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-4">
           <div className="flex items-start gap-3">
             <Clock className="mt-0.5 h-4 w-4 text-amber-600" />
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Esperando confirmacion del cliente
+                Awaiting confirmacion del client
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-                El Statement of Compliance ya se envio. Cuando el cliente pulse
-                el enlace de confirmacion en el email, el proyecto avanzara a
-                &quot;confirmacion cliente&quot;.
+                El Statement of Compliance ya se send. Cuando el client pulse
+                el enlace de confirmacion en el email, el project avanzara a
+                &quot;confirmacion client&quot;.
               </p>
             </div>
           </div>
@@ -453,22 +453,22 @@ export function DeliveryTab({
             <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
             <div>
               <h3 className="text-sm font-semibold text-[color:var(--ink)]">
-                Cliente confirmo recepcion
+                Client confirmo recepcion
               </h3>
               <p className="mt-1 text-xs text-[color:var(--ink-3)]">
-                La evidencia no repudiable queda archivada. El proyecto puede
-                pasar a cierre en el siguiente paso.
+                La evidencia no repudiable queda archivada. El project puede
+                pasar a closure en el siguiente paso.
               </p>
             </div>
           </div>
         </section>
       )}
 
-      {/* Timeline de entregas */}
+      {/* Timeline de deliveries */}
       <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
         <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           <Box className="h-3.5 w-3.5" />
-          Historial de entregas
+          Historial de deliveries
         </h3>
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-[color:var(--ink-3)]">
@@ -477,7 +477,7 @@ export function DeliveryTab({
           </div>
         ) : deliveries.length === 0 ? (
           <p className="text-sm text-[color:var(--ink-3)]">
-            Aun no hay entregas registradas para este proyecto.
+            Aun no hay deliveries registradas para este project.
           </p>
         ) : (
           <ol className="space-y-3">
@@ -510,12 +510,12 @@ export function DeliveryTab({
                       {d.recipient_email}
                     </div>
                     <div>
-                      <strong className="text-[color:var(--ink-3)]">Asunto:</strong>{' '}
+                      <strong className="text-[color:var(--ink-3)]">Subject:</strong>{' '}
                       {d.subject}
                     </div>
                     {d.dispatched_at && (
                       <div>
-                        <strong className="text-[color:var(--ink-3)]">Enviado:</strong>{' '}
+                        <strong className="text-[color:var(--ink-3)]">Sent:</strong>{' '}
                         {formatDateTime(d.dispatched_at)}
                       </div>
                     )}
@@ -533,7 +533,7 @@ export function DeliveryTab({
                   </div>
                   {d.soc_pdf_storage_path && (
                     <a
-                      href={`/api/proyectos/${proyectoId}/deliveries/${d.id}/soc-pdf`}
+                      href={`/api/projects/${proyectoId}/deliveries/${d.id}/soc-pdf`}
                       target="_blank"
                       rel="noreferrer"
                       className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink-2)]"

@@ -2,14 +2,14 @@
   "updatedAt": "2026-03-29T10:59:24.103Z",
   "createdAt": "2026-03-14T19:35:44.821Z",
   "id": "etYkdHPyt3BVPJ88",
-  "name": "DOA-Formulario-Cliente-Nativo",
+  "name": "DOA-Form-Client-Nativo",
   "description": null,
   "active": false,
   "isArchived": true,
   "nodes": [
     {
       "id": "form_trigger_native",
-      "name": "Formulario Cliente DOA Nativo",
+      "name": "Form Client DOA Nativo",
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.5,
       "position": [
@@ -17,7 +17,7 @@
         320
       ],
       "parameters": {
-        "path": "doa-formulario-cliente-nativo",
+        "path": "doa-form-client-nativo",
         "formTitle": "DOA Client Intake Form",
         "formDescription": "Please complete this form so our DOA management team can identify your company, capture your contact details and route your aircraft request correctly.",
         "responseMode": "lastNode",
@@ -218,7 +218,7 @@
     },
     {
       "id": "form_airbus",
-      "name": "Pagina Airbus",
+      "name": "Page Airbus",
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
@@ -292,7 +292,7 @@
     },
     {
       "id": "form_atr",
-      "name": "Pagina ATR",
+      "name": "Page ATR",
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
@@ -363,7 +363,7 @@
     },
     {
       "id": "form_boeing",
-      "name": "Pagina Boeing",
+      "name": "Page Boeing",
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
@@ -428,7 +428,7 @@
     },
     {
       "id": "form_cessna",
-      "name": "Pagina Cessna",
+      "name": "Page Cessna",
       "type": "n8n-nodes-base.form",
       "typeVersion": 2.5,
       "position": [
@@ -490,7 +490,7 @@
     },
     {
       "id": "prepare_payloads_native",
-      "name": "Preparar Payloads Nativo",
+      "name": "Prepare Payloads Nativo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -499,7 +499,7 @@
       ],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const clean = (value) => {\n  const text = (value ?? '').toString().trim();\n  return text || null;\n};\nconst required = (value, label) => {\n  const text = (value ?? '').toString().trim();\n  if (!text) throw new Error(`Missing required field: ${label}`);\n  return text;\n};\nconst companyName = required($json['Company name'], 'Company name');\nconst country = required($json['Country'], 'Country');\nconst contactFirstName = required($json['Contact first name'], 'Contact first name');\nconst contactEmail = required($json['Contact email'], 'Contact email');\nconst manufacturer = required($json['Aircraft manufacturer'], 'Aircraft manufacturer');\nconst model = required($json['Aircraft model'], 'Aircraft model');\nconst projectType = required($json['Project type'], 'Project type');\nconst registration = required($json['Registration'], 'Registration');\nconst description = required($json['Modification / request description'], 'Modification / request description');\nconst cliente = {\n  nombre: companyName,\n  cif_vat: clean($json['VAT / Tax ID']),\n  pais: country,\n  ciudad: clean($json['City']),\n  direccion: clean($json['Address']),\n  telefono: clean($json['Company phone']),\n  web: clean($json['Website']),\n  activo: true,\n  notas: null,\n};\nconst contacto = {\n  nombre: contactFirstName,\n  apellidos: clean($json['Contact last name']),\n  email: contactEmail,\n  telefono: clean($json['Contact phone']),\n  cargo: clean($json['Position / Role']),\n  es_principal: true,\n  activo: true,\n};\nconst clasificacion = projectType === 'Modification to an existing project'\n  ? 'Cliente solicita modificacion a proyecto existente'\n  : 'Cliente solicita proyecto nuevo';\nconst intake = {\n  remitente: contactEmail,\n  asunto: `Formulario nativo DOA - ${companyName} - ${model}`,\n  cuerpo_original: [\n    `Tipo de solicitud: ${projectType}`,\n    `Fabricante: ${manufacturer}`,\n    `Modelo: ${model}`,\n    `Matricula: ${registration}`,\n    `Descripcion: ${description}`,\n    '',\n    `Empresa: ${companyName}`,\n    `Pais: ${country}`,\n    `Ciudad: ${cliente.ciudad || ''}`,\n    `Direccion: ${cliente.direccion || ''}`,\n    `Telefono empresa: ${cliente.telefono || ''}`,\n    `Web: ${cliente.web || ''}`,\n    '',\n    `Contacto: ${contacto.nombre} ${contacto.apellidos || ''}`.trim(),\n    `Email contacto: ${contacto.email}`,\n    `Telefono contacto: ${contacto.telefono || ''}`,\n    `Cargo: ${contacto.cargo || ''}`,\n  ].join('\\n'),\n  clasificacion,\n  respuesta_ia: '',\n};\nreturn { json: { cliente, contacto, intake } };"
+        "jsCode": "const clean = (value) => {\n  const text = (value ?? '').toString().trim();\n  return text || null;\n};\nconst required = (value, label) => {\n  const text = (value ?? '').toString().trim();\n  if (!text) throw new Error(`Missing required field: ${label}`);\n  return text;\n};\nconst companyName = required($json['Company name'], 'Company name');\nconst country = required($json['Country'], 'Country');\nconst contactFirstName = required($json['Contact first name'], 'Contact first name');\nconst contactEmail = required($json['Contact email'], 'Contact email');\nconst manufacturer = required($json['Aircraft manufacturer'], 'Aircraft manufacturer');\nconst model = required($json['Aircraft model'], 'Aircraft model');\nconst projectType = required($json['Project type'], 'Project type');\nconst registration = required($json['Registration'], 'Registration');\nconst description = required($json['Modification / request description'], 'Modification / request description');\nconst client = {\n  name: companyName,\n  vat_tax_id: clean($json['VAT / Tax ID']),\n  country: country,\n  city: clean($json['City']),\n  address: clean($json['Address']),\n  phone: clean($json['Company phone']),\n  website: clean($json['Website']),\n  is_active: true,\n  notes: null,\n};\nconst contacto = {\n  name: contactFirstName,\n  last_name: clean($json['Contact last name']),\n  email: contactEmail,\n  phone: clean($json['Contact phone']),\n  job_title: clean($json['Position / Role']),\n  is_primary: true,\n  is_active: true,\n};\nconst classification = projectType === 'Modification to an existing project'\n  ? 'Client solicita modificacion a project existente'\n  : 'Client solicita project new';\nconst intake = {\n  sender: contactEmail,\n  subject: `Form nativo DOA - ${companyName} - ${model}`,\n  original_body: [\n    `Tipo de solicitud: ${projectType}`,\n    `Manufacturer: ${manufacturer}`,\n    `Model: ${model}`,\n    `Matricula: ${registration}`,\n    `Description: ${description}`,\n    '',\n    `Empresa: ${companyName}`,\n    `Country: ${country}`,\n    `City: ${client.city || ''}`,\n    `Address: ${client.direction || ''}`,\n    `Phone empresa: ${client.phone || ''}`,\n    `Web: ${client.website || ''}`,\n    '',\n    `Contacto: ${contacto.name} ${contacto.last_name || ''}`.trim(),\n    `Email contacto: ${contacto.email}`,\n    `Phone contacto: ${contacto.phone || ''}`,\n    `Cargo: ${contacto.job_title || ''}`,\n  ].join('\\n'),\n  classification,\n  ai_response: '',\n};\nreturn { json: { client, contacto, intake } };"
       }
     },
     {
@@ -512,45 +512,45 @@
         320
       ],
       "parameters": {
-        "tableId": "doa_clientes_datos_generales",
+        "tableId": "doa_clients",
         "dataToSend": "defineBelow",
         "valuesToSend": {
           "values": [
             {
-              "column": "nombre",
-              "value": "={{ $json.cliente.nombre }}"
+              "column": "name",
+              "value": "={{ $json.client.name }}"
             },
             {
-              "column": "cif_vat",
-              "value": "={{ $json.cliente.cif_vat }}"
+              "column": "vat_tax_id",
+              "value": "={{ $json.client.vat_tax_id }}"
             },
             {
-              "column": "pais",
-              "value": "={{ $json.cliente.pais }}"
+              "column": "country",
+              "value": "={{ $json.client.country }}"
             },
             {
-              "column": "ciudad",
-              "value": "={{ $json.cliente.ciudad }}"
+              "column": "city",
+              "value": "={{ $json.client.city }}"
             },
             {
-              "column": "direccion",
-              "value": "={{ $json.cliente.direccion }}"
+              "column": "address",
+              "value": "={{ $json.client.direction }}"
             },
             {
-              "column": "telefono",
-              "value": "={{ $json.cliente.telefono }}"
+              "column": "phone",
+              "value": "={{ $json.client.phone }}"
             },
             {
-              "column": "web",
-              "value": "={{ $json.cliente.web }}"
+              "column": "website",
+              "value": "={{ $json.client.website }}"
             },
             {
-              "column": "activo",
-              "value": "={{ $json.cliente.activo }}"
+              "column": "active",
+              "value": "={{ $json.client.is_active }}"
             },
             {
-              "column": "notas",
-              "value": "={{ $json.cliente.notas }}"
+              "column": "notes",
+              "value": "={{ $json.client.notes }}"
             }
           ]
         }
@@ -564,7 +564,7 @@
     },
     {
       "id": "prepare_contact_native",
-      "name": "Preparar Contacto Nativo",
+      "name": "Prepare Contacto Nativo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -573,7 +573,7 @@
       ],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const createdClient = $json || {};\nconst payload = $('Preparar Payloads Nativo').item.json || {};\nconst cliente = (createdClient.id ? createdClient : (createdClient.data && createdClient.data[0]) ? createdClient.data[0] : null) || createdClient;\nif (!cliente.id) throw new Error('No se pudo recuperar el id del cliente creado.');\nreturn {\n  json: {\n    contacto: {\n      cliente_id: cliente.id,\n      nombre: payload.contacto.nombre,\n      apellidos: payload.contacto.apellidos,\n      email: payload.contacto.email,\n      telefono: payload.contacto.telefono,\n      cargo: payload.contacto.cargo,\n      es_principal: true,\n      activo: true,\n    },\n    intake: payload.intake,\n    cliente,\n  },\n};"
+        "jsCode": "const createdClient = $json || {};\nconst payload = $('Prepare Payloads Nativo').item.json || {};\nconst client = (createdClient.id ? createdClient : (createdClient.data && createdClient.data[0]) ? createdClient.data[0] : null) || createdClient;\nif (!client.id) throw new Error('No se pudo recuperar el id del client creado.');\nreturn {\n  json: {\n    contacto: {\n      client_id: client.id,\n      name: payload.contacto.name,\n      last_name: payload.contacto.last_name,\n      email: payload.contacto.email,\n      phone: payload.contacto.phone,\n      job_title: payload.contacto.job_title,\n      is_primary: true,\n      is_active: true,\n    },\n    intake: payload.intake,\n    client,\n  },\n};"
       }
     },
     {
@@ -586,41 +586,41 @@
         320
       ],
       "parameters": {
-        "tableId": "doa_clientes_contactos",
+        "tableId": "doa_client_contacts",
         "dataToSend": "defineBelow",
         "valuesToSend": {
           "values": [
             {
-              "column": "cliente_id",
-              "value": "={{ $json.contacto.cliente_id }}"
+              "column": "client_id",
+              "value": "={{ $json.contacto.client_id }}"
             },
             {
-              "column": "nombre",
-              "value": "={{ $json.contacto.nombre }}"
+              "column": "name",
+              "value": "={{ $json.contacto.name }}"
             },
             {
-              "column": "apellidos",
-              "value": "={{ $json.contacto.apellidos }}"
+              "column": "last_name",
+              "value": "={{ $json.contacto.last_name }}"
             },
             {
               "column": "email",
               "value": "={{ $json.contacto.email }}"
             },
             {
-              "column": "telefono",
-              "value": "={{ $json.contacto.telefono }}"
+              "column": "phone",
+              "value": "={{ $json.contacto.phone }}"
             },
             {
-              "column": "cargo",
-              "value": "={{ $json.contacto.cargo }}"
+              "column": "job_title",
+              "value": "={{ $json.contacto.job_title }}"
             },
             {
-              "column": "es_principal",
-              "value": "={{ $json.contacto.es_principal }}"
+              "column": "is_primary",
+              "value": "={{ $json.contacto.is_primary }}"
             },
             {
-              "column": "activo",
-              "value": "={{ $json.contacto.activo }}"
+              "column": "active",
+              "value": "={{ $json.contacto.is_active }}"
             }
           ]
         }
@@ -642,29 +642,29 @@
         320
       ],
       "parameters": {
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "dataToSend": "defineBelow",
         "valuesToSend": {
           "values": [
             {
-              "column": "asunto",
-              "value": "={{ $json.intake.asunto }}"
+              "column": "subject",
+              "value": "={{ $json.intake.subject }}"
             },
             {
-              "column": "remitente",
-              "value": "={{ $json.intake.remitente }}"
+              "column": "sender",
+              "value": "={{ $json.intake.sender }}"
             },
             {
-              "column": "cuerpo_original",
-              "value": "={{ $json.intake.cuerpo_original }}"
+              "column": "original_body",
+              "value": "={{ $json.intake.body_original }}"
             },
             {
-              "column": "clasificacion",
-              "value": "={{ $json.intake.clasificacion }}"
+              "column": "classification",
+              "value": "={{ $json.intake.classification }}"
             },
             {
-              "column": "respuesta_ia",
-              "value": "={{ $json.intake.respuesta_ia }}"
+              "column": "ai_response",
+              "value": "={{ $json.intake.ai_response }}"
             }
           ]
         }
@@ -694,7 +694,7 @@
     }
   ],
   "connections": {
-    "Formulario Cliente DOA Nativo": {
+    "Form Client DOA Nativo": {
       "main": [
         [
           {
@@ -709,7 +709,7 @@
       "main": [
         [
           {
-            "node": "Pagina Airbus",
+            "node": "Page Airbus",
             "type": "main",
             "index": 0
           }
@@ -727,7 +727,7 @@
       "main": [
         [
           {
-            "node": "Pagina ATR",
+            "node": "Page ATR",
             "type": "main",
             "index": 0
           }
@@ -745,65 +745,65 @@
       "main": [
         [
           {
-            "node": "Pagina Boeing",
+            "node": "Page Boeing",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Pagina Cessna",
+            "node": "Page Cessna",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Pagina Airbus": {
+    "Page Airbus": {
       "main": [
         [
           {
-            "node": "Preparar Payloads Nativo",
+            "node": "Prepare Payloads Nativo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Pagina ATR": {
+    "Page ATR": {
       "main": [
         [
           {
-            "node": "Preparar Payloads Nativo",
+            "node": "Prepare Payloads Nativo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Pagina Boeing": {
+    "Page Boeing": {
       "main": [
         [
           {
-            "node": "Preparar Payloads Nativo",
+            "node": "Prepare Payloads Nativo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Pagina Cessna": {
+    "Page Cessna": {
       "main": [
         [
           {
-            "node": "Preparar Payloads Nativo",
+            "node": "Prepare Payloads Nativo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Payloads Nativo": {
+    "Prepare Payloads Nativo": {
       "main": [
         [
           {
@@ -818,14 +818,14 @@
       "main": [
         [
           {
-            "node": "Preparar Contacto Nativo",
+            "node": "Prepare Contacto Nativo",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Contacto Nativo": {
+    "Prepare Contacto Nativo": {
       "main": [
         [
           {

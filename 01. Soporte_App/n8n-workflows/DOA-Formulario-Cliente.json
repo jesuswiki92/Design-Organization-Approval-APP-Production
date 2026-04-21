@@ -2,14 +2,14 @@
   "updatedAt": "2026-03-29T10:46:42.123Z",
   "createdAt": "2026-03-14T18:44:05.720Z",
   "id": "tchvIu8o8OOonSX5",
-  "name": "DOA-Formulario-Cliente",
+  "name": "DOA-Form-Client",
   "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
     {
       "id": "webhook_form_get",
-      "name": "Formulario Cliente DOA",
+      "name": "Form Client DOA",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
@@ -17,7 +17,7 @@
         180
       ],
       "parameters": {
-        "path": "doa-formulario-cliente",
+        "path": "doa-form-client",
         "httpMethod": "GET",
         "responseMode": "responseNode",
         "options": {}
@@ -26,7 +26,7 @@
     },
     {
       "id": "build_form_html",
-      "name": "Construir Formulario HTML",
+      "name": "Construir Form HTML",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -34,13 +34,13 @@
         180
       ],
       "parameters": {
-        "jsCode": "const modelosPorFabricante = {\n  \"Airbus\": [\"A319-100\", \"A320-200\", \"A321-200\", \"A330-200\", \"A330-300\"],\n  \"ATR\": [\"ATR 42-300\", \"ATR 42-500\", \"ATR 72-200\", \"ATR 72-500\"],\n  \"Boeing\": [\"B737-400\", \"B737-800\"],\n  \"Cessna\": [\"Cessna 208B Grand Caravan\"]\n};\n\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>DOA Client Intake Form</title>\n  <style>\n    :root {\n      --bg-1: #06131f;\n      --bg-2: #10314b;\n      --panel: rgba(255,255,255,0.96);\n      --ink: #10202d;\n      --muted: #5b6b79;\n      --accent: #0f7b6c;\n      --line: rgba(16,32,45,0.12);\n    }\n    * { box-sizing: border-box; }\n    body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: radial-gradient(circle at top right, rgba(212,138,40,0.18), transparent 22%), linear-gradient(135deg, var(--bg-1), var(--bg-2)); color: var(--ink); min-height: 100vh; padding: 28px; }\n    .shell { width: min(1120px, 100%); margin: 0 auto; background: var(--panel); border-radius: 28px; overflow: hidden; box-shadow: 0 28px 80px rgba(0,0,0,0.28); }\n    .hero { padding: 42px 42px 28px; background: linear-gradient(160deg, rgba(6,19,31,0.98), rgba(12,34,52,0.94)); color: #f4efe6; }\n    .eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px; opacity: 0.78; margin-bottom: 16px; }\n    h1 { margin: 0 0 12px; font-size: clamp(34px, 5vw, 52px); line-height: 0.95; }\n    .hero p { margin: 0; max-width: 58ch; color: rgba(244,239,230,0.8); line-height: 1.65; font-size: 16px; }\n    form { padding: 34px 42px 42px; display: grid; gap: 28px; }\n    .section { display: grid; gap: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }\n    .section:last-of-type { border-bottom: 0; padding-bottom: 0; }\n    .section-title { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; }\n    .section-title span { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(15,123,108,0.12); color: var(--accent); font-size: 14px; }\n    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }\n    .full { grid-column: 1 / -1; }\n    label { display: grid; gap: 8px; font-size: 14px; font-weight: 700; }\n    .hint { color: var(--muted); font-size: 13px; line-height: 1.5; font-weight: 400; }\n    .conditional { display: none; }\n    .conditional.show { display: grid; }\n    input, select, textarea, button { font: inherit; }\n    input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; background: #fff; color: var(--ink); outline: none; }\n    textarea { min-height: 150px; resize: vertical; }\n    .footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }\n    .footer p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 52ch; }\n    button { border: 0; border-radius: 999px; padding: 15px 24px; background: linear-gradient(135deg, var(--accent), #169785); color: white; font-weight: 700; cursor: pointer; }\n    @media (max-width: 860px) { body { padding: 16px; } .hero, form { padding-left: 22px; padding-right: 22px; } .grid { grid-template-columns: 1fr; } .footer { flex-direction: column; align-items: stretch; } button { width: 100%; } }\n  </style>\n</head>\n<body>\n  <div class=\"shell\">\n    <section class=\"hero\">\n      <div class=\"eyebrow\">Design Organisation Approval</div>\n      <h1>Client Project Intake</h1>\n      <p>Please complete this form so our DOA management team can identify your company, review the aircraft involved, and start the internal intake process for your request.</p>\n    </section>\n    <form id=\"doaClientForm\" method=\"POST\">\n      <section class=\"section\">\n        <div class=\"section-title\"><span>1</span>Company information</div>\n        <div class=\"grid\">\n          <label class=\"full\">Company name<input type=\"text\" name=\"cliente_nombre\" required placeholder=\"Legal or commercial company name\" /></label>\n          <label>VAT / Tax ID<input type=\"text\" name=\"cliente_cif_vat\" placeholder=\"Optional tax identifier\" /></label>\n          <label>Country<input type=\"text\" name=\"cliente_pais\" required placeholder=\"Country\" /></label>\n          <label>City<input type=\"text\" name=\"cliente_ciudad\" placeholder=\"City\" /></label>\n          <label class=\"full\">Address<input type=\"text\" name=\"cliente_direccion\" placeholder=\"Company address\" /></label>\n          <label>Phone<input type=\"text\" name=\"cliente_telefono\" placeholder=\"Main company phone\" /></label>\n          <label>Website<input type=\"url\" name=\"cliente_web\" placeholder=\"https://company.com\" /></label>\n        </div>\n      </section>\n      <section class=\"section\">\n        <div class=\"section-title\"><span>2</span>Main contact</div>\n        <div class=\"grid\">\n          <label>First name<input type=\"text\" name=\"contacto_nombre\" required placeholder=\"Contact first name\" /></label>\n          <label>Last name<input type=\"text\" name=\"contacto_apellidos\" placeholder=\"Contact last name\" /></label>\n          <label>Email<input type=\"email\" name=\"contacto_email\" required placeholder=\"name@company.com\" /></label>\n          <label>Phone<input type=\"text\" name=\"contacto_telefono\" placeholder=\"Direct phone\" /></label>\n          <label class=\"full\">Position / Role<input type=\"text\" name=\"contacto_cargo\" placeholder=\"Engineering Manager, CAMO, Technical Director...\" /></label>\n        </div>\n      </section>\n      <section class=\"section\">\n        <div class=\"section-title\"><span>3</span>Project request</div>\n        <div class=\"grid\">\n          <label>Aircraft manufacturer\n            <select id=\"fabricante\" name=\"fabricante\" required onchange=\"window.renderModelos(this.value)\">\n              <option value=\"\">Select a manufacturer</option>\n              <option value=\"Airbus\">Airbus</option>\n              <option value=\"ATR\">ATR</option>\n              <option value=\"Boeing\">Boeing</option>\n              <option value=\"Cessna\">Cessna</option>\n              <option value=\"Other\">Other</option>\n            </select>\n          </label>\n          <label id=\"fabricante_otro_wrapper\" class=\"conditional\">Other manufacturer\n            <input type=\"text\" id=\"fabricante_otro\" name=\"fabricante_otro\" placeholder=\"Write the aircraft manufacturer\" />\n          </label>\n          <label>Aircraft model\n            <select id=\"modelo\" name=\"modelo\" required disabled>\n              <option value=\"\">Select a manufacturer first</option>\n            </select>\n          </label>\n          <label id=\"modelo_otro_wrapper\" class=\"conditional\">Other model\n            <input type=\"text\" id=\"modelo_otro\" name=\"modelo_otro\" placeholder=\"Write the aircraft model\" />\n          </label>\n          <label>Registration<input type=\"text\" name=\"matricula\" required placeholder=\"Example: EC-XXX\" /></label>\n          <label>Project type\n            <select name=\"tipo_solicitud\" required>\n              <option value=\"\">Select request type</option>\n              <option value=\"nuevo_proyecto\">New project</option>\n              <option value=\"modificacion_existente\">Modification to an existing project</option>\n            </select>\n          </label>\n          <label class=\"full\">Modification / request description\n            <textarea name=\"descripcion_modificacion\" required placeholder=\"Describe the requested modification or project scope with as much detail as possible.\"></textarea>\n            <div class=\"hint\">Include installation intent, cabin area, affected systems, available references or any constraints already known.</div>\n          </label>\n        </div>\n      </section>\n      <div class=\"footer\">\n        <p>By submitting this form, your request will be registered for internal intake. A member of the DOA management team will review the information and contact you if more detail is required.</p>\n        <button type=\"submit\">Submit request</button>\n      </div>\n    </form>\n  </div>\n  <script>\n    window.modelosPorFabricante = ${JSON.stringify(modelosPorFabricante)};\n    window.renderModelos = function(fabricante) {\n      const modeloSelect = document.getElementById('modelo');\n      const fabricanteOtroWrapper = document.getElementById('fabricante_otro_wrapper');\n      const fabricanteOtroInput = document.getElementById('fabricante_otro');\n      const modeloOtroWrapper = document.getElementById('modelo_otro_wrapper');\n      const modeloOtroInput = document.getElementById('modelo_otro');\n      fabricanteOtroWrapper.classList.toggle('show', fabricante === 'Other');\n      fabricanteOtroInput.required = fabricante === 'Other';\n      if (fabricante !== 'Other') fabricanteOtroInput.value = '';\n      modeloSelect.innerHTML = '';\n      if (fabricante === 'Other') {\n        modeloSelect.disabled = true;\n        modeloSelect.required = false;\n        modeloSelect.innerHTML = '<option value=\"\">Model written below</option>';\n        modeloOtroWrapper.classList.add('show');\n        modeloOtroInput.required = true;\n        return;\n      }\n      const modelos = window.modelosPorFabricante[fabricante] || [];\n      modeloOtroWrapper.classList.remove('show');\n      modeloOtroInput.required = false;\n      modeloOtroInput.value = '';\n      modeloSelect.required = true;\n      if (!modelos.length) {\n        modeloSelect.disabled = true;\n        modeloSelect.innerHTML = '<option value=\"\">Select a manufacturer first</option>';\n        return;\n      }\n      modeloSelect.disabled = false;\n      modeloSelect.innerHTML = '<option value=\"\">Select an aircraft model</option>';\n      for (const modelo of modelos) {\n        const option = document.createElement('option');\n        option.value = modelo;\n        option.textContent = modelo;\n        modeloSelect.appendChild(option);\n      }\n      const otherOption = document.createElement('option');\n      otherOption.value = 'Other';\n      otherOption.textContent = 'Other';\n      modeloSelect.appendChild(otherOption);\n      modeloSelect.onchange = function() {\n        const isOtherModel = this.value === 'Other';\n        modeloOtroWrapper.classList.toggle('show', isOtherModel);\n        modeloOtroInput.required = isOtherModel;\n        if (!isOtherModel) modeloOtroInput.value = '';\n      };\n    };\n    document.getElementById('doaClientForm').action = window.location.href.replace(/doa-formulario-cliente\\\\/?$/, 'doa-formulario-cliente-submit');\n  </script>\n</body>\n</html>`;\nreturn { json: { html } };",
+        "jsCode": "const modelosPorFabricante = {\n  \"Airbus\": [\"A319-100\", \"A320-200\", \"A321-200\", \"A330-200\", \"A330-300\"],\n  \"ATR\": [\"ATR 42-300\", \"ATR 42-500\", \"ATR 72-200\", \"ATR 72-500\"],\n  \"Boeing\": [\"B737-400\", \"B737-800\"],\n  \"Cessna\": [\"Cessna 208B Grand Caravan\"]\n};\n\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>DOA Client Intake Form</title>\n  <style>\n    :root {\n      --bg-1: #06131f;\n      --bg-2: #10314b;\n      --panel: rgba(255,255,255,0.96);\n      --ink: #10202d;\n      --muted: #5b6b79;\n      --accent: #0f7b6c;\n      --line: rgba(16,32,45,0.12);\n    }\n    * { box-sizing: border-box; }\n    body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: radial-gradient(circle at top right, rgba(212,138,40,0.18), transparent 22%), linear-gradient(135deg, var(--bg-1), var(--bg-2)); color: var(--ink); min-height: 100vh; padding: 28px; }\n    .shell { width: min(1120px, 100%); margin: 0 auto; background: var(--panel); border-radius: 28px; overflow: hidden; box-shadow: 0 28px 80px rgba(0,0,0,0.28); }\n    .hero { padding: 42px 42px 28px; background: linear-gradient(160deg, rgba(6,19,31,0.98), rgba(12,34,52,0.94)); color: #f4efe6; }\n    .eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px; opacity: 0.78; margin-bottom: 16px; }\n    h1 { margin: 0 0 12px; font-size: clamp(34px, 5vw, 52px); line-height: 0.95; }\n    .hero p { margin: 0; max-width: 58ch; color: rgba(244,239,230,0.8); line-height: 1.65; font-size: 16px; }\n    form { padding: 34px 42px 42px; display: grid; gap: 28px; }\n    .section { display: grid; gap: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }\n    .section:last-of-type { border-bottom: 0; padding-bottom: 0; }\n    .section-title { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; }\n    .section-title span { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(15,123,108,0.12); color: var(--accent); font-size: 14px; }\n    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }\n    .full { grid-column: 1 / -1; }\n    label { display: grid; gap: 8px; font-size: 14px; font-weight: 700; }\n    .hint { color: var(--muted); font-size: 13px; line-height: 1.5; font-weight: 400; }\n    .conditional { display: none; }\n    .conditional.show { display: grid; }\n    input, select, textarea, button { font: inherit; }\n    input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; background: #fff; color: var(--ink); outline: none; }\n    textarea { min-height: 150px; resize: vertical; }\n    .footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }\n    .footer p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 52ch; }\n    button { border: 0; border-radius: 999px; padding: 15px 24px; background: linear-gradient(135deg, var(--accent), #169785); color: white; font-weight: 700; cursor: pointer; }\n    @medium (max-width: 860px) { body { padding: 16px; } .hero, form { padding-left: 22px; padding-right: 22px; } .grid { grid-template-columns: 1fr; } .footer { flex-direction: column; align-items: stretch; } button { width: 100%; } }\n  </style>\n</head>\n<body>\n  <div class=\"shell\">\n    <section class=\"hero\">\n      <div class=\"eyebrow\">Design Organisation Approval</div>\n      <h1>Client Project Intake</h1>\n      <p>Please complete this form so our DOA management team can identify your company, review the aircraft involved, and start the internal intake process for your request.</p>\n    </section>\n    <form id=\"doaClientForm\" method=\"POST\">\n      <section class=\"section\">\n        <div class=\"section-title\"><span>1</span>Company information</div>\n        <div class=\"grid\">\n          <label class=\"full\">Company name<input type=\"text\" name=\"client_name\" required placeholder=\"Legal or commercial company name\" /></label>\n          <label>VAT / Tax ID<input type=\"text\" name=\"cliente_vat_tax_id\" placeholder=\"Optional tax identifier\" /></label>\n          <label>Country<input type=\"text\" name=\"cliente_pais\" required placeholder=\"Country\" /></label>\n          <label>City<input type=\"text\" name=\"cliente_ciudad\" placeholder=\"City\" /></label>\n          <label class=\"full\">Address<input type=\"text\" name=\"cliente_direccion\" placeholder=\"Company address\" /></label>\n          <label>Phone<input type=\"text\" name=\"cliente_telefono\" placeholder=\"Main company phone\" /></label>\n          <label>Website<input type=\"url\" name=\"cliente_web\" placeholder=\"https://company.com\" /></label>\n        </div>\n      </section>\n      <section class=\"section\">\n        <div class=\"section-title\"><span>2</span>Main contact</div>\n        <div class=\"grid\">\n          <label>First name<input type=\"text\" name=\"contacto_nombre\" required placeholder=\"Contact first name\" /></label>\n          <label>Last name<input type=\"text\" name=\"contacto_apellidos\" placeholder=\"Contact last name\" /></label>\n          <label>Email<input type=\"email\" name=\"contacto_email\" required placeholder=\"name@company.com\" /></label>\n          <label>Phone<input type=\"text\" name=\"contacto_telefono\" placeholder=\"Direct phone\" /></label>\n          <label class=\"full\">Position / Role<input type=\"text\" name=\"contacto_cargo\" placeholder=\"Engineering Manager, CAMO, Technical Director...\" /></label>\n        </div>\n      </section>\n      <section class=\"section\">\n        <div class=\"section-title\"><span>3</span>Project request</div>\n        <div class=\"grid\">\n          <label>Aircraft manufacturer\n            <select id=\"manufacturer\" name=\"manufacturer\" required onchange=\"window.renderModelos(this.value)\">\n              <option value=\"\">Select a manufacturer</option>\n              <option value=\"Airbus\">Airbus</option>\n              <option value=\"ATR\">ATR</option>\n              <option value=\"Boeing\">Boeing</option>\n              <option value=\"Cessna\">Cessna</option>\n              <option value=\"Other\">Other</option>\n            </select>\n          </label>\n          <label id=\"fabricante_otro_wrapper\" class=\"conditional\">Other manufacturer\n            <input type=\"text\" id=\"fabricante_otro\" name=\"fabricante_otro\" placeholder=\"Write the aircraft manufacturer\" />\n          </label>\n          <label>Aircraft model\n            <select id=\"model\" name=\"model\" required disabled>\n              <option value=\"\">Select a manufacturer first</option>\n            </select>\n          </label>\n          <label id=\"modelo_otro_wrapper\" class=\"conditional\">Other model\n            <input type=\"text\" id=\"modelo_otro\" name=\"modelo_otro\" placeholder=\"Write the aircraft model\" />\n          </label>\n          <label>Registration<input type=\"text\" name=\"matricula\" required placeholder=\"Example: EC-XXX\" /></label>\n          <label>Project type\n            <select name=\"tipo_solicitud\" required>\n              <option value=\"\">Select request type</option>\n              <option value=\"nuevo_proyecto\">New project</option>\n              <option value=\"existing_modification\">Modification to an existing project</option>\n            </select>\n          </label>\n          <label class=\"full\">Modification / request description\n            <textarea name=\"descripcion_modificacion\" required placeholder=\"Describe the requested modification or project scope with as much detail as possible.\"></textarea>\n            <div class=\"hint\">Include installation intent, cabin area, affected systems, available references or any constraints already known.</div>\n          </label>\n        </div>\n      </section>\n      <div class=\"footer\">\n        <p>By submitting this form, your request will be registered for internal intake. A member of the DOA management team will review the information and contact you if more detail is required.</p>\n        <button type=\"submit\">Submit request</button>\n      </div>\n    </form>\n  </div>\n  <script>\n    window.modelosPorFabricante = ${JSON.stringify(modelosPorFabricante)};\n    window.renderModelos = function(manufacturer) {\n      const modeloSelect = document.getElementById('model');\n      const fabricanteOtroWrapper = document.getElementById('fabricante_otro_wrapper');\n      const fabricanteOtroInput = document.getElementById('fabricante_otro');\n      const modeloOtroWrapper = document.getElementById('modelo_otro_wrapper');\n      const modeloOtroInput = document.getElementById('modelo_otro');\n      fabricanteOtroWrapper.classList.toggle('show', manufacturer === 'Other');\n      fabricanteOtroInput.required = manufacturer === 'Other';\n      if (manufacturer !== 'Other') fabricanteOtroInput.value = '';\n      modeloSelect.innerHTML = '';\n      if (manufacturer === 'Other') {\n        modeloSelect.disabled = true;\n        modeloSelect.required = false;\n        modeloSelect.innerHTML = '<option value=\"\">Model written below</option>';\n        modeloOtroWrapper.classList.add('show');\n        modeloOtroInput.required = true;\n        return;\n      }\n      const models = window.modelosPorFabricante[manufacturer] || [];\n      modeloOtroWrapper.classList.remove('show');\n      modeloOtroInput.required = false;\n      modeloOtroInput.value = '';\n      modeloSelect.required = true;\n      if (!models.length) {\n        modeloSelect.disabled = true;\n        modeloSelect.innerHTML = '<option value=\"\">Select a manufacturer first</option>';\n        return;\n      }\n      modeloSelect.disabled = false;\n      modeloSelect.innerHTML = '<option value=\"\">Select an aircraft model</option>';\n      for (const model of models) {\n        const option = document.createElement('option');\n        option.value = model;\n        option.textContent = model;\n        modeloSelect.appendChild(option);\n      }\n      const otherOption = document.createElement('option');\n      otherOption.value = 'Other';\n      otherOption.textContent = 'Other';\n      modeloSelect.appendChild(otherOption);\n      modeloSelect.onchange = function() {\n        const isOtherModel = this.value === 'Other';\n        modeloOtroWrapper.classList.toggle('show', isOtherModel);\n        modeloOtroInput.required = isOtherModel;\n        if (!isOtherModel) modeloOtroInput.value = '';\n      };\n    };\n    document.getElementById('doaClientForm').action = window.location.href.replace(/doa-form-client\\\\/?$/, 'doa-form-client-submit');\n  </script>\n</body>\n</html>`;\nreturn { json: { html } };",
         "mode": "runOnceForEachItem"
       }
     },
     {
       "id": "respond_form_html",
-      "name": "Responder Formulario",
+      "name": "Responder Form",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
@@ -65,7 +65,7 @@
     },
     {
       "id": "webhook_form_post",
-      "name": "Recibir Formulario Cliente",
+      "name": "Recibir Form Client",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
@@ -73,7 +73,7 @@
         480
       ],
       "parameters": {
-        "path": "doa-formulario-cliente-submit",
+        "path": "doa-form-client-submit",
         "httpMethod": "POST",
         "responseMode": "responseNode",
         "options": {}
@@ -82,7 +82,7 @@
     },
     {
       "id": "prepare_payloads",
-      "name": "Preparar Payloads",
+      "name": "Prepare Payloads",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -91,7 +91,7 @@
       ],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const body = $json.body || $json;\nconst clean = (value) => {\n  const text = (value ?? '').toString().trim();\n  return text || null;\n};\nconst required = (value, label) => {\n  const text = (value ?? '').toString().trim();\n  if (!text) throw new Error(`Missing required field: ${label}`);\n  return text;\n};\nconst cliente = {\n  nombre: required(body.cliente_nombre, 'cliente_nombre'),\n  cif_vat: clean(body.cliente_cif_vat),\n  pais: required(body.cliente_pais, 'cliente_pais'),\n  ciudad: clean(body.cliente_ciudad),\n  direccion: clean(body.cliente_direccion),\n  telefono: clean(body.cliente_telefono),\n  web: clean(body.cliente_web),\n  activo: true,\n  notas: null,\n};\nconst fabricante = body.fabricante === 'Other'\n  ? required(body.fabricante_otro, 'fabricante_otro')\n  : required(body.fabricante, 'fabricante');\nconst modelo = body.fabricante === 'Other' || body.modelo === 'Other'\n  ? required(body.modelo_otro, 'modelo_otro')\n  : required(body.modelo, 'modelo');\nconst contacto = {\n  nombre: required(body.contacto_nombre, 'contacto_nombre'),\n  apellidos: clean(body.contacto_apellidos),\n  email: required(body.contacto_email, 'contacto_email'),\n  telefono: clean(body.contacto_telefono),\n  cargo: clean(body.contacto_cargo),\n  es_principal: true,\n  activo: true,\n};\nconst intake = {\n  empresa: cliente.nombre,\n  remitente: contacto.email,\n  asunto: `Formulario web DOA - ${cliente.nombre} - ${modelo}`,\n  cuerpo_original: [\n    `Tipo de solicitud: ${required(body.tipo_solicitud, 'tipo_solicitud')}`,\n    `Fabricante: ${fabricante}`,\n    `Modelo: ${modelo}`,\n    `Matricula: ${required(body.matricula, 'matricula')}`,\n    `Descripcion: ${required(body.descripcion_modificacion, 'descripcion_modificacion')}`,\n    '',\n    `Empresa: ${cliente.nombre}`,\n    `Pais: ${cliente.pais}`,\n    `Ciudad: ${cliente.ciudad || ''}`,\n    `Direccion: ${cliente.direccion || ''}`,\n    `Telefono empresa: ${cliente.telefono || ''}`,\n    `Web: ${cliente.web || ''}`,\n    '',\n    `Contacto: ${contacto.nombre} ${contacto.apellidos || ''}`.trim(),\n    `Email contacto: ${contacto.email}`,\n    `Telefono contacto: ${contacto.telefono || ''}`,\n    `Cargo: ${contacto.cargo || ''}`,\n  ].join('\\n'),\n  clasificacion: body.tipo_solicitud === 'modificacion_existente' ? 'Cliente solicita modificacion a proyecto existente' : 'Cliente solicita proyecto nuevo',\n  respuesta_ia: '',\n};\nreturn { json: { cliente, contacto, intake } };"
+        "jsCode": "const body = $json.body || $json;\nconst clean = (value) => {\n  const text = (value ?? '').toString().trim();\n  return text || null;\n};\nconst required = (value, label) => {\n  const text = (value ?? '').toString().trim();\n  if (!text) throw new Error(`Missing required field: ${label}`);\n  return text;\n};\nconst client = {\n  name: required(body.client_name, 'client_name'),\n  vat_tax_id: clean(body.cliente_vat_tax_id),\n  country: required(body.cliente_pais, 'cliente_pais'),\n  city: clean(body.cliente_ciudad),\n  address: clean(body.cliente_direccion),\n  phone: clean(body.cliente_telefono),\n  website: clean(body.cliente_web),\n  is_active: true,\n  notes: null,\n};\nconst manufacturer = body.manufacturer === 'Other'\n  ? required(body.fabricante_otro, 'fabricante_otro')\n  : required(body.manufacturer, 'manufacturer');\nconst model = body.manufacturer === 'Other' || body.model === 'Other'\n  ? required(body.modelo_otro, 'modelo_otro')\n  : required(body.model, 'model');\nconst contacto = {\n  name: required(body.contacto_nombre, 'contacto_nombre'),\n  last_name: clean(body.contacto_apellidos),\n  email: required(body.contacto_email, 'contacto_email'),\n  phone: clean(body.contacto_telefono),\n  job_title: clean(body.contacto_cargo),\n  is_primary: true,\n  is_active: true,\n};\nconst intake = {\n  empresa: client.name,\n  sender: contacto.email,\n  subject: `Form website DOA - ${client.name} - ${model}`,\n  original_body: [\n    `Tipo de solicitud: ${required(body.tipo_solicitud, 'tipo_solicitud')}`,\n    `Manufacturer: ${manufacturer}`,\n    `Model: ${model}`,\n    `Matricula: ${required(body.matricula, 'matricula')}`,\n    `Description: ${required(body.descripcion_modificacion, 'descripcion_modificacion')}`,\n    '',\n    `Empresa: ${client.name}`,\n    `Country: ${client.country}`,\n    `City: ${client.city || ''}`,\n    `Address: ${client.direction || ''}`,\n    `Phone empresa: ${client.phone || ''}`,\n    `Web: ${client.website || ''}`,\n    '',\n    `Contacto: ${contacto.name} ${contacto.last_name || ''}`.trim(),\n    `Email contacto: ${contacto.email}`,\n    `Phone contacto: ${contacto.phone || ''}`,\n    `Cargo: ${contacto.job_title || ''}`,\n  ].join('\\n'),\n  classification: body.tipo_solicitud === 'existing_modification' ? 'Client solicita modificacion a project existente' : 'Client solicita project new',\n  ai_response: '',\n};\nreturn { json: { client, contacto, intake } };"
       }
     },
     {
@@ -104,45 +104,45 @@
         480
       ],
       "parameters": {
-        "tableId": "doa_clientes_datos_generales",
+        "tableId": "doa_clients",
         "dataToSend": "defineBelow",
         "valuesToSend": {
           "values": [
             {
-              "column": "nombre",
-              "value": "={{ $json.cliente.nombre }}"
+              "column": "name",
+              "value": "={{ $json.client.name }}"
             },
             {
-              "column": "cif_vat",
-              "value": "={{ $json.cliente.cif_vat }}"
+              "column": "vat_tax_id",
+              "value": "={{ $json.client.vat_tax_id }}"
             },
             {
-              "column": "pais",
-              "value": "={{ $json.cliente.pais }}"
+              "column": "country",
+              "value": "={{ $json.client.country }}"
             },
             {
-              "column": "ciudad",
-              "value": "={{ $json.cliente.ciudad }}"
+              "column": "city",
+              "value": "={{ $json.client.city }}"
             },
             {
-              "column": "direccion",
-              "value": "={{ $json.cliente.direccion }}"
+              "column": "address",
+              "value": "={{ $json.client.direction }}"
             },
             {
-              "column": "telefono",
-              "value": "={{ $json.cliente.telefono }}"
+              "column": "phone",
+              "value": "={{ $json.client.phone }}"
             },
             {
-              "column": "web",
-              "value": "={{ $json.cliente.web }}"
+              "column": "website",
+              "value": "={{ $json.client.website }}"
             },
             {
-              "column": "activo",
-              "value": "={{ $json.cliente.activo }}"
+              "column": "active",
+              "value": "={{ $json.client.is_active }}"
             },
             {
-              "column": "notas",
-              "value": "={{ $json.cliente.notas }}"
+              "column": "notes",
+              "value": "={{ $json.client.notes }}"
             }
           ]
         }
@@ -156,7 +156,7 @@
     },
     {
       "id": "prepare_contact",
-      "name": "Preparar Contacto",
+      "name": "Prepare Contacto",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -165,7 +165,7 @@
       ],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const createdClient = $json || {};\nconst payload = $('Preparar Payloads').item.json || {};\nconst cliente = (createdClient.id ? createdClient : (createdClient.data && createdClient.data[0]) ? createdClient.data[0] : null) || createdClient;\nif (!cliente.id) throw new Error('No se pudo recuperar el id del cliente creado.');\nreturn {\n  json: {\n    contacto: {\n      cliente_id: cliente.id,\n      nombre: payload.contacto.nombre,\n      apellidos: payload.contacto.apellidos,\n      email: payload.contacto.email,\n      telefono: payload.contacto.telefono,\n      cargo: payload.contacto.cargo,\n      es_principal: true,\n      activo: true,\n    },\n    intake: payload.intake,\n    cliente: cliente,\n  },\n};"
+        "jsCode": "const createdClient = $json || {};\nconst payload = $('Prepare Payloads').item.json || {};\nconst client = (createdClient.id ? createdClient : (createdClient.data && createdClient.data[0]) ? createdClient.data[0] : null) || createdClient;\nif (!client.id) throw new Error('No se pudo recuperar el id del client creado.');\nreturn {\n  json: {\n    contacto: {\n      client_id: client.id,\n      name: payload.contacto.name,\n      last_name: payload.contacto.last_name,\n      email: payload.contacto.email,\n      phone: payload.contacto.phone,\n      job_title: payload.contacto.job_title,\n      is_primary: true,\n      is_active: true,\n    },\n    intake: payload.intake,\n    client: client,\n  },\n};"
       }
     },
     {
@@ -178,41 +178,41 @@
         480
       ],
       "parameters": {
-        "tableId": "doa_clientes_contactos",
+        "tableId": "doa_client_contacts",
         "dataToSend": "defineBelow",
         "valuesToSend": {
           "values": [
             {
-              "column": "cliente_id",
-              "value": "={{ $json.contacto.cliente_id }}"
+              "column": "client_id",
+              "value": "={{ $json.contacto.client_id }}"
             },
             {
-              "column": "nombre",
-              "value": "={{ $json.contacto.nombre }}"
+              "column": "name",
+              "value": "={{ $json.contacto.name }}"
             },
             {
-              "column": "apellidos",
-              "value": "={{ $json.contacto.apellidos }}"
+              "column": "last_name",
+              "value": "={{ $json.contacto.last_name }}"
             },
             {
               "column": "email",
               "value": "={{ $json.contacto.email }}"
             },
             {
-              "column": "telefono",
-              "value": "={{ $json.contacto.telefono }}"
+              "column": "phone",
+              "value": "={{ $json.contacto.phone }}"
             },
             {
-              "column": "cargo",
-              "value": "={{ $json.contacto.cargo }}"
+              "column": "job_title",
+              "value": "={{ $json.contacto.job_title }}"
             },
             {
-              "column": "es_principal",
-              "value": "={{ $json.contacto.es_principal }}"
+              "column": "is_primary",
+              "value": "={{ $json.contacto.is_primary }}"
             },
             {
-              "column": "activo",
-              "value": "={{ $json.contacto.activo }}"
+              "column": "active",
+              "value": "={{ $json.contacto.is_active }}"
             }
           ]
         }
@@ -234,29 +234,29 @@
         480
       ],
       "parameters": {
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "dataToSend": "defineBelow",
         "valuesToSend": {
           "values": [
             {
-              "column": "asunto",
-              "value": "={{ $json.intake.asunto }}"
+              "column": "subject",
+              "value": "={{ $json.intake.subject }}"
             },
             {
-              "column": "remitente",
-              "value": "={{ $json.intake.remitente }}"
+              "column": "sender",
+              "value": "={{ $json.intake.sender }}"
             },
             {
-              "column": "cuerpo_original",
-              "value": "={{ $json.intake.cuerpo_original }}"
+              "column": "original_body",
+              "value": "={{ $json.intake.body_original }}"
             },
             {
-              "column": "clasificacion",
-              "value": "={{ $json.intake.clasificacion }}"
+              "column": "classification",
+              "value": "={{ $json.intake.classification }}"
             },
             {
-              "column": "respuesta_ia",
-              "value": "={{ $json.intake.respuesta_ia }}"
+              "column": "ai_response",
+              "value": "={{ $json.intake.ai_response }}"
             }
           ]
         }
@@ -270,7 +270,7 @@
     },
     {
       "id": "prepare_confirmation",
-      "name": "Preparar Confirmacion",
+      "name": "Prepare Confirmacion",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -279,7 +279,7 @@
       ],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const cliente = $('Preparar Contacto').item.json.cliente || {};\nconst intake = $('Preparar Contacto').item.json.intake || {};\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Request received</title>\n  <style>\n    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; background:linear-gradient(135deg,#071521,#143046); font-family:Georgia,'Times New Roman',serif; }\n    .card { width:min(720px,100%); background:rgba(255,255,255,0.96); border-radius:24px; padding:34px; box-shadow:0 24px 70px rgba(0,0,0,0.28); color:#10202d; }\n    h1 { margin:0 0 12px; font-size:36px; }\n    p { color:#4f6170; line-height:1.6; }\n    dl { display:grid; grid-template-columns: 190px 1fr; gap:10px 14px; margin-top:24px; }\n    dt { font-weight:700; }\n    dd { margin:0; }\n    @media (max-width:640px){ dl { grid-template-columns:1fr; } }\n  </style>\n</head>\n<body>\n  <section class=\"card\">\n    <h1>Request received</h1>\n    <p>Your project request has been registered successfully. The DOA management team will review the information and contact you if additional detail is required.</p>\n    <dl>\n      <dt>Company</dt><dd>${cliente.nombre || ''}</dd>\n      <dt>Aircraft / Request</dt><dd>${intake.asunto || ''}</dd>\n      <dt>Classification</dt><dd>${intake.clasificacion || ''}</dd>\n    </dl>\n  </section>\n</body>\n</html>`;\nreturn { json: { html } };"
+        "jsCode": "const client = $('Prepare Contacto').item.json.client || {};\nconst intake = $('Prepare Contacto').item.json.intake || {};\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n  <title>Request received</title>\n  <style>\n    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; background:linear-gradient(135deg,#071521,#143046); font-family:Georgia,'Times New Roman',serif; }\n    .card { width:min(720px,100%); background:rgba(255,255,255,0.96); border-radius:24px; padding:34px; box-shadow:0 24px 70px rgba(0,0,0,0.28); color:#10202d; }\n    h1 { margin:0 0 12px; font-size:36px; }\n    p { color:#4f6170; line-height:1.6; }\n    dl { display:grid; grid-template-columns: 190px 1fr; gap:10px 14px; margin-top:24px; }\n    dt { font-weight:700; }\n    dd { margin:0; }\n    @medium (max-width:640px){ dl { grid-template-columns:1fr; } }\n  </style>\n</head>\n<body>\n  <section class=\"card\">\n    <h1>Request received</h1>\n    <p>Your project request has been registered successfully. The DOA management team will review the information and contact you if additional detail is required.</p>\n    <dl>\n      <dt>Company</dt><dd>${client.name || ''}</dd>\n      <dt>Aircraft / Request</dt><dd>${intake.subject || ''}</dd>\n      <dt>Classification</dt><dd>${intake.classification || ''}</dd>\n    </dl>\n  </section>\n</body>\n</html>`;\nreturn { json: { html } };"
       }
     },
     {
@@ -309,40 +309,40 @@
     }
   ],
   "connections": {
-    "Formulario Cliente DOA": {
+    "Form Client DOA": {
       "main": [
         [
           {
-            "node": "Construir Formulario HTML",
+            "node": "Construir Form HTML",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Construir Formulario HTML": {
+    "Construir Form HTML": {
       "main": [
         [
           {
-            "node": "Responder Formulario",
+            "node": "Responder Form",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Recibir Formulario Cliente": {
+    "Recibir Form Client": {
       "main": [
         [
           {
-            "node": "Preparar Payloads",
+            "node": "Prepare Payloads",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Payloads": {
+    "Prepare Payloads": {
       "main": [
         [
           {
@@ -357,14 +357,14 @@
       "main": [
         [
           {
-            "node": "Preparar Contacto",
+            "node": "Prepare Contacto",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Contacto": {
+    "Prepare Contacto": {
       "main": [
         [
           {
@@ -390,14 +390,14 @@
       "main": [
         [
           {
-            "node": "Preparar Confirmacion",
+            "node": "Prepare Confirmacion",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Preparar Confirmacion": {
+    "Prepare Confirmacion": {
       "main": [
         [
           {

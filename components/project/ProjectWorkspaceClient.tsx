@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 
 import { TopBar } from '@/components/layout/TopBar'
-import type { ProyectoConRelaciones, ProyectoDocumento, ProyectoTarea } from '@/types/database'
+import type { ProjectWithRelations, ProjectDocument, ProjectTask } from '@/types/database'
 
 import { ProjectDocumentsTable } from './ProjectDocumentsTable'
 import { ProjectExpertPanel } from './ProjectExpertPanel'
@@ -15,9 +15,9 @@ export function ProjectWorkspaceClient({
   docs,
   tasks,
 }: {
-  project: ProyectoConRelaciones
-  docs: ProyectoDocumento[]
-  tasks: ProyectoTarea[]
+  project: ProjectWithRelations
+  docs: ProjectDocument[]
+  tasks: ProjectTask[]
 }) {
   const [selectedDocId, setSelectedDocId] = useState<string | null>(docs[0]?.id ?? null)
   const [density, setDensity] = useState<'compact' | 'detailed'>('compact')
@@ -28,19 +28,19 @@ export function ProjectWorkspaceClient({
     [docs, selectedDocId],
   )
 
-  function openExpert(mode: ExpertMode, doc?: ProyectoDocumento) {
+  function openExpert(mode: ExpertMode, doc?: ProjectDocument) {
     if (doc) setSelectedDocId(doc.id)
     setExpertMode(mode)
   }
 
   async function copyReference() {
-    await navigator.clipboard.writeText(`${project.numero_proyecto} — ${project.titulo}`)
+    await navigator.clipboard.writeText(`${project.project_number} — ${project.title}`)
   }
 
   return (
     <div className="flex h-full flex-col bg-[color:var(--paper)]">
 
-      <TopBar title={project.numero_proyecto} subtitle={project.titulo} />
+      <TopBar title={project.project_number} subtitle={project.title} />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-[1800px] flex-col gap-6 p-6">

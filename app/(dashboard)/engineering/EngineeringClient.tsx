@@ -3,22 +3,22 @@
  * COMPONENTE VISUAL DEL TABLERO DE PROYECTOS (ENGINEERING)
  * ============================================================================
  *
- * Este componente muestra el tablero operativo de proyectos con dos vistas:
- *   - TABLERO (Board): columnas tipo Kanban con tarjetas de trabajo
- *   - LISTA: tabla compacta con todos los elementos en filas
+ * Este componente muestra el tablero operativo de projects con dos vistas:
+ *   - TABLERO (Board): columnas type Kanban con tarjetas de trabajo
+ *   - LISTA: table compacta con todos los elementos en filas
  *
- * COLUMNAS DEL TABLERO (7 estados del flujo de trabajo):
+ * COLUMNAS DEL TABLERO (7 statuses del flujo de trabajo):
  *   1. Intake: solicitudes entrantes pendientes de asignar
  *   2. Discovery: analisis del problema y restricciones
- *   3. Architecture: decisiones de diseno tecnico
+ *   3. Architecture: decisiones de diseno technical
  *   4. Build: implementacion activa (codigo en progreso)
- *   5. Verification: tests y revision antes de entregar
- *   6. Release: elementos listos para entrega
- *   7. Observability: monitorizacion post-entrega
+ *   5. Verification: tests y review antes de entregar
+ *   6. Release: elementos listos para delivery
+ *   7. Observability: monitorizacion post-delivery
  *
- * NOTA IMPORTANTE: Todos los datos son MOCK (simulados). El tablero
+ * NOTA IMPORTANTE: Todos los data son MOCK (simulados). El tablero
  * esta preparado visualmente pero todavia no se conecta a la base
- * de datos real. Cuando se conecte, los datos vendran de Supabase.
+ * de data real. Cuando se conecte, los data vendran de Supabase.
  *
  * NOTA TECNICA: 'use client' porque necesita manejar el cambio
  * entre vistas (tablero/lista) con useState.
@@ -46,8 +46,8 @@ type EngineeringWorkItem = {
   title: string    // Titulo del elemento
   summary: string  // Resumen corto
   owner: string    // Responsable asignado
-  due: string      // Fecha limite
-  tag: string      // Etiqueta de categoria
+  due: string      // Date limite
+  tag: string      // Etiqueta de category
 }
 
 /** Estructura de una columna del tablero */
@@ -74,12 +74,12 @@ const VIEW_OPTIONS: Array<{
   { value: 'list', label: 'Lista', icon: List },
 ]
 
-/** Datos MOCK de las columnas del tablero con sus tarjetas simuladas */
+/** Data MOCK de las columnas del tablero con sus tarjetas simuladas */
 const BOARD_COLUMNS: EngineeringColumn[] = [
   {
     id: 'intake',
     title: 'Intake',
-    description: 'Solicitudes entrantes y peticiones de proyecto pendientes de routing.',
+    description: 'Solicitudes entrantes y peticiones de project pendientes de routing.',
     accent: {
       bg: 'bg-[color:var(--paper-2)]',
       border: 'border-[color:var(--ink-4)]',
@@ -98,7 +98,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
       {
         id: 'eng-202',
         title: 'Clarify platform dependency',
-        summary: 'Confirmar si afecta al portal de clientes o al stack interno.',
+        summary: 'Confirmar si afecta al portal de clients o al stack internal.',
         owner: 'S. Vega',
         due: 'Today',
         tag: 'Open',
@@ -108,7 +108,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
   {
     id: 'discovery',
     title: 'Discovery',
-    description: 'Framing del problema, restricciones y análisis técnico.',
+    description: 'Framing del problema, restricciones y análisis technical.',
     accent: {
       bg: 'bg-[color:var(--paper-2)]',
       border: 'border-[color:var(--ink-4)]',
@@ -127,7 +127,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
       {
         id: 'eng-208',
         title: 'Trace existing integrations',
-        summary: 'Localizar servicios, formularios y eventos ya implicados en el flujo.',
+        summary: 'Localizar servicios, forms y eventos ya implicados en el flujo.',
         owner: 'C. Torres',
         due: 'Tomorrow',
         tag: 'Audit',
@@ -148,7 +148,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
       {
         id: 'eng-214',
         title: 'Lock module boundaries',
-        summary: 'Separar responsabilidades entre UI, datos y orquestación.',
+        summary: 'Separar responsabilidades entre UI, data y orquestación.',
         owner: 'J. Navarro',
         due: 'Today',
         tag: 'Design',
@@ -177,7 +177,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
       {
         id: 'eng-221',
         title: 'Wire stateful UI',
-        summary: 'Conectar la superficie visual con estado local y handlers.',
+        summary: 'Conectar la superficie visual con status local y handlers.',
         owner: 'L. Romero',
         due: 'Now',
         tag: 'Active',
@@ -185,7 +185,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
       {
         id: 'eng-222',
         title: 'Polish empty states',
-        summary: 'Hacer que el canvas se vea completo incluso con datos mock.',
+        summary: 'Hacer que el canvas se vea completo incluso con data mock.',
         owner: 'P. Diaz',
         due: 'Today',
         tag: 'UI',
@@ -232,7 +232,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
   {
     id: 'release',
     title: 'Release',
-    description: 'Elementos listos para entrega y coordinación final antes del launch.',
+    description: 'Elementos listos para delivery y coordinación final antes del launch.',
     accent: {
       bg: 'bg-[color:var(--paper-2)]',
       border: 'border-[color:var(--ink-4)]',
@@ -243,7 +243,7 @@ const BOARD_COLUMNS: EngineeringColumn[] = [
       {
         id: 'eng-236',
         title: 'Prepare handoff notes',
-        summary: 'Capturar el alcance entregado y los pendientes del siguiente ciclo.',
+        summary: 'Capturar el alcance delivered y los pendientes del siguiente ciclo.',
         owner: 'V. Ortega',
         due: 'Tomorrow',
         tag: 'Ready',
@@ -365,7 +365,7 @@ function EngineeringColumnCard({ column }: { column: EngineeringColumn }) {
   )
 }
 
-/** Fila de la vista lista con los datos de un elemento de trabajo */
+/** Fila de la vista lista con los data de un elemento de trabajo */
 function EngineeringListRow({
   column,
   card,
@@ -407,9 +407,9 @@ function ModeBadge({ children }: { children: ReactNode }) {
   )
 }
 
-/** Componente principal del tablero de proyectos con vistas tablero y lista */
+/** Componente primary del tablero de projects con vistas tablero y lista */
 export function EngineeringClient() {
-  // Estado para la vista activa: "board" (tablero) o "list" (lista)
+  // Status para la vista activa: "board" (tablero) o "list" (lista)
   const [view, setView] = useState<EngineeringView>('board')
 
   return (
@@ -422,13 +422,13 @@ export function EngineeringClient() {
         <div className="border-b border-[color:var(--ink-4)] px-5 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
-              <ModeBadge>Tablero de proyectos</ModeBadge>
+              <ModeBadge>Tablero de projects</ModeBadge>
               <div className="space-y-1">
                 <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-                  Vista operativa del equipo de proyectos
+                  Vista operativa del equipo de projects
                 </h2>
                 <p className="max-w-3xl text-sm leading-6 text-[color:var(--ink-3)]">
-                  Una superficie visual, basada en datos mock, para revisar el trabajo como tablero o como tabla ligera.
+                  Una superficie visual, basada en data mock, para revisar el trabajo como tablero o como table ligera.
                 </p>
               </div>
             </div>
@@ -436,7 +436,7 @@ export function EngineeringClient() {
             <div className="flex flex-wrap items-center justify-end gap-3">
               <div className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)]/90 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]">
-                  Estados
+                  Statuses
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-slate-950">{BOARD_COLUMNS.length}</p>
               </div>
@@ -495,9 +495,9 @@ export function EngineeringClient() {
         <TabsContent value="list" className="px-5 py-5">
           <div className="overflow-hidden rounded-[30px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_18px_42px_rgba(148,163,184,0.12)]">
             <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
-              <h3 className="text-base font-semibold text-slate-950">Lista de proyectos</h3>
+              <h3 className="text-base font-semibold text-slate-950">Lista de projects</h3>
               <p className="mt-1 text-sm leading-6 text-[color:var(--ink-3)]">
-                Los mismos datos mock, organizados como una tabla compacta para revisar responsables, fechas y estado.
+                Los mismos data mock, organizados como una table compacta para revisar responsables, dates y status.
               </p>
             </div>
 
@@ -505,7 +505,7 @@ export function EngineeringClient() {
               <table className="min-w-[980px] w-full border-separate border-spacing-0 text-left">
                 <thead className="sticky top-0 z-10 bg-[color:var(--paper)]">
                   <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)]">
-                    {['Elemento', 'Estado', 'Responsable', 'Vence', 'Etiqueta', 'Resumen'].map((label) => (
+                    {['Elemento', 'Status', 'Responsable', 'Vence', 'Etiqueta', 'Resumen'].map((label) => (
                       <th
                         key={label}
                         className="whitespace-nowrap border-b border-[color:var(--ink-4)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]"

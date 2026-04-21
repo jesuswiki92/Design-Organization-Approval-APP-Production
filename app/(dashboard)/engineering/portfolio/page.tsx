@@ -1,9 +1,9 @@
 /**
- * Portfolio de proyectos (engineering).
+ * Portfolio de projects (engineering).
  *
- * La vista Lista quedo deprecada (filtraba vacio por desajuste entre `estado`
- * legacy y `estado_v2`). La unica vista soportada es el Tablero, que agrupa
- * proyectos por los 13 estados v2 en 4 fases. Esta ruta redirige al tablero
+ * La vista Lista quedo deprecada (filtraba vacio por desajuste entre `status`
+ * legacy y `execution_status`). La unica vista soportada es el Tablero, que agrupa
+ * projects por los 13 statuses v2 en 4 fases. Esta path redirige al tablero
  * para preservar enlaces existentes.
  */
 import { redirect } from 'next/navigation'

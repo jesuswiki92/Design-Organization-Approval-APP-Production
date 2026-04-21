@@ -1,129 +1,129 @@
-# Bases de Datos - Inventario Completo
+# Bases de Data - Inventario Completo
 
-## Estado actual
+## Status actual
 
-Este documento resume las tablas de Supabase que la app usa hoy o tiene preparadas en su estructura actual. No mezcla el catalogo visible en la UI con el estado real de las migraciones, para evitar afirmar que algo esta eliminado o activo sin confirmarlo primero.
+Este document resume las tablas de Supabase que la app usa hoy o tiene preparadas en su estructura actual. No mezcla el catalogo visible en la UI con el status real de las migraciones, para evitar afirmar que algo esta eliminado o is_active sin confirmarlo primero.
 
-**Que significa cada estado:**
-- ⏸️ **Desconectada** — La tabla existe en Supabase con sus datos, pero el codigo de la app todavia no la esta usando (o se desconecto durante la reestructuracion).
-- 🔌 **Reconectando** — Se esta trabajando en reconectar esta tabla.
-- ✅ **Activa** — La tabla esta conectada y funcionando en la app.
+**Que significa cada status:**
+- ⏸️ **Desconectada** — La table existe en Supabase con sus data, pero el codigo de la app todavia no la esta usando (o se desconecto durante la reestructuracion).
+- 🔌 **Reconectando** — Se esta trabajando en reconectar esta table.
+- ✅ **Activa** — La table esta conectada y funcionando en la app.
 
 ---
 
 ## Tablas activas actuales
 
-Estas son las tablas públicas que siguen presentes y visibles en el proyecto tras la limpieza del esquema a fecha 2026-04-01.
+Estas son las tablas públicas que siguen presentes y visibles en el project tras la limpieza del esquema a date 2026-04-01.
 
-### Clientes
+### Clients
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_clientes_datos_generales` | Datos maestros de cada cliente: nombre de la empresa, CIF (identificacion fiscal), pais, ciudad, y tipo de cliente. Es como la "ficha" principal de cada cliente. | /clients, /engineering/portfolio, /quotations | ✅ Conectada |
-| `doa_clientes_contactos` | Las personas de contacto de cada cliente: nombre, email, cargo que ocupa, y si es el contacto principal. Un cliente puede tener varios contactos. | /clients | ⏸️ Desconectada |
+| `doa_clients` | Data maestros de cada client: name de la empresa, CIF (identificacion fiscal), country, city, y type de client. Es como la "ficha" primary de cada client. | /clients, /engineering/portfolio, /quotations | ✅ Conectada |
+| `doa_client_contacts` | Las personas de contacto de cada client: name, email, job_title que ocupa, y si es el contacto primary. Un client puede tener varios contacts. | /clients | ⏸️ Desconectada |
 
-### Proyectos
+### Projects
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_proyectos_generales` | Los proyectos de ingenieria: numero de proyecto, titulo, estado actual, presupuesto asignado y horas estimadas. Es la tabla central de cada proyecto. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
-| `doa_proyectos_historico` | Registro historico de proyectos completados. Cada registro tiene: numero de proyecto (unico), titulo, descripcion, nombre del cliente, client_id (FK a `doa_clientes_datos_generales`), estado, anio, ruta de origen en disco, nombre de la carpeta de origen, y timestamps. Se usa para consultar el portfolio historico. | /engineering/portfolio (historico) | ✅ Conectada |
-| `doa_proyectos_historico_documentos` | Inventario documental de cada proyecto historico. Cada registro vincula un proyecto historico con una carpeta documental: orden documental, familia documental, carpeta de origen, ruta de origen, archivo de referencia, total de archivos, formatos disponibles (text[]), y timestamps. Se elimina en cascada al borrar el proyecto. | /engineering/portfolio (historico) | ✅ Conectada |
+| `doa_general_projects` | Los projects de ingenieria: numero de project, title, status actual, presupuesto asignado y horas estimadas. Es la table central de cada project. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
+| `doa_historical_projects` | Registro historical de projects completados. Cada registro tiene: numero de project (unico), title, description, name del client, client_id (FK a `doa_clients`), status, year, path de origen en disco, name de la folder de origen, y timestamps. Se usa para consultar el portfolio historical. | /engineering/portfolio (historical) | ✅ Conectada |
+| `doa_historical_project_documents` | Inventario documental de cada project historical. Cada registro vincula un project historical con una folder documental: sort_order documental, family documental, folder de origen, path de origen, archivo de referencia, total de archivos, formatos disponibles (text[]), y timestamps. Se elimina en cascada al borrar el project. | /engineering/portfolio (historical) | ✅ Conectada |
 
 ### Cotizaciones / Ofertas
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_consultas_entrantes` | Las consultas que llegan de clientes por email. Cada registro tiene: asunto del email, remitente, contenido, clasificacion automatica (hecha por IA), respuesta sugerida por la IA, estado del workflow, borrador de respuesta al cliente, y timestamps de envio de correo. Tambien incluye `url_formulario` (enlace al formulario de recopilacion de datos del cliente) y columnas de aeronave: `tcds_number`, `aircraft_manufacturer`, `aircraft_model`, `aircraft_count`, `aircraft_msn`, `tcds_pdf_url`. Es el punto de entrada del flujo principal. | /quotations, /quotations/incoming/[id] | ✅ Conectada |
+| `doa_incoming_requests` | Las requests que llegan de clients por email. Cada registro tiene: subject del email, sender, contenido, classification automatica (hecha por IA), response sugerida por la IA, status del workflow, borrador de response al client, y timestamps de send de email. Tambien incluye `form_url` (enlace al form de recopilacion de data del client) y columnas de aircraft: `tcds_number`, `aircraft_manufacturer`, `aircraft_model`, `aircraft_count`, `aircraft_msn`, `tcds_pdf_url`. Es el punto de entrada del flujo primary. | /quotations, /quotations/incoming/[id] | ✅ Conectada |
 
 ### Usuarios
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_usuarios` | Los usuarios internos del equipo DOA: nombre completo, email, rol dentro del equipo (ingeniero, jefe de proyecto, etc.), y titulo profesional. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
+| `doa_usuarios` | Los users internos del equipo DOA: name completo, email, role dentro del equipo (ingeniero, jefe de project, etc.), y title profesional. | /engineering/portfolio, /engineering/projects/[id] | ⏸️ Desconectada |
 
 ### Chat, IA y tablas auxiliares visibles en `/databases`
 
-Estas tablas existen en la base de datos y se muestran en la sección `/databases`, aunque no formen parte aún del modelo tipado principal de la app.
+Estas tablas existen en la base de data y se muestran en la sección `/databases`, aunque no formen parte aún del model tipado primary de la app.
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
 | `chat_sessions` | Sesiones de conversación persistidas para el asistente IA. | /databases | ⏸️ Desconectada |
 | `chat_history` | Historial de mensajes por sesión de chat. | /databases | ⏸️ Desconectada |
-| `salud_sintomas` | Tabla auxiliar usada en pruebas o clasificación de síntomas. | /databases | ⏸️ Desconectada |
-| `DocumentacionCertificacion` | Corpus documental de certificación indexado para búsqueda. | /databases | ⏸️ Desconectada |
-| `documents` | Metadatos de documentos vectorizados del sistema RAG. | /databases | ⏸️ Desconectada |
+| `salud_sintomas` | Table auxiliar usada en pruebas o classification de síntomas. | /databases | ⏸️ Desconectada |
+| `DocumentacionCertificacion` | Corpus documental de certificación indexado para search. | /databases | ⏸️ Desconectada |
+| `documents` | Metadatos de documents vectorizados del sistema RAG. | /databases | ⏸️ Desconectada |
 | `doa_chunks` | Fragmentos indexados del corpus DOA para recuperación semántica. | /databases | ⏸️ Desconectada |
 
 ### Plantillas de compliance
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_plantillas_compliance` | Catalogo maestro de las 44 plantillas de documentos de compliance (G12-xx, G18-xx). Cada registro tiene: code (unico), name, category, sort_order, active. Se usa para la seleccion de documentacion en consultas entrantes y se reutilizara en proyectos. | /quotations/incoming/[id] (seccion "Definir documentacion") | ✅ Conectada |
+| `doa_compliance_templates` | Catalogo maestro de las 44 templates de documents de compliance (G12-xx, G18-xx). Cada registro tiene: code (unico), name, category, sort_order, active. Se usa para la seleccion de documentacion en requests entrantes y se reutilizara en projects. | /quotations/incoming/[id] (seccion "Definir documentacion") | ✅ Conectada |
 
-### Formularios dinamicos
+### Forms dinamicos
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_formularios` | Plantillas HTML de los formularios de recopilacion de datos del cliente. PK `slug` (actualmente `cliente_conocido` y `cliente_desconocido`), columna `html` con el documento completo y placeholders `{{...}}`, `descripcion`, `created_at`, `updated_at` (trigger auto). RLS con lectura anon para permitir fetch desde el webhook n8n. Reemplaza la descarga desde Google Drive. | Workflow n8n `AMS - Web Server Formularios Clientes (Dinamico)` (webhook `sswebhook.testn8n.com/webhook/doa-form`) | ✅ Activa |
+| `doa_formularios` | Plantillas HTML de los forms de recopilacion de data del client. PK `slug` (actualmente `cliente_conocido` y `cliente_desconocido`), columna `html` con el document completo y placeholders `{{...}}`, `description`, `created_at`, `updated_at` (trigger auto). RLS con lectura anon para permitir fetch desde el webhook n8n. Reemplaza la descarga desde Google Drive. | Workflow n8n `AMS - Web Server Forms Clients (Dinamico)` (webhook `sswebhook.testn8n.com/webhook/doa-form`) | ✅ Activa |
 
 ### Configuracion de workflow
 
-| Tabla | Para que sirve | Usada en | Estado |
+| Table | Para que sirve | Usada en | Status |
 |-------|----------------|----------|--------|
-| `doa_workflow_state_config` | Overrides persistidos para el label visible, el color y el orden de los estados del workflow. | /quotations, `app/api/workflow/state-config/route.ts` | ⚠️ Pendiente de migracion en este repo |
+| `doa_workflow_state_config` | Overrides persistidos para el label visible, el color y el sort_order de los statuses del workflow. | /quotations, `app/api/workflow/state-config/route.ts` | ⚠️ Pending de migracion en este repo |
 
 ---
 
 ## Tablas legacy (doa_new_*)
 
-Las tablas legacy `doa_new_*` ya fueron eliminadas de Supabase y no forman parte del esquema activo. Si vuelven a aparecer en algun entorno, deben tratarse como deriva de esquema y no como parte soportada por la app.
+Las tablas legacy `doa_new_*` ya fueron eliminadas de Supabase y no forman parte del esquema is_active. Si vuelven a aparecer en algun entorno, deben tratarse como deriva de esquema y no como parte soportada por la app.
 
 ## Tablas de soporte del workflow
 
-Estas tablas siguen apareciendo en las migraciones del repositorio y no deben tratarse como eliminadas del esquema mientras ese estado se mantenga:
+Estas tablas siguen apareciendo en las migraciones del repositorio y no deben tratarse como eliminadas del esquema mientras ese status se mantenga:
 
-- `doa_proyectos_estado_historial`
-- `doa_ofertas_estado_historial`
-- `doa_workflow_state_config` (pendiente de migracion en este repo)
-- `doa_respuestas_formularios` — Respuestas de formularios de clientes, con FK cascade a `doa_consultas_entrantes`
+- `doa_project_status_history`
+- `doa_quote_status_history`
+- `doa_workflow_state_config` (pending de migracion en este repo)
+- `doa_form_responses` — Respuestas de forms de clients, con FK cascade a `doa_incoming_requests`
 
 ## Tablas eliminadas del esquema público
 
-Estas tablas aparecian en documentación o en catálogos antiguos del proyecto, pero ya no forman parte del esquema público actual:
+Estas tablas aparecian en documentación o en catálogos antiguos del project, pero ya no forman parte del esquema público actual:
 
-- `doa_proyectos_documentos`
-- `doa_proyectos_tareas`
-- `doa_proyectos_hitos`
+- `doa_projects_documentos`
+- `doa_projects_tareas`
+- `doa_projects_hitos`
 - `doa_ofertas`
-- `doa_aeronaves_modelos`
-- `doa_aeronaves_registro`
-- `doa_aeronaves_tcds`
+- `doa_aircraft_models`
+- `doa_aircraft_registro`
+- `doa_aircraft_tcds`
 - `doa_solicitudes`
-- `doa_consultas_form_links` — Eliminada en migracion `202604021950` (reemplazada por flujo externo)
-- `doa_consultas_form_responses` — Eliminada en migracion `202604021950` (reemplazada por flujo externo)
+- `doa_request_form_links` — Eliminada en migracion `202604021950` (reemplazada por flujo externo)
+- `doa_request_form_responses` — Eliminada en migracion `202604021950` (reemplazada por flujo externo)
 
 ## Nota sobre migraciones del repositorio
 
 Las migraciones actuales del repo son estas:
 
 - `001_initial_schema.sql` — Esquema inicial (tablas `doa_new_*`, ya eliminadas)
-- `202603281710_project_and_quotation_states.sql` — Columnas de estado en proyectos y ofertas, tablas de historial de estados
-- `202603291840_consultas_entrantes_estado.sql` — Columna `estado` y campos de correo en `doa_consultas_entrantes`
+- `202603281710_project_and_quotation_states.sql` — Columnas de status en projects y quotes, tablas de historial de statuses
+- `202603291840_incoming_requests_estado.sql` — Columna `status` y campos de email en `doa_incoming_requests`
 - `202604010800_drop_legacy_doa_new_tables.sql` — Eliminacion de tablas legacy `doa_new_*`
-- `202604021305_app_hosted_client_project_forms.sql` — Tablas `doa_consultas_form_links` y `doa_consultas_form_responses` (luego eliminadas)
-- `202604021833_add_url_formulario_to_consultas_entrantes.sql` — Columna `url_formulario` en `doa_consultas_entrantes`
-- `202604021950_drop_app_hosted_forms_tables.sql` — Eliminacion de `doa_consultas_form_links` y `doa_consultas_form_responses`
-- `202604031630_cascade_delete_form_responses_on_consulta.sql` — FK cascade en `doa_respuestas_formularios` hacia `doa_consultas_entrantes`
-- `202604031700_doa_proyectos_historico.sql` — Creacion de tabla `doa_proyectos_historico`
-- `202604031810_add_client_id_to_doa_proyectos_historico.sql` — Columna `client_id` (FK a `doa_clientes_datos_generales`) en `doa_proyectos_historico`
-- `202604031820_add_origin_metadata_to_doa_proyectos_historico.sql` — Columnas `anio`, `ruta_origen`, `nombre_carpeta_origen` en `doa_proyectos_historico`
-- `202604031830_add_doa_document_inventory_to_historico.sql` — Creacion de tabla `doa_proyectos_historico_documentos` (inventario documental)
-- `202604031830_add_doa_documentos_to_proyectos_historico.sql` — Variante alternativa de la tabla de documentos del historico
+- `202604021305_app_hosted_client_project_forms.sql` — Tablas `doa_request_form_links` y `doa_request_form_responses` (luego eliminadas)
+- `202604021833_add_form_url_to_incoming_requests.sql` — Columna `form_url` en `doa_incoming_requests`
+- `202604021950_drop_app_hosted_forms_tables.sql` — Eliminacion de `doa_request_form_links` y `doa_request_form_responses`
+- `202604031630_cascade_delete_form_responses_on_consulta.sql` — FK cascade en `doa_form_responses` hacia `doa_incoming_requests`
+- `202604031700_doa_historical_projects.sql` — Creacion de table `doa_historical_projects`
+- `202604031810_add_client_id_to_doa_historical_projects.sql` — Columna `client_id` (FK a `doa_clients`) en `doa_historical_projects`
+- `202604031820_add_origin_metadata_to_doa_historical_projects.sql` — Columnas `year`, `source_path`, `source_folder_name` en `doa_historical_projects`
+- `202604031830_add_doa_document_inventory_to_historico.sql` — Creacion de table `doa_historical_project_documents` (inventario documental)
+- `202604031830_add_doa_documentos_to_historical_projects.sql` — Variante alternativa de la table de documents del historical
 
 No existe todavia una migracion que cree `public.doa_workflow_state_config`.
 
-Las columnas de aeronave en `doa_consultas_entrantes` (`tcds_number`, `aircraft_manufacturer`, `aircraft_model`, `aircraft_count`, `aircraft_msn`, `tcds_pdf_url`) existen en el esquema de Supabase y en los tipos TypeScript pero no tienen migracion en este repositorio.
+Las columnas de aircraft en `doa_incoming_requests` (`tcds_number`, `aircraft_manufacturer`, `aircraft_model`, `aircraft_count`, `aircraft_msn`, `tcds_pdf_url`) existen en el esquema de Supabase y en los tipos TypeScript pero no tienen migracion en este repositorio.
 
 ---
 
@@ -133,24 +133,24 @@ Ademas de las tablas, la aplicacion se conecta a estos servicios:
 
 | Servicio | Para que sirve | Donde se configura |
 |----------|---------------|-------------------|
-| **Supabase Auth** | Gestiona el inicio de sesion (login) y las sesiones de usuario. Controla quien puede entrar a la app. | Variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `.env.local` |
-| **OpenRouter** | Conexion con modelos de inteligencia artificial. Es lo que hace funcionar el chat "Experto IA" en `/tools/experto`. | Variable `OPENROUTER_API_KEY` en `.env.local` |
-| **n8n (webhook)** | Automatizacion para enviar emails a clientes. Cuando un ingeniero responde a una consulta, la app llama a un webhook de n8n que envia el email real. | Variable `DOA_SEND_CLIENT_WEBHOOK_URL` en `.env.local` / entorno de despliegue. |
+| **Supabase Auth** | Gestiona el started_at de sesion (login) y las sesiones de user_label. Controla quien puede entrar a la app. | Variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en `.env.local` |
+| **OpenRouter** | Conexion con models de inteligencia artificial. Es lo que hace funcionar el chat "Experto IA" en `/tools/expert`. | Variable `OPENROUTER_API_KEY` en `.env.local` |
+| **n8n (webhook)** | Automatizacion para send emails a clients. Cuando un ingeniero responde a una request, la app llama a un webhook de n8n que envia el email real. | Variable `DOA_SEND_CLIENT_WEBHOOK_URL` en `.env.local` / entorno de despliegue. |
 
 ---
 
 ## Plan de reconexion
 
-Orden recomendado para ir reconectando las tablas durante la reestructuracion. Se priorizan las que afectan al flujo principal (consultas entrantes) y luego las demas:
+Orden recomendado para ir reconectando las tablas durante la reestructuracion. Se priorizan las que afectan al flujo primary (requests entrantes) y luego las demas:
 
-1. 🔌 `doa_consultas_entrantes` — Es la tabla mas importante para el flujo principal. Sin ella, no se pueden ver las consultas de clientes.
-2. 🔌 `doa_clientes_datos_generales` — Necesaria para mostrar los datos del cliente en las consultas y en la seccion de clientes.
-3. 🔌 `doa_ofertas` — Para poder crear y gestionar cotizaciones a partir de las consultas.
-4. 🔌 `doa_proyectos_generales` — Para el portfolio de proyectos y la creacion de nuevos proyectos.
+1. 🔌 `doa_incoming_requests` — Es la table mas importante para el flujo primary. Sin ella, no se pueden ver las requests de clients.
+2. 🔌 `doa_clients` — Necesaria para mostrar los data del client en las requests y en la seccion de clients.
+3. 🔌 `doa_ofertas` — Para poder crear y gestionar cotizaciones a partir de las requests.
+4. 🔌 `doa_general_projects` — Para el portfolio de projects y la creacion de nuevos projects.
 5. 🔌 Resto de tablas segun necesidad:
-   - `doa_clientes_contactos` — Cuando se trabaje en la gestion detallada de clientes
-   - `doa_proyectos_documentos` y `doa_proyectos_tareas` — Cuando se active el workspace de proyecto
+   - `doa_client_contacts` — Cuando se trabaje en la gestion detallada de clients
+   - `doa_projects_documentos` y `doa_projects_tareas` — Cuando se active el workspace de project
    - `doa_usuarios` — Cuando se necesite mostrar responsables y miembros del equipo
-   - `doa_aeronaves_modelos` — Cuando se necesite el catalogo de aeronaves
-   - `doa_ofertas_estado_historial` y `doa_proyectos_estado_historial` — Cuando se active el sistema de workflow
-   - `doa_proyectos_hitos`, `doa_solicitudes`, `doa_aeronaves_registro`, `doa_aeronaves_tcds` — Al final, ya que solo se usan en el navegador de tablas
+   - `doa_aircraft_models` — Cuando se necesite el catalogo de aircraft
+   - `doa_quote_status_history` y `doa_project_status_history` — Cuando se active el sistema de workflow
+   - `doa_projects_hitos`, `doa_solicitudes`, `doa_aircraft_registro`, `doa_aircraft_tcds` — Al final, ya que solo se usan en el navegador de tablas

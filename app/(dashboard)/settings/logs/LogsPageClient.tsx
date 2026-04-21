@@ -196,7 +196,7 @@ export function LogsPageClient({
         <SummaryCard
           icon={Filter}
           label="Tipos mas comunes"
-          value={analysis.topEvents[0]?.label ?? 'Sin datos'}
+          value={analysis.topEvents[0]?.label ?? 'Sin data'}
           detail={formatList(analysis.topEvents, 'No hay eventos suficientes para resumir tipos.')}
         />
       </section>
@@ -215,7 +215,7 @@ export function LogsPageClient({
               <p>
                 Categorias dominantes:{' '}
                 <span className="font-medium text-slate-950">
-                  {formatList(analysis.topCategories, 'sin datos')}
+                  {formatList(analysis.topCategories, 'sin data')}
                 </span>
               </p>
             </div>
@@ -237,10 +237,10 @@ export function LogsPageClient({
           <h2 className="text-lg font-semibold text-slate-950">Cobertura y limites</h2>
           <div className="mt-4 space-y-3 text-sm leading-6 text-[color:var(--ink-3)]">
             <p>
-              Esta pagina muestra una muestra reciente, no un SIEM completo. Sirve para soporte operativo rapido y triage inicial.
+              Esta page muestra una muestra reciente, no un SIEM completo. Sirve para soporte operativo rapido y triage inicial.
             </p>
             <p>
-              Los eventos se leen en servidor y no exponen cuerpos de correo, payloads ni campos sensibles.
+              Los eventos se leen en servidor y no exponen cuerpos de email, payloads ni campos sensibles.
             </p>
             <p>
               Si necesitas investigar correlacion profunda, usa <span className="font-mono text-slate-950">request_id</span> y el resto de logs del entorno.
@@ -251,7 +251,7 @@ export function LogsPageClient({
 
       {loadError ? (
         <section className="rounded-[24px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700 shadow-[0_10px_24px_rgba(251,113,133,0.12)]">
-          <p className="font-semibold">No se pudo cargar la tabla de eventos.</p>
+          <p className="font-semibold">No se pudo cargar la table de eventos.</p>
           <p className="mt-1">{loadError}</p>
         </section>
       ) : null}
@@ -273,7 +273,7 @@ export function LogsPageClient({
                   <input
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Buscar evento, ruta o request..."
+                    placeholder="Buscar evento, path o request..."
                     className="h-10 w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] pl-9 pr-3 text-sm text-slate-950 placeholder:text-[color:var(--ink-3)] focus:border-[color:var(--ink-4)] focus:outline-none"
                   />
                 </label>
@@ -302,7 +302,7 @@ export function LogsPageClient({
             <table className="min-w-[1120px] w-full text-left text-sm">
               <thead className="bg-[color:var(--paper-2)]">
                 <tr className="border-b border-[color:var(--ink-4)]">
-                  {['Hora', 'Evento', 'Outcome', 'Ruta', 'Entidad', 'Contexto'].map((heading) => (
+                  {['Hora', 'Evento', 'Outcome', 'Path', 'Entidad', 'Contexto'].map((heading) => (
                     <th
                       key={heading}
                       className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-3)]"
@@ -372,7 +372,7 @@ export function LogsPageClient({
 
                         <td className="px-4 py-3 align-top text-[color:var(--ink-3)]">
                           <div className="font-medium text-slate-950">
-                            {event.route ?? 'Sin ruta'}
+                            {event.route ?? 'Sin path'}
                           </div>
                           <div className="mt-1 text-xs text-[color:var(--ink-3)]">
                             {event.method?.toUpperCase() ?? 'Sin metodo'}
@@ -384,7 +384,7 @@ export function LogsPageClient({
                             {describeEventEntity(event)}
                           </div>
                           <div className="mt-1 text-xs text-[color:var(--ink-3)]">
-                            {event.entityType ?? 'Sin tipo'} ·{' '}
+                            {event.entityType ?? 'Sin type'} ·{' '}
                             {shortIdentifier(event.entityId, 4, 4) ?? 'sin id'}
                           </div>
                         </td>
@@ -439,8 +439,8 @@ export function LogsPageClient({
                 </div>
 
                 <div className="grid gap-3">
-                  <DetailField label="Fecha" value={formatTimestamp(selectedEvent.createdAt)} />
-                  <DetailField label="Ruta" value={selectedEvent.route ?? 'Sin ruta'} />
+                  <DetailField label="Date" value={formatTimestamp(selectedEvent.createdAt)} />
+                  <DetailField label="Path" value={selectedEvent.route ?? 'Sin path'} />
                   <DetailField label="Entidad" value={describeEventEntity(selectedEvent)} />
                   <DetailField
                     label="Request ID"
@@ -486,7 +486,7 @@ export function LogsPageClient({
               </>
             ) : (
               <div className="rounded-[20px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-6 text-sm leading-6 text-[color:var(--ink-3)]">
-                No hay evento seleccionado. Ajusta los filtros o espera a que la tabla cargue nuevos registros.
+                No hay evento seleccionado. Ajusta los filtros o espera a que la table cargue nuevos registros.
               </div>
             )}
           </div>

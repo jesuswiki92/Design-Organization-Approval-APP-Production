@@ -6,7 +6,7 @@
  * aceptando `middleware.ts` pero emite un warning de deprecacion en cada
  * build, asi que la convencion canonica es esta.
  *
- * Next.js ejecuta automaticamente `proxy.ts` (en la raiz del proyecto) antes
+ * Next.js ejecuta automaticamente `proxy.ts` (en la raiz del project) antes
  * de cada request que coincida con `config.matcher`. Aqui es donde protegemos
  * las rutas del dashboard exigiendo una sesion valida de Supabase antes de
  * que el handler de la pagina se ejecute.
@@ -17,7 +17,7 @@
  *    recursos estaticos): NO pasan por aqui. Las APIs aplican su propia
  *    verificacion via `requireUserApi` (ver `lib/auth/require-user.ts`).
  *
- * 2. `/login` con sesion valida -> redirige 307 a `/home` (el usuario ya
+ * 2. `/login` con sesion valida -> redirige 307 a `/home` (el user_label ya
  *    esta autenticado, no necesita volver a loguearse).
  *
  * 3. `/login` sin sesion -> deja pasar al login.
@@ -29,7 +29,7 @@
  * 5. Rutas del dashboard con sesion valida -> deja pasar (con las cookies
  *    refrescadas por Supabase SSR si aplica).
  *
- * 6. Cualquier otra ruta (landing, paginas publicas) -> deja pasar sin
+ * 6. Cualquier otra path (landing, paginas publicas) -> deja pasar sin
  *    verificar.
  *
  * IMPORTANTE: Next.js 16 requiere que el archivo se llame `proxy.ts` y que
@@ -40,7 +40,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 /**
- * Intenta obtener el usuario actual desde las cookies SSR de Supabase.
+ * Intenta obtener el user_label actual desde las cookies SSR de Supabase.
  * Aplica un timeout de 3 segundos para que un Supabase caido no tumbe la app.
  *
  * @returns `{ user, supabaseResponse }` si la auth responde a tiempo, o
@@ -102,7 +102,7 @@ export async function proxy(request: NextRequest) {
 
   const { user, supabaseResponse } = await resolveUser(request)
 
-  // Caso 1: /login con usuario ya autenticado -> redirige a /home.
+  // Caso 1: /login con user_label ya autenticado -> redirige a /home.
   if (isLogin) {
     if (user) {
       return NextResponse.redirect(new URL('/home', request.url))
@@ -111,12 +111,12 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse ?? NextResponse.next({ request })
   }
 
-  // Caso 2: ruta del dashboard con sesion valida -> deja pasar.
+  // Caso 2: path del dashboard con sesion valida -> deja pasar.
   if (user && supabaseResponse) {
     return supabaseResponse
   }
 
-  // Caso 3: ruta del dashboard sin sesion (o auth tumbada) -> login.
+  // Caso 3: path del dashboard sin sesion (o auth tumbada) -> login.
   return NextResponse.redirect(new URL('/login', request.url))
 }
 

@@ -1,11 +1,11 @@
 'use client'
 
 /**
- * Tab "Deliverables" del detalle de proyecto (Sprint 1, read-only).
+ * Tab "Deliverables" del detalle de project (Sprint 1, read-only).
  *
- * Lista los deliverables del proyecto llamando a GET /api/proyectos/[id]/deliverables.
- * Si el proyecto esta en `proyecto_abierto` y no tiene deliverables, ofrece un
- * boton "Planificar proyecto" que llama a POST /api/proyectos/[id]/planificar.
+ * Lista los deliverables del project llamando a GET /api/projects/[id]/deliverables.
+ * Si el project esta en `project_opened` y no tiene deliverables, ofrece un
+ * boton "Planificar project" que llama a POST /api/projects/[id]/plan.
  *
  * Futuro (Sprint 2+): crear/editar/borrar deliverables desde la UI.
  */
@@ -19,7 +19,7 @@ import {
   PROJECT_EXECUTION_STATES,
   isProjectExecutionStateCode,
 } from '@/lib/workflow-states'
-import type { DeliverableEstado, ProjectDeliverable } from '@/types/database'
+import type { DeliverableStatus, ProjectDeliverable } from '@/types/database'
 
 type Props = {
   proyectoId: string
@@ -27,22 +27,22 @@ type Props = {
   onStateChange?: (nextState: string) => void
 }
 
-const ESTADO_STYLE: Record<DeliverableEstado, string> = {
-  pendiente: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
-  en_curso: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
-  en_revision: 'bg-amber-50 text-amber-700 border-amber-200',
-  completado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  bloqueado: 'bg-rose-50 text-rose-700 border-rose-200',
-  no_aplica: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
+const ESTADO_STYLE: Record<DeliverableStatus, string> = {
+  pending: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
+  in_progress: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  in_review: 'bg-amber-50 text-amber-700 border-amber-200',
+  completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  blocked: 'bg-rose-50 text-rose-700 border-rose-200',
+  not_applicable: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
 }
 
-const ESTADO_LABEL: Record<DeliverableEstado, string> = {
-  pendiente: 'Pendiente',
-  en_curso: 'En curso',
-  en_revision: 'En revision',
-  completado: 'Completado',
-  bloqueado: 'Bloqueado',
-  no_aplica: 'No aplica',
+const ESTADO_LABEL: Record<DeliverableStatus, string> = {
+  pending: 'Pending',
+  in_progress: 'En curso',
+  in_review: 'En review',
+  completed: 'Completado',
+  blocked: 'Bloqueado',
+  not_applicable: 'No aplica',
 }
 
 export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Props) {
@@ -56,7 +56,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/deliverables`, {
+      const res = await fetch(`/api/projects/${proyectoId}/deliverables`, {
         method: 'GET',
       })
       const json = (await res.json().catch(() => ({}))) as {
@@ -83,7 +83,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
     setPlanning(true)
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/planificar`, {
+      const res = await fetch(`/api/projects/${proyectoId}/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
@@ -99,7 +99,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
       await load()
     } catch (e) {
       console.error('DeliverablesTab planificar error:', e)
-      setError(e instanceof Error ? e.message : 'Error planificando proyecto.')
+      setError(e instanceof Error ? e.message : 'Error planificando project.')
     } finally {
       setPlanning(false)
     }
@@ -108,52 +108,52 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
   const canPlan =
     currentState !== null &&
     isProjectExecutionStateCode(currentState) &&
-    currentState === PROJECT_EXECUTION_STATES.PROYECTO_ABIERTO
+    currentState === PROJECT_EXECUTION_STATES.PROJECT_OPENED
 
-  // D6 (Sprint 2): ofrecer "Listo para validacion" cuando el proyecto esta en
-  // ejecucion o revision interna y todos los deliverables estan listos. El
-  // endpoint `enviar-a-validacion` admite la transicion desde esos estados
+  // D6 (Sprint 2): ofrecer "Ready for validation" cuando el project esta en
+  // execution o review internal y todos los deliverables estan listos. El
+  // endpoint `send-a-validation` admite la transicion desde esos statuses
   // directamente y ya comprueba integridad por si cambia mientras lee.
   const readyForValidation = useMemo(() => {
     if (deliverables.length === 0) return false
     return deliverables.every((d) =>
-      DELIVERABLE_VALIDATION_READY_STATES.includes(d.estado),
+      DELIVERABLE_VALIDATION_READY_STATES.includes(d.status),
     )
   }, [deliverables])
 
   const canSendToValidation =
     currentState !== null &&
     isProjectExecutionStateCode(currentState) &&
-    (currentState === PROJECT_EXECUTION_STATES.EN_EJECUCION ||
-      currentState === PROJECT_EXECUTION_STATES.REVISION_INTERNA ||
-      currentState === PROJECT_EXECUTION_STATES.LISTO_PARA_VALIDACION) &&
+    (currentState === PROJECT_EXECUTION_STATES.IN_EXECUTION ||
+      currentState === PROJECT_EXECUTION_STATES.INTERNAL_REVIEW ||
+      currentState === PROJECT_EXECUTION_STATES.READY_FOR_VALIDATION) &&
     readyForValidation
 
   const handleSendToValidation = useCallback(async () => {
     setSendingToValidation(true)
     setError(null)
     try {
-      const res = await fetch(`/api/proyectos/${proyectoId}/enviar-a-validacion`, {
+      const res = await fetch(`/api/projects/${proyectoId}/send-to-validation`, {
         method: 'POST',
       })
       const json = (await res.json().catch(() => ({}))) as {
-        proyecto?: { estado_v2?: string }
+        project?: { execution_status?: string }
         error?: string
-        blockers?: Array<{ titulo: string }>
+        blockers?: Array<{ title: string }>
       }
       if (!res.ok) {
         const extra = json.blockers?.length
-          ? ` Bloqueantes: ${json.blockers.map((b) => b.titulo).join(', ')}`
+          ? ` Bloqueantes: ${json.blockers.map((b) => b.title).join(', ')}`
           : ''
         throw new Error((json.error || `HTTP ${res.status}`) + extra)
       }
-      if (json.proyecto?.estado_v2 && onStateChange) {
-        onStateChange(json.proyecto.estado_v2)
+      if (json.project?.execution_status && onStateChange) {
+        onStateChange(json.project.execution_status)
       }
       await load()
     } catch (e) {
-      console.error('DeliverablesTab enviar-a-validacion error:', e)
-      setError(e instanceof Error ? e.message : 'Error enviando a validacion.')
+      console.error('DeliverablesTab send-a-validation error:', e)
+      setError(e instanceof Error ? e.message : 'Error sending a validation.')
     } finally {
       setSendingToValidation(false)
     }
@@ -183,7 +183,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
             ) : (
               <Sparkles className="h-4 w-4" />
             )}
-            {planning ? 'Planificando...' : 'Planificar proyecto'}
+            {planning ? 'Planificando...' : 'Planificar project'}
           </button>
         )}
         {canSendToValidation && (
@@ -199,7 +199,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
             ) : (
               <Send className="h-4 w-4" />
             )}
-            {sendingToValidation ? 'Enviando...' : 'Enviar a validacion'}
+            {sendingToValidation ? 'Enviando...' : 'Send a validation'}
           </button>
         )}
       </header>
@@ -219,12 +219,12 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
         <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] p-8 text-center">
           <FileText className="mx-auto h-8 w-8 text-[color:var(--ink-4)]" />
           <p className="mt-3 text-sm font-medium text-[color:var(--ink-2)]">
-            Este proyecto aun no tiene deliverables registrados.
+            Este project aun no tiene deliverables registrados.
           </p>
           <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             {canPlan
-              ? 'Planifica el proyecto para sembrar los deliverables desde la consulta origen.'
-              : 'Los deliverables se crean al planificar el proyecto desde el estado "Proyecto abierto".'}
+              ? 'Planifica el project para sembrar los deliverables desde la request origen.'
+              : 'Los deliverables se crean al planificar el project desde el status "Project opened".'}
           </p>
         </div>
       ) : (
@@ -232,7 +232,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-left">
-                {['Orden', 'Codigo', 'Subparte', 'Titulo', 'Owner', 'Estado', 'Version', 'Accion'].map(
+                {['Orden', 'Codigo', 'Subparte', 'Titulo', 'Owner', 'Status', 'Version', 'Accion'].map(
                   (col) => (
                     <th
                       key={col}
@@ -247,8 +247,8 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
             <tbody>
               {deliverables.map((d, idx) => {
                 const estadoStyle =
-                  ESTADO_STYLE[d.estado] ?? 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]'
-                const estadoLabel = ESTADO_LABEL[d.estado] ?? d.estado
+                  ESTADO_STYLE[d.status] ?? 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]'
+                const estadoLabel = ESTADO_LABEL[d.status] ?? d.status
                 return (
                   <tr
                     key={d.id}
@@ -258,7 +258,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
                     )}
                   >
                     <td className="px-3 py-2.5 font-mono text-xs text-[color:var(--ink-3)]">
-                      {d.orden}
+                      {d.sort_order}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-[color:var(--ink-2)]">
                       {d.template_code ?? '-'}
@@ -267,10 +267,10 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
                       {d.subpart_easa ?? '-'}
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="block font-medium text-[color:var(--ink)]">{d.titulo}</span>
-                      {d.descripcion && (
+                      <span className="block font-medium text-[color:var(--ink)]">{d.title}</span>
+                      {d.description && (
                         <span className="block text-[11px] text-[color:var(--ink-3)]">
-                          {d.descripcion}
+                          {d.description}
                         </span>
                       )}
                     </td>
@@ -288,7 +288,7 @@ export function DeliverablesTab({ proyectoId, currentState, onStateChange }: Pro
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-[color:var(--ink-3)]">
-                      v{d.version_actual}
+                      v{d.current_version}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5 text-xs text-[color:var(--ink-3)]">
                       -

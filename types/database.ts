@@ -3,17 +3,17 @@
  * TIPOS DE LA BASE DE DATOS - DOA Operations Hub
  * ============================================================================
  *
- * Este archivo define la estructura de todos los datos que maneja la aplicacion.
- * Cada "interface" (interfaz) es como una plantilla que describe los campos
- * de una tabla en la base de datos de Supabase.
+ * Este archivo define la estructura de todos los data que maneja la aplicacion.
+ * Cada "interface" (interfaz) es como una template que describe los campos
+ * de una table en la base de data de Supabase.
  *
- * Por ejemplo, si tenemos una tabla de "clientes", aqui se describe que un
- * cliente tiene nombre, telefono, pais, etc.
+ * Por ejemplo, si tenemos una table de "clients", aqui se describe que un
+ * client tiene name, phone, country, etc.
  *
  * Estas definiciones se usan en toda la aplicacion para asegurar que los
- * datos siempre tengan el formato correcto.
+ * data siempre tengan el formato correcto.
  *
- * Nota: "string" significa texto, "number" significa numero, "boolean"
+ * Nota: "string" significa text, "number" significa numero, "boolean"
  * significa verdadero/falso, y "null" significa que el campo puede estar vacio.
  * ============================================================================
  */
@@ -24,126 +24,126 @@
  * CLIENTE
  * Representa una empresa u organizacion que nos contrata servicios de ingenieria.
  * Pueden ser aerolineas, talleres de mantenimiento (MRO), operadores privados, etc.
- * Corresponde a la tabla "doa_clientes" en la base de datos.
+ * Corresponde a la table "doa_clientes" en la base de data.
  */
-export interface Cliente {
-  // Identificador unico del cliente (generado automaticamente)
+export interface Client {
+  // Identificador unico del client (generado automaticamente)
   id: string
-  // Nombre comercial de la empresa (ej: "Iberia", "Vueling", etc.)
-  nombre: string
+  // Name commercial de la empresa (ej: "Iberia", "Vueling", etc.)
+  name: string
   // CIF o numero de identificacion fiscal / VAT (puede estar vacio)
-  cif_vat: string | null
-  // Pais donde tiene su sede principal
-  pais: string
-  // Ciudad de la sede (puede estar vacio)
-  ciudad: string | null
-  // Direccion postal completa (puede estar vacio)
-  direccion: string | null
-  // Telefono de contacto general (puede estar vacio)
-  telefono: string | null
-  // Pagina web de la empresa (puede estar vacio)
-  web: string | null
-  // Indica si el cliente esta activo o ha sido dado de baja
-  activo: boolean
-  // Notas internas sobre el cliente (puede estar vacio)
-  notas: string | null
-  // Fecha y hora en que se creo el registro del cliente
+  vat_tax_id: string | null
+  // Country donde tiene su sede primary
+  country: string
+  // City de la sede (puede estar vacio)
+  city: string | null
+  // Address postal completa (puede estar vacio)
+  address: string | null
+  // Phone de contacto general (puede estar vacio)
+  phone: string | null
+  // Page website de la empresa (puede estar vacio)
+  website: string | null
+  // Indica si el client esta is_active o ha sido dado de low
+  is_active: boolean
+  // Notes internas sobre el client (puede estar vacio)
+  notes: string | null
+  // Date y hora en que se creo el registro del client
   created_at: string
-  // Dominio del correo electronico de la empresa (ej: "iberia.com"), se usa para identificar correos entrantes
-  dominio_email: string | null
-  // Tipo de cliente segun su actividad en aviacion:
-  //   - 'aerolinea': compania aerea que opera vuelos
+  // Dominio del email electronico de la empresa (ej: "iberia.com"), se usa para identificar emails entrantes
+  email_domain: string | null
+  // Tipo de client segun su actividad en aviacion:
+  //   - 'airline': compania aerea que opera vuelos
   //   - 'mro': taller de mantenimiento (Maintenance, Repair & Overhaul)
-  //   - 'privado': operador privado de aeronaves
-  //   - 'fabricante': fabricante de aeronaves o componentes
-  //   - 'otro': cualquier otro tipo
-  tipo_cliente: 'aerolinea' | 'mro' | 'privado' | 'fabricante' | 'otro' | null
+  //   - 'private': operador private de aircraft
+  //   - 'manufacturer': manufacturer de aircraft o componentes
+  //   - 'other': cualquier other type
+  client_type: 'airline' | 'mro' | 'private' | 'manufacturer' | 'other' | null
 }
 
 /**
  * CONTACTO DE CLIENTE
- * Representa a una persona concreta dentro de una empresa cliente.
- * Cada cliente puede tener varios contactos (ej: el ingeniero jefe,
+ * Representa a una persona concreta dentro de una empresa client.
+ * Cada client puede tener varios contacts (ej: el ingeniero jefe,
  * el responsable de compras, etc.).
- * Corresponde a la tabla "doa_clientes_contactos" en la base de datos.
+ * Corresponde a la table "doa_client_contacts" en la base de data.
  */
-export interface ClienteContacto {
+export interface ClientContact {
   // Identificador unico del contacto
   id: string
-  // Referencia al cliente al que pertenece este contacto
-  cliente_id: string
-  // Nombre de pila de la persona de contacto
-  nombre: string
+  // Referencia al client al que pertenece este contacto
+  client_id: string
+  // Name de pila de la persona de contacto
+  name: string
   // Apellidos (puede estar vacio)
-  apellidos: string | null
-  // Correo electronico del contacto (obligatorio para comunicaciones)
+  last_name: string | null
+  // Email electronico del contacto (obligatorio para comunicaciones)
   email: string
-  // Telefono directo del contacto (puede estar vacio)
-  telefono: string | null
+  // Phone directo del contacto (puede estar vacio)
+  phone: string | null
   // Cargo o puesto en la empresa (ej: "Director de Ingenieria") (puede estar vacio)
-  cargo: string | null
-  // Indica si es el contacto principal de ese cliente (el que se usa por defecto)
-  es_principal: boolean
-  // Indica si este contacto esta activo o ha sido dado de baja
-  activo: boolean
-  // Fecha y hora en que se creo el registro
+  job_title: string | null
+  // Indica si es el contacto primary de ese client (el que se usa por defecto)
+  is_primary: boolean
+  // Indica si este contacto esta is_active o ha sido dado de low
+  is_active: boolean
+  // Date y hora en que se creo el registro
   created_at: string
 }
 
 /**
  * CLIENTE CON SUS CONTACTOS
- * Es una version ampliada de Cliente que incluye la lista de todas
+ * Es una version ampliada de Client que incluye la lista de todas
  * las personas de contacto asociadas. Se usa cuando necesitamos
- * mostrar un cliente junto con todos sus contactos en la misma pantalla.
+ * mostrar un client junto con todos sus contacts en la misma pantalla.
  */
-export interface ClienteWithContactos extends Cliente {
-  // Lista de todas las personas de contacto de este cliente
-  contactos: ClienteContacto[]
+export interface ClientWithContacts extends Client {
+  // Lista de todas las personas de contacto de este client
+  contacts: ClientContact[]
 }
 
-// ─── doa_aeronaves_modelos ────────────────────────────────────────────────────
+// ─── doa_aircraft_models ────────────────────────────────────────────────────
 
 /**
  * MODELO DE AERONAVE
- * Representa un modelo concreto de avion sobre el que podemos trabajar.
- * Se usa para asociar proyectos de ingenieria con el tipo de avion afectado.
- * Ejemplo: fabricante "Airbus", familia "A320", modelo "A320-214".
- * Corresponde a la tabla "doa_aeronaves_modelos" en la base de datos.
+ * Representa un model concreto de avion sobre el que podemos trabajar.
+ * Se usa para asociar projects de ingenieria con el type de avion afectado.
+ * Ejemplo: manufacturer "Airbus", family "A320", model "A320-214".
+ * Corresponde a la table "doa_aircraft_models" en la base de data.
  */
-export interface AeronaveModelo {
-  // Identificador unico del modelo
+export interface AircraftModel {
+  // Identificador unico del model
   id: string
-  // Fabricante de la aeronave (ej: "Airbus", "Boeing", "Embraer")
-  fabricante: string
+  // Manufacturer de la aircraft (ej: "Airbus", "Boeing", "Embraer")
+  manufacturer: string
   // Familia o serie del avion (ej: "A320", "B737", "E-Jet")
-  familia: string
-  // Modelo especifico dentro de la familia (ej: "A320-214", "B737-800")
-  modelo: string
-  // Indica si este modelo esta activo en nuestro catalogo
-  activo: boolean
+  family: string
+  // Model especifico dentro de la family (ej: "A320-214", "B737-800")
+  model: string
+  // Indica si este model esta is_active en nuestro catalogo
+  is_active: boolean
 }
 
 /**
  * FILA DE AERONAVE
- * Representa un registro de la tabla "doa_aeronaves".
+ * Representa un registro de la table "doa_aircraft".
  */
-export interface AeronaveRow {
+export interface AircraftRow {
   id: string
   tcds_code: string
   tcds_code_short: string
   tcds_issue: string | null
   tcds_date: string | null
-  fabricante: string | null
-  pais: string | null
-  tipo: string | null
-  modelo: string | null
-  motor: string | null
+  manufacturer: string | null
+  country: string | null
+  type: string | null
+  model: string | null
+  engine: string | null
   mtow_kg: number | null
   mlw_kg: number | null
-  regulacion_base: string | null
-  categoria: string | null
-  msn_elegibles: string | null
-  notas: string | null
+  base_regulation: string | null
+  category: string | null
+  eligible_msns: string | null
+  notes: string | null
   created_at: string
 }
 
@@ -152,132 +152,132 @@ export interface AeronaveRow {
 /**
  * USUARIO DE LA DOA
  * Representa a un miembro del equipo de la organizacion de diseno (DOA).
- * Estos son los ingenieros y responsables internos que trabajan en los proyectos.
- * Se asignan como propietarios, revisores o aprobadores de proyectos.
- * Corresponde a la tabla "doa_usuarios" en la base de datos.
+ * Estos son los ingenieros y responsables internos que trabajan en los projects.
+ * Se asignan como propietarios, revisores o aprobadores de projects.
+ * Corresponde a la table "doa_usuarios" en la base de data.
  */
-export interface UsuarioDoa {
-  // Identificador unico del usuario
+export interface DoaUser {
+  // Identificador unico del user_label
   id: string
-  // Nombre de pila del usuario
-  nombre: string
-  // Apellidos del usuario (puede estar vacio)
-  apellidos: string | null
-  // Correo electronico corporativo (puede estar vacio)
+  // Name de pila del user_label
+  name: string
+  // Apellidos del user_label (puede estar vacio)
+  last_name: string | null
+  // Email electronico corporativo (puede estar vacio)
   email: string | null
-  // Rol dentro de la DOA (ej: "ingeniero", "CVE", "jefe de proyecto")
-  rol: string
-  // Titulo profesional o cargo (ej: "Senior Engineer") (puede estar vacio)
-  titulo: string | null
-  // Indica si el usuario esta activo en el equipo
-  activo: boolean
+  // Rol dentro de la DOA (ej: "ingeniero", "CVE", "jefe de project")
+  role: string
+  // Titulo profesional o job_title (ej: "Senior Engineer") (puede estar vacio)
+  title: string | null
+  // Indica si el user_label esta is_active en el equipo
+  is_active: boolean
 }
 
 /**
  * ESTADOS DE PROYECTO (SISTEMA ANTIGUO)
- * Estos son los estados que se usaban antes en la app.
- * Se mantienen para poder leer proyectos antiguos que todavia tienen
- * estos valores en la base de datos, pero los nuevos proyectos
- * usan el sistema de workflow nuevo (ver mas abajo).
+ * Estos son los statuses que se usaban antes en la app.
+ * Se mantienen para poder leer projects antiguos que todavia tienen
+ * estos valores en la base de data, pero los nuevos projects
+ * usan el sistema de workflow new (ver mas abajo).
  *
- * Los estados antiguos eran:
- *   - 'oferta': el proyecto era solo una propuesta/cotizacion
- *   - 'activo': proyecto en curso
- *   - 'en_revision': en proceso de revision tecnica
- *   - 'pendiente_aprobacion_cve': esperando aprobacion del CVE (ingeniero verificador)
- *   - 'pendiente_aprobacion_easa': esperando aprobacion de EASA (autoridad europea)
- *   - 'en_pausa': proyecto temporalmente detenido
- *   - 'cancelado': proyecto cancelado definitivamente
- *   - 'guardado_en_base_de_datos': archivado en la base de datos
+ * Los statuses antiguos eran:
+ *   - 'quote': el project era solo una propuesta/cotizacion
+ *   - 'active': project en curso
+ *   - 'in_review': en process de review technical
+ *   - 'pending_cve_approval': awaiting approval del CVE (ingeniero verificador)
+ *   - 'pending_easa_approval': awaiting approval de EASA (autoridad europea)
+ *   - 'paused': project temporalmente detenido
+ *   - 'canceled': project canceled definitivamente
+ *   - 'saved_to_database': archived en la base de data
  *
- * NOTA: 'cerrado' fue eliminado de legacy porque ahora existe como estado
- * del nuevo flujo simplificado.
+ * NOTA: 'closed' fue eliminado de legacy porque ahora existe como status
+ * del new flujo simplificado.
  */
-export type EstadoProyectoLegacy =
-  | 'oferta'
-  | 'activo'
-  | 'en_revision'
-  | 'pendiente_aprobacion_cve'
-  | 'pendiente_aprobacion_easa'
-  | 'en_pausa'
-  | 'cancelado'
-  | 'guardado_en_base_de_datos'
+export type LegacyProjectStatus =
+  | 'quote'
+  | 'active'
+  | 'in_review'
+  | 'pending_cve_approval'
+  | 'pending_easa_approval'
+  | 'paused'
+  | 'canceled'
+  | 'saved_to_database'
 
 /**
- * ESTADOS DE PROYECTO (SISTEMA NUEVO - SIMPLIFICADO)
- * Flujo simplificado de estados de proyecto. Cada proyecto pasa por
- * estas fases generales desde su creacion hasta su cierre.
+ * ESTADOS DE PROYECTO (SISTEMA NEW - SIMPLIFICADO)
+ * Flujo simplificado de statuses de project. Cada project pasa por
+ * estas fases generales desde su creacion hasta su closure.
  *
- * Los estados son:
- *   nuevo - Proyecto recien creado
- *   en_progreso - Trabajo de ingenieria en curso
- *   revision - En proceso de revision tecnica
- *   aprobacion - Pendiente de aprobacion
- *   entregado - Documentacion entregada al cliente
- *   cerrado - Proyecto completado y cerrado
+ * Los statuses son:
+ *   new - Project recien creado
+ *   in_progress - Trabajo de ingenieria en curso
+ *   review - En process de review technical
+ *   approval - Pending de approval
+ *   delivered - Documentacion entregada al client
+ *   closed - Project completed y closed
  */
-export type EstadoProyectoWorkflow =
-  | 'nuevo'
-  | 'en_progreso'
-  | 'revision'
-  | 'aprobacion'
-  | 'entregado'
-  | 'cerrado'
-  | 'archivado'
+export type ProjectWorkflowStatus =
+  | 'new'
+  | 'in_progress'
+  | 'review'
+  | 'approval'
+  | 'delivered'
+  | 'closed'
+  | 'archived'
 
 /**
  * ESTADO DE PROYECTO (para uso en la app)
- * Solo acepta los estados del sistema nuevo (workflow).
- * Se usa cuando la app necesita ASIGNAR un nuevo estado a un proyecto.
+ * Solo acepta los statuses del sistema new (workflow).
+ * Se usa cuando la app necesita ASIGNAR un new status a un project.
  */
-export type EstadoProyecto = EstadoProyectoWorkflow
+export type ProjectStatus = ProjectWorkflowStatus
 
 /**
- * ESTADO DE PROYECTO PERSISTIDO (tal como esta guardado en la base de datos)
- * Acepta tanto los estados nuevos como los antiguos, porque en la base de datos
- * pueden existir proyectos viejos con estados del sistema anterior.
- * Se usa cuando la app LEE un estado desde la base de datos.
+ * ESTADO DE PROYECTO PERSISTIDO (tal como esta guardado en la base de data)
+ * Acepta tanto los statuses nuevos como los antiguos, porque en la base de data
+ * pueden existir projects viejos con statuses del sistema anterior.
+ * Se usa cuando la app LEE un status desde la base de data.
  */
-export type EstadoProyectoPersistido = EstadoProyectoWorkflow | EstadoProyectoLegacy
+export type PersistedProjectStatus = ProjectWorkflowStatus | LegacyProjectStatus
 
-// ─── doa_proyectos ───────────────────────────────────────────────────────────
+// ─── doa_projects ───────────────────────────────────────────────────────────
 
 /**
  * PROYECTO DE INGENIERIA (ACTIVO)
  * Es la pieza central de la aplicacion. Representa un trabajo de ingenieria
- * aeronautica que realizamos para un cliente (ej: una modificacion en un avion,
+ * aeronautica que realizamos para un client (ej: una modificacion en un avion,
  * una reparacion, un cambio de diseno, etc.).
  *
- * Cada proyecto pasa por las fases del workflow (ver EstadoProyectoWorkflow)
+ * Cada project pasa por las fases del workflow (ver ProjectWorkflowStatus)
  * y tiene asignados responsables internos (owner, checker, approval, CVE).
  *
- * Corresponde a la tabla "doa_proyectos" en la base de datos.
+ * Corresponde a la table "doa_projects" en la base de data.
  * Los campos coinciden 1:1 con las columnas de la migracion
- * 202604051200_create_doa_proyectos.sql.
+ * 202604051200_create_doa_projects.sql.
  */
-export interface Proyecto {
-  // Identificador unico del proyecto
+export interface Project {
+  // Identificador unico del project
   id: string
-  // Numero de proyecto interno (ej: "IM.A.226-0002") - referencia diaria
-  numero_proyecto: string
-  // Titulo descriptivo del proyecto (ej: "Antenna installation in Cessna 208B")
-  titulo: string
-  // Descripcion detallada del trabajo a realizar (puede estar vacia)
-  descripcion: string | null
+  // Numero de project internal (ej: "IM.A.226-0002") - referencia diaria
+  project_number: string
+  // Titulo descriptivo del project (ej: "Antenna installation in Cessna 208B")
+  title: string
+  // Description detallada del trabajo a realizar (puede estar vacia)
+  description: string | null
 
   // --- Relaciones ---
-  // Referencia a la consulta entrante de la que nacio este proyecto (puede estar vacia)
-  consulta_id: string | null
-  // Nombre del cliente (texto libre, denormalizado)
-  cliente_nombre: string | null
-  // Referencia al cliente en doa_clientes (puede estar vacia)
+  // Referencia a la request entrante de la que nacio este project (puede estar vacia)
+  incoming_request_id: string | null
+  // Name del client (text libre, denormalizado)
+  client_name: string | null
+  // Referencia al client en doa_clientes (puede estar vacia)
   client_id: string | null
 
-  // --- Aeronave ---
-  // Tipo de aeronave (ej: "Cessna 208B")
-  aeronave: string | null
-  // Modelo de aeronave (ej: "208B")
-  modelo: string | null
+  // --- Aircraft ---
+  // Tipo de aircraft (ej: "Cessna 208B")
+  aircraft: string | null
+  // Model de aircraft (ej: "208B")
+  model: string | null
   // Numeros de serie de fabrica (MSN)
   msn: string | null
   // Codigo TCDS completo (ej: "EASA.IM.A.226")
@@ -285,48 +285,48 @@ export interface Proyecto {
   // Codigo TCDS corto (ej: "IM.A.226")
   tcds_code_short: string | null
 
-  // --- Estado (workflow) ---
-  // Estado actual del proyecto dentro del flujo simplificado (legacy)
-  estado: EstadoProyectoPersistido
-  // Estado actual segun la maquina de ejecucion v2 (13 estados, Sprint 1+).
-  // Paralelo a `estado`; se considera el nuevo campo autoritativo del ciclo de vida.
-  estado_v2: string | null
-  // Fase agregada: 'ejecucion' | 'validacion' | 'entrega' | 'cierre'.
-  fase_actual: string | null
-  // Marca temporal de la ultima transicion de `estado_v2`.
-  estado_updated_at: string | null
-  // Usuario que ejecuto la ultima transicion (auth.users.id).
-  estado_updated_by: string | null
+  // --- Status (workflow) ---
+  // Status actual del project dentro del flujo simplificado (legacy)
+  status: PersistedProjectStatus
+  // Status actual segun la maquina de execution v2 (13 statuses, Sprint 1+).
+  // Paralelo a `status`; se considera el new campo autoritativo del ciclo de vida.
+  execution_status: string | null
+  // Fase agregada: 'execution' | 'validation' | 'delivery' | 'closure'.
+  current_phase: string | null
+  // Marca temporal de la ultima transicion de `execution_status`.
+  status_updated_at: string | null
+  // User que ejecuto la ultima transicion (auth.users.id).
+  status_updated_by: string | null
 
-  // --- Equipo asignado (texto por ahora) ---
-  // Ingeniero responsable del proyecto (el "dueno")
+  // --- Equipo asignado (text por ahora) ---
+  // Ingeniero responsable del project (el "dueno")
   owner: string | null
   // Ingeniero que revisa el trabajo (checker)
   checker: string | null
-  // Persona que da la aprobacion final interna
+  // Persona que da la approval final internal
   approval: string | null
   // CVE (Compliance Verification Engineer)
   cve: string | null
 
-  // --- Fechas ---
-  // Fecha en que se inicio el proyecto
-  fecha_inicio: string | null
-  // Fecha estimada de entrega
-  fecha_entrega_estimada: string | null
-  // Fecha en que se cerro el proyecto
-  fecha_cierre: string | null
+  // --- Dates ---
+  // Date en que se started_at el project
+  start_date: string | null
+  // Date estimada de delivery
+  estimated_delivery_date: string | null
+  // Date en que se cerro el project
+  closed_at: string | null
 
-  // --- Carpeta ---
-  // Ruta del proyecto en el filesystem
-  ruta_proyecto: string | null
+  // --- Folder ---
+  // Path del project en el filesystem
+  project_path: string | null
 
   // --- Metadata ---
-  // Prioridad del proyecto: baja, normal, alta, urgente
-  prioridad: string | null
-  // Ano del proyecto
-  anio: number | null
-  // Notas internas
-  notas: string | null
+  // Prioridad del project: low, normal, high, urgent
+  priority: string | null
+  // Ano del project
+  year: number | null
+  // Notes internas
+  notes: string | null
 
   // --- Timestamps ---
   created_at: string
@@ -335,59 +335,59 @@ export interface Proyecto {
 
 /**
  * PROYECTO CON SUS RELACIONES
- * Version ampliada del Proyecto que incluye los datos completos del cliente
- * y el historial de cambios de estado. Se usa en las pantallas de detalle
- * donde necesitamos ver toda la informacion junta sin hacer consultas
+ * Version ampliada del Project que incluye los data completos del client
+ * y el historial de cambios de status. Se usa en las pantallas de detalle
+ * donde necesitamos ver toda la informacion junta sin hacer requests
  * adicionales.
  */
-export interface ProyectoConRelaciones extends Proyecto {
-  // Datos completos del cliente (no solo su ID)
-  cliente: Cliente | null
-  // Historial de todos los cambios de estado que ha tenido el proyecto
-  estado_historial?: ProyectoEstadoHistorial[]
+export interface ProjectWithRelations extends Project {
+  // Data completos del client (no solo su ID)
+  client: Client | null
+  // Historial de todos los cambios de status que ha tenido el project
+  estado_historial?: ProjectStatusHistory[]
 }
 
-// ─── doa_proyectos_documentos ─────────────────────────────────────────────────
+// ─── doa_projects_documentos ─────────────────────────────────────────────────
 
 /**
  * DOCUMENTO DE PROYECTO
- * Representa un documento tecnico asociado a un proyecto de ingenieria.
+ * Representa un document technical asociado a un project de ingenieria.
  * Ejemplos: planos, informes de analisis, instrucciones de instalacion,
- * certificados, etc. Cada documento tiene un control de versiones y
- * un flujo de aprobacion propio.
- * Corresponde a la tabla "doa_proyectos_documentos" en la base de datos.
+ * certificados, etc. Cada document tiene un control de versiones y
+ * un flujo de approval propio.
+ * Corresponde a la table "doa_projects_documentos" en la base de data.
  */
 // ─── doa_project_deliverables ─────────────────────────────────────────────────
 
 /**
  * DELIVERABLE DE PROYECTO (Sprint 1+)
- * Fila de la tabla `doa_project_deliverables`. Cada fila representa un
- * documento/trabajo concreto que el proyecto debe entregar (por ejemplo, cada
- * plantilla G12-xx seleccionada durante la consulta se convierte en un
- * deliverable). Se puebla automaticamente al planificar el proyecto
- * (POST /api/proyectos/[id]/planificar) a partir de las selecciones de
- * compliance de la consulta origen.
+ * Fila de la table `doa_project_deliverables`. Cada fila representa un
+ * document/trabajo concreto que el project debe entregar (por ejemplo, cada
+ * template G12-xx seleccionada durante la request se convierte en un
+ * deliverable). Se puebla automaticamente al planificar el project
+ * (POST /api/projects/[id]/plan) a partir de las selecciones de
+ * compliance de la request origen.
  */
-export type DeliverableEstado =
-  | 'pendiente'
-  | 'en_curso'
-  | 'en_revision'
-  | 'completado'
-  | 'bloqueado'
-  | 'no_aplica'
+export type DeliverableStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'in_review'
+  | 'completed'
+  | 'blocked'
+  | 'not_applicable'
 
 export interface ProjectDeliverable {
   id: string
-  proyecto_id: string
+  project_id: string
   template_code: string | null
   subpart_easa: string | null
-  titulo: string
-  descripcion: string | null
+  title: string
+  description: string | null
   owner_user_id: string | null
-  estado: DeliverableEstado
+  status: DeliverableStatus
   storage_path: string | null
-  version_actual: number
-  orden: number
+  current_version: number
+  sort_order: number
   metadata: Record<string, unknown> | null
   created_at: string
   updated_at: string
@@ -395,24 +395,24 @@ export interface ProjectDeliverable {
 
 // ─── doa_project_validations (Sprint 2) ─────────────────────────────────────
 
-/** Capacidad en la que un usuario toma una decision de validacion. */
+/** Capacidad en la que un user_label toma una decision de validation. */
 export type ValidationRole = 'doh' | 'dos' | 'reviewer'
 
-/** Decision tomada sobre un proyecto que esta en validacion. */
-export type ValidationDecision = 'aprobado' | 'devuelto' | 'pendiente'
+/** Decision tomada sobre un project que esta en validation. */
+export type ValidationDecision = 'approved' | 'returned' | 'pending'
 
-/** Severidad de una observacion puntual sobre un deliverable. */
+/** Severidad de una observation puntual sobre un deliverable. */
 export type ObservationSeverity = 'info' | 'warn' | 'blocker'
 
 /**
- * Observacion estructurada dentro del array `observaciones` de
+ * Observacion estructurada dentro del array `observations` de
  * `doa_project_validations`. `deliverable_id` es opcional; si se omite, la
- * observacion aplica al proyecto completo.
+ * observation aplica al project completo.
  */
 export interface ValidationObservation {
   deliverable_id?: string | null
-  texto: string
-  severidad?: ObservationSeverity
+  text: string
+  severity?: ObservationSeverity
 }
 
 /**
@@ -421,20 +421,20 @@ export interface ValidationObservation {
  */
 export interface DeliverableSnapshot {
   id: string
-  titulo: string
-  estado: DeliverableEstado
-  version_actual: number
+  title: string
+  status: DeliverableStatus
+  current_version: number
 }
 
-/** Fila de la tabla `doa_project_validations`. */
+/** Fila de la table `doa_project_validations`. */
 export interface ProjectValidation {
   id: string
-  proyecto_id: string
+  project_id: string
   validator_user_id: string
   role: ValidationRole
   decision: ValidationDecision
-  comentarios: string | null
-  observaciones: ValidationObservation[]
+  comments: string | null
+  observations: ValidationObservation[]
   deliverables_snapshot: DeliverableSnapshot[] | null
   created_at: string
 }
@@ -451,10 +451,10 @@ export type SignatureType =
   | 'delivery_release'
   | 'closure'
 
-/** Fila de la tabla `doa_project_signatures`. */
+/** Fila de la table `doa_project_signatures`. */
 export interface ProjectSignature {
   id: string
-  proyecto_id: string
+  project_id: string
   validation_id: string | null
   signer_user_id: string
   signer_role: SignerRole
@@ -468,18 +468,18 @@ export interface ProjectSignature {
 
 // ─── doa_project_deliveries (Sprint 3) ──────────────────────────────────────
 
-/** Estado del dispatch de una entrega (Statement of Compliance). */
+/** Status del dispatch de una delivery (Statement of Compliance). */
 export type DeliveryDispatchStatus =
-  | 'pendiente'
-  | 'enviando'
-  | 'enviado'
-  | 'fallo'
-  | 'confirmado_cliente'
+  | 'pending'
+  | 'sending'
+  | 'sent'
+  | 'failed'
+  | 'client_confirmed'
 
-/** Fila de la tabla `doa_project_deliveries`. */
+/** Fila de la table `doa_project_deliveries`. */
 export interface ProjectDelivery {
   id: string
-  proyecto_id: string
+  project_id: string
   validation_id: string | null
   signature_id: string | null
   sent_by_user_id: string
@@ -510,7 +510,7 @@ export interface ProjectDelivery {
  */
 export interface StatementOfCompliancePayload {
   document: {
-    id: string // e.g. SoC-{numero_proyecto}-{ISO}
+    id: string // e.g. SoC-{project_number}-{ISO}
     title: string
     generated_at: string // ISO
     company: {
@@ -518,12 +518,12 @@ export interface StatementOfCompliancePayload {
       approval_no: string
     }
   }
-  proyecto: {
+  project: {
     id: string
-    numero_proyecto: string
-    titulo: string
-    descripcion: string | null
-    cliente_nombre: string | null
+    project_number: string
+    title: string
+    description: string | null
+    client_name: string | null
   }
   validation: {
     id: string
@@ -536,10 +536,10 @@ export interface StatementOfCompliancePayload {
   deliverables: Array<{
     id: string
     template_code: string | null
-    titulo: string
+    title: string
     subpart_easa: string | null
-    version_actual: number
-    estado: DeliverableEstado
+    current_version: number
+    status: DeliverableStatus
   }>
   compliance_reference: {
     regulation: 'EASA Part 21 Subpart J'
@@ -555,208 +555,208 @@ export interface StatementOfCompliancePayload {
   }
 }
 
-export interface ProyectoDocumento {
-  // Identificador unico del documento
+export interface ProjectDocument {
+  // Identificador unico del document
   id: string
-  // Referencia al proyecto al que pertenece este documento
-  proyecto_id: string
-  // Tipo de documento (ej: "plano", "informe", "instruccion", "certificado")
-  tipo_documento: string
-  // Nombre del documento (ej: "STC-A320-WiFi-Install-Instructions-Rev2.pdf")
-  nombre: string
-  // Estado del documento en su proceso de elaboracion:
-  //   - 'pendiente': aun no se ha empezado a redactar
-  //   - 'en_redaccion': se esta escribiendo activamente
-  //   - 'en_revision': terminado y en proceso de revision tecnica
-  //   - 'aprobado': revisado y aprobado oficialmente
-  estado: 'pendiente' | 'en_redaccion' | 'en_revision' | 'aprobado'
-  // Numero de version del documento (ej: "1.0", "2.1")
+  // Referencia al project al que pertenece este document
+  project_id: string
+  // Tipo de document (ej: "drawing", "report", "instruction", "certificate")
+  document_type: string
+  // Name del document (ej: "STC-A320-WiFi-Install-Instructions-Rev2.pdf")
+  name: string
+  // Status del document en su process de elaboracion:
+  //   - 'pending': aun no se ha empezado a redactar
+  //   - 'drafting': se esta escribiendo activamente
+  //   - 'in_review': terminado y en process de review technical
+  //   - 'approved': revisado y approved oficialmente
+  status: 'pending' | 'drafting' | 'in_review' | 'approved'
+  // Numero de version del document (ej: "1.0", "2.1")
   version: string
-  // Enlace al archivo del documento almacenado (puede estar vacio si aun no se ha subido)
+  // Enlace al archivo del document almacenado (puede estar vacio si aun no se ha subido)
   url: string | null
-  // Notas o comentarios sobre el documento (puede estar vacio)
-  notas: string | null
-  // Fecha de la ultima revision realizada al documento
-  fecha_ultima_revision: string | null
-  // Fecha y hora en que se creo el registro
+  // Notes o comments sobre el document (puede estar vacio)
+  notes: string | null
+  // Date de la ultima review realizada al document
+  last_review_date: string | null
+  // Date y hora en que se creo el registro
   created_at: string
 }
 
-// ─── doa_proyectos_hitos ──────────────────────────────────────────────────────
+// ─── doa_projects_hitos ──────────────────────────────────────────────────────
 
 /**
  * HITO DE PROYECTO
- * Representa un punto clave o entregable importante dentro de un proyecto.
- * Los hitos son como "checkpoints" que marcan momentos criticos del proyecto
- * (ej: "Entrega del primer borrador", "Aprobacion del CVE", "Envio a EASA").
- * Sirven para hacer seguimiento del progreso general del proyecto.
- * Corresponde a la tabla "doa_proyectos_hitos" en la base de datos.
+ * Representa un punto clave o entregable importante dentro de un project.
+ * Los hitos son como "checkpoints" que marcan momentos criticos del project
+ * (ej: "Delivery del primer borrador", "Approval del CVE", "Envio a EASA").
+ * Sirven para hacer seguimiento del progreso general del project.
+ * Corresponde a la table "doa_projects_hitos" en la base de data.
  */
-export interface ProyectoHito {
+export interface ProjectMilestone {
   // Identificador unico del hito
   id: string
-  // Referencia al proyecto al que pertenece este hito
-  proyecto_id: string
-  // Descripcion del hito (ej: "Entrega de documentacion al cliente")
-  descripcion: string
-  // Fecha prevista para alcanzar este hito
-  fecha_prevista: string | null
-  // Indica si el hito ya se ha completado (true) o esta pendiente (false)
-  completado: boolean
-  // Fecha en que realmente se completo el hito (se rellena al marcarlo como completado)
-  fecha_completado: string | null
-  // Numero de orden para mostrar los hitos en secuencia (1, 2, 3...)
-  orden: number
-  // Fecha y hora en que se creo el registro
+  // Referencia al project al que pertenece este hito
+  project_id: string
+  // Description del hito (ej: "Delivery de documentacion al client")
+  description: string
+  // Date prevista para alcanzar este hito
+  planned_date: string | null
+  // Indica si el hito ya se ha completed (true) o esta pending (false)
+  completed: boolean
+  // Date en que realmente se completo el hito (se rellena al marcarlo como completed)
+  completed_at: string | null
+  // Numero de sort_order para mostrar los hitos en secuencia (1, 2, 3...)
+  sort_order: number
+  // Date y hora en que se creo el registro
   created_at: string
 }
 
-// ─── doa_proyectos_tareas ─────────────────────────────────────────────────────
+// ─── doa_projects_tareas ─────────────────────────────────────────────────────
 
 /**
  * TAREA DE PROYECTO
- * Representa una tarea concreta de trabajo dentro de un proyecto.
+ * Representa una tarea concreta de trabajo dentro de un project.
  * A diferencia de los hitos (que son puntos de control), las tareas son
- * las actividades reales que alguien debe realizar (ej: "Redactar informe
- * de cumplimiento", "Revisar planos electricos", "Preparar documentacion STC").
+ * las actividades reales que alguien debe realizar (ej: "Redactar report
+ * de cumplimiento", "Revisar planos electricos", "Prepare documentacion STC").
  * Cada tarea se asigna a un responsable y tiene control de horas.
- * Corresponde a la tabla "doa_proyectos_tareas" en la base de datos.
+ * Corresponde a la table "doa_projects_tareas" en la base de data.
  */
-export interface ProyectoTarea {
+export interface ProjectTask {
   // Identificador unico de la tarea
   id: string
-  // Referencia al proyecto al que pertenece esta tarea
-  proyecto_id: string
-  // Titulo breve de la tarea (ej: "Redactar informe de analisis de cargas")
-  titulo: string
-  // Descripcion detallada de lo que hay que hacer (puede estar vacia)
-  descripcion: string | null
-  // Referencia al usuario de la DOA responsable de ejecutar esta tarea
+  // Referencia al project al que pertenece esta tarea
+  project_id: string
+  // Titulo breve de la tarea (ej: "Redactar report de analisis de cargas")
+  title: string
+  // Description detallada de lo que hay que hacer (puede estar vacia)
+  description: string | null
+  // Referencia al user_label de la DOA responsable de ejecutar esta tarea
   responsable_id: string | null
-  // Nivel de prioridad de la tarea:
-  //   - 'baja': puede esperar, no es urgente
-  //   - 'media': prioridad normal
-  //   - 'alta': debe hacerse pronto
-  //   - 'urgente': requiere atencion inmediata
-  prioridad: 'baja' | 'media' | 'alta' | 'urgente'
-  // Estado actual de la tarea:
-  //   - 'pendiente': aun no se ha empezado
-  //   - 'en_curso': alguien esta trabajando en ella
-  //   - 'completada': ya esta terminada
-  //   - 'bloqueada': no se puede avanzar (falta informacion, depende de otra tarea, etc.)
-  estado: 'pendiente' | 'en_curso' | 'completada' | 'bloqueada'
-  // Fecha limite para completar la tarea
-  fecha_limite: string | null
+  // Nivel de priority de la tarea:
+  //   - 'low': puede esperar, no es urgent
+  //   - 'medium': priority normal
+  //   - 'high': debe hacerse pronto
+  //   - 'urgent': requiere atencion inmediata
+  priority: 'low' | 'medium' | 'high' | 'urgent'
+  // Status actual de la tarea:
+  //   - 'pending': aun no se ha empezado
+  //   - 'in_progress': alguien esta trabajando en ella
+  //   - 'completed': ya esta terminada
+  //   - 'blocked': no se puede avanzar (falta informacion, depende de otra tarea, etc.)
+  status: 'pending' | 'in_progress' | 'completed' | 'blocked'
+  // Date limite para completar la tarea
+  due_date: string | null
   // Horas estimadas para completar la tarea
-  horas_estimadas: number | null
+  estimated_hours: number | null
   // Horas realmente empleadas (se actualiza durante el trabajo)
-  horas_reales: number | null
-  // Fecha y hora en que se creo el registro
+  actual_hours: number | null
+  // Date y hora en que se creo el registro
   created_at: string
 }
 
 /**
  * CONSULTA ENTRANTE
- * Representa una solicitud o consulta que nos llega de un cliente potencial
- * o existente (normalmente por email o formulario web). Es el punto de
+ * Representa una solicitud o request que nos llega de un client potencial
+ * o existente (normalmente por email o form website). Es el punto de
  * entrada del negocio: alguien nos pregunta si podemos hacer un trabajo.
  *
- * Estas consultas se gestionan en el tablero de "Quotations" (cotizaciones)
- * y pueden evolucionar hasta convertirse en un proyecto de ingenieria.
+ * Estas requests se gestionan en el tablero de "Quotations" (cotizaciones)
+ * y pueden evolucionar hasta convertirse en un project de ingenieria.
  *
- * Los estados posibles se definen en lib/workflow-states.ts (CONSULTA_ESTADOS).
- * Corresponde a la tabla "doa_consultas_entrantes" en la base de datos.
+ * Los statuses posibles se definen en lib/workflow-states.ts (INCOMING_REQUEST_STATUSES).
+ * Corresponde a la table "doa_incoming_requests" en la base de data.
  */
-export interface ConsultaEntrante {
-  // Identificador unico de la consulta
+export interface IncomingRequest {
+  // Identificador unico de la request
   id: string
-  // Fecha y hora en que se recibio la consulta
+  // Date y hora en que se recibio la request
   created_at: string
-  // Asunto del correo o titulo de la consulta (puede estar vacio)
-  asunto: string | null
-  // Quien envio la consulta - email o nombre del remitente (puede estar vacio)
-  remitente: string | null
-  // Texto original del correo o mensaje recibido (puede estar vacio)
-  cuerpo_original: string | null
-  // Clasificacion automatica de la consulta hecha por la IA (puede estar vacia)
-  clasificacion: string | null
-  // Respuesta sugerida por la IA para enviar al cliente (puede estar vacia)
-  respuesta_ia: string | null
-  // Estado actual de la consulta dentro del flujo de cotizaciones
-  estado: string
-  // Numero de entrada asignado para seguimiento interno (ej: "ENT-2024-0001")
-  numero_entrada?: string | null
-  // URL del formulario web si la consulta llego por formulario
-  url_formulario?: string | null
-  // Fecha y hora en que se envio la respuesta al cliente por correo
-  correo_cliente_enviado_at?: string | null
-  // Quien envio la respuesta al cliente
-  correo_cliente_enviado_by?: string | null
-  // Ultimo borrador de respuesta preparado para el cliente
-  ultimo_borrador_cliente?: string | null
-  // Numero del TCDS (Type Certificate Data Sheet - ficha tecnica del certificado de tipo de la aeronave)
+  // Subject del email o title de la request (puede estar vacio)
+  subject: string | null
+  // Quien send la request - email o name del sender (puede estar vacio)
+  sender: string | null
+  // Texto original del email o mensaje received (puede estar vacio)
+  original_body: string | null
+  // Classification automatica de la request hecha por la IA (puede estar vacia)
+  classification: string | null
+  // Response sugerida por la IA para send al client (puede estar vacia)
+  ai_response: string | null
+  // Status actual de la request dentro del flujo de cotizaciones
+  status: string
+  // Numero de entrada asignado para seguimiento internal (ej: "ENT-2024-0001")
+  entry_number?: string | null
+  // URL del form website si la request llego por form
+  form_url?: string | null
+  // Date y hora en que se send la response al client por email
+  client_email_sent_at?: string | null
+  // Quien send la response al client
+  client_email_sent_by?: string | null
+  // Ultimo borrador de response preparado para el client
+  last_client_draft?: string | null
+  // Numero del TCDS (Type Certificate Data Sheet - ficha technical del certificate de type de la aircraft)
   tcds_number?: string | null
-  // Fabricante de la aeronave sobre la que se consulta (ej: "Airbus", "Boeing")
+  // Manufacturer de la aircraft sobre la que se request (ej: "Airbus", "Boeing")
   aircraft_manufacturer?: string | null
-  // Modelo de la aeronave sobre la que se consulta (ej: "A320-200")
+  // Model de la aircraft sobre la que se request (ej: "A320-200")
   aircraft_model?: string | null
-  // Numero de aeronaves afectadas por la consulta
+  // Numero de aircraft afectadas por la request
   aircraft_count?: number | null
-  // MSN (Manufacturer Serial Number - numero de serie de fabrica de la aeronave)
+  // MSN (Manufacturer Serial Number - numero de serie de fabrica de la aircraft)
   aircraft_msn?: string | null
   // URL al PDF del TCDS descargado para referencia
   tcds_pdf_url?: string | null
-  // Lista de URLs publicas de los planos / drawings adjuntos por el cliente
-  // (columna jsonb en la tabla; array de URLs). Puede ser null si no se adjuntaron.
+  // Lista de URLs publicas de los planos / drawings adjuntos por el client
+  // (columna jsonb en la table; array de URLs). Puede ser null si no se adjuntaron.
   installation_drawings_urls?: string[] | null
-  // Tipo de trabajo solicitado: "proyecto_nuevo" o "modificacion_existente"
+  // Tipo de trabajo solicitado: "new_project" o "existing_modification"
   work_type?: string | null
-  // Codigo del proyecto existente (solo si work_type = "modificacion_existente")
+  // Codigo del project existente (solo si work_type = "existing_modification")
   existing_project_code?: string | null
   // Resumen de la modificacion solicitada
   modification_summary?: string | null
   // Objetivo operativo que se busca lograr
   operational_goal?: string | null
-  // Indica si el cliente dispone de equipamiento: "si", "no", "no_aplica"
+  // Indica si el client dispone de equipamiento: "yes", "no", "not_applicable"
   has_equipment?: string | null
-  // Detalles del equipamiento (si has_equipment = "si")
+  // Detalles del equipamiento (si has_equipment = "yes")
   equipment_details?: string | null
-  // Indica si el cliente tiene planos o documentacion: "si" o "no"
+  // Indica si el client tiene planos o documentacion: "yes" o "no"
   has_drawings?: string | null
-  // Indica si existe una modificacion similar previa: "si", "no", "no_seguro"
+  // Indica si existe una modificacion similar previa: "yes", "no", "not_sure"
   has_previous_mod?: string | null
-  // Referencia a la modificacion previa (si has_previous_mod = "si")
+  // Referencia a la modificacion previa (si has_previous_mod = "yes")
   previous_mod_ref?: string | null
-  // Indica si el cliente tiene documentacion del fabricante: "si" o "no"
+  // Indica si el client tiene documentacion del manufacturer: "yes" o "no"
   has_manufacturer_docs?: string | null
-  // Fecha objetivo deseada por el cliente
+  // Date objetivo deseada por el client
   target_date?: string | null
-  // Indica si es una situacion AOG (Aircraft on Ground): "si" o "no"
+  // Indica si es una situacion AOG (Aircraft on Ground): "yes" o "no"
   is_aog?: string | null
-  // Ubicacion actual de la aeronave
+  // Ubicacion actual de la aircraft
   aircraft_location?: string | null
-  // Notas adicionales del cliente
+  // Notes adicionales del client
   additional_notes?: string | null
-  // Cuerpo de la respuesta enviada al cliente (guardado para mostrar en el hilo de emails)
+  // Cuerpo de la response sent al client (guardado para mostrar en el hilo de emails)
   reply_body?: string | null
-  // Fecha y hora en que se envio la respuesta al cliente
+  // Date y hora en que se send la response al client
   reply_sent_at?: string | null
 }
 
 /**
  * AMBITO DE ESTADOS DE WORKFLOW
- * Define a que seccion de la app pertenece un estado de workflow.
- *   - 'incoming_queries': estados para las consultas entrantes (la bandeja de entrada)
- *   - 'quotation_board': estados para el tablero de cotizaciones/ofertas
+ * Define a que seccion de la app pertenece un status de workflow.
+ *   - 'incoming_queries': statuses para las requests entrantes (la bandeja de entrada)
+ *   - 'quotation_board': statuses para el tablero de cotizaciones/quotes
  *
- * Esto permite que cada seccion de la app tenga sus propios estados
+ * Esto permite que cada seccion de la app tenga sus propios statuses
  * independientes sin mezclarse.
  */
 export type WorkflowStateScope = 'incoming_queries' | 'quotation_board' | 'project_board'
 
 /**
  * COLORES PARA ESTADOS
- * Cada estado del workflow tiene un color asociado para identificarlo
+ * Cada status del workflow tiene un color asociado para identificarlo
  * visualmente en el tablero. Estos son los colores disponibles
  * (corresponden a la paleta de colores de Tailwind CSS).
  */
@@ -775,122 +775,122 @@ export type WorkflowStateColorToken =
 
 /**
  * CONFIGURACION DE UN ESTADO DE WORKFLOW
- * Define las propiedades de cada columna/estado que aparece en los tableros
- * tipo Kanban de la app. Esto permite personalizar los estados sin tocar codigo:
- * se pueden crear nuevos estados, cambiar colores, reordenar, etc.
- * Corresponde a la tabla "doa_workflow_state_config" en la base de datos.
+ * Define las propiedades de cada columna/status que aparece en los tableros
+ * type Kanban de la app. Esto permite personalizar los statuses sin tocar codigo:
+ * se pueden crear nuevos statuses, cambiar colores, reordenar, etc.
+ * Corresponde a la table "doa_workflow_state_config" en la base de data.
  */
 export interface WorkflowStateConfigRow {
-  // Identificador unico del estado (generado automaticamente)
+  // Identificador unico del status (generado automaticamente)
   id?: string
-  // A que seccion de la app pertenece este estado (consultas o cotizaciones)
+  // A que seccion de la app pertenece este status (requests o cotizaciones)
   scope: WorkflowStateScope
-  // Codigo interno del estado (ej: "new", "in_review", "quoted")
+  // Codigo internal del status (ej: "new", "in_review", "quoted")
   state_code: string
-  // Nombre completo del estado para mostrar al usuario (ej: "En Revision")
+  // Name completo del status para mostrar al user_label (ej: "En Review")
   label: string
-  // Nombre corto para espacios reducidos (puede estar vacio)
+  // Name corto para espacios reducidos (puede estar vacio)
   short_label: string | null
-  // Descripcion de lo que significa este estado (puede estar vacia)
+  // Description de lo que significa este status (puede estar vacia)
   description: string | null
   // Color de la columna en el tablero
   color_token: WorkflowStateColorToken
-  // Numero de orden para mostrar las columnas en secuencia (1, 2, 3...)
+  // Numero de sort_order para mostrar las columnas en secuencia (1, 2, 3...)
   sort_order: number
-  // Indica si es un estado del sistema (no se puede borrar) o creado por el usuario
+  // Indica si es un status del sistema (no se puede borrar) o creado por el user_label
   is_system: boolean
-  // Indica si este estado esta activo o ha sido desactivado
+  // Indica si este status esta is_active o ha sido desactivado
   is_active: boolean
-  // Fecha y hora de creacion del registro
+  // Date y hora de creacion del registro
   created_at?: string
-  // Fecha y hora de la ultima modificacion
+  // Date y hora de la ultima modificacion
   updated_at?: string
 }
 
 /**
  * HISTORIAL DE CAMBIOS DE ESTADO DE UN PROYECTO
- * Cada vez que un proyecto cambia de estado (ej: de "En trabajo" a
- * "Revision interna"), se guarda un registro aqui. Esto permite ver
- * la trazabilidad completa: quien cambio el estado, cuando y por que.
- * Es importante para auditorias y para entender la historia de un proyecto.
- * Corresponde a la tabla "doa_proyectos_estado_historial" en la base de datos.
+ * Cada vez que un project cambia de status (ej: de "En trabajo" a
+ * "Internal review"), se guarda un registro aqui. Esto permite ver
+ * la trazabilidad completa: quien cambio el status, cuando y por que.
+ * Es importante para auditorias y para entender la historia de un project.
+ * Corresponde a la table "doa_project_status_history" en la base de data.
  */
-export interface ProyectoEstadoHistorial {
+export interface ProjectStatusHistory {
   // Identificador unico del registro de historial
   id: string
-  // Referencia al proyecto cuyo estado cambio
-  proyecto_id: string
-  // Estado en el que estaba ANTES del cambio (puede ser vacio si es el primer estado)
-  estado_anterior: string | null
-  // Nuevo estado al que paso el proyecto
-  estado_nuevo: string
-  // Motivo o justificacion del cambio de estado (puede estar vacio)
+  // Referencia al project cuyo status cambio
+  project_id: string
+  // Status en el que estaba ANTES del cambio (puede ser vacio si es el primer status)
+  previous_status: string | null
+  // New status al que paso el project
+  new_status: string
+  // Motivo o justificacion del cambio de status (puede estar vacio)
   motivo: string | null
-  // Fecha y hora exacta en que se realizo el cambio
+  // Date y hora exacta en que se realizo el cambio
   changed_at: string
-  // Quien realizo el cambio de estado (puede estar vacio)
+  // Quien realizo el cambio de status (puede estar vacio)
   changed_by: string | null
 }
 
-// ─── doa_conteo_horas_proyectos ─────────────────────────────────────────────
+// ─── doa_project_time_entries ─────────────────────────────────────────────
 
 /**
  * CONTEO DE HORAS DE PROYECTO (PUNCH-CLOCK)
- * Cada fila representa un evento de inicio o fin de trabajo en un proyecto.
- * Sesion de trabajo en un proyecto. Una fila = un periodo inicio-fin.
- * Al pulsar "Iniciar" se crea la fila con inicio. Al pulsar "Parar" se
- * actualiza la misma fila con fin y duracion_minutos calculada.
- * Corresponde a la tabla "doa_conteo_horas_proyectos" en la base de datos.
+ * Cada fila representa un evento de started_at o ended_at de trabajo en un project.
+ * Sesion de trabajo en un project. Una fila = un periodo started_at-ended_at.
+ * Al pulsar "Iniciar" se crea la fila con started_at. Al pulsar "Parar" se
+ * actualiza la misma fila con ended_at y duration_minutes calculada.
+ * Corresponde a la table "doa_project_time_entries" en la base de data.
  */
-export interface ConteoHorasProyecto {
+export interface ProjectTimeEntry {
   id: string
-  proyecto_id: string
-  numero_proyecto: string
-  // Fecha y hora de inicio de la sesion de trabajo
-  inicio: string
-  // Fecha y hora de fin (null si la sesion sigue abierta)
-  fin: string | null
+  project_id: string
+  project_number: string
+  // Date y hora de started_at de la sesion de trabajo
+  started_at: string
+  // Date y hora de ended_at (null si la sesion sigue abierta)
+  ended_at: string | null
   // Duracion en minutos (calculada al parar, null si aun abierta)
-  duracion_minutos: number | null
-  usuario: string | null
+  duration_minutes: number | null
+  user_label: string | null
   created_at: string
 }
 
-// ─── mdl_contenido (Master Document List - JSONB) ───────────────────────────
+// ─── mdl_content (Master Document List - JSONB) ───────────────────────────
 
-/** Documento individual dentro del MDL (Master Document List) de un proyecto historico */
-export interface MdlDocumento {
+/** Document individual dentro del MDL (Master Document List) de un project historical */
+export interface MdlDocument {
   ref: string
-  titulo: string
+  title: string
   edicion: string
-  fecha: string
-  estado: string // "Active" | "Superseded"
+  date: string
+  status: string // "Active" | "Superseded"
 }
 
-/** Estructura del campo JSONB mdl_contenido en doa_proyectos_historico */
-export interface MdlContenido {
-  entregables: MdlDocumento[]
-  no_entregables: MdlDocumento[]
+/** Estructura del campo JSONB mdl_content en doa_historical_projects */
+export interface MdlContent {
+  entregables: MdlDocument[]
+  no_entregables: MdlDocument[]
 }
 
 /**
  * FILA DE PROYECTO HISTORICO
- * Representa un registro de la tabla "doa_proyectos_historico".
+ * Representa un registro de la table "doa_historical_projects".
  */
-export interface ProyectoHistoricoRow {
+export interface HistoricalProjectRow {
   id: string
-  numero_proyecto: string
-  titulo: string
-  descripcion: string | null
-  cliente_nombre: string | null
-  anio: number | null
-  aeronave: string | null
+  project_number: string
+  title: string
+  description: string | null
+  client_name: string | null
+  year: number | null
+  aircraft: string | null
   msn: string | null
-  ruta_origen: string | null
-  nombre_carpeta_origen: string | null
-  mdl_contenido: MdlContenido | null
+  source_path: string | null
+  source_folder_name: string | null
+  mdl_content: MdlContent | null
   summary_md: string | null
-  compliance_docs_md: Record<string, { title: string; familia: string; content_md: string }> | null
+  compliance_docs_md: Record<string, { title: string; family: string; content_md: string }> | null
   created_at: string
   updated_at: string
 }
@@ -899,105 +899,105 @@ export interface ProyectoHistoricoRow {
 
 /**
  * EMAIL ASOCIADO A UNA CONSULTA
- * Representa un correo electronico (entrante o saliente) vinculado a una consulta.
+ * Representa un email electronico (entrante o saliente) vinculado a una request.
  * Los emails son registros INMUTABLES: una vez insertados, NUNCA se actualizan.
- * El hilo se mantiene via consulta_id (agrupa todos los emails de una consulta)
- * y orden cronologico por fecha.
- * Corresponde a la tabla "doa_emails" en la base de datos.
+ * El hilo se mantiene via incoming_request_id (agrupa todos los emails de una request)
+ * y sort_order cronologico por date.
+ * Corresponde a la table "doa_emails" en la base de data.
  */
 export interface DoaEmail {
   // Identificador unico del email
   id: string
-  // Referencia a la consulta entrante a la que pertenece este email
-  consulta_id: string
-  // Direccion del email: 'entrante' (del cliente) o 'saliente' (nuestra respuesta)
-  direccion: 'entrante' | 'saliente'
-  // Direccion de correo del remitente
-  de: string
-  // Direccion de correo del destinatario (puede estar vacio)
-  para: string | null
-  // Asunto del correo
-  asunto: string
-  // Cuerpo del correo
-  cuerpo: string
-  // Fecha original del correo en el servidor de correo
-  fecha: string
+  // Referencia a la request entrante a la que pertenece este email
+  incoming_request_id: string
+  // Address del email: 'inbound' (del client) o 'outbound' (nuestra response)
+  direction: 'inbound' | 'outbound'
+  // Address de email del sender
+  from_email: string
+  // Address de email del destinatario (puede estar vacio)
+  to_email: string | null
+  // Subject del email
+  subject: string
+  // Cuerpo del email
+  body: string
+  // Date original del email en el servidor de email
+  date: string
   // Identificador unico RFC Message-ID (inmutable)
-  mensaje_id: string | null
-  // Referencia al mensaje_id del correo padre (para hilos)
-  en_respuesta_a: string | null
-  // Fecha y hora en que se inserto el registro en la base de datos
+  message_id: string | null
+  // Referencia al message_id del email padre (para hilos)
+  in_reply_to: string | null
+  // Date y hora en que se inserto el registro en la base de data
   created_at: string
 }
 
 // ─── doa_project_closures (Sprint 4) ────────────────────────────────────────
 
-/** Outcome del cierre de un proyecto. */
+/** Outcome del closure de un project. */
 export type ClosureOutcome =
-  | 'exitoso'
-  | 'exitoso_con_reservas'
-  | 'problematico'
-  | 'abortado'
+  | 'successful'
+  | 'successful_with_reservations'
+  | 'problematic'
+  | 'aborted'
 
-/** Snapshot jsonb de las metricas computadas al cierre. */
+/** Snapshot jsonb de las metricas computadas al closure. */
 export interface ClosureMetricsSnapshot {
-  horas_plan?: number | null
-  horas_real?: number | null
+  planned_hours?: number | null
+  actual_hours?: number | null
   deliverables_total?: number
   deliverables_completado?: number
-  deliverables_no_aplica?: number
+  deliverables_not_applicable?: number
   deliverables_bloqueado?: number
-  validaciones_count?: number
-  validaciones_aprobadas?: number
-  devoluciones_count?: number
-  entregas_count?: number
-  entregas_enviadas?: number
-  entregas_confirmadas?: number
-  dias_total?: number | null
+  validations_count?: number
+  validations_approved?: number
+  returns_count?: number
+  deliveries_count?: number
+  deliveries_sent?: number
+  deliveries_confirmed?: number
+  total_days?: number | null
   client_confirmation_days?: number | null
   [key: string]: unknown
 }
 
-/** Fila de la tabla `doa_project_closures`. */
+/** Fila de la table `doa_project_closures`. */
 export interface ProjectClosure {
   id: string
-  proyecto_id: string
+  project_id: string
   closer_user_id: string
   signature_id: string | null
   metrics: ClosureMetricsSnapshot
   outcome: ClosureOutcome
-  notas_cierre: string | null
+  closure_notes: string | null
   created_at: string
 }
 
 // ─── doa_project_lessons (Sprint 4) ─────────────────────────────────────────
 
 /** Categoria de una leccion aprendida. */
-export type LessonCategoria =
-  | 'tecnica'
-  | 'proceso'
-  | 'cliente'
-  | 'calidad'
-  | 'planificacion'
-  | 'herramientas'
-  | 'regulatoria'
-  | 'otro'
+export type LessonCategory =
+  | 'technical'
+  | 'process'
+  | 'client'
+  | 'quality'
+  | 'planning'
+  | 'tools'
+  | 'regulatory'
+  | 'other'
 
 /** Tipo de leccion aprendida. */
-export type LessonTipo = 'positiva' | 'negativa' | 'mejora' | 'riesgo'
+export type LessonType = 'positive' | 'negative' | 'improvement' | 'risk'
 
-/** Fila de la tabla `doa_project_lessons`. */
+/** Fila de la table `doa_project_lessons`. */
 export interface ProjectLesson {
   id: string
-  proyecto_id: string
+  project_id: string
   closure_id: string | null
   author_user_id: string
-  categoria: LessonCategoria
-  tipo: LessonTipo
-  titulo: string
-  descripcion: string
-  impacto: string | null
-  recomendacion: string | null
+  category: LessonCategory
+  type: LessonType
+  title: string
+  description: string
+  impact: string | null
+  recommendation: string | null
   tags: string[] | null
   created_at: string
   updated_at: string
@@ -1005,12 +1005,12 @@ export interface ProjectLesson {
 
 /** Input para crear una leccion via API. */
 export interface LessonInput {
-  categoria: LessonCategoria
-  tipo: LessonTipo
-  titulo: string
-  descripcion: string
-  impacto?: string | null
-  recomendacion?: string | null
+  category: LessonCategory
+  type: LessonType
+  title: string
+  description: string
+  impact?: string | null
+  recommendation?: string | null
   tags?: string[] | null
 }
 
@@ -1018,45 +1018,45 @@ export interface LessonInput {
 
 /** Fila de la materialized view doa_project_metrics_mv. */
 export interface ProjectMetricsRow {
-  proyecto_id: string
-  titulo: string
-  cliente_id: string | null
-  estado_v2: string | null
-  fase_actual: string | null
+  project_id: string
+  title: string
+  client_id: string | null
+  execution_status: string | null
+  current_phase: string | null
   created_at: string
-  estado_updated_at: string | null
+  status_updated_at: string | null
   deliverables_total: number
   deliverables_completado: number
-  deliverables_no_aplica: number
+  deliverables_not_applicable: number
   deliverables_bloqueado: number
-  validaciones_total: number
-  validaciones_aprobadas: number
-  validaciones_devueltas: number
-  entregas_total: number
-  entregas_enviadas: number
-  entregas_confirmadas: number
-  horas_plan: number | null
-  horas_real: number | null
-  dias_en_ejecucion: number | null
-  dias_en_validacion: number | null
-  dias_en_entrega: number | null
-  dias_totales_cerrado_vs_abierto: number | null
+  validations_total: number
+  validations_approved: number
+  validations_returned: number
+  deliveries_total: number
+  deliveries_sent: number
+  deliveries_confirmed: number
+  planned_hours: number | null
+  actual_hours: number | null
+  days_in_execution: number | null
+  days_in_validation: number | null
+  days_in_delivery: number | null
+  total_days_closed_vs_opened: number | null
   closure_outcome: ClosureOutcome | null
-  lecciones_count: number
+  lessons_count: number
 }
 
-// ─── doa_proyectos_historico_archivos ────────────────────────────────────────
+// ─── doa_historical_projects_archivos ────────────────────────────────────────
 
-/** Archivo individual dentro de una familia documental de un proyecto historico */
-export interface ProyectoHistoricoArchivo {
+/** Archivo individual dentro de una family documental de un project historical */
+export interface HistoricalProjectFile {
   id: string
   documento_id: string
-  nombre_archivo: string
-  codigo_documento: string | null
+  file_name: string
+  document_code: string | null
   edicion: string | null
   formato: string
   es_edicion_vigente: boolean
-  ruta_relativa: string | null
-  contenido_md: string | null
+  relative_path: string | null
+  content_md: string | null
   created_at: string
 }

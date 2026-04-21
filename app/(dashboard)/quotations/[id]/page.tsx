@@ -3,38 +3,38 @@
  * PAGINA SERVIDOR DE DETALLE DE UNA QUOTATION
  * ============================================================================
  *
- * Esta pagina muestra la ficha completa de una quotation (oferta comercial)
- * individual. Se accede a ella cuando el usuario pulsa "Ver detalle" en
+ * Esta page muestra la ficha completa de una quotation (quote commercial)
+ * individual. Se accede a ella cuando el user_label pulsa "Ver detalle" en
  * una tarjeta del tablero de Quotations.
  *
  * QUE HACE:
  *   1. Extrae el identificador de la quotation desde la URL
- *   2. Carga la configuracion de estados y las consultas entrantes desde Supabase
+ *   2. Carga la configuracion de statuses y las requests entrantes desde Supabase
  *   3. Pasa todo al componente visual QuotationDetailClient
  *
  * NOTA TECNICA: La URL es dinamica: /quotations/[id] donde [id] es el
  * identificador unico de la quotation. "force-dynamic" asegura que los
- * datos se cargan frescos en cada visita.
+ * data se cargan frescos en cada visita.
  * ============================================================================
  */
 
-// Barra superior de la pagina
+// Barra superior de la page
 import { TopBar } from '@/components/layout/TopBar'
-// Conexion a la base de datos Supabase desde el servidor
+// Conexion a la base de data Supabase desde el servidor
 import { createClient } from '@/lib/supabase/server'
-// Funciones para cargar la configuracion de estados del workflow
+// Funciones para cargar la configuracion de statuses del workflow
 import { getWorkflowStateConfigRows } from '@/lib/workflow-state-config.server'
 import { WORKFLOW_STATE_SCOPES } from '@/lib/workflow-state-config'
-// Constantes de estados de las consultas
-import { CONSULTA_ESTADOS } from '@/lib/workflow-states'
-// Tipos de datos para clientes, contactos y consultas
+// Constantes de statuses de las requests
+import { INCOMING_REQUEST_STATUSES } from '@/lib/workflow-states'
+// Tipos de data para clients, contacts y requests
 import type {
-  Cliente,
-  ClienteContacto,
-  ConsultaEntrante,
+  Client,
+  ClientContact,
+  IncomingRequest,
 } from '@/types/database'
 
-// Funciones para emparejar consultas con clientes
+// Funciones para emparejar requests con clients
 import {
   buildIncomingClientLookup,
   toIncomingQuery,
@@ -46,7 +46,7 @@ import { QuotationDetailClient } from './QuotationDetailClient'
 export const dynamic = 'force-dynamic'
 
 /**
- * Funcion principal de la pagina de detalle.
+ * Funcion primary de la page de detalle.
  * Se ejecuta en el servidor cuando alguien visita /quotations/[id].
  */
 export default async function QuotationDetailPage({
@@ -59,8 +59,8 @@ export default async function QuotationDetailPage({
 
   const supabase = await createClient()
 
-  // Cargar en paralelo la configuracion de estados y las consultas entrantes
-  // (las mismas que alimentan el tablero principal), para que las tarjetas
+  // Cargar en paralelo la configuracion de statuses y las requests entrantes
+  // (las mismas que alimentan el tablero primary), para que las tarjetas
   // reales esten disponibles al buscar por ID en el detalle.
   const [stateConfigRows, queriesResult, clientsResult, contactsResult] =
     await Promise.all([
@@ -69,55 +69,55 @@ export default async function QuotationDetailPage({
         WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
       ]),
       supabase
-        .from('doa_consultas_entrantes')
+        .from('doa_incoming_requests')
         .select('*')
-        .neq('estado', CONSULTA_ESTADOS.ARCHIVADO)
+        .neq('status', INCOMING_REQUEST_STATUSES.ARCHIVED)
         .order('created_at', { ascending: false }),
       supabase
-        .from('doa_clientes_datos_generales')
+        .from('doa_clients')
         .select('*')
-        .order('nombre', { ascending: true }),
+        .order('name', { ascending: true }),
       supabase
-        .from('doa_clientes_contactos')
+        .from('doa_client_contacts')
         .select('*')
-        .order('es_principal', { ascending: false })
-        .order('activo', { ascending: false })
+        .order('is_primary', { ascending: false })
+        .order('active', { ascending: false })
         .order('created_at', { ascending: true }),
     ])
 
   if (queriesResult.error) {
     console.error(
-      'Error cargando consultas entrantes desde doa_consultas_entrantes:',
+      'Error cargando requests entrantes desde doa_incoming_requests:',
       queriesResult.error,
     )
   }
   if (clientsResult.error) {
     console.error(
-      'Error cargando clientes desde doa_clientes_datos_generales:',
+      'Error cargando clients desde doa_clients:',
       clientsResult.error,
     )
   }
   if (contactsResult.error) {
     console.error(
-      'Error cargando contactos desde doa_clientes_contactos:',
+      'Error cargando contacts desde doa_client_contacts:',
       contactsResult.error,
     )
   }
 
   const clientLookup = buildIncomingClientLookup(
-    (clientsResult.data ?? []) as Cliente[],
-    (contactsResult.data ?? []) as ClienteContacto[],
+    (clientsResult.data ?? []) as Client[],
+    (contactsResult.data ?? []) as ClientContact[],
   )
   const incomingQueries = (queriesResult.data ?? []).map((row) =>
-    toIncomingQuery(row as ConsultaEntrante, clientLookup),
+    toIncomingQuery(row as IncomingRequest, clientLookup),
   )
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,#eff6ff_0%,#f8fbff_34%,#f8fafc_100%)]">
-      {/* Barra superior con titulo */}
+      {/* Barra superior con title */}
       <TopBar
         title="Detalle de quotation"
-        subtitle="Vista preparada para alojar todo el detalle operativo de la oferta"
+        subtitle="Vista preparada para alojar todo el detalle operativo de la quote"
       />
       {/* Componente visual con toda la informacion de la quotation */}
       <QuotationDetailClient

@@ -1,13 +1,13 @@
 'use client'
 
 /**
- * Pagina de Herramientas
+ * Page de Tools
  *
- * Muestra las herramientas disponibles del DOA Operations Hub.
+ * Muestra las tools disponibles del DOA Operations Hub.
  * Contiene las tarjetas del TCDS RAG Engine y Part-21 Classification RAG.
  *
  * Es un Client Component porque necesita verificar la conexion
- * al backend RAG y el estado de la tabla de embeddings en Supabase.
+ * al backend RAG y el status de la table de embeddings en Supabase.
  */
 
 import { useState, useEffect } from 'react'
@@ -26,10 +26,10 @@ import { ragHealth } from '@/lib/rag-api'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ToolsPage() {
-  /** Estado de conexion al backend RAG: null = cargando, true/false = resultado */
+  /** Status de conexion al backend RAG: null = cargando, true/false = resultado */
   const [ragConnected, setRagConnected] = useState<boolean | null>(null)
 
-  /** Estado de la tabla Part-21 en Supabase: null = cargando, number = filas, false = error */
+  /** Status de la table Part-21 en Supabase: null = cargando, number = filas, false = error */
   const [part21Status, setPart21Status] = useState<
     { ok: true; count: number } | { ok: false } | null
   >(null)
@@ -41,7 +41,7 @@ export default function ToolsPage() {
       .catch(() => setRagConnected(false))
   }, [])
 
-  /** Verificar que la tabla doa_part21_embeddings tiene datos */
+  /** Verificar que la table doa_part21_embeddings tiene data */
   useEffect(() => {
     const supabase = createClient()
     supabase
@@ -59,7 +59,7 @@ export default function ToolsPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       {/* Barra superior */}
-      <TopBar title="Herramientas" subtitle="Suite de herramientas DOA" />
+      <TopBar title="Tools" subtitle="Suite de tools DOA" />
 
       <div className="flex-1 overflow-y-auto p-6">
         <div className="flex flex-col gap-6">
@@ -69,20 +69,20 @@ export default function ToolsPage() {
             className="group block rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-6 shadow-[0_18px_45px_rgba(148,163,184,0.16)] transition-all hover:border-[color:var(--ink-4)] hover:shadow-[0_20px_50px_rgba(148,163,184,0.22)]"
           >
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              {/* Icono, titulo y descripcion */}
+              {/* Icono, title y description */}
               <div className="flex items-start gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#2563EB,#38BDF8)] shadow-sm">
                   <BrainCircuit className="h-7 w-7 text-white" />
                 </div>
 
                 <div className="max-w-2xl">
-                  {/* Titulo + badge de estado */}
+                  {/* Titulo + badge de status */}
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-slate-950">
                       TCDS RAG Engine
                     </h2>
 
-                    {/* Badge dinamico segun estado de conexion */}
+                    {/* Badge dinamico segun status de conexion */}
                     {ragConnected === null ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -91,7 +91,7 @@ export default function ToolsPage() {
                     ) : ragConnected ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-700">
                         <Wifi className="h-3 w-3" />
-                        Activo
+                        Active
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-700">
@@ -103,7 +103,7 @@ export default function ToolsPage() {
 
                   {/* Subtitulo descriptivo */}
                   <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink-3)]">
-                    Motor de indexacion y busqueda semantica para Type
+                    Motor de indexacion y search semantica para Type
                     Certificate Data Sheets
                   </p>
                 </div>
@@ -123,20 +123,20 @@ export default function ToolsPage() {
             className="group block rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-6 shadow-[0_18px_45px_rgba(148,163,184,0.16)] transition-all hover:border-[color:var(--ink-4)] hover:shadow-[0_20px_50px_rgba(148,163,184,0.22)]"
           >
             <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              {/* Icono, titulo y descripcion */}
+              {/* Icono, title y description */}
               <div className="flex items-start gap-4">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[color:var(--ink-4)] bg-[linear-gradient(135deg,#7C3AED,#A78BFA)] shadow-sm">
                   <Scale className="h-7 w-7 text-white" />
                 </div>
 
                 <div className="max-w-2xl">
-                  {/* Titulo + badge de estado */}
+                  {/* Titulo + badge de status */}
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl font-semibold text-slate-950">
                       Part-21 Classification RAG
                     </h2>
 
-                    {/* Badge dinamico segun estado de la tabla en Supabase */}
+                    {/* Badge dinamico segun status de la table en Supabase */}
                     {part21Status === null ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -145,19 +145,19 @@ export default function ToolsPage() {
                     ) : part21Status.ok ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-emerald-700">
                         <Wifi className="h-3 w-3" />
-                        Activo &middot; {part21Status.count} chunks
+                        Active &middot; {part21Status.count} chunks
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-700">
                         <WifiOff className="h-3 w-3" />
-                        Sin datos
+                        Sin data
                       </span>
                     )}
                   </div>
 
                   {/* Subtitulo descriptivo */}
                   <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink-3)]">
-                    Base de conocimiento para clasificacion de cambios
+                    Base de conocimiento para classification de cambios
                     aeronauticos (AMC-GM Part-21, G12-01)
                   </p>
                 </div>

@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * Boton para marcar/desmarcar un proyecto historico como referencia
- * para la consulta entrante actual. Puede haber 1 o mas referencias.
- * Llama a POST /api/consultas/[id]/referencias para añadir
+ * Boton para marcar/desmarcar un project historical como referencia
+ * para la request entrante actual. Puede haber 1 o mas referencias.
+ * Llama a POST /api/incoming-requests/[id]/references para añadir
  * y DELETE para quitar.
  */
 
@@ -34,10 +34,10 @@ export function ReferenceProjectButton({
     setIsReferenced(!isReferenced)
 
     try {
-      const response = await fetch(`/api/consultas/${consultaId}/referencias`, {
+      const response = await fetch(`/api/incoming-requests/${consultaId}/references`, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ proyecto_id: proyectoId }),
+        body: JSON.stringify({ project_id: proyectoId }),
       })
 
       if (!response.ok) {
@@ -72,7 +72,7 @@ export function ReferenceProjectButton({
         onClick={handleToggle}
         className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-amber-300 bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100"
         title="Quitar como referencia"
-        aria-label="Quitar proyecto como referencia"
+        aria-label="Quitar project como referencia"
       >
         <BookmarkCheck className="h-3.5 w-3.5" />
       </button>
@@ -85,7 +85,7 @@ export function ReferenceProjectButton({
       onClick={handleToggle}
       className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-3)] transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600"
       title="Usar como referencia"
-      aria-label="Marcar proyecto como referencia"
+      aria-label="Marcar project como referencia"
     >
       <Bookmark className="h-3.5 w-3.5" />
     </button>

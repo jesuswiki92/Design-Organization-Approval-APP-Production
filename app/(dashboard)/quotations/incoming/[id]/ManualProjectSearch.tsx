@@ -8,14 +8,14 @@ import { ReferenceProjectButton } from './ReferenceProjectButton'
 
 type SearchResult = {
   id: string
-  numero_proyecto: string
-  titulo: string | null
-  descripcion: string | null
-  estado: string | null
-  aeronave: string | null
+  project_number: string
+  title: string | null
+  description: string | null
+  status: string | null
+  aircraft: string | null
   msn: string | null
-  cliente_nombre: string | null
-  anio: number | null
+  client_name: string | null
+  year: number | null
   created_at: string | null
 }
 
@@ -40,7 +40,7 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
     }
     setLoading(true)
     try {
-      const res = await fetch(`/api/proyectos-historico/search?q=${encodeURIComponent(q)}`)
+      const res = await fetch(`/api/historical-projects/search?q=${encodeURIComponent(q)}`)
       const data = await res.json()
       setResults(data)
       setSearched(true)
@@ -66,7 +66,7 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por codigo, titulo, cliente, aeronave..."
+          placeholder="Buscar por codigo, title, client, aircraft..."
           className="w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] py-2 pl-9 pr-3 text-sm text-[color:var(--ink)] placeholder:text-[color:var(--ink-3)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-[color:var(--ink-4)]"
         />
         {loading && (
@@ -77,7 +77,7 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
       {/* Results */}
       {searched && results.length === 0 && !loading && (
         <p className="mt-3 text-xs italic text-[color:var(--ink-3)]">
-          No se encontraron proyectos para &ldquo;{query}&rdquo;
+          No se encontraron projects para &ldquo;{query}&rdquo;
         </p>
       )}
 
@@ -97,9 +97,9 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {project.numero_proyecto && (
+                      {project.project_number && (
                         <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
-                          {project.numero_proyecto}
+                          {project.project_number}
                         </span>
                       )}
                       {isRef && (
@@ -107,9 +107,9 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
                           Referencia
                         </span>
                       )}
-                      {project.aeronave && (
+                      {project.aircraft && (
                         <span className="rounded bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--ink-2)]">
-                          {project.aeronave}
+                          {project.aircraft}
                         </span>
                       )}
                       {project.msn && (
@@ -119,21 +119,21 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
                       )}
                     </div>
                     <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">
-                      {project.titulo ?? '—'}
+                      {project.title ?? '—'}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-2">
-                      {project.cliente_nombre && (
-                        <p className="text-[10px] text-[color:var(--ink-3)]">{project.cliente_nombre}</p>
+                      {project.client_name && (
+                        <p className="text-[10px] text-[color:var(--ink-3)]">{project.client_name}</p>
                       )}
-                      {project.anio && (
-                        <p className="text-[10px] text-[color:var(--ink-3)]">{project.anio}</p>
+                      {project.year && (
+                        <p className="text-[10px] text-[color:var(--ink-3)]">{project.year}</p>
                       )}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    {project.estado && (
+                    {project.status && (
                       <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
-                        {project.estado}
+                        {project.status}
                       </span>
                     )}
                     <ReferenceProjectButton
@@ -142,9 +142,9 @@ export function ManualProjectSearch({ consultaId, currentRefs }: Props) {
                       isReferenced={isRef}
                     />
                     <Link
-                      href={`/proyectos-historico/${project.id}`}
+                      href={`/historical-projects/${project.id}`}
                       className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
-                      title="Abrir ficha"
+                      title="Open record"
                     >
                       <Plus className="h-3.5 w-3.5" />
                     </Link>

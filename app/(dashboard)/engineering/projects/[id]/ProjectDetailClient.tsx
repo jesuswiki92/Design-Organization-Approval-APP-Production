@@ -3,15 +3,15 @@
  * COMPONENTE VISUAL DE DETALLE DE UN PROYECTO CON REGISTRO DE HORAS
  * ============================================================================
  *
- * Muestra la cabecera del proyecto y una seccion completa de registro de horas
- * con tabla editable, resumen de metricas y suscripcion Realtime.
+ * Muestra la cabecera del project y una seccion completa de registro de horas
+ * con table editable, resumen de metricas y suscripcion Realtime.
  *
  * Funcionalidades:
- *   - Cabecera con datos clave del proyecto
- *   - Resumen de horas (total, sesiones, media)
- *   - Tabla de entradas de horas con edicion inline y borrado
+ *   - Cabecera con data clave del project
+ *   - Resumen de horas (total, sesiones, medium)
+ *   - Table de entradas de horas con edicion inline y borrado
  *   - Boton de temporizador (ProjectTimerButton)
- *   - Realtime: INSERT, UPDATE, DELETE en doa_conteo_horas_proyectos
+ *   - Realtime: INSERT, UPDATE, DELETE en doa_project_time_entries
  * ============================================================================
  */
 
@@ -36,8 +36,8 @@ import {
 
 import { trackUiEvent } from '@/lib/observability/client'
 import { createClient } from '@/lib/supabase/client'
-import type { Proyecto, ConteoHorasProyecto } from '@/types/database'
-import { ProjectTimerButton } from '@/app/(dashboard)/proyectos/ProjectTimerButton'
+import type { Project, ProjectTimeEntry } from '@/types/database'
+import { ProjectTimerButton } from '@/app/(dashboard)/projects/ProjectTimerButton'
 import { PrecedentesSection } from './PrecedentesSection'
 import { DeliverablesTab } from './DeliverablesTab'
 import { ValidationTab } from './ValidationTab'
@@ -61,19 +61,19 @@ function formatDuration(minutes: number | null): string {
   return `${m}m`
 }
 
-/** Calcula duracion en minutos entre dos fechas ISO */
-function calcMinutes(inicio: string, fin: string): number {
-  const diff = new Date(fin).getTime() - new Date(inicio).getTime()
+/** Calcula duracion en minutos entre dos dates ISO */
+function calcMinutes(started_at: string, ended_at: string): number {
+  const diff = new Date(ended_at).getTime() - new Date(started_at).getTime()
   return Math.max(0, diff / 60_000)
 }
 
-/** Formatea una fecha ISO a dd/mm/yyyy en zona local */
+/** Formatea una date ISO a dd/mm/yyyy en zona local */
 function formatDate(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-/** Formatea una fecha ISO a HH:mm en zona local */
+/** Formatea una date ISO a HH:mm en zona local */
 function formatTime(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
@@ -86,37 +86,37 @@ function toDatetimeLocal(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-/** Mapa de colores por estado */
+/** Mapa de colores por status */
 const ESTADO_COLORS: Record<string, string> = {
-  nuevo: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
-  en_progreso: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
-  revision: 'bg-amber-100 text-amber-700 border-amber-200',
-  aprobacion: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
-  entregado: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  cerrado: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
-  activo: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
-  oferta: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
-  en_revision: 'bg-amber-100 text-amber-700 border-amber-200',
-  en_pausa: 'bg-orange-100 text-orange-700 border-orange-200',
-  cancelado: 'bg-red-100 text-red-700 border-red-200',
+  new: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  in_progress: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  review: 'bg-amber-100 text-amber-700 border-amber-200',
+  approval: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  delivered: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  closed: 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]',
+  is_active: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  quote: 'bg-[color:var(--paper-2)] text-[color:var(--ink-2)] border-[color:var(--ink-4)]',
+  in_review: 'bg-amber-100 text-amber-700 border-amber-200',
+  paused: 'bg-orange-100 text-orange-700 border-orange-200',
+  canceled: 'bg-red-100 text-red-700 border-red-200',
 }
 
-/** Traduce el estado a texto legible */
+/** Traduce el status a text legible */
 const ESTADO_LABELS: Record<string, string> = {
-  nuevo: 'Nuevo',
-  en_progreso: 'En progreso',
-  revision: 'Revision',
-  aprobacion: 'Aprobacion',
-  entregado: 'Entregado',
-  cerrado: 'Cerrado',
-  activo: 'Activo',
-  oferta: 'Oferta',
-  en_revision: 'En revision',
-  en_pausa: 'En pausa',
-  cancelado: 'Cancelado',
-  pendiente_aprobacion_cve: 'Pendiente CVE',
-  pendiente_aprobacion_easa: 'Pendiente EASA',
-  guardado_en_base_de_datos: 'Archivado',
+  new: 'New',
+  in_progress: 'En progreso',
+  review: 'Review',
+  approval: 'Approval',
+  delivered: 'Delivered',
+  closed: 'Closed',
+  is_active: 'Active',
+  quote: 'Oferta',
+  in_review: 'En review',
+  paused: 'En pausa',
+  canceled: 'Cancelado',
+  pending_cve_approval: 'Pending CVE',
+  pending_easa_approval: 'Pending EASA',
+  saved_to_database: 'Archived',
 }
 
 // --- COMPONENTE PRINCIPAL ---
@@ -125,10 +125,10 @@ export function ProjectDetailClient({
   project,
   timeEntries: initialEntries,
 }: {
-  project: Proyecto
-  timeEntries: ConteoHorasProyecto[]
+  project: Project
+  timeEntries: ProjectTimeEntry[]
 }) {
-  const [entries, setEntries] = useState<ConteoHorasProyecto[]>(initialEntries)
+  const [entries, setEntries] = useState<ProjectTimeEntry[]>(initialEntries)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editInicio, setEditInicio] = useState('')
   const [editFin, setEditFin] = useState('')
@@ -140,7 +140,7 @@ export function ProjectDetailClient({
   const liveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Hay alguna sesion abierta?
-  const hasOpenSession = entries.some((e) => e.fin === null)
+  const hasOpenSession = entries.some((e) => e.ended_at === null)
 
   // Intervalo para actualizar "now" cada segundo si hay sesion abierta
   useEffect(() => {
@@ -172,15 +172,15 @@ export function ProjectDetailClient({
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
-          filter: `proyecto_id=eq.${project.id}`,
+          table: 'doa_project_time_entries',
+          filter: `project_id=eq.${project.id}`,
         },
         (payload) => {
-          const newEntry = payload.new as ConteoHorasProyecto
+          const newEntry = payload.new as ProjectTimeEntry
           setEntries((prev) => {
             // Evitar duplicados
             if (prev.some((e) => e.id === newEntry.id)) return prev
-            // Insertar al principio (ordenado por inicio DESC)
+            // Insertar al principio (ordenado por started_at DESC)
             return [newEntry, ...prev]
           })
         },
@@ -190,11 +190,11 @@ export function ProjectDetailClient({
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
-          filter: `proyecto_id=eq.${project.id}`,
+          table: 'doa_project_time_entries',
+          filter: `project_id=eq.${project.id}`,
         },
         (payload) => {
-          const updated = payload.new as ConteoHorasProyecto
+          const updated = payload.new as ProjectTimeEntry
           setEntries((prev) =>
             prev.map((e) => (e.id === updated.id ? updated : e)),
           )
@@ -205,8 +205,8 @@ export function ProjectDetailClient({
         {
           event: 'DELETE',
           schema: 'public',
-          table: 'doa_conteo_horas_proyectos',
-          filter: `proyecto_id=eq.${project.id}`,
+          table: 'doa_project_time_entries',
+          filter: `project_id=eq.${project.id}`,
         },
         (payload) => {
           const deletedId = (payload.old as { id: string }).id
@@ -222,27 +222,27 @@ export function ProjectDetailClient({
 
   // --- Metricas de resumen ---
   const totalMinutes = entries.reduce((acc, e) => {
-    if (e.duracion_minutos !== null) return acc + e.duracion_minutos
-    if (e.fin === null) {
+    if (e.duration_minutes !== null) return acc + e.duration_minutes
+    if (e.ended_at === null) {
       // Sesion abierta: calcular en vivo
-      return acc + (now - new Date(e.inicio).getTime()) / 60_000
+      return acc + (now - new Date(e.started_at).getTime()) / 60_000
     }
     return acc
   }, 0)
 
-  const completedSessions = entries.filter((e) => e.fin !== null).length
+  const completedSessions = entries.filter((e) => e.ended_at !== null).length
   const totalSessions = entries.length
   const avgMinutes = completedSessions > 0
     ? entries
-        .filter((e) => e.duracion_minutos !== null)
-        .reduce((acc, e) => acc + (e.duracion_minutos ?? 0), 0) / completedSessions
+        .filter((e) => e.duration_minutes !== null)
+        .reduce((acc, e) => acc + (e.duration_minutes ?? 0), 0) / completedSessions
     : 0
 
   // --- Handlers de edicion ---
-  const startEdit = useCallback((entry: ConteoHorasProyecto) => {
+  const startEdit = useCallback((entry: ProjectTimeEntry) => {
     setEditingId(entry.id)
-    setEditInicio(toDatetimeLocal(entry.inicio))
-    setEditFin(entry.fin ? toDatetimeLocal(entry.fin) : '')
+    setEditInicio(toDatetimeLocal(entry.started_at))
+    setEditFin(entry.ended_at ? toDatetimeLocal(entry.ended_at) : '')
   }, [])
 
   const cancelEdit = useCallback(() => {
@@ -270,7 +270,7 @@ export function ProjectDetailClient({
     setEntries((prev) =>
       prev.map((e) =>
         e.id === editingId
-          ? { ...e, inicio: newInicio, fin: newFin, duracion_minutos: newDuracion }
+          ? { ...e, started_at: newInicio, ended_at: newFin, duration_minutes: newDuracion }
           : e,
       ),
     )
@@ -279,13 +279,13 @@ export function ProjectDetailClient({
     try {
       const supabase = createClient()
       const updatePayload: Record<string, unknown> = {
-        inicio: newInicio,
-        fin: newFin,
-        duracion_minutos: newDuracion,
+        started_at: newInicio,
+        ended_at: newFin,
+        duration_minutes: newDuracion,
       }
 
       const { error } = await supabase
-        .from('doa_conteo_horas_proyectos')
+        .from('doa_project_time_entries')
         .update(updatePayload)
         .eq('id', editingId)
 
@@ -298,7 +298,7 @@ export function ProjectDetailClient({
         route: `/engineering/projects/${project.id}`,
         entityType: 'project',
         entityId: project.id,
-        entityCode: project.numero_proyecto,
+        entityCode: project.project_number,
         metadata: {
           entry_id: editingId,
           duration_minutes: newDuracion,
@@ -315,7 +315,7 @@ export function ProjectDetailClient({
         route: `/engineering/projects/${project.id}`,
         entityType: 'project',
         entityId: project.id,
-        entityCode: project.numero_proyecto,
+        entityCode: project.project_number,
         metadata: {
           entry_id: editingId,
           duration_minutes: newDuracion,
@@ -329,7 +329,7 @@ export function ProjectDetailClient({
     }
 
     setSavingEdit(false)
-  }, [editingId, editInicio, editFin, entries, project.id, project.numero_proyecto])
+  }, [editingId, editInicio, editFin, entries, project.id, project.project_number])
 
   // --- Handler de borrado ---
   const handleDelete = useCallback(async (entryId: string) => {
@@ -342,7 +342,7 @@ export function ProjectDetailClient({
     try {
       const supabase = createClient()
       const { error } = await supabase
-        .from('doa_conteo_horas_proyectos')
+        .from('doa_project_time_entries')
         .delete()
         .eq('id', entryId)
 
@@ -355,7 +355,7 @@ export function ProjectDetailClient({
         route: `/engineering/projects/${project.id}`,
         entityType: 'project',
         entityId: project.id,
-        entityCode: project.numero_proyecto,
+        entityCode: project.project_number,
         metadata: {
           entry_id: entryId,
           source: 'browser_supabase',
@@ -370,7 +370,7 @@ export function ProjectDetailClient({
         route: `/engineering/projects/${project.id}`,
         entityType: 'project',
         entityId: project.id,
-        entityCode: project.numero_proyecto,
+        entityCode: project.project_number,
         metadata: {
           entry_id: entryId,
           error_name: err instanceof Error ? err.name : 'UnknownError',
@@ -382,14 +382,14 @@ export function ProjectDetailClient({
     }
 
     setDeletingId(null)
-  }, [entries, project.id, project.numero_proyecto])
+  }, [entries, project.id, project.project_number])
 
   // --- Duracion para una fila (en vivo si abierta) ---
-  function getRowDuration(entry: ConteoHorasProyecto): string {
-    if (entry.duracion_minutos !== null) return formatDuration(entry.duracion_minutos)
-    if (entry.fin === null) {
+  function getRowDuration(entry: ProjectTimeEntry): string {
+    if (entry.duration_minutes !== null) return formatDuration(entry.duration_minutes)
+    if (entry.ended_at === null) {
       // Sesion abierta: calcular en vivo
-      const elapsed = (now - new Date(entry.inicio).getTime()) / 60_000
+      const elapsed = (now - new Date(entry.started_at).getTime()) / 60_000
       return formatDuration(elapsed)
     }
     return '-'
@@ -405,25 +405,25 @@ export function ProjectDetailClient({
     return formatDuration(mins)
   }
 
-  const estadoColor = ESTADO_COLORS[project.estado] ?? 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]'
-  const estadoLabel = ESTADO_LABELS[project.estado] ?? project.estado
+  const estadoColor = ESTADO_COLORS[project.status] ?? 'bg-[color:var(--paper-2)] text-[color:var(--ink-3)] border-[color:var(--ink-4)]'
+  const estadoLabel = ESTADO_LABELS[project.status] ?? project.status
 
-  // Sprint 1/2: el estado_v2 se mantiene en local para reflejar transiciones
-  // disparadas desde ValidationTab sin recargar la pagina.
-  const [estadoV2, setEstadoV2] = useState<string | null>(project.estado_v2 ?? null)
+  // Sprint 1/2: el execution_status se mantiene en local para reflejar transiciones
+  // disparadas desde ValidationTab sin recargar la page.
+  const [estadoV2, setEstadoV2] = useState<string | null>(project.execution_status ?? null)
   const executionState: ProjectExecutionState | null =
     estadoV2 && isProjectExecutionStateCode(estadoV2) ? estadoV2 : null
 
-  // Deep link ?tab=validacion (tambien acepta horas, deliverables, entrega, cierre).
+  // Deep link ?tab=validation (tambien acepta horas, deliverables, delivery, closure).
   const searchParams = useSearchParams()
   const initialTab = (() => {
     const t = searchParams.get('tab')
     if (
-      t === 'validacion' ||
+      t === 'validation' ||
       t === 'deliverables' ||
       t === 'horas' ||
-      t === 'entrega' ||
-      t === 'cierre'
+      t === 'delivery' ||
+      t === 'closure'
     )
       return t
     return 'horas'
@@ -434,20 +434,20 @@ export function ProjectDetailClient({
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-5 pb-8 pt-5">
       {/* Boton volver */}
       <Link
-        href="/proyectos"
+        href="/projects"
         className="inline-flex w-fit items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.22)] transition-colors hover:bg-sky-500"
       >
         <ArrowLeft className="h-4 w-4" />
-        Volver a Proyectos
+        Volver a Projects
       </Link>
 
-      {/* Cabecera del proyecto */}
+      {/* Cabecera del project */}
       <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-semibold text-[color:var(--ink)]">
-                {project.titulo}
+                {project.title}
               </h1>
               <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${estadoColor}`}>
                 {estadoLabel}
@@ -456,18 +456,18 @@ export function ProjectDetailClient({
             <div className="flex flex-wrap items-center gap-3 text-sm text-[color:var(--ink-3)]">
               <span className="inline-flex items-center gap-1">
                 <Hash className="h-3.5 w-3.5" />
-                {project.numero_proyecto}
+                {project.project_number}
               </span>
-              {project.cliente_nombre && (
+              {project.client_name && (
                 <span className="inline-flex items-center gap-1">
                   <User className="h-3.5 w-3.5" />
-                  {project.cliente_nombre}
+                  {project.client_name}
                 </span>
               )}
-              {project.aeronave && (
+              {project.aircraft && (
                 <span className="inline-flex items-center gap-1">
                   <Plane className="h-3.5 w-3.5" />
-                  {project.aeronave}
+                  {project.aircraft}
                 </span>
               )}
               {project.owner && (
@@ -481,17 +481,17 @@ export function ProjectDetailClient({
         </div>
       </section>
 
-      {/* Stepper de la maquina de ejecucion v2 (solo si el proyecto ya migro a estado_v2) */}
+      {/* Stepper de la maquina de execution v2 (solo si el project ya migro a execution_status) */}
       {executionState && <ProjectStateStepper currentState={executionState} />}
 
-      {/* Tabs: Horas + Deliverables (Sprint 1) + Validacion (Sprint 2) */}
+      {/* Tabs: Horas + Deliverables (Sprint 1) + Validation (Sprint 2) */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList variant="line" className="mb-3 border-b border-[color:var(--ink-4)]">
           <TabsTrigger value="horas">Horas</TabsTrigger>
           <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
-          <TabsTrigger value="validacion">Validacion</TabsTrigger>
-          <TabsTrigger value="entrega">Entrega</TabsTrigger>
-          <TabsTrigger value="cierre">Cierre</TabsTrigger>
+          <TabsTrigger value="validation">Validation</TabsTrigger>
+          <TabsTrigger value="delivery">Delivery</TabsTrigger>
+          <TabsTrigger value="closure">Cierre</TabsTrigger>
         </TabsList>
 
         <TabsContent value="deliverables">
@@ -502,7 +502,7 @@ export function ProjectDetailClient({
           />
         </TabsContent>
 
-        <TabsContent value="validacion">
+        <TabsContent value="validation">
           <ValidationTab
             proyectoId={project.id}
             currentState={estadoV2}
@@ -510,19 +510,19 @@ export function ProjectDetailClient({
           />
         </TabsContent>
 
-        <TabsContent value="entrega">
+        <TabsContent value="delivery">
           <DeliveryTab
             proyectoId={project.id}
-            proyectoTitulo={project.titulo}
-            proyectoNumero={project.numero_proyecto}
+            proyectoTitulo={project.title}
+            proyectoNumero={project.project_number}
             defaultRecipientEmail={null}
-            defaultRecipientName={project.cliente_nombre ?? null}
+            defaultRecipientName={project.client_name ?? null}
             currentState={estadoV2}
             onStateChange={setEstadoV2}
           />
         </TabsContent>
 
-        <TabsContent value="cierre">
+        <TabsContent value="closure">
           <ClosureTab
             proyectoId={project.id}
             currentState={estadoV2}
@@ -543,7 +543,7 @@ export function ProjectDetailClient({
           </div>
           <ProjectTimerButton
             proyectoId={project.id}
-            numeroProyecto={project.numero_proyecto}
+            numeroProyecto={project.project_number}
           />
         </div>
 
@@ -575,7 +575,7 @@ export function ProjectDetailClient({
           </div>
         </div>
 
-        {/* Tabla de entradas */}
+        {/* Table de entradas */}
         {entries.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-[color:var(--ink-3)]">
             No hay sesiones de trabajo registradas.
@@ -586,7 +586,7 @@ export function ProjectDetailClient({
               <thead>
                 <tr className="border-b border-[color:var(--ink-4)] text-left">
                   <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                    Fecha
+                    Date
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Inicio
@@ -605,7 +605,7 @@ export function ProjectDetailClient({
               <tbody>
                 {entries.map((entry, idx) => {
                   const isEditing = editingId === entry.id
-                  const isOpen = entry.fin === null
+                  const isOpen = entry.ended_at === null
                   const rowBg = isEditing
                     ? 'bg-yellow-50'
                     : idx % 2 === 0
@@ -614,11 +614,11 @@ export function ProjectDetailClient({
 
                   return (
                     <tr key={entry.id} className={`border-b border-slate-50 ${rowBg}`}>
-                      {/* Fecha */}
+                      {/* Date */}
                       <td className="whitespace-nowrap px-5 py-3 text-sm text-[color:var(--ink-2)]">
                         <span className="inline-flex items-center gap-1.5">
                           <Calendar className="h-3.5 w-3.5 text-[color:var(--ink-3)]" />
-                          {formatDate(entry.inicio)}
+                          {formatDate(entry.started_at)}
                         </span>
                       </td>
 
@@ -632,7 +632,7 @@ export function ProjectDetailClient({
                             className="rounded border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-1 text-sm text-[color:var(--ink-2)] focus:border-[color:var(--ink-4)] focus:outline-none focus:ring-1 focus:ring-sky-400"
                           />
                         ) : (
-                          formatTime(entry.inicio)
+                          formatTime(entry.started_at)
                         )}
                       </td>
 
@@ -651,7 +651,7 @@ export function ProjectDetailClient({
                             En curso
                           </span>
                         ) : (
-                          formatTime(entry.fin!)
+                          formatTime(entry.ended_at!)
                         )}
                       </td>
 
@@ -720,8 +720,8 @@ export function ProjectDetailClient({
         )}
       </section>
 
-      {/* Seccion Proyectos similares (precedentes) */}
-      <PrecedentesSection projectId={project.id} projectNumber={project.numero_proyecto} />
+      {/* Seccion Projects similares (precedentes) */}
+      <PrecedentesSection projectId={project.id} projectNumber={project.project_number} />
         </TabsContent>
       </Tabs>
     </div>

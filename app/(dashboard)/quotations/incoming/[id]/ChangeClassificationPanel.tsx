@@ -115,7 +115,7 @@ export default function ChangeClassificationPanel({
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/consultas/${consultaId}/change-classification`)
+        const res = await fetch(`/api/incoming-requests/${consultaId}/change-classification`)
         if (!res.ok) return
         const data = await res.json()
         if (data.classification && Array.isArray(data.classification)) {
@@ -150,7 +150,7 @@ export default function ChangeClassificationPanel({
     setSaved(false)
     setError(null)
     try {
-      const res = await fetch(`/api/consultas/${consultaId}/change-classification`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/change-classification`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ classification: answers }),
@@ -178,22 +178,22 @@ export default function ChangeClassificationPanel({
     setError(null)
 
     await tick()
-    addLogEntry('Iniciando analisis de clasificacion...', 'info')
+    addLogEntry('Iniciando analisis de classification...', 'info')
     await tick()
-    addLogEntry('Cargando datos de la consulta...', 'info')
+    addLogEntry('Cargando data de la request...', 'info')
     await tick()
-    addLogEntry('Datos de consulta cargados', 'success')
+    addLogEntry('Data de request cargados', 'success')
     await tick()
 
     try {
       addLogEntry('Buscando contexto regulatorio (RAG)...', 'info')
       await tick()
-      addLogEntry('Generando embeddings de la descripcion...', 'info')
+      addLogEntry('Generando embeddings de la description...', 'info')
       await tick()
-      addLogEntry('Enviando al modelo IA (Claude Sonnet 4)...', 'info')
+      addLogEntry('Enviando al model IA (Claude Sonnet 4)...', 'info')
       await tick()
 
-      const res = await fetch(`/api/consultas/${consultaId}/change-classification/analyze`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/change-classification/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ referenceProjectId }),
@@ -206,7 +206,7 @@ export default function ChangeClassificationPanel({
       }
       const data = await res.json()
 
-      addLogEntry('Respuesta recibida del modelo IA', 'success')
+      addLogEntry('Response received del model IA', 'success')
       await tick()
 
       if (Array.isArray(data.answers)) {
@@ -218,7 +218,7 @@ export default function ChangeClassificationPanel({
         addLogEntry(`${total} preguntas evaluadas: ${yesCount} YES, ${noCount} NO, ${nullCount} sin determinar`, 'info')
         await tick()
         addLogEntry(
-          `Clasificacion: ${yesCount > 0 ? 'MAJOR' : 'MINOR'} (${yesCount} YES, ${noCount} NO)`,
+          `Classification: ${yesCount > 0 ? 'MAJOR' : 'MINOR'} (${yesCount} YES, ${noCount} NO)`,
           yesCount > 0 ? 'warning' : 'success',
         )
         await tick()
@@ -243,7 +243,7 @@ export default function ChangeClassificationPanel({
         await tick()
       }
 
-      addLogEntry('Analisis completado', 'success')
+      addLogEntry('Analisis completed', 'success')
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Error desconocido'
       addLogEntry(`Error: ${errMsg}`, 'error')
@@ -445,12 +445,12 @@ export default function ChangeClassificationPanel({
 function formatYesNoUnknown(value: string | null | undefined): { label: string; color: string } {
   if (!value) return { label: '—', color: 'text-[color:var(--ink-3)]' }
   switch (value.toLowerCase()) {
-    case 'si':
+    case 'yes':
     case 'yes':
       return { label: 'Yes / Si', color: 'text-red-600' }
     case 'no':
       return { label: 'No', color: 'text-emerald-600' }
-    case 'no_seguro':
+    case 'not_sure':
     case 'unknown':
       return { label: 'Unknown / No seguro', color: 'text-amber-600' }
     default:
@@ -506,7 +506,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
     <div className="mb-4 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/30">
       <div className="border-b border-[color:var(--ink-4)] px-3.5 py-2.5">
         <span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--ink-3)]">
-          Datos para clasificacion / Classification Data
+          Data para classification / Classification Data
         </span>
       </div>
 
@@ -656,7 +656,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
                 <span className="text-[color:var(--ink-2)]">
                   <span className="text-[color:var(--ink-2)]">PSE: </span>
                   <span className={pse.color}>{pse.label}</span>
-                  {data.affects_primary_structure.toLowerCase() === 'si' && (
+                  {data.affects_primary_structure.toLowerCase() === 'yes' && (
                     <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">
                       <AlertTriangle className="h-2.5 w-2.5" />
                       PSE
@@ -681,7 +681,7 @@ function ClassificationDataPanel({ data }: { data: ClassificationData }) {
               <span className="text-[color:var(--ink-2)]">
                 <span className="text-[color:var(--ink-2)]">Motivated by AD: </span>
                 <span className={ad.color}>{ad.label}</span>
-                {data.related_to_ad?.toLowerCase() === 'si' && (
+                {data.related_to_ad?.toLowerCase() === 'yes' && (
                   <span className="ml-1.5 inline-flex rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-600">
                     AD
                   </span>

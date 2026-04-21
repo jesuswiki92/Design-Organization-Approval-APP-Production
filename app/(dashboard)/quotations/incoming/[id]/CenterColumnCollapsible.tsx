@@ -3,23 +3,23 @@
  * SECCION DE EMAILS — Layout lado a lado (entrante izquierda, saliente derecha)
  * ============================================================================
  *
- * Componente cliente que organiza los correos de la consulta en un layout
+ * Componente client que organiza los emails de la request en un layout
  * de dos columnas:
- *   - IZQUIERDA: correos entrantes del cliente (tarjetas azules)
- *   - DERECHA: respuestas enviadas (tarjetas verdes)
+ *   - IZQUIERDA: emails entrantes del client (tarjetas azules)
+ *   - DERECHA: responses enviadas (tarjetas verdes)
  *
- * Fuente de datos (prioridad):
- *   1. Tabla doa_emails — si el array emails[] tiene elementos, se usa como
- *      fuente principal. Los emails se separan por direccion ('entrante' / 'saliente')
- *      y se muestran en orden cronologico por fecha en cada columna.
- *   2. Campos legacy de la consulta (remitente, asunto, cuerpo_original, etc.) —
+ * Fuente de data (priority):
+ *   1. Table doa_emails — si el array emails[] tiene elementos, se usa como
+ *      fuente primary. Los emails se separan por address ('inbound' / 'outbound')
+ *      y se muestran en sort_order cronologico por date en cada columna.
+ *   2. Campos legacy de la request (sender, subject, original_body, etc.) —
  *      se usan como fallback cuando el array emails[] esta vacio, para mantener
- *      compatibilidad con consultas antiguas que no tienen filas en doa_emails.
+ *      compatibilidad con requests antiguas que no tienen filas en doa_emails.
  *
  * Incluye una suscripcion Supabase Realtime para INSERTs en doa_emails
- * filtrados por consulta_id, de modo que nuevos emails aparecen automaticamente.
+ * filtrados por incoming_request_id, de modo que nuevos emails aparecen automaticamente.
  *
- * Debajo de los emails se muestra el compositor de nueva respuesta.
+ * Debajo de los emails se muestra el compositor de new response.
  * ============================================================================
  */
 
@@ -68,17 +68,17 @@ const EMAIL_ALLOWED_URI_REGEXP = /^(https?:|mailto:|tel:|cid:|#)/i
 // Tipos
 // ---------------------------------------------------------------------------
 
-/** Datos necesarios para renderizar la seccion de emails */
+/** Data necesarios para renderizar la seccion de emails */
 type CenterColumnCollapsibleProps = {
-  /** Emails de la tabla doa_emails ordenados cronologicamente por fecha */
+  /** Emails de la table doa_emails ordenados cronologicamente por date */
   emails?: DoaEmail[]
   query: {
     id: string
     codigo: string
-    asunto: string
-    remitente: string
+    subject: string
+    sender: string
     urlFormulario: string | null
-    clasificacion: string | null
+    classification: string | null
     cuerpoOriginal: string
     respuestaIa: string | null
     creadoEn: string
@@ -88,11 +88,11 @@ type CenterColumnCollapsibleProps = {
     replyBody: string | null
     replySentAt: string | null
   }
-  /** Si true, no muestra el compositor de nueva respuesta (usado cuando ya se envio) */
+  /** Si true, no muestra el compositor de new response (usado cuando ya se send) */
   hideComposer?: boolean
 }
 
-/** Direccion del email */
+/** Address del email */
 type EmailDirection = "incoming" | "outgoing"
 
 /** Un mensaje individual */
@@ -116,9 +116,9 @@ type ThreadEmail = {
 // ---------------------------------------------------------------------------
 
 function formatDateSpanish(isoDate: string | null | undefined): string {
-  if (!isoDate) return "Fecha no disponible"
+  if (!isoDate) return "Date no disponible"
   const date = new Date(isoDate)
-  if (Number.isNaN(date.getTime())) return "Fecha no disponible"
+  if (Number.isNaN(date.getTime())) return "Date no disponible"
   return new Intl.DateTimeFormat("es-ES", {
     day: "2-digit",
     month: "short",
@@ -128,7 +128,7 @@ function formatDateSpanish(isoDate: string | null | undefined): string {
   }).format(date)
 }
 
-/** Extrae texto plano de HTML para mostrar como snippet colapsado */
+/** Extrae text drawing de HTML para mostrar como snippet colapsado */
 function stripHtml(html: string): string {
   return html
     .replace(/<br\s*\/?>/gi, " ")
@@ -169,7 +169,7 @@ function EmailCard({
 }) {
   const isIncoming = email.direction === "incoming"
 
-  // Sanitizar el cuerpo HTML del email antes de renderizarlo. Los emails
+  // Sanitizar el body HTML del email antes de renderizarlo. Los emails
   // entrantes vienen de origen externo (Outlook/n8n), por lo que podrian
   // contener scripts maliciosos. DOMPurify limpia cualquier tag/atributo
   // no incluido en las listas blancas. Se memoiza por `email.body` para
@@ -203,7 +203,7 @@ function EmailCard({
             : "border-r-[3px] border-r-emerald-400 border-t-slate-200 border-l-slate-200 border-b-slate-200",
         )}
       >
-        {/* Icono de direccion */}
+        {/* Icono de address */}
         <button
           type="button"
           onClick={onToggle}
@@ -308,7 +308,7 @@ function EmailCard({
 }
 
 /**
- * Placeholder para el lado derecho cuando no hay respuesta enviada todavia.
+ * Placeholder para el lado derecho cuando no hay response sent todavia.
  */
 function EmptyResponsePlaceholder() {
   return (
@@ -316,7 +316,7 @@ function EmptyResponsePlaceholder() {
       <div className="text-center">
         <Send className="mx-auto h-5 w-5 text-[color:var(--ink-3)]" />
         <p className="mt-2 text-xs font-medium text-[color:var(--ink-2)]">
-          Sin respuesta enviada
+          Sin response sent
         </p>
         <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
           Usa el compositor de abajo para responder
@@ -327,11 +327,11 @@ function EmptyResponsePlaceholder() {
 }
 
 // ---------------------------------------------------------------------------
-// Componente principal
+// Componente primary
 // ---------------------------------------------------------------------------
 
 export function CenterColumnCollapsible({ emails: initialEmails = [], query, hideComposer = false }: CenterColumnCollapsibleProps) {
-  // --- Estado local de emails para poder actualizar via Realtime ---
+  // --- Status local de emails para poder actualizar via Realtime ---
   const [liveEmails, setLiveEmails] = useState<DoaEmail[]>(initialEmails)
 
   // Sincronizar si las props cambian (navegacion, etc.)
@@ -339,7 +339,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     setLiveEmails(initialEmails)
   }, [initialEmails])
 
-  // --- Suscripcion Realtime a INSERTs y DELETEs de emails de esta consulta ---
+  // --- Suscripcion Realtime a INSERTs y DELETEs de emails de esta request ---
   useEffect(() => {
     const supabase = createClient()
 
@@ -351,14 +351,14 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
           event: 'INSERT',
           schema: 'public',
           table: 'doa_emails',
-          filter: `consulta_id=eq.${query.id}`,
+          filter: `incoming_request_id=eq.${query.id}`,
         },
         (payload) => {
           const newEmail = payload.new as DoaEmail
           setLiveEmails((prev) => {
             if (prev.some((e) => e.id === newEmail.id)) return prev
             const updated = [...prev, newEmail]
-            updated.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+            updated.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
             return updated
           })
         },
@@ -369,7 +369,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
           event: 'DELETE',
           schema: 'public',
           table: 'doa_emails',
-          filter: `consulta_id=eq.${query.id}`,
+          filter: `incoming_request_id=eq.${query.id}`,
         },
         (payload) => {
           const deletedId = (payload.old as { id?: string }).id
@@ -402,8 +402,8 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       const { data } = await supabase
         .from('doa_emails')
         .select('*')
-        .eq('consulta_id', query.id)
-        .order('fecha', { ascending: true })
+        .eq('incoming_request_id', query.id)
+        .order('date', { ascending: true })
       if (data) setLiveEmails(data)
     }
   }
@@ -416,30 +416,30 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     if (useDoaEmails) {
       // Usar emails de doa_emails
       const inc: ThreadEmail[] = liveEmails
-        .filter((e) => e.direccion === "entrante")
+        .filter((e) => e.direction === "inbound")
         .map((e) => ({
           id: e.id,
           direction: "incoming" as EmailDirection,
-          label: "Correo entrante",
-          contactLabel: "De",
-          contactValue: e.de,
-          date: e.fecha,
-          body: e.cuerpo,
-          subject: e.asunto,
+          label: "Incoming email",
+          contactLabel: "From",
+          contactValue: e.from_email,
+          date: e.date,
+          body: e.body,
+          subject: e.subject,
           isDeletable: true,
         }))
 
       const out: ThreadEmail[] = liveEmails
-        .filter((e) => e.direccion === "saliente")
+        .filter((e) => e.direction === "outbound")
         .map((e) => ({
           id: e.id,
           direction: "outgoing" as EmailDirection,
-          label: "Respuesta enviada",
-          contactLabel: "A",
-          contactValue: e.para ?? e.de,
-          date: e.fecha,
-          body: e.cuerpo,
-          subject: e.asunto,
+          label: "Sent response",
+          contactLabel: "To",
+          contactValue: e.to_email ?? e.from_email,
+          date: e.date,
+          body: e.body,
+          subject: e.subject,
           isHtml: true,
           isDeletable: true,
         }))
@@ -451,17 +451,17 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       }
     }
 
-    // Fallback: construir desde campos legacy de la consulta
+    // Fallback: construir desde campos legacy de la request
     const legacyIncoming: ThreadEmail[] = [
       {
         id: "original",
         direction: "incoming" as EmailDirection,
-        label: "Correo entrante",
-        contactLabel: "De",
-        contactValue: query.remitente,
+        label: "Incoming email",
+        contactLabel: "From",
+        contactValue: query.sender,
         date: query.creadoEn,
         body: query.cuerpoOriginal,
-        subject: query.asunto,
+        subject: query.subject,
       },
     ]
 
@@ -470,9 +470,9 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       legacyOutgoing.push({
         id: "reply-saved",
         direction: "outgoing" as EmailDirection,
-        label: "Respuesta enviada",
-        contactLabel: "A",
-        contactValue: query.remitente,
+        label: "Sent response",
+        contactLabel: "To",
+        contactValue: query.sender,
         date: query.replySentAt,
         body: query.replyBody,
         isHtml: true,
@@ -481,9 +481,9 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       legacyOutgoing.push({
         id: "response-sent",
         direction: "outgoing" as EmailDirection,
-        label: "Respuesta enviada",
-        contactLabel: "A",
-        contactValue: query.remitente,
+        label: "Sent response",
+        contactLabel: "To",
+        contactValue: query.sender,
         date: query.correoClienteEnviadoAt,
         body: query.ultimoBorradorCliente,
         isHtml: true,
@@ -497,7 +497,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     }
   }, [useDoaEmails, liveEmails, query])
 
-  // --- Estado de apertura/cierre de cada email ---
+  // --- Status de apertura/closure de cada email ---
   const [openStates, setOpenStates] = useState<Record<string, boolean>>({})
   const [composeOpen, setComposeOpen] = useState(true)
 
@@ -529,13 +529,13 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-sky-400" />
           <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-            Correos del cliente
+            Emails del client
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-emerald-400" />
           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-500">
-            Nuestras respuestas
+            Nuestras responses
           </span>
         </div>
       </div>
@@ -544,7 +544,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
           EMAILS — GRID 2 COLUMNAS (izquierda entrantes, derecha salientes)
           ================================================================ */}
       <div className="grid grid-cols-2 gap-4 items-start">
-        {/* Columna izquierda: correos entrantes */}
+        {/* Columna izquierda: emails entrantes */}
         <div className="space-y-3">
           {entrantes.length > 0 ? (
             entrantes.map((email) => (
@@ -561,14 +561,14 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
               <div className="text-center">
                 <Inbox className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
                 <p className="mt-2 text-xs font-medium text-[color:var(--ink-3)]">
-                  Sin correos entrantes
+                  Sin emails entrantes
                 </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Columna derecha: respuestas salientes */}
+        {/* Columna derecha: responses salientes */}
         <div className="space-y-3">
           {salientes.length > 0 ? (
             salientes.map((email) => (
@@ -601,14 +601,14 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-500">
-                Nueva respuesta
+                New response
               </p>
               <p className="mt-0.5 text-sm font-semibold text-slate-950">
-                Redactar y enviar respuesta
+                Redactar y send response
               </p>
               {!composeOpen && (
                 <p className="mt-1 text-xs leading-5 text-[color:var(--ink-3)] italic">
-                  Pulsa para abrir el editor de respuesta y enviar al cliente.
+                  Pulsa para abrir el editor de response y send al client.
                 </p>
               )}
             </div>
@@ -627,10 +627,10 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
                 query={{
                   id: query.id,
                   codigo: query.codigo,
-                  asunto: query.asunto,
-                  remitente: query.remitente,
+                  subject: query.subject,
+                  sender: query.sender,
                   urlFormulario: query.urlFormulario,
-                  clasificacion: query.clasificacion,
+                  classification: query.classification,
                   cuerpoOriginal: query.cuerpoOriginal,
                   respuestaIa: query.respuestaIa,
                 }}

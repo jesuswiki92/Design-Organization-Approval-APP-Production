@@ -5,9 +5,9 @@ import { Loader2, Sparkles, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 type ReferenceProject = {
   id: string
-  numero_proyecto: string | null
-  titulo: string | null
-  aeronave: string | null
+  project_number: string | null
+  title: string | null
+  aircraft: string | null
   baseline: {
     classificationBaseline: string | null
     certificationBasisBaseline: string | null
@@ -34,9 +34,9 @@ type AnalysisResponse = {
   analysis: AnalysisResult
   model: string
   referenceProject: {
-    numero_proyecto: string
-    titulo: string
-    aeronave: string
+    project_number: string
+    title: string
+    aircraft: string
   }
 }
 
@@ -61,7 +61,7 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
     setError(null)
 
     try {
-      const response = await fetch(`/api/consultas/${consultaId}/preliminary-scope/analyze`, {
+      const response = await fetch(`/api/incoming-requests/${consultaId}/preliminary-scope/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ referenceProjectId: primaryRef.id }),
@@ -86,7 +86,7 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
   if (!primaryRef) {
     return (
       <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-[color:var(--ink-4)] text-sm text-[color:var(--ink-3)]">
-        Marca un proyecto de referencia en &quot;Proyectos similares&quot; para analizar el alcance
+        Marca un project de referencia en &quot;Projects similares&quot; para analizar el alcance
       </div>
     )
   }
@@ -98,7 +98,7 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
         <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>
-            El proyecto de referencia <strong>{primaryRef.numero_proyecto}</strong> no tiene PROJECT_SUMMARY.
+            El project de referencia <strong>{primaryRef.project_number}</strong> no tiene PROJECT_SUMMARY.
             No se puede analizar sin precedente.
           </span>
         </div>
@@ -108,16 +108,16 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
 
   return (
     <div className="space-y-4">
-      {/* Contexto: qué proyecto de referencia se usa */}
+      {/* Contexto: qué project de referencia se usa */}
       <div className="flex items-center justify-between rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3">
         <div className="text-sm">
           <span className="text-[color:var(--ink-3)]">Precedente: </span>
           <span className="rounded bg-[color:var(--paper-2)] px-1.5 py-0.5 font-mono text-xs font-medium text-[color:var(--ink-3)]">
-            {primaryRef.numero_proyecto}
+            {primaryRef.project_number}
           </span>
-          <span className="ml-1.5 text-[color:var(--ink-2)]">{primaryRef.titulo}</span>
-          {primaryRef.aeronave && (
-            <span className="ml-1.5 text-[color:var(--ink-3)]">({primaryRef.aeronave})</span>
+          <span className="ml-1.5 text-[color:var(--ink-2)]">{primaryRef.title}</span>
+          {primaryRef.aircraft && (
+            <span className="ml-1.5 text-[color:var(--ink-3)]">({primaryRef.aircraft})</span>
           )}
         </div>
 
@@ -156,7 +156,7 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
       {/* Resultado del análisis */}
       {result && (
         <div className="space-y-4 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-5">
-          {/* Clasificación + Base de certificación */}
+          {/* Classification + Base de certificación */}
           <div>
             <div className="flex items-center gap-3">
               <div className={`inline-flex items-center rounded-full px-3.5 py-1 text-sm font-bold tracking-wide ${
@@ -182,11 +182,11 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
             )}
           </div>
 
-          {/* Áreas de impacto */}
+          {/* Áreas de impact */}
           {result.analysis.impact_areas && result.analysis.impact_areas.length > 0 && (
             <div className="border-t border-[color:var(--ink-4)] pt-4">
               <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">
-                Áreas de impacto estimadas
+                Áreas de impact estimadas
               </h4>
               <div className="grid grid-cols-2 gap-2">
                 {result.analysis.impact_areas
@@ -214,10 +214,10 @@ export default function PreliminaryScopeAnalyzer({ consultaId, referenceProjects
             </div>
           )}
 
-          {/* Modelo usado */}
+          {/* Model usado */}
           <div className="border-t border-[color:var(--ink-4)] pt-3 text-right">
             <span className="text-[10px] text-[color:var(--ink-4)]">
-              Analizado con {result.model} · Basado en {result.referenceProject.numero_proyecto}
+              Analizado con {result.model} · Basado en {result.referenceProject.project_number}
             </span>
           </div>
         </div>

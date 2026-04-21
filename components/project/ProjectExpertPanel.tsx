@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ProyectoConRelaciones, ProyectoDocumento, ProyectoTarea } from '@/types/database'
+import type { ProjectWithRelations, ProjectDocument, ProjectTask } from '@/types/database'
 
 import { buildExpertAnalysis, type ExpertMode, inferDocumentCoverage } from './workspace-utils'
 
@@ -17,10 +17,10 @@ export function ProjectExpertPanel({
   mode,
   onModeChange,
 }: {
-  project: ProyectoConRelaciones
-  docs: ProyectoDocumento[]
-  tasks: ProyectoTarea[]
-  selectedDoc: ProyectoDocumento | null
+  project: ProjectWithRelations
+  docs: ProjectDocument[]
+  tasks: ProjectTask[]
+  selectedDoc: ProjectDocument | null
   mode: ExpertMode
   onModeChange: (mode: ExpertMode) => void
 }) {
@@ -33,16 +33,16 @@ export function ProjectExpertPanel({
   })
   const coverage = inferDocumentCoverage(docs)
   const includedSources = [
-    `Proyecto ${project.numero_proyecto}`,
+    `Project ${project.project_number}`,
     project.tcds_code ? `TCDS: ${project.tcds_code}` : null,
-    selectedDoc ? `Documento activo: ${selectedDoc.nombre}` : 'Resumen documental del expediente',
-    `${docs.length} documentos visibles en workspace`,
+    selectedDoc ? `Document is_active: ${selectedDoc.name}` : 'Resumen documental del expediente',
+    `${docs.length} documents visibles en workspace`,
   ].filter(Boolean) as string[]
 
   const excludedSources = [
-    'Correos del proyecto',
-    'Base de datos histórica de proyectos',
-    'Notas externas no cargadas en esta vista',
+    'Emails del project',
+    'Base de data histórica de projects',
+    'Notes externas no cargadas en esta vista',
   ]
 
   return (
@@ -57,21 +57,21 @@ export function ProjectExpertPanel({
               Experto contextual
             </div>
             <h3 className="mt-2 text-lg font-semibold text-slate-950">
-              Asistencia técnica dentro del expediente
+              Asistencia technical dentro del expediente
             </h3>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              La asistencia se mantiene discreta, declara contexto activo y prioriza respuestas accionables sobre el workspace actual.
+              La asistencia se mantiene discreta, declara contexto is_active y prioriza responses accionables sobre el workspace actual.
             </p>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <ModeButton current={mode} value="overview" onModeChange={onModeChange}>Estado</ModeButton>
+          <ModeButton current={mode} value="overview" onModeChange={onModeChange}>Status</ModeButton>
           <ModeButton current={mode} value="missing" onModeChange={onModeChange}>Faltantes</ModeButton>
           <ModeButton current={mode} value="next" onModeChange={onModeChange}>Próximo paso</ModeButton>
           <ModeButton current={mode} value="references" onModeChange={onModeChange}>Referencias</ModeButton>
           {selectedDoc && (
-            <ModeButton current={mode} value="document" onModeChange={onModeChange}>Documento</ModeButton>
+            <ModeButton current={mode} value="document" onModeChange={onModeChange}>Document</ModeButton>
           )}
         </div>
       </div>
@@ -108,7 +108,7 @@ export function ProjectExpertPanel({
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
             <Bot className="h-3.5 w-3.5" />
-            Contexto activo
+            Contexto is_active
           </div>
           <div className="mt-3 space-y-3">
             <SourceList title="Fuentes incluidas" items={includedSources} icon={<Files className="h-4 w-4" />} />

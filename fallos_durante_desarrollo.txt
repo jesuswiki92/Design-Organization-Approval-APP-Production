@@ -69,56 +69,56 @@ FALLO #003 | 2026-04-04 | RESUELTO
 --------------------------------------------------------------------------------
 DESCRIPCION:
   Los emails clasificados como "no clasificable" no aparecian en la app
-  (seccion Quotations). Al revisar la base de datos, el campo estado tenia
-  el valor 'Archivado' en vez de 'nuevo'.
+  (seccion Quotations). Al revisar la base de datos, el campo status tenia
+  el valor 'Archived' en vez de 'new'.
 
 CAUSA:
-  El workflow de n8n establecia un estado por defecto incorrecto para los
+  El workflow de n8n establecia un status por defecto incorrecto para los
   emails que no podian clasificarse automaticamente.
 
 SOLUCION:
-  Se ejecuto UPDATE en Supabase para corregir el estado:
-  UPDATE doa_consultas SET estado = 'nuevo' WHERE estado = 'Archivado'
-  AND clasificacion = 'no_clasificable';
+  Se ejecuto UPDATE en Supabase para corregir el status:
+  UPDATE doa_consultas SET status = 'new' WHERE status = 'Archived'
+  AND classification = 'no_clasificable';
 
 --------------------------------------------------------------------------------
 FALLO #004 | 2026-04-04 | RESUELTO
 --------------------------------------------------------------------------------
 DESCRIPCION:
-  El compositor de respuestas de consultas devolvia error 409 cuando se
-  intentaba responder a un email que no tenia url_formulario (emails
+  El compositor de responses de requests devolvia error 409 cuando se
+  intentaba responder a un email que no tenia form_url (emails
   sin formulario asociado).
 
 CAUSA:
-  La API route app/api/consultas/[id]/send-client/route.ts bloqueaba
-  con 409 si url_formulario era null, asumiendo que siempre habria un
+  La API route app/api/incoming-requests/[id]/send-client/route.ts bloqueaba
+  con 409 si form_url era null, asumiendo que siempre habria un
   formulario.
 
 SOLUCION:
-  1. Se elimino el check bloqueante de url_formulario
+  1. Se elimino el check bloqueante de form_url
   2. Se hizo el parametro formUrl opcional (string | null)
   3. Se añadio logica para limpiar marcadores de formulario cuando
      formUrl es null
-  4. Se devuelve warning en la respuesta cuando se envia sin formulario
+  4. Se devuelve warning en la response cuando se envia sin formulario
 
   Archivos modificados:
-    - app/api/consultas/[id]/send-client/route.ts
+    - app/api/incoming-requests/[id]/send-client/route.ts
 
 --------------------------------------------------------------------------------
 FALLO #005 | 2026-04-04 | RESUELTO
 --------------------------------------------------------------------------------
 DESCRIPCION:
-  La opcion "Archivado" no aparecia en el dropdown de estados de las
-  consultas en el tablero Kanban de Quotations.
+  La opcion "Archived" no aparecia en el dropdown de statuses de las
+  requests en el tablero Kanban de Quotations.
 
 CAUSA:
-  El archivo incoming-queries.ts filtraba explicitamente las consultas
-  con estado 'archivado' usando .filter(), impidiendo que apareciese
+  El archivo incoming-queries.ts filtraba explicitamente las requests
+  con status 'archived' usando .filter(), impidiendo que apareciese
   como opcion.
 
 SOLUCION:
   Se elimino la linea:
-  .filter((row) => row.state_code !== CONSULTA_ESTADOS.ARCHIVADO)
+  .filter((row) => row.state_code !== INCOMING_REQUEST_STATUSES.ARCHIVED)
 
   Archivos modificados:
     - app/(dashboard)/quotations/incoming-queries.ts
@@ -137,7 +137,7 @@ CAUSA:
 SOLUCION:
   Se usaron rutas de directorio generales en vez de archivos individuales:
   git add "app/" "lib/" "types/" "supabase/"
-  en lugar de especificar cada archivo con parentesis en la ruta.
+  en lugar de especificar cada archivo con parentesis en la path.
 
 --------------------------------------------------------------------------------
 FALLO #007 | 2026-04-05 | RESUELTO
@@ -150,10 +150,10 @@ DESCRIPCION:
 CAUSA:
   Dos problemas combinados:
   1. FORMATO DE EMBEDDING: PostgREST (API REST de Supabase) no acepta arrays
-     JSON nativos [0.1, 0.2, ...] para columnas de tipo vector(3072). Necesita
+     JSON nativos [0.1, 0.2, ...] para columnas de type vector(3072). Necesita
      el valor como string JSON "[0.1,0.2,...]" para que PostgreSQL lo parsee
      con su funcion de entrada de vectores. Todos los inserts fallaban con
-     error de tipo.
+     error de type.
   2. ERROR SILENCIOSO: El metodo insert_documents_batch() atrapaba la excepcion
      y devolvia {"successful": 0, "failed": 37}. El endpoint /api/ingest/save
      devolvia HTTP 200 con ese resultado. El frontend no verificaba que
@@ -178,7 +178,7 @@ FALLO #008 | 2026-04-05 | RESUELTO
 DESCRIPCION:
   Al guardar chunks, Supabase devolvia error 401 con RLS:
   "new row violates row-level security policy for table doa_tcds_embeddings"
-  Despues de corregir la key, nuevo error 401:
+  Despues de corregir la key, new error 401:
   "None of the keys was able to decode the JWT"
 
 CAUSA:
@@ -186,7 +186,7 @@ CAUSA:
   1. El backend usaba la anon key para insertar. La anon key no tiene
      permisos de INSERT por las politicas RLS de la tabla.
   2. La SUPABASE_SERVICE_ROLE_KEY en .env y .env.local era de una instancia
-     local de Supabase (iss: "supabase-local") en vez del proyecto de
+     local de Supabase (iss: "supabase-local") en vez del project de
      produccion (iss: "supabase", ref: "gterzsoapepzozgqbljk"). PostgREST
      no podia decodificar el JWT porque estaba firmado con otra clave.
 
@@ -210,7 +210,7 @@ SOLUCION:
 ================================================================================
 
   Las siguientes reglas se deben aplicar ANTES de desplegar en produccion
-  para evitar que el cliente final experimente estos mismos problemas.
+  para evitar que el client final experimente estos mismos problemas.
 
 --------------------------------------------------------------------------------
 LECCION #1: ENCODING WINDOWS (Fallo #001)
@@ -225,7 +225,7 @@ PREVENCION:
 --------------------------------------------------------------------------------
 LECCION #2: CORS Y PRIVATE NETWORK (Fallo #002)
 --------------------------------------------------------------------------------
-REGLA: Configurar CORS con TODOS los origenes posibles desde el inicio
+REGLA: Configurar CORS con TODOS los origenes posibles desde el started_at
 PREVENCION:
   - Incluir todos los puertos dev (3000, 3010, etc.) en ALLOWED_ORIGINS
   - SIEMPRE activar allow_private_network=True en CORSMiddleware
@@ -237,24 +237,24 @@ PREVENCION:
 --------------------------------------------------------------------------------
 LECCION #3: ERRORES SILENCIOSOS (Fallo #007)
 --------------------------------------------------------------------------------
-REGLA: Nunca devolver HTTP 200 si la operacion realmente fallo
+REGLA: Nunca devolver HTTP 200 si la operacion realmente failed
 PREVENCION:
   - El backend SIEMPRE debe devolver el codigo HTTP correcto (500 si falla)
-  - El frontend SIEMPRE debe verificar el contenido de la respuesta, no solo
+  - El frontend SIEMPRE debe verificar el contenido de la response, no solo
     el status code
-  - Incluir contadores en las respuestas: {"successful": N, "failed": M}
+  - Incluir contadores en las responses: {"successful": N, "failed": M}
   - El frontend debe comprobar successful > 0 antes de mostrar exito
-  - Regla de oro: si el usuario ve "guardado", los datos DEBEN estar en la DB
+  - Regla de oro: si el user_label ve "guardado", los datos DEBEN estar en la DB
 
 --------------------------------------------------------------------------------
 LECCION #4: CREDENCIALES Y JWT (Fallo #008)
 --------------------------------------------------------------------------------
 REGLA: Verificar credenciales contra el entorno correcto antes de usar
 PREVENCION:
-  - La SUPABASE_SERVICE_ROLE_KEY debe ser del proyecto de PRODUCCION
+  - La SUPABASE_SERVICE_ROLE_KEY debe ser del project de PRODUCCION
   - Nunca copiar keys de instancias locales de Supabase a produccion
   - Verificar el JWT decodificando: debe tener iss="supabase" y el ref
-    correcto del proyecto
+    correcto del project
   - Para operaciones de escritura (INSERT/UPDATE/DELETE), usar
     service_role key, nunca anon key
   - Documentar en .env.example cual es cada key y de donde sacarla
@@ -274,11 +274,11 @@ PREVENCION:
 --------------------------------------------------------------------------------
 LECCION #6: REINICIO DEL BACKEND (Fallos #001, #002, #008)
 --------------------------------------------------------------------------------
-REGLA: Despues de CUALQUIER cambio en el backend, REINICIAR el proceso
+REGLA: Despues de CUALQUIER cambio en el backend, REINICIAR el process
 PREVENCION:
   - El backend Python (uvicorn) NO recarga .env automaticamente
   - Despues de cambiar .env, settings.py o cualquier .py: REINICIAR
-  - Verificar que el proceso viejo esta muerto antes de iniciar uno nuevo
+  - Verificar que el process viejo esta muerto antes de iniciar uno new
     (netstat -ano | grep PUERTO)
   - Nunca asumir que "ya esta aplicado" sin verificar
 
@@ -291,7 +291,7 @@ CHECKLIST PRE-PRODUCCION
   [ ] Sin emojis en logs de Python
   [ ] Encoding UTF-8 forzado en entry point
   [ ] Backend devuelve HTTP 500 cuando operaciones fallan
-  [ ] Frontend verifica datos de respuesta, no solo status code
+  [ ] Frontend verifica datos de response, no solo status code
   [ ] service_role key para escrituras en Supabase
   [ ] Testear INSERT de 1 registro antes de batch
   [ ] Testear CORS con curl antes de integrar

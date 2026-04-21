@@ -4,32 +4,32 @@
 
 ### Requirement: Incoming requests appear as board cards
 
-The system MUST render each row from `doa_consultas_entrantes` as a card in the `entrada_recibida` lane of `/quotations`.
+The system MUST render each row from `doa_incoming_requests` as a card in the `request_received` lane of `/quotations`.
 
 #### Scenario: Board loads incoming requests
 
-- GIVEN there are one or more rows in `doa_consultas_entrantes`
+- GIVEN there are one or more rows in `doa_incoming_requests`
 - WHEN the `/quotations` board loads
-- THEN each row appears as a card in `entrada_recibida`
+- THEN each row appears as a card in `request_received`
 - AND each card identifies the request unambiguously
 
 #### Scenario: No incoming requests exist
 
-- GIVEN `doa_consultas_entrantes` returns no rows
+- GIVEN `doa_incoming_requests` returns no rows
 - WHEN the `/quotations` board loads
-- THEN `entrada_recibida` renders without cards
+- THEN `request_received` renders without cards
 - AND the page remains usable
 
 ### Requirement: Cards preserve backend state metadata
 
-The system MUST preserve the real backend `estado` on each incoming-request card as visible metadata, even when the card is displayed in `entrada_recibida`.
+The system MUST preserve the real backend `status` on each incoming-request card as visible metadata, even when the card is displayed in `request_received`.
 
 #### Scenario: State differs from visual lane
 
-- GIVEN a consultation has a backend `estado` other than the first board state
+- GIVEN a consultation has a backend `status` other than the first board state
 - WHEN the board renders the card
-- THEN the card still appears in `entrada_recibida`
-- AND the card shows the real backend `estado` as metadata
+- THEN the card still appears in `request_received`
+- AND the card shows the real backend `status` as metadata
 
 ### Requirement: Incoming cards open the incoming detail route
 

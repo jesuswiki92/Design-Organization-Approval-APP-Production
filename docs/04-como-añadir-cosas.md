@@ -1,31 +1,31 @@
 # Cómo Añadir Cosas a la Aplicación
 
-Este documento es una guía paso a paso para las modificaciones más comunes. Está pensado para que una IA (o una persona) sepa exactamente qué archivos tocar y en qué orden.
+Este document es una guía paso a paso para las modificaciones más comunes. Está pensado para que una IA (o una persona) sepa exactamente qué archivos tocar y en qué sort_order.
 
 ---
 
-## Añadir una nueva página
+## Añadir una new page
 
-1. **Crear la carpeta** en `app/(dashboard)/tu-nueva-pagina/`
-2. **Crear `page.tsx`** — este es el componente del servidor (carga datos)
-3. **Crear `TuPaginaClient.tsx`** — este es el componente del cliente (interfaz interactiva)
+1. **Crear la folder** en `app/(dashboard)/tu-new-page/`
+2. **Crear `page.tsx`** — este es el componente del servidor (carga data)
+3. **Crear `TuPaginaClient.tsx`** — este es el componente del client (interfaz interactiva)
 4. **Añadir el enlace** en `components/layout/Sidebar.tsx`
-5. **Protección**: La página ya está protegida por `proxy.ts` automáticamente si está dentro de `(dashboard)/`
+5. **Protección**: La page ya está protegida por `proxy.ts` automáticamente si está dentro de `(dashboard)/`
 
 ### Plantilla básica de page.tsx (servidor)
 ```tsx
-// ⏸️ BASE DE DATOS DESCONECTADA - ver docs/02-bases-de-datos.md para reconectar
+// ⏸️ BASE DE DATOS DESCONECTADA - ver docs/02-bases-de-data.md para reconectar
 import TopBar from '@/components/layout/TopBar'
 import TuPaginaClient from './TuPaginaClient'
 
 export default async function TuPaginaPage() {
-  // Cuando se reconecte la base de datos, las queries irán aquí
-  const datos: TuTipo[] = []
+  // Cuando se reconecte la base de data, las queries irán aquí
+  const data: TuTipo[] = []
 
   return (
     <>
-      <TopBar title="Tu Página" subtitle="Descripción breve" />
-      <TuPaginaClient datos={datos} />
+      <TopBar title="Tu Page" subtitle="Description breve" />
+      <TuPaginaClient data={data} />
     </>
   )
 }
@@ -36,10 +36,10 @@ export default async function TuPaginaPage() {
 'use client'
 
 interface Props {
-  datos: TuTipo[]
+  data: TuTipo[]
 }
 
-export default function TuPaginaClient({ datos }: Props) {
+export default function TuPaginaClient({ data }: Props) {
   return (
     <div className="p-6">
       <h2 className="text-lg font-semibold text-zinc-100">Tu contenido aquí</h2>
@@ -50,38 +50,38 @@ export default function TuPaginaClient({ datos }: Props) {
 
 ---
 
-## Añadir un nuevo estado a un flujo
+## Añadir un new status a un flujo
 
 1. **Abrir `lib/workflow-states.ts`**
-2. Añadir el estado al objeto correspondiente (ej: `CONSULTA_ESTADOS`)
+2. Añadir el status al objeto correspondiente (ej: `INCOMING_REQUEST_STATUSES`)
 3. Añadir su configuración visual en el `_STATE_CONFIG` correspondiente
-4. Definir las transiciones (desde qué estados se puede llegar, a qué estados puede ir)
+4. Definir las transiciones (desde qué statuses se puede llegar, a qué statuses puede ir)
 5. Si necesitas lógica especial, actualizar el archivo de queries correspondiente
 
-### Si solo quieres cambiar el nombre visible, color u orden
+### Si solo quieres cambiar el name visible, color u sort_order
 
-No cambies el valor técnico del estado.
+No cambies el valor technical del status.
 
 - ✅ Sí: editar `label`, `short_label`, `description`, `color_token`, `sort_order`
-- ❌ No: renombrar `state_code` como `nuevo`, `esperando_formulario`, `formulario_recibido`, etc.
+- ❌ No: renombrar `state_code` como `new`, `awaiting_form`, `form_received`, etc.
 
 La configuración visual se resuelve ahora así:
 
 - **Defaults en código**: `lib/workflow-states.ts`
-- **Overrides persistidos**: `public.doa_workflow_state_config` cuando la tabla existe en Supabase
+- **Overrides persistidos**: `public.doa_workflow_state_config` cuando la table existe en Supabase
 - **Resolvedor común**: `lib/workflow-state-config.ts`
 - **API segura de guardado**: `app/api/workflow/state-config/route.ts`
 
 Regla clave: el workflow y Supabase siguen trabajando con el `state_code`; la app muestra el `label`.
 
-Si la tabla `public.doa_workflow_state_config` no existe todavia, la capa de configuracion vuelve a defaults en codigo.
+Si la table `public.doa_workflow_state_config` no existe todavia, la capa de configuracion vuelve a defaults en codigo.
 
 ---
 
-## Reconectar una base de datos
+## Reconectar una base de data
 
-1. **Consultar `docs/02-bases-de-datos.md`** para ver qué tabla necesitas
-2. **Abrir el `page.tsx`** de la página que la necesita
+1. **Consultar `docs/02-bases-de-data.md`** para ver qué table necesitas
+2. **Abrir el `page.tsx`** de la page que la necesita
 3. **Descomentar o añadir** la query de Supabase:
 ```tsx
 import { createClient } from '@/lib/supabase/server'
@@ -92,16 +92,16 @@ const { data, error } = await supabase
   .select('*')
   .order('created_at', { ascending: false })
 
-if (error) console.error('Error cargando datos:', error)
-const datos = data ?? []
+if (error) console.error('Error cargando data:', error)
+const data = data ?? []
 ```
-4. **Actualizar el estado** en `docs/02-bases-de-datos.md` de ⏸️ a ✅
+4. **Actualizar el status** en `docs/02-bases-de-data.md` de ⏸️ a ✅
 
 ---
 
-## Añadir una nueva API (ruta del servidor)
+## Añadir una new API (path del servidor)
 
-1. **Crear carpeta** en `app/api/tu-ruta/`
+1. **Crear folder** en `app/api/tu-path/`
 2. **Crear `route.ts`** con el handler:
 ```tsx
 import { NextRequest, NextResponse } from 'next/server'
@@ -129,26 +129,26 @@ export async function POST(request: NextRequest) {
 
 1. **Definir la URL** como variable de entorno en `.env.local`:
    ```
-   TU_WEBHOOK_URL=https://tu-instancia-n8n.com/webhook/nombre
+   TU_WEBHOOK_URL=https://tu-instancia-n8n.com/webhook/name
    ```
-2. **Crear la API route** siguiendo la plantilla de arriba
+2. **Crear la API route** siguiendo la template de arriba
 3. **Llamar al webhook** desde la API:
 ```tsx
 const response = await fetch(process.env.TU_WEBHOOK_URL!, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ /* datos */ }),
+  body: JSON.stringify({ /* data */ }),
 })
 ```
-4. **Documentar** en `docs/02-bases-de-datos.md` sección "Servicios externos"
+4. **Documentar** en `docs/02-bases-de-data.md` sección "Servicios externos"
 
-> Ejemplo actual del proyecto: `DOA_SEND_CLIENT_WEBHOOK_URL` para `app/api/consultas/[id]/send-client/route.ts`
+> Ejemplo actual del project: `DOA_SEND_CLIENT_WEBHOOK_URL` para `app/api/incoming-requests/[id]/send-client/route.ts`
 
 ---
 
-## Añadir un nuevo componente shadcn/ui
+## Añadir un new componente shadcn/ui
 
 ```bash
-npx shadcn@latest add nombre-componente
+npx shadcn@latest add name-componente
 ```
 Esto creará el componente en `components/ui/`. Luego importar donde se necesite.

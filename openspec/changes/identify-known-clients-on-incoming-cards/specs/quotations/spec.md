@@ -8,31 +8,31 @@ Incoming quotation cards must show whether the sender is a known client or an un
 
 ### Requirement: Resolve known sender identity by exact email match
 
-The system MUST resolve an incoming card as a known client only when the sender email matches `doa_clientes_contactos.email` after `trim().toLowerCase()` normalization.
+The system MUST resolve an incoming card as a known client only when the sender email matches `doa_client_contacts.email` after `trim().toLowerCase()` normalization.
 When a match exists, the card MUST display the company name, the contact name, and the contact email.
 
 #### Scenario: Sender matches an existing contact
 
-- GIVEN an incoming request whose sender email normalizes to an existing `doa_clientes_contactos.email`
+- GIVEN an incoming request whose sender email normalizes to an existing `doa_client_contacts.email`
 - WHEN the Quotations board renders the card
 - THEN the card MUST show the company name, contact name, and contact email
 
 #### Scenario: Sender email does not match any known contact
 
-- GIVEN an incoming request whose sender email does not match any normalized `doa_clientes_contactos.email`
+- GIVEN an incoming request whose sender email does not match any normalized `doa_client_contacts.email`
 - WHEN the Quotations board renders the card
 - THEN the card MUST not be marked as a known client
 
 ### Requirement: Render unknown senders explicitly
 
-The system MUST render unknown incoming senders with the label `cliente desconocido`.
+The system MUST render unknown incoming senders with the label `client desconocido`.
 Unknown sender cards MUST remain usable in the Quotations board and MUST still follow the existing quotation workflow behavior.
 
 #### Scenario: Unknown sender is rendered
 
-- GIVEN an incoming request whose sender email has no exact match in `doa_clientes_contactos`
+- GIVEN an incoming request whose sender email has no exact match in `doa_client_contacts`
 - WHEN the card is rendered in the board
-- THEN the card MUST show `cliente desconocido`
+- THEN the card MUST show `client desconocido`
 
 #### Scenario: Unknown sender keeps quotation behavior
 

@@ -1,9 +1,9 @@
 /**
- * Cola de proyectos pendientes de validacion (Sprint 2). Server component.
+ * Cola de projects pendientes de validation (Sprint 2). Server component.
  *
- * Lista `doa_proyectos` con `estado_v2 = 'en_validacion'`. Para cada proyecto
- * cuenta deliverables totales y bloqueantes (estado distinto de completado/
- * no_aplica) y calcula tiempo en cola a partir de `estado_updated_at`.
+ * Lista `doa_projects` con `execution_status = 'in_validation'`. Para cada project
+ * cuenta deliverables totales y bloqueantes (status distinto de completed/
+ * not_applicable) y calcula tiempo en cola a partir de `status_updated_at`.
  */
 import { TopBar } from '@/components/layout/TopBar'
 import { createClient } from '@/lib/supabase/server'
@@ -18,39 +18,39 @@ export const dynamic = 'force-dynamic'
 
 type ProyectoRow = {
   id: string
-  numero_proyecto: string
-  titulo: string
-  cliente_nombre: string | null
-  estado_updated_at: string | null
+  project_number: string
+  title: string
+  client_name: string | null
+  status_updated_at: string | null
 }
 
 type DeliverableRow = {
-  proyecto_id: string
-  estado: string
+  project_id: string
+  status: string
 }
 
 export default async function ValidationsQueuePage() {
   const supabase = await createClient()
 
   const { data: proyectosData, error: proyectosError } = await supabase
-    .from('doa_proyectos')
-    .select('id, numero_proyecto, titulo, cliente_nombre, estado_updated_at')
-    .eq('estado_v2', PROJECT_EXECUTION_STATES.EN_VALIDACION)
-    .order('estado_updated_at', { ascending: true })
+    .from('doa_projects')
+    .select('id, project_number, title, client_name, status_updated_at')
+    .eq('execution_status', PROJECT_EXECUTION_STATES.IN_VALIDATION)
+    .order('status_updated_at', { ascending: true })
 
   if (proyectosError) {
-    console.error('ValidationsQueue: error leyendo doa_proyectos:', proyectosError)
+    console.error('ValidationsQueue: error leyendo doa_projects:', proyectosError)
   }
 
-  const proyectos = (proyectosData ?? []) as ProyectoRow[]
-  const ids = proyectos.map((p) => p.id)
+  const projects = (proyectosData ?? []) as ProyectoRow[]
+  const ids = projects.map((p) => p.id)
 
   let deliverables: DeliverableRow[] = []
   if (ids.length > 0) {
     const { data, error } = await supabase
       .from('doa_project_deliverables')
-      .select('proyecto_id, estado')
-      .in('proyecto_id', ids)
+      .select('project_id, status')
+      .in('project_id', ids)
 
     if (error) {
       console.error('ValidationsQueue: error leyendo deliverables:', error)
@@ -61,22 +61,22 @@ export default async function ValidationsQueuePage() {
 
   const countsByProyecto = new Map<string, { total: number; completed: number }>()
   for (const d of deliverables) {
-    const prev = countsByProyecto.get(d.proyecto_id) ?? { total: 0, completed: 0 }
+    const prev = countsByProyecto.get(d.project_id) ?? { total: 0, completed: 0 }
     prev.total += 1
-    if (DELIVERABLE_VALIDATION_READY_STATES.includes(d.estado)) {
+    if (DELIVERABLE_VALIDATION_READY_STATES.includes(d.status)) {
       prev.completed += 1
     }
-    countsByProyecto.set(d.proyecto_id, prev)
+    countsByProyecto.set(d.project_id, prev)
   }
 
-  const items: ValidationQueueItem[] = proyectos.map((p) => {
+  const items: ValidationQueueItem[] = projects.map((p) => {
     const counts = countsByProyecto.get(p.id) ?? { total: 0, completed: 0 }
     return {
       id: p.id,
-      numero_proyecto: p.numero_proyecto,
-      titulo: p.titulo,
-      cliente_nombre: p.cliente_nombre,
-      received_at: p.estado_updated_at,
+      project_number: p.project_number,
+      title: p.title,
+      client_name: p.client_name,
+      received_at: p.status_updated_at,
       deliverables_total: counts.total,
       deliverables_completed: counts.completed,
     }
@@ -86,7 +86,7 @@ export default async function ValidationsQueuePage() {
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar
         title="Validaciones"
-        subtitle="Proyectos pendientes de validacion DOH/DOS"
+        subtitle="Projects pendientes de validation DOH/DOS"
       />
       <ValidationsClient items={items} />
     </div>

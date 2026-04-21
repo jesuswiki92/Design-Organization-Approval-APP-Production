@@ -5,7 +5,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ProyectoDocumento } from '@/types/database'
+import type { ProjectDocument } from '@/types/database'
 
 import { getDocumentStatusMeta } from './workspace-utils'
 
@@ -17,12 +17,12 @@ export function ProjectDocumentsTable({
   onSelectDoc,
   onAskExpert,
 }: {
-  docs: ProyectoDocumento[]
+  docs: ProjectDocument[]
   selectedDocId: string | null
   density: 'compact' | 'detailed'
   onDensityChange: (mode: 'compact' | 'detailed') => void
-  onSelectDoc: (doc: ProyectoDocumento) => void
-  onAskExpert: (doc: ProyectoDocumento) => void
+  onSelectDoc: (doc: ProjectDocument) => void
+  onAskExpert: (doc: ProjectDocument) => void
 }) {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -31,10 +31,10 @@ export function ProjectDocumentsTable({
     return docs.filter((doc) => {
       const matchesQuery =
         query.trim() === '' ||
-        `${doc.nombre} ${doc.tipo_documento} ${doc.version}`
+        `${doc.name} ${doc.document_type} ${doc.version}`
           .toLowerCase()
           .includes(query.toLowerCase())
-      const matchesStatus = statusFilter === 'all' || doc.estado === statusFilter
+      const matchesStatus = statusFilter === 'all' || doc.status === statusFilter
       return matchesQuery && matchesStatus
     })
   }, [docs, query, statusFilter])
@@ -48,11 +48,11 @@ export function ProjectDocumentsTable({
               Paquete documental
             </div>
             <h2 className="mt-2 text-xl font-semibold text-slate-950">
-              MDL digital refinada para revisión operativa
+              MDL digital refinada para review operativa
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-              La tabla mantiene tono documental formal, pero permite lanzar acciones discretas,
-              revisar estado y activar contexto para el experto sin salir del expediente.
+              La table mantiene tono documental formal, pero permite lanzar acciones discretas,
+              revisar status y activar contexto para el experto sin salir del expediente.
             </p>
           </div>
 
@@ -89,7 +89,7 @@ export function ProjectDocumentsTable({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar por documento, tipo o revisión..."
+                placeholder="Buscar por document, type o review..."
                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 placeholder:text-slate-400 focus:border-sky-300 focus:outline-none"
               />
             </label>
@@ -100,17 +100,17 @@ export function ProjectDocumentsTable({
                 onChange={(event) => setStatusFilter(event.target.value)}
                 className="h-10 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-950 focus:border-sky-300 focus:outline-none"
               >
-                <option value="all">Todos los estados</option>
-                <option value="aprobado">Vigente</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="en_revision">En revisión</option>
-                <option value="en_redaccion">En redacción</option>
+                <option value="all">Todos los statuses</option>
+                <option value="approved">Vigente</option>
+                <option value="pending">Pending</option>
+                <option value="in_review">En review</option>
+                <option value="drafting">En redacción</option>
               </select>
             </label>
           </div>
 
           <div className="text-sm text-slate-500">
-            {filteredDocs.length} documentos visibles · {docs.length} total en expediente
+            {filteredDocs.length} documents visibles · {docs.length} total en expediente
           </div>
         </div>
       </div>
@@ -119,7 +119,7 @@ export function ProjectDocumentsTable({
         <table className="min-w-full">
           <thead className="bg-slate-50">
             <tr className="border-b border-slate-200">
-              {['Documento', 'Tipo / paquete', 'Revisión', 'Estado', 'Control', 'Acciones'].map(
+              {['Document', 'Tipo / paquete', 'Review', 'Status', 'Control', 'Acciones'].map(
                 (heading) => (
                   <th
                     key={heading}
@@ -135,12 +135,12 @@ export function ProjectDocumentsTable({
             {filteredDocs.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-500">
-                  No hay documentos que coincidan con los filtros actuales.
+                  No hay documents que coincidan con los filtros actuales.
                 </td>
               </tr>
             ) : (
               filteredDocs.map((doc) => {
-                const status = getDocumentStatusMeta(doc.estado)
+                const status = getDocumentStatusMeta(doc.status)
                 const isSelected = selectedDocId === doc.id
 
                 return (
@@ -163,11 +163,11 @@ export function ProjectDocumentsTable({
                           </div>
                           <div className="min-w-0">
                             <div className="truncate text-sm font-medium text-slate-950">
-                              {doc.nombre}
+                              {doc.name}
                             </div>
                             {density === 'detailed' && (
                               <div className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
-                                Documento asociado al paquete {doc.tipo_documento}. Desde aquí se
+                                Document asociado al paquete {doc.document_type}. Desde aquí se
                                 puede lanzar análisis contextual sin abandonar el workspace.
                               </div>
                             )}
@@ -176,16 +176,16 @@ export function ProjectDocumentsTable({
                       </button>
                     </td>
                     <td className="px-4 py-3 align-top text-sm text-slate-700">
-                      <div>{doc.tipo_documento}</div>
+                      <div>{doc.document_type}</div>
                       {density === 'detailed' && (
                         <div className="mt-1 text-xs text-slate-400">Estructura DOA / expediente</div>
                       )}
                     </td>
                     <td className="px-4 py-3 align-top">
                       <div className="font-mono text-sm text-slate-950">{doc.version}</div>
-                      {doc.fecha_ultima_revision && (
+                      {doc.last_review_date && (
                         <div className="mt-1 text-xs text-slate-400">
-                          Rev. {doc.fecha_ultima_revision}
+                          Rev. {doc.last_review_date}
                         </div>
                       )}
                     </td>
@@ -201,9 +201,9 @@ export function ProjectDocumentsTable({
                       </span>
                     </td>
                     <td className="px-4 py-3 align-top text-sm text-slate-500">
-                      <div>{doc.fecha_ultima_revision ?? 'Sin fecha'}</div>
+                      <div>{doc.last_review_date ?? 'Sin date'}</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        {doc.notas ? 'Con notas asociadas' : 'Sin notas registradas'}
+                        {doc.notes ? 'Con notes asociadas' : 'Sin notes registradas'}
                       </div>
                     </td>
                     <td className="px-4 py-3 align-top">
@@ -219,7 +219,7 @@ export function ProjectDocumentsTable({
                           onClick={() => onAskExpert(doc)}
                         />
                         <ActionIcon
-                          label={doc.url ? 'Abrir documento' : 'Sin URL disponible'}
+                          label={doc.url ? 'Abrir document' : 'Sin URL disponible'}
                           icon={<ExternalLink className="h-4 w-4" />}
                           onClick={() => {
                             if (doc.url) window.open(doc.url, '_blank', 'noopener,noreferrer')

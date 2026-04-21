@@ -2,24 +2,24 @@
 
 /**
  * ============================================================================
- * BANNER DE ESTADO DE TCDS — Vista enriquecida con datos tecnicos de aeronave
+ * BANNER DE ESTADO DE TCDS — Vista enriquecida con data tecnicos de aircraft
  * ============================================================================
  *
- * Componente cliente que muestra el estado de verificacion de un TCDS
- * contra la base de datos interna de aeronaves (doa_aeronaves).
+ * Componente client que muestra el status de verificacion de un TCDS
+ * contra la base de data internal de aircraft (doa_aircraft).
  *
  * Tres modos de visualizacion cuando hay variantes:
- * - VARIANTE EXACTA: Si aircraftModel coincide con un modelo, muestra solo
- *   esa variante en formato tarjeta limpia, con tabla colapsable del resto.
+ * - VARIANTE EXACTA: Si aircraftModel coincide con un model, muestra solo
+ *   esa variante en formato tarjeta limpia, con table colapsable del resto.
  * - SIN COINCIDENCIA: Si aircraftModel no coincide con ninguna, muestra
  *   todas las variantes con un aviso.
  * - SIN MODELO: Si no se proporciona aircraftModel, muestra todas como antes.
  *
- * Estado cuando no hay variantes:
+ * Status cuando no hay variantes:
  * - NO ENCONTRADO (ambar): Banner de advertencia con el codigo buscado y un
  *   boton placeholder para futura funcionalidad de ingesta de TCDS.
  *
- * Este componente es necesario como componente cliente porque contiene
+ * Este componente es necesario como componente client porque contiene
  * interactividad (collapsible, boton con onClick).
  * ============================================================================
  */
@@ -28,27 +28,27 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, CheckCircle2, ChevronDown, Plane } from 'lucide-react'
 
-/** Tipo para cada variante de aeronave encontrada en doa_aeronaves */
+/** Tipo para cada variante de aircraft encontrada en doa_aircraft */
 interface AeronaveVariant {
   tcds_code: string
   tcds_code_short: string
   tcds_issue: string
   tcds_date: string
-  fabricante: string
-  pais: string
-  tipo: string
-  modelo: string
-  motor: string
+  manufacturer: string
+  country: string
+  type: string
+  model: string
+  engine: string
   mtow_kg: number | null
   mlw_kg: number | null
-  regulacion_base: string
-  categoria: string
-  msn_elegibles: string
-  notas: string
+  base_regulation: string
+  category: string
+  eligible_msns: string
+  notes: string
 }
 
 interface TcdsStatusBannerProps {
-  /** Si se encontraron variantes en doa_aeronaves */
+  /** Si se encontraron variantes en doa_aircraft */
   found: boolean
   /** El numero de TCDS que se busco */
   tcdsNumber: string | null
@@ -56,14 +56,14 @@ interface TcdsStatusBannerProps {
   tcdsPdfUrl?: string | null
   /** Todas las variantes encontradas bajo el mismo TCDS */
   variants: AeronaveVariant[]
-  /** Si se uso la busqueda de fallback (por modelo/fabricante en vez de TCDS) */
+  /** Si se uso la search de fallback (por model/manufacturer en vez de TCDS) */
   fallbackUsed?: boolean
-  /** Modelo de aeronave de la consulta para filtrar variantes (ej: "PC-12/45") */
+  /** Model de aircraft de la request para filtrar variantes (ej: "PC-12/45") */
   aircraftModel?: string | null
 }
 
 /**
- * Tabla reutilizable que muestra todas las variantes en formato tabla
+ * Table reutilizable que muestra todas las variantes en formato table
  */
 function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
   return (
@@ -71,7 +71,7 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
       <table className="w-full text-left text-xs">
         <thead>
           <tr className="border-b border-[color:var(--ink-4)] text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-            <th className="pb-1.5 pr-3">Modelo</th>
+            <th className="pb-1.5 pr-3">Model</th>
             <th className="pb-1.5 pr-3">Motor</th>
             <th className="pb-1.5 pr-3 text-right">MTOW (kg)</th>
             <th className="pb-1.5 pr-3 text-right">MLW (kg)</th>
@@ -82,12 +82,12 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
         </thead>
         <tbody className="divide-y divide-[color:var(--ink-4)]">
           {variants.map((v, idx) => (
-            <tr key={`${v.modelo}-${idx}`} className="hover:bg-[color:var(--paper-3)]">
+            <tr key={`${v.model}-${idx}`} className="hover:bg-[color:var(--paper-3)]">
               <td className="py-1.5 pr-3 font-medium text-[color:var(--ink)]">
-                {v.modelo || '—'}
+                {v.model || '—'}
               </td>
               <td className="py-1.5 pr-3 text-[color:var(--ink-2)]">
-                {v.motor || '—'}
+                {v.engine || '—'}
               </td>
               <td className="py-1.5 pr-3 text-right font-mono text-[color:var(--ink-2)]">
                 {v.mtow_kg != null ? v.mtow_kg.toLocaleString() : '—'}
@@ -96,19 +96,19 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
                 {v.mlw_kg != null ? v.mlw_kg.toLocaleString() : '—'}
               </td>
               <td className="py-1.5 pr-3">
-                {v.regulacion_base ? (
+                {v.base_regulation ? (
                   <span className="inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                    {v.regulacion_base}
+                    {v.base_regulation}
                   </span>
                 ) : (
                   <span className="text-[color:var(--ink-3)]">—</span>
                 )}
               </td>
               <td className="py-1.5 pr-3 text-[color:var(--ink-2)]">
-                {v.categoria || '—'}
+                {v.category || '—'}
               </td>
-              <td className="max-w-[140px] truncate py-1.5 text-[color:var(--ink-3)]" title={v.msn_elegibles || ''}>
-                {v.msn_elegibles || '—'}
+              <td className="max-w-[140px] truncate py-1.5 text-[color:var(--ink-3)]" title={v.eligible_msns || ''}>
+                {v.eligible_msns || '—'}
               </td>
             </tr>
           ))}
@@ -119,7 +119,7 @@ function VariantsTable({ variants }: { variants: AeronaveVariant[] }) {
 }
 
 /**
- * Tarjeta limpia que muestra los datos de una variante identificada
+ * Tarjeta limpia que muestra los data de una variante identificada
  */
 function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
   return (
@@ -127,7 +127,7 @@ function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
       {/* Motor */}
       <div className="flex items-baseline gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">Motor</span>
-        <span className="text-sm font-medium text-[color:var(--ink)]">{variant.motor || '—'}</span>
+        <span className="text-sm font-medium text-[color:var(--ink)]">{variant.engine || '—'}</span>
       </div>
 
       {/* MTOW y MLW en la misma fila */}
@@ -150,9 +150,9 @@ function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
       {/* Regulacion base — resaltada en ambar porque es critica */}
       <div className="flex items-baseline gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">Regulacion Base</span>
-        {variant.regulacion_base ? (
+        {variant.base_regulation ? (
           <span className="inline-flex rounded border border-amber-200 bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-900">
-            {variant.regulacion_base}
+            {variant.base_regulation}
           </span>
         ) : (
           <span className="text-sm text-[color:var(--ink-3)]">—</span>
@@ -162,13 +162,13 @@ function MatchedVariantCard({ variant }: { variant: AeronaveVariant }) {
       {/* Categoria */}
       <div className="flex items-baseline gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">Categoria</span>
-        <span className="text-sm font-medium text-[color:var(--ink-2)]">{variant.categoria || '—'}</span>
+        <span className="text-sm font-medium text-[color:var(--ink-2)]">{variant.category || '—'}</span>
       </div>
 
       {/* MSN Elegibles */}
       <div className="flex items-baseline gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-2)]">MSN Elegibles</span>
-        <span className="text-sm text-[color:var(--ink-3)]">{variant.msn_elegibles || '—'}</span>
+        <span className="text-sm text-[color:var(--ink-3)]">{variant.eligible_msns || '—'}</span>
       </div>
     </div>
   )
@@ -184,20 +184,20 @@ export function TcdsStatusBanner({
 }: TcdsStatusBannerProps) {
   // Router para navegacion programatica
   const router = useRouter()
-  // Estado para controlar la expansion de la tabla completa de variantes
+  // Status para controlar la expansion de la table completa de variantes
   const [allVariantsExpanded, setAllVariantsExpanded] = useState(false)
-  // Estado para el modo sin coincidencia exacta (mostrar todas expandidas por defecto)
+  // Status para el modo sin coincidencia exacta (mostrar todas expandidas por defecto)
   const [noMatchExpanded, setNoMatchExpanded] = useState(true)
 
-  // --- CASO 1: Variantes encontradas en la base de datos ---
+  // --- CASO 1: Variantes encontradas en la base de data ---
   if (found && variants.length > 0) {
-    // Se toman los datos del primer registro para la cabecera (el TCDS es comun a todas)
+    // Se toman los data del primer registro para la cabecera (el TCDS es comun a todas)
     const first = variants[0]
 
-    // Intentar encontrar la variante que coincide con el modelo de la consulta
+    // Intentar encontrar la variante que coincide con el model de la request
     const matchedVariant = aircraftModel
       ? variants.find(
-          (v) => v.modelo.toLowerCase() === aircraftModel.toLowerCase()
+          (v) => v.model.toLowerCase() === aircraftModel.toLowerCase()
         )
       : null
 
@@ -207,7 +207,7 @@ export function TcdsStatusBanner({
 
     return (
       <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_8px_18px_rgba(74,60,36,0.08)]">
-        {/* === CABECERA: Badge de verificado + codigo TCDS + issue/fecha === */}
+        {/* === CABECERA: Badge de verificado + codigo TCDS + issue/date === */}
         <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
 
@@ -228,7 +228,7 @@ export function TcdsStatusBanner({
             </span>
           )}
 
-          {/* Issue y fecha del TCDS */}
+          {/* Issue y date del TCDS */}
           {(first.tcds_issue || first.tcds_date) && (
             <span className="text-xs text-emerald-600">
               {first.tcds_issue ? `Issue ${first.tcds_issue}` : ''}
@@ -237,23 +237,23 @@ export function TcdsStatusBanner({
             </span>
           )}
 
-          {/* Fabricante y pais */}
-          {first.fabricante && (
+          {/* Manufacturer y country */}
+          {first.manufacturer && (
             <span className="ml-auto flex items-center gap-1 text-xs text-[color:var(--ink-3)]">
               <Plane className="h-3 w-3" />
-              {first.fabricante}
-              {first.pais ? ` (${first.pais})` : ''}
+              {first.manufacturer}
+              {first.country ? ` (${first.country})` : ''}
             </span>
           )}
         </div>
 
-        {/* Indicador de fallback si se uso busqueda alternativa */}
+        {/* Indicador de fallback si se uso search alternativa */}
         {fallbackUsed && (
           <div className="border-t border-[color:var(--ink-4)] px-3 py-1.5">
             <p className="text-[10px] italic text-emerald-600">
               {tcdsNumber
-                ? 'Coincidencia encontrada por modelo/fabricante porque el TCDS reportado no estaba registrado'
-                : 'Coincidencia encontrada por modelo/fabricante aunque la consulta no incluia un TCDS'}
+                ? 'Coincidencia encontrada por model/manufacturer porque el TCDS reportado no estaba registrado'
+                : 'Coincidencia encontrada por model/manufacturer aunque la request no incluia un TCDS'}
             </p>
           </div>
         )}
@@ -264,14 +264,14 @@ export function TcdsStatusBanner({
             {/* Cabecera de variante identificada */}
             <div className="flex items-center gap-2 px-3 py-2">
               <span className="text-xs font-semibold text-emerald-700">
-                Variante identificada: {matchedVariant.modelo}
+                Variante identificada: {matchedVariant.model}
               </span>
               <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
                 TCDS
               </span>
             </div>
 
-            {/* Tarjeta con datos de la variante */}
+            {/* Tarjeta con data de la variante */}
             <div className="px-3 pb-3">
               <MatchedVariantCard variant={matchedVariant} />
             </div>
@@ -300,7 +300,7 @@ export function TcdsStatusBanner({
           </div>
         )}
 
-        {/* === MODO B: Modelo proporcionado pero sin coincidencia exacta === */}
+        {/* === MODO B: Model proporcionado pero sin coincidencia exacta === */}
         {hasModelFilter && !hasExactMatch && (
           <div className="border-t border-[color:var(--ink-4)]">
             {/* Aviso de que no se encontro coincidencia exacta */}
@@ -311,7 +311,7 @@ export function TcdsStatusBanner({
               </span>
             </div>
 
-            {/* Tabla expandible con todas las variantes */}
+            {/* Table expandible con todas las variantes */}
             <div className="border-t border-[color:var(--ink-4)]">
               <button
                 type="button"
@@ -333,7 +333,7 @@ export function TcdsStatusBanner({
           </div>
         )}
 
-        {/* === MODO C: Sin modelo proporcionado — comportamiento original === */}
+        {/* === MODO C: Sin model proporcionado — comportamiento original === */}
         {!hasModelFilter && (
           <div className="border-t border-[color:var(--ink-4)]">
             <button
@@ -358,32 +358,32 @@ export function TcdsStatusBanner({
     )
   }
 
-  // --- CASO 2: TCDS NO encontrado en la base de datos ---
+  // --- CASO 2: TCDS NO encontrado en la base de data ---
   return (
     <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-3">
       <div className="flex items-start gap-2.5">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[color:var(--ink)]">
-            {tcdsNumber ? 'Este TCDS no esta en la base de datos' : 'Revision TCDS pendiente'}
+            {tcdsNumber ? 'Este TCDS no esta en la base de data' : 'Review TCDS pending'}
           </p>
           <p className="mt-1 text-xs text-[color:var(--ink-3)]">
             {tcdsNumber ? (
               <>
                 El codigo <span className="font-mono font-medium text-[color:var(--ink-2)]">{tcdsNumber}</span> no
-                se encontro en <span className="font-medium">doa_aeronaves</span>.
+                se encontro en <span className="font-medium">doa_aircraft</span>.
               </>
             ) : (
               <>
-                No se dispone de codigo TCDS para esta consulta.
+                No se dispone de codigo TCDS para esta request.
               </>
             )}
           </p>
 
-          {/* Indicar si se intento fallback por modelo/fabricante */}
+          {/* Indicar si se intento fallback por model/manufacturer */}
           {fallbackUsed && (
             <p className="mt-1 text-[10px] italic text-amber-600">
-              Tambien se busco por modelo/fabricante sin resultados.
+              Tambien se busco por model/manufacturer sin resultados.
             </p>
           )}
 

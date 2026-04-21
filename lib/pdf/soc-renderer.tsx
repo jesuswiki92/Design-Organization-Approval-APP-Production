@@ -197,7 +197,7 @@ function StatementOfComplianceDocument({
     <Document
       title={payload.document.title}
       author={payload.document.company.name}
-      subject={`Statement of Compliance — ${payload.proyecto.numero_proyecto}`}
+      subject={`Statement of Compliance — ${payload.project.project_number}`}
     >
       <Page size="A4" style={styles.page}>
         {/* Header */}
@@ -221,25 +221,25 @@ function StatementOfComplianceDocument({
         <Text style={styles.h2}>Project</Text>
         <View style={styles.kvRow}>
           <Text style={styles.kvKey}>Project no.</Text>
-          <Text style={styles.kvValue}>{payload.proyecto.numero_proyecto}</Text>
+          <Text style={styles.kvValue}>{payload.project.project_number}</Text>
         </View>
         <View style={styles.kvRow}>
           <Text style={styles.kvKey}>Title</Text>
-          <Text style={styles.kvValue}>{payload.proyecto.titulo}</Text>
+          <Text style={styles.kvValue}>{payload.project.title}</Text>
         </View>
-        {payload.proyecto.cliente_nombre && (
+        {payload.project.client_name && (
           <View style={styles.kvRow}>
             <Text style={styles.kvKey}>Client</Text>
-            <Text style={styles.kvValue}>{payload.proyecto.cliente_nombre}</Text>
+            <Text style={styles.kvValue}>{payload.project.client_name}</Text>
           </View>
         )}
         <View style={styles.kvRow}>
           <Text style={styles.kvKey}>Project UUID</Text>
-          <Text style={styles.kvValue}>{payload.proyecto.id}</Text>
+          <Text style={styles.kvValue}>{payload.project.id}</Text>
         </View>
-        {payload.proyecto.descripcion && (
+        {payload.project.description && (
           <View style={styles.descriptionBlock}>
-            <Text>{payload.proyecto.descripcion}</Text>
+            <Text>{payload.project.description}</Text>
           </View>
         )}
 
@@ -283,7 +283,7 @@ function StatementOfComplianceDocument({
             <Text style={[styles.th, styles.col_code]}>Template</Text>
             <Text style={[styles.th, styles.col_sub]}>Subpart EASA</Text>
             <Text style={[styles.th, styles.col_ver]}>Ver.</Text>
-            <Text style={[styles.th, styles.col_estado]}>Estado</Text>
+            <Text style={[styles.th, styles.col_estado]}>Status</Text>
           </View>
           {payload.deliverables.length === 0 ? (
             <View style={styles.tableRow}>
@@ -294,7 +294,7 @@ function StatementOfComplianceDocument({
           ) : (
             payload.deliverables.map((d) => (
               <View style={styles.tableRow} key={d.id}>
-                <Text style={[styles.td, styles.col_titulo]}>{d.titulo}</Text>
+                <Text style={[styles.td, styles.col_titulo]}>{d.title}</Text>
                 <Text style={[styles.td, styles.col_code]}>
                   {d.template_code ?? '-'}
                 </Text>
@@ -302,9 +302,9 @@ function StatementOfComplianceDocument({
                   {d.subpart_easa ?? '-'}
                 </Text>
                 <Text style={[styles.td, styles.col_ver]}>
-                  {d.version_actual}
+                  {d.current_version}
                 </Text>
-                <Text style={[styles.td, styles.col_estado]}>{d.estado}</Text>
+                <Text style={[styles.td, styles.col_estado]}>{d.status}</Text>
               </View>
             ))
           )}

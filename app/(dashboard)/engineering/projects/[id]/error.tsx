@@ -18,9 +18,9 @@ export default function ProjectDetailError({
     <div className="flex h-full flex-col items-center justify-center gap-4 bg-[color:var(--paper)] text-[color:var(--ink)]">
       <div className="flex flex-col items-center gap-3 rounded-[22px] border border-amber-200 bg-[color:var(--paper)] p-8 shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
         <AlertTriangle className="h-8 w-8 text-amber-500" />
-        <h2 className="text-base font-semibold text-slate-950">No se pudo cargar el detalle del proyecto</h2>
+        <h2 className="text-base font-semibold text-slate-950">No se pudo cargar el detalle del project</h2>
         <p className="max-w-xs text-center text-sm text-[color:var(--ink-3)]">
-          Hubo un error al conectar con la base de datos. Verifica tu sesión y vuelve a intentarlo.
+          Hubo un error al conectar con la base de data. Verifica tu sesión y vuelve a intentarlo.
         </p>
         <button
           onClick={reset}

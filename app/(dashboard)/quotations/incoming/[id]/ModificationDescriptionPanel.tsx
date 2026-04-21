@@ -431,7 +431,7 @@ export default function ModificationDescriptionPanel({
   const handleAIAnalyze = useCallback(async () => {
     setAnalyzing(true)
     try {
-      const res = await fetch(`/api/consultas/${consultationId}/modification-description/analyze`, {
+      const res = await fetch(`/api/incoming-requests/${consultationId}/modification-description/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ consultationData }),
@@ -607,7 +607,7 @@ function SectionCardWithStatus({
         ) : (
           <div className="flex items-center justify-center rounded-md border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/30 py-4">
             <p className="text-xs italic text-[color:var(--ink-3)]">
-              Pendiente de datos / Requires engineering input
+              Pending de data / Requires engineering input
             </p>
           </div>
         )}

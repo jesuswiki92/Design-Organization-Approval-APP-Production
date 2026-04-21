@@ -24,7 +24,7 @@ export function PreliminaryScopePanel({
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--umber)]">
               <Crosshair className="h-3.5 w-3.5" />
-              Definir alcance. Preliminar
+              Define scope. Preliminary
             </div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-[color:var(--ink)]">
               Alcance preliminar propuesto
@@ -35,7 +35,7 @@ export function PreliminaryScopePanel({
           <div className="flex flex-wrap gap-2">
             <Badge label={`Confianza ${model.confidence.label}`} tone="emerald" />
             <Badge label={model.context.chosenReferenceLabel} tone="slate" />
-            {model.proposedScope.continuity && <Badge label="Con continuidad tecnica" tone="sky" />}
+            {model.proposedScope.continuity && <Badge label="Con continuidad technical" tone="sky" />}
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export function PreliminaryScopePanel({
       <div className="space-y-5 px-6 py-6">
         <SectionCard
           icon={<BookOpenText className="h-4 w-4" />}
-          title="Lo que dice el cliente"
+          title="Lo que dice el client"
           tone="sky"
         >
           <div className="grid gap-3 md:grid-cols-2">
@@ -103,7 +103,7 @@ export function PreliminaryScopePanel({
 
         <SectionCard
           icon={<ShieldCheck className="h-4 w-4" />}
-          title="Areas de impacto"
+          title="Areas de impact"
           tone="slate"
         >
           <div className="grid gap-3 md:grid-cols-2">
@@ -124,7 +124,7 @@ export function PreliminaryScopePanel({
 
         <SectionCard
           icon={<Layers3 className="h-4 w-4" />}
-          title="Lo que aporta el proyecto base"
+          title="Lo que aporta el project base"
           tone="amber"
         >
           <ul className="space-y-3">
@@ -140,18 +140,18 @@ export function PreliminaryScopePanel({
         <div className="grid gap-5 xl:grid-cols-2">
           <SectionCard
             icon={<CircleHelp className="h-4 w-4" />}
-            title="Lo que falta para cerrar alcance"
+            title="Lo que falta para close alcance"
             tone="rose"
           >
             <div className="space-y-4">
               <MissingBlock
-                title="Pedir al cliente"
-                emptyLabel="No hay preguntas nuevas detectadas para el cliente."
+                title="Pedir al client"
+                emptyLabel="No hay preguntas nuevas detectadas para el client."
                 items={model.missingInfo.askClient}
                 tone="sky"
               />
               <MissingBlock
-                title="Validacion interna"
+                title="Validation internal"
                 emptyLabel="No hay validaciones internas nuevas detectadas."
                 items={model.missingInfo.internalValidation}
                 tone="slate"

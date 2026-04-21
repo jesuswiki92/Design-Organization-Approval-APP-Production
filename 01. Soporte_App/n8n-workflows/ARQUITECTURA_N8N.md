@@ -2,7 +2,7 @@
 
 ## Visión General
 
-El sistema DOA utiliza n8n como motor de automatización para gestionar todo el ciclo de vida de las consultas de clientes aeronáuticos. La arquitectura se divide en **workflows independientes** que se comunican entre sí a través de **URLs dinámicas con IDs de Supabase** y **webhooks**.
+El sistema DOA utiliza n8n como engine de automatización para gestionar todo el ciclo de vida de las requests de clients aeronáuticos. La arquitectura se divide en **workflows independientes** que se comunican entre sí a través de **URLs dinámicas con IDs de Supabase** y **webhooks**.
 
 ---
 
@@ -10,156 +10,156 @@ El sistema DOA utiliza n8n como motor de automatización para gestionar todo el 
 
 ```
 ┌─────────────────────────────────────┐
-│   WF1: Correos Entrantes            │
+│   WF1: Emails Entrantes            │
 │   (Trigger: Outlook cada 1 min)     │
 │                                     │
 │   Outlook → IA Clasifica → Prepara  │
-│   Ruta → IA Redacta → Normaliza →   │
+│   Path → IA Redacta → Normaliza →   │
 │   Supabase INSERT → Marcar Leído    │
 │                                     │
 │   Output: URL con ID embebido       │
-│   enviada al cliente por email      │
+│   sent al client por email      │
 └──────────────┬──────────────────────┘
                │
-               │ (El cliente hace clic en la URL
+               │ (El client hace clic en la URL
                │  horas/días después)
                ▼
 ┌─────────────────────────────────────┐
-│   WF2: Web Server Formularios       │
+│   WF2: Web Server Forms       │
 │   (Trigger: Webhook GET /doa-form)  │
 │                                     │
-│   Webhook → Supabase GET consulta → │
+│   Webhook → Supabase GET request → │
 │   Supabase GET contacto →           │
 │   Supabase GET empresa →            │
 │   Google Drive HTML → Inyectar →    │
 │   Responder HTML al navegador       │
 │                                     │
-│   Output: Formulario HTML           │
+│   Output: Form HTML           │
 │   personalizado en el navegador     │
 └──────────────┬──────────────────────┘
                │
-               │ (El cliente llena y envía 
-               │  el formulario)
+               │ (El client llena y envía
+               │  el form)
                ▼
 ┌─────────────────────────────────────┐
-│   WF3: Enviar Correo al Cliente     │
+│   WF3: Send Email al Client     │
 │   (Trigger: Llamada desde App)      │
 │                                     │
 │   Recibe payload → Supabase UPDATE  │
-│   → Outlook envía correo            │
+│   → Outlook envía email            │
 │                                     │
-│   Output: Email enviado al cliente  │
+│   Output: Email sent al client  │
 └─────────────────────────────────────┘
 ```
 
 ---
 
-## WF1: DOA - 0 - Outlook a App (Correos Entrantes)
+## WF1: DOA - 0 - Outlook a App (Emails Entrantes)
 
-**ID:** `pEFW1V46yyLR58c8`  
-**Trigger:** Microsoft Outlook Trigger (polling cada 1 minuto, correos no leídos)  
-**Estado:** Activo en producción  
+**ID:** `pEFW1V46yyLR58c8`
+**Trigger:** Microsoft Outlook Trigger (polling cada 1 minuto, emails no leídos)
+**Status:** Active en producción
 
 ### Cadena de Nodos (Versión Activa / Producción)
 
 ```
 Outlook Trigger
-    → Clasificar Correo IA (OpenAI GPT-5.2)
-        → Preparar Ruta (Code JS)
-            → Redactar Respuesta IA (OpenAI GPT-5.2)
-                → Normalizar Correo (Code JS)
+    → Clasificar Email IA (OpenAI GPT-5.2)
+        → Prepare Path (Code JS)
+            → Redactar Response IA (OpenAI GPT-5.2)
+                → Normalizar Email (Code JS)
                     → Edit Fields (Set)
-                        → Insertar en Supabase (INSERT doa_consultas_entrantes)
-                            → Marcar Correo como Leído (Outlook Update)
+                        → Insertar en Supabase (INSERT doa_incoming_requests)
+                            → Marcar Email como Leído (Outlook Update)
 ```
 
 ### Cadena de Nodos (Versión Draft / En desarrollo)
 
 ```
 Outlook Trigger
-    → Clasificar Correo IA
-        → Switch (Clasificación)
-            ├─ Proyecto Nuevo ──┐
+    → Clasificar Email IA
+        → Switch (Classification)
+            ├─ Project New ──┐
             └─ Modificación ────┤
                                 ▼
                             Merge
                                 → Crear fila en entrantes (Supabase INSERT)
-                                    → Filtro Correo entrante (Set: extrae ID de Supabase)
-                                        → Ver si el cliente es conocido (Supabase GET doa_clientes_contactos)
+                                    → Filtro Email entrante (Set: extrae ID de Supabase)
+                                        → Ver si el client es conocido (Supabase GET doa_client_contacts)
                                             → Actualizar Fila entrantes (Supabase UPDATE)
-                                                → Switch1 (¿Cliente conocido?)
-                                                    ├─ Conocido → Get a row1 (empresa) → Datos empresa (Set) → Generar URL Formulario → Redactar Respuesta IA → Normalizar → Edit Fields → Insertar Supabase → Marcar Leído
-                                                    └─ No Conocido → Generar URL Formulario → ...
+                                                → Switch1 (¿Client conocido?)
+                                                    ├─ Conocido → Get a row1 (empresa) → Data empresa (Set) → Generar URL Form → Redactar Response IA → Normalizar → Edit Fields → Insertar Supabase → Marcar Leído
+                                                    └─ No Conocido → Generar URL Form → ...
 ```
 
-### Nodo Clave: "Preparar Ruta" (Code JS)
+### Nodo Clave: "Prepare Path" (Code JS)
 
-Este nodo centraliza toda la lógica de clasificación y enrutamiento:
+Este nodo centraliza toda la lógica de classification y enrutamiento:
 
-- **Input:** Payload crudo de OpenAI con la clasificación
+- **Input:** Payload crudo de OpenAI con la classification
 - **Lógica:**
   - Parsea el JSON de la IA (con fallback robusto para múltiples formatos)
-  - Normaliza la clasificación a una de 3 etiquetas canónicas:
-    - `Cliente solicita proyecto nuevo`
-    - `Cliente solicita modificacion a proyecto existente`  
-    - `Clasificacion pendiente`
-  - Asigna `form_variant` (tipo de formulario) y `route_instruction` (instrucción operativa para la IA redactora)
-  - **Genera la URL pública del formulario** con el dominio de producción
+  - Normaliza la classification a una de 3 etiquetas canónicas:
+    - `Client solicita project new`
+    - `Client solicita modificacion a project existente`
+    - `Classification pending`
+  - Asigna `form_variant` (type de form) y `route_instruction` (instrucción operativa para la IA redactora)
+  - **Genera la URL pública del form** con el dominio de producción
 
-- **Output:** Objeto limpio con: `asunto`, `remitente`, `cuerpo_original`, `clasificacion_canonica`, `razon_clasificacion`, `form_variant`, `route_instruction`, `public_form_url`
+- **Output:** Objeto limpio con: `subject`, `sender`, `original_body`, `clasificacion_canonica`, `razon_clasificacion`, `form_variant`, `route_instruction`, `public_form_url`
 
-### Nodo Clave: "Generar URL Formulario" (Set)
+### Nodo Clave: "Generar URL Form" (Set)
 
-- **Expresión:** `={{ 'https://sswebhook.testn8n.com/webhook/doa-form?id=' + $('Filtro Correo entrante').first().json.id.supabase.doa.consultas.entrantes }}`
+- **Expresión:** `={{ 'https://sswebhook.testn8n.com/webhook/doa-form?id=' + $('Filtro Email entrante').first().json.id.supabase.doa.requests.entrantes }}`
 - **Propósito:** Construye la URL dinámica que conecta WF1 con WF2 a través del ID de Supabase
 
 ### Tablas Supabase Involucradas
 
-| Tabla | Operación | Propósito |
+| Table | Operación | Propósito |
 |-------|-----------|-----------|
-| `doa_consultas_entrantes` | INSERT | Guardar cada correo entrante clasificado |
-| `doa_clientes_contactos` | GET | Buscar si el remitente es un contacto conocido |
-| `doa_clientes_datos_generales` | GET | Obtener datos de la empresa del contacto |
+| `doa_incoming_requests` | INSERT | Guardar cada email entrante clasificado |
+| `doa_client_contacts` | GET | Buscar si el sender es un contacto conocido |
+| `doa_clients` | GET | Obtener data de la empresa del contacto |
 
 ### Credenciales Utilizadas
 
 - **Microsoft Outlook OAuth2** (`LWbjIUOv0OUB6zRO`)
-- **OpenAI API** (`vAmNhoKH5n8YHlp6`) — Modelo: GPT-5.2
+- **OpenAI API** (`vAmNhoKH5n8YHlp6`) — Model: GPT-5.2
 - **Supabase API** (`H1ZHvBDstWZ1K6KS`)
 - **Google Drive OAuth2** (`q2a47wq7RmewYPQG`)
 
 ---
 
-## WF2: DOA - Web Server Formularios Clientes (Dinámico)
+## WF2: DOA - Web Server Forms Clients (Dinámico)
 
-**ID:** `GCLA8OK26yNr90cd`  
-**Trigger:** Webhook GET en `/webhook/doa-form`  
-**URL Producción:** `https://sswebhook.testn8n.com/webhook/doa-form`  
-**Estado:** Activo en producción  
+**ID:** `GCLA8OK26yNr90cd`
+**Trigger:** Webhook GET en `/webhook/doa-form`
+**URL Producción:** `https://sswebhook.testn8n.com/webhook/doa-form`
+**Status:** Active en producción
 
 ### Cadena de Nodos
 
 ```
 Webhook Servidor GET (recibe ?id=xxx)
-    → Buscar Consulta (Supabase GET doa_consultas_entrantes por id)
-        → Buscar Contacto (Supabase GET doa_clientes_contactos por email del remitente)
-            → Buscar Empresa (Supabase GET doa_clientes_datos_generales por cliente_id)
+    → Buscar Request (Supabase GET doa_incoming_requests por id)
+        → Buscar Contacto (Supabase GET doa_client_contacts por email del sender)
+            → Buscar Empresa (Supabase GET doa_clients por client_id)
                 → Descargar Plantilla HTML (Google Drive: formulario_cliente_conocido.txt)
-                    → Extraer Texto HTML (Extract from File → texto plano)
-                        → Inyectar Datos en HTML (Code JS)
+                    → Extraer Texto HTML (Extract from File → text drawing)
+                        → Inyectar Data en HTML (Code JS)
                             → Responder Navegador (Respond to Webhook con Content-Type: text/html)
 ```
 
-### Nodo Clave: "Inyectar Datos en HTML" (Code JS)
+### Nodo Clave: "Inyectar Data en HTML" (Code JS)
 
-Reemplaza placeholders en la plantilla HTML:
+Reemplaza placeholders en la template HTML:
 
 | Placeholder | Dato | Fuente |
 |-------------|------|--------|
-| `{{CLIENT_COMPANY_NAME}}` | Nombre de la empresa | Nodo "Buscar Empresa" |
-| `{{CLIENT_CONTACT_FULL_NAME}}` | Nombre + Apellidos | Nodo "Buscar Contacto" |
+| `{{CLIENT_COMPANY_NAME}}` | Name de la empresa | Nodo "Buscar Empresa" |
+| `{{CLIENT_CONTACT_FULL_NAME}}` | Name + Apellidos | Nodo "Buscar Contacto" |
 | `{{CLIENT_CONTACT_EMAIL}}` | Email del contacto | Nodo "Buscar Contacto" |
-| Campo oculto `consulta_id` | ID de la consulta | Query param del Webhook (`?id=xxx`) |
+| Campo oculto `incoming_request_id` | ID de la request | Query param del Webhook (`?id=xxx`) |
 
 ### Patrón de Comunicación con WF1
 
@@ -174,63 +174,63 @@ WF2 Webhook recibe ────────────────────�
 
 ---
 
-## WF3: DOA - Enviar Correo al Cliente
+## WF3: DOA - Send Email al Client
 
-**Trigger:** Webhook (llamado desde la aplicación React)  
-**Propósito:** Envía el correo final al cliente después de que un humano apruebe el borrador de la IA.
+**Trigger:** Webhook (llamado desde la aplicación React)
+**Propósito:** Envía el email final al client después de que un humano apruebe el borrador de la IA.
 
 ### Cadena de Nodos
 
 ```
-Webhook (recibe payload con id, email, asunto, cuerpo)
+Webhook (recibe payload con id, email, subject, body)
     → Normalizar Payload Envio (Code JS)
-        → Supabase UPDATE doa_consultas_entrantes (estado → "enviado")
+        → Supabase UPDATE doa_incoming_requests (status → "sent")
             → Outlook Send Email
 ```
 
 ### Nodo Clave: "Update a row" (Supabase)
 
-- **Match por:** columna `id` usando `consulta_id` del payload
-- **Campos actualizados:** `estado`, `respuesta_enviada`, `fecha_envio`
+- **Match por:** columna `id` usando `incoming_request_id` del payload
+- **Campos actualizados:** `status`, `respuesta_enviada`, `fecha_envio`
 
 ---
 
 ## Tablas Supabase (Schema Completo)
 
-### `doa_consultas_entrantes`
-| Columna | Tipo | Descripción |
+### `doa_incoming_requests`
+| Columna | Tipo | Description |
 |---------|------|-------------|
-| `id` | UUID (PK, auto) | Identificador único de la consulta |
-| `asunto` | text | Asunto del correo |
-| `remitente` | text | Email del remitente |
-| `cuerpo_original` | text | Preview del cuerpo del correo |
-| `clasificacion` | text | Clasificación canónica de la IA |
-| `respuesta_ia` | text | Borrador de respuesta generado por IA |
-| `estado` | text | Estado del ciclo: nuevo, enviado, completado |
-| `created_at` | timestamptz | Fecha de creación |
+| `id` | UUID (PK, auto) | Identificador único de la request |
+| `subject` | text | Subject del email |
+| `sender` | text | Email del sender |
+| `original_body` | text | Preview del body del email |
+| `classification` | text | Classification canónica de la IA |
+| `ai_response` | text | Borrador de response generado por IA |
+| `status` | text | Status del ciclo: new, sent, completed |
+| `created_at` | timestamptz | Date de creación |
 
-### `doa_clientes_contactos`
-| Columna | Tipo | Descripción |
+### `doa_client_contacts`
+| Columna | Tipo | Description |
 |---------|------|-------------|
 | `id` | UUID (PK) | ID del contacto |
-| `email` | text | Email del contacto (clave de búsqueda) |
-| `nombre` | text | Nombre del contacto |
-| `apellidos` | text | Apellidos del contacto |
-| `cliente_id` | UUID (FK) | Referencia a doa_clientes_datos_generales |
+| `email` | text | Email del contacto (clave de search) |
+| `name` | text | Name del contacto |
+| `last_name` | text | Apellidos del contacto |
+| `client_id` | UUID (FK) | Referencia a doa_clients |
 
-### `doa_clientes_datos_generales`
-| Columna | Tipo | Descripción |
+### `doa_clients`
+| Columna | Tipo | Description |
 |---------|------|-------------|
 | `id` | UUID (PK) | ID de la empresa |
-| `nombre` | text | Nombre de la empresa |
-| `cif_vat` | text | CIF/VAT de la empresa |
-| `pais` | text | País |
-| `ciudad` | text | Ciudad |
-| `direccion` | text | Dirección |
-| `telefono` | text | Teléfono |
-| `web` | text | Sitio web |
-| `dominio_email` | text | Dominio de email corporativo |
-| `tipo_cliente` | text | Tipo de cliente |
+| `name` | text | Name de la empresa |
+| `vat_tax_id` | text | CIF/VAT de la empresa |
+| `country` | text | Country |
+| `city` | text | City |
+| `address` | text | Address |
+| `phone` | text | Phone |
+| `website` | text | Sitio website |
+| `email_domain` | text | Dominio de email corporativo |
+| `client_type` | text | Tipo de client |
 
 ---
 
@@ -238,14 +238,14 @@ Webhook (recibe payload con id, email, asunto, cuerpo)
 
 | Archivo | ID Google Drive | Uso |
 |---------|-----------------|-----|
-| `formulario_cliente_conocido.txt` | `1Clb0bv9zeGTRcBdLEHKAoO6cBCelx-pS` | Formulario para clientes ya registrados en la base de datos |
+| `formulario_cliente_conocido.txt` | `1Clb0bv9zeGTRcBdLEHKAoO6cBCelx-pS` | Form para clients ya registrados en la base de data |
 
 ### Placeholders disponibles en el HTML
 
-- `{{CLIENT_COMPANY_NAME}}` — Nombre de la empresa
-- `{{CLIENT_CONTACT_FULL_NAME}}` — Nombre completo del contacto
+- `{{CLIENT_COMPANY_NAME}}` — Name de la empresa
+- `{{CLIENT_CONTACT_FULL_NAME}}` — Name completo del contacto
 - `{{CLIENT_CONTACT_EMAIL}}` — Email del contacto
-- Campo oculto `consulta_id` — Se inyecta dinámicamente con el UUID de la consulta
+- Campo oculto `incoming_request_id` — Se inyecta dinámicamente con el UUID de la request
 
 ---
 
@@ -253,7 +253,7 @@ Webhook (recibe payload con id, email, asunto, cuerpo)
 
 | Endpoint | Método | Workflow | Propósito |
 |----------|--------|----------|-----------|
-| `/webhook/doa-form` | GET | WF2 | Servir formulario HTML al cliente |
+| `/webhook/doa-form` | GET | WF2 | Servir form HTML al client |
 | Dominio: `sswebhook.testn8n.com` | — | Producción webhooks | Base URL para webhooks de producción |
 | Dominio: `ssn8n.testn8n.com` | — | Test webhooks | Base URL para webhooks de desarrollo/test |
 
@@ -262,7 +262,7 @@ Webhook (recibe payload con id, email, asunto, cuerpo)
 ## Restricciones y Lecciones Aprendidas
 
 1. **Trim obligatorio en emails:** Los emails de Outlook vienen con espacios invisibles. Siempre usar `.trim()` antes de buscar en Supabase.
-2. **Nodo HTML de n8n ≠ servidor HTML:** El nodo "HTML" de n8n sirve para *extraer* datos de HTML, NO para servir páginas web. Usar "Respond to Webhook" con Content-Type `text/html`.
+2. **Nodo HTML de n8n ≠ servidor HTML:** El nodo "HTML" de n8n sirve para *extraer* data de HTML, NO para servir páginas website. Usar "Respond to Webhook" con Content-Type `text/html`.
 3. **Variables con puntos en n8n:** Si nombras una variable `id.supabase.doa`, n8n la convierte en un objeto anidado (`json.id.supabase.doa`), NO en una clave con puntos literales. Acceder con notación de puntos, no con corchetes.
 4. **Webhook URLs:** El dominio de producción para webhooks es `sswebhook.testn8n.com`, diferente al dominio de la interfaz `ssn8n.testn8n.com`.
 5. **API de n8n para schema del Switch:** La API de n8n rechaza payloads del Switch si faltan campos internos como `version`, `id`, etc. Es más seguro hacer cambios en el Switch desde la interfaz visual.
@@ -272,7 +272,7 @@ Webhook (recibe payload con id, email, asunto, cuerpo)
 
 ## Pendientes / Roadmap
 
-1. **WF4: Receptor de Formularios (POST)** — Workflow con Webhook POST que reciba los datos que el cliente llena en el formulario HTML y actualice `doa_consultas_entrantes` en Supabase.
-2. **Rama "Cliente No Conocido"** — Implementar lógica para clientes nuevos no registrados en la base de datos (onboarding).
-3. **Formulario para modificaciones** — Crear plantilla HTML diferenciada para solicitudes de modificación de proyectos existentes.
+1. **WF4: Receptor de Forms (POST)** — Workflow con Webhook POST que reciba los data que el client llena en el form HTML y actualice `doa_incoming_requests` en Supabase.
+2. **Rama "Client No Conocido"** — Implementar lógica para clients nuevos no registrados en la base de data (onboarding).
+3. **Form para modificaciones** — Crear template HTML diferenciada para solicitudes de modificación de projects existentes.
 4. **Activación en producción** — Migrar las URLs de test a las URLs de producción definitivas cuando el servidor n8n se estabilice.

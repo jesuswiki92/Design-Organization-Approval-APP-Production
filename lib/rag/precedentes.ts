@@ -9,8 +9,8 @@
  *
  * Design decisions:
  *   - This is the "new" precedentes index (separate from the OpenAI-embedded
- *     doa_proyectos_embeddings table used by
- *     app/api/proyectos/[id]/precedentes/route.ts). Both can coexist.
+ *     doa_project_embeddings table used by
+ *     app/api/projects/[id]/precedentes/route.ts). Both can coexist.
  *   - Uses the Pinecone records API (integrated embedding via the index's
  *     fieldMap) — the app does NOT embed locally. The index must be created
  *     with an embedding model already attached (see Pinecone "Integrated
@@ -31,23 +31,23 @@
  *
  * Record schema (consistent across calls):
  *   {
- *     _id: <proyecto_id>,
+ *     _id: <project_id>,
  *     text: <structured summary>,
- *     proyecto_id: <uuid>,
- *     numero_proyecto: string,
- *     titulo: string,
- *     cliente_id: string | null,
- *     estado_v2: string,
+ *     project_id: <uuid>,
+ *     project_number: string,
+ *     title: string,
+ *     client_id: string | null,
+ *     execution_status: string,
  *     outcome: string | null,
- *     lecciones_count: number,
+ *     lessons_count: number,
  *     deliverables_count: number,
- *     validaciones_aprobadas: number,
- *     validaciones_devueltas: number,
+ *     validations_approved: number,
+ *     validations_returned: number,
  *     created_at: string,
  *     tags: string[],
  *   }
  *
- * NOTE: the legacy doa_proyectos_embeddings (OpenAI based) is untouched; this
+ * NOTE: the legacy doa_project_embeddings (OpenAI based) is untouched; this
  * helper is the Sprint 4 channel to Pinecone.
  */
 
@@ -63,23 +63,23 @@ const DEFAULT_TEXT_FIELD = 'text'
 const DEFAULT_NAMESPACE = '__default__'
 
 function composeText(parts: {
-  titulo: string
-  numero_proyecto: string | null
-  cliente_id: string | null
-  descripcion: string | null
+  title: string
+  project_number: string | null
+  client_id: string | null
+  description: string | null
   outcome: string | null
-  deliverables: Array<{ titulo: string; template_code: string | null; subpart_easa: string | null }>
-  validaciones_aprobadas: number
-  validaciones_devueltas: number
-  entregas_confirmadas: number
-  lecciones: Array<{ categoria: string; tipo: string; titulo: string; descripcion: string }>
+  deliverables: Array<{ title: string; template_code: string | null; subpart_easa: string | null }>
+  validations_approved: number
+  validations_returned: number
+  deliveries_confirmed: number
+  lecciones: Array<{ category: string; type: string; title: string; description: string }>
 }): string {
   const deliverablesLine = parts.deliverables
     .slice(0, 15)
     .map((d) => {
       const code = d.template_code ? `${d.template_code} ` : ''
       const subp = d.subpart_easa ? ` [${d.subpart_easa}]` : ''
-      return `${code}${d.titulo}${subp}`
+      return `${code}${d.title}${subp}`
     })
     .join('; ')
 
@@ -87,17 +87,17 @@ function composeText(parts: {
     .slice(0, 20)
     .map(
       (l) =>
-        `(${l.categoria}/${l.tipo}) ${l.titulo}: ${l.descripcion.slice(0, 200)}`,
+        `(${l.category}/${l.type}) ${l.title}: ${l.description.slice(0, 200)}`,
     )
     .join(' | ')
 
   return [
-    `Proyecto ${parts.numero_proyecto ?? '(sin numero)'} — ${parts.titulo}.`,
-    parts.cliente_id ? `Cliente: ${parts.cliente_id}.` : null,
-    parts.descripcion ? `Descripcion: ${parts.descripcion}.` : null,
-    parts.outcome ? `Outcome de cierre: ${parts.outcome}.` : null,
-    `Validaciones: ${parts.validaciones_aprobadas} aprobadas, ${parts.validaciones_devueltas} devueltas.`,
-    `Entregas confirmadas por cliente: ${parts.entregas_confirmadas}.`,
+    `Project ${parts.project_number ?? '(sin numero)'} — ${parts.title}.`,
+    parts.client_id ? `Client: ${parts.client_id}.` : null,
+    parts.description ? `Description: ${parts.description}.` : null,
+    parts.outcome ? `Outcome de closure: ${parts.outcome}.` : null,
+    `Validaciones: ${parts.validations_approved} aprobadas, ${parts.validations_returned} devueltas.`,
+    `Entregas confirmadas por client: ${parts.deliveries_confirmed}.`,
     deliverablesLine ? `Deliverables principales: ${deliverablesLine}.` : null,
     leccionesLine ? `Lecciones clave: ${leccionesLine}.` : null,
   ]
@@ -112,9 +112,9 @@ export async function reindexPrecedente(
 
   // 1) Load project
   const { data: projectRow, error: projErr } = await admin
-    .from('doa_proyectos')
+    .from('doa_projects')
     .select(
-      'id, numero_proyecto, titulo, descripcion, client_id, estado_v2, fase_actual, created_at',
+      'id, project_number, title, description, client_id, execution_status, current_phase, created_at',
     )
     .eq('id', proyectoId)
     .maybeSingle()
@@ -128,22 +128,22 @@ export async function reindexPrecedente(
 
   const p = projectRow as {
     id: string
-    numero_proyecto: string | null
-    titulo: string
-    descripcion: string | null
+    project_number: string | null
+    title: string
+    description: string | null
     client_id: string | null
-    estado_v2: string | null
-    fase_actual: string | null
+    execution_status: string | null
+    current_phase: string | null
     created_at: string
   }
 
   if (
-    p.estado_v2 !== 'cerrado' &&
-    p.estado_v2 !== 'archivado_proyecto'
+    p.execution_status !== 'closed' &&
+    p.execution_status !== 'project_archived'
   ) {
     return {
       upserted: false,
-      reason: `project_not_closed_or_archived:${p.estado_v2 ?? 'null'}`,
+      reason: `project_not_closed_or_archived:${p.execution_status ?? 'null'}`,
     }
   }
 
@@ -151,32 +151,32 @@ export async function reindexPrecedente(
   const [delRes, valRes, entRes, closureRes, lessonsRes] = await Promise.all([
     admin
       .from('doa_project_deliverables')
-      .select('titulo, template_code, subpart_easa, estado')
-      .eq('proyecto_id', proyectoId),
+      .select('title, template_code, subpart_easa, status')
+      .eq('project_id', proyectoId),
     admin
       .from('doa_project_validations')
       .select('decision')
-      .eq('proyecto_id', proyectoId),
+      .eq('project_id', proyectoId),
     admin
       .from('doa_project_deliveries')
       .select('dispatch_status')
-      .eq('proyecto_id', proyectoId),
+      .eq('project_id', proyectoId),
     admin
       .from('doa_project_closures')
       .select('outcome, metrics')
-      .eq('proyecto_id', proyectoId)
+      .eq('project_id', proyectoId)
       .maybeSingle(),
     admin
       .from('doa_project_lessons')
-      .select('categoria, tipo, titulo, descripcion, tags')
-      .eq('proyecto_id', proyectoId),
+      .select('category, type, title, description, tags')
+      .eq('project_id', proyectoId),
   ])
 
   const deliverables = (delRes.data ?? []) as Array<{
-    titulo: string
+    title: string
     template_code: string | null
     subpart_easa: string | null
-    estado: string
+    status: string
   }>
   const vals = (valRes.data ?? []) as Array<{ decision: string }>
   const ents = (entRes.data ?? []) as Array<{ dispatch_status: string }>
@@ -184,10 +184,10 @@ export async function reindexPrecedente(
     | { outcome: string | null; metrics: Record<string, unknown> | null }
     | null
   const lessons = (lessonsRes.data ?? []) as Array<{
-    categoria: string
-    tipo: string
-    titulo: string
-    descripcion: string
+    category: string
+    type: string
+    title: string
+    description: string
     tags: string[] | null
   }>
 
@@ -196,22 +196,22 @@ export async function reindexPrecedente(
     if (l.tags) for (const t of l.tags) allTags.add(t)
   }
 
-  const validacionesAprobadas = vals.filter((v) => v.decision === 'aprobado').length
-  const validacionesDevueltas = vals.filter((v) => v.decision === 'devuelto').length
+  const validacionesAprobadas = vals.filter((v) => v.decision === 'approved').length
+  const validacionesDevueltas = vals.filter((v) => v.decision === 'returned').length
   const entregasConfirmadas = ents.filter(
-    (e) => e.dispatch_status === 'confirmado_cliente',
+    (e) => e.dispatch_status === 'client_confirmed',
   ).length
 
   const text = composeText({
-    titulo: p.titulo,
-    numero_proyecto: p.numero_proyecto,
-    cliente_id: p.client_id,
-    descripcion: p.descripcion,
+    title: p.title,
+    project_number: p.project_number,
+    client_id: p.client_id,
+    description: p.description,
     outcome: closure?.outcome ?? null,
     deliverables,
-    validaciones_aprobadas: validacionesAprobadas,
-    validaciones_devueltas: validacionesDevueltas,
-    entregas_confirmadas: entregasConfirmadas,
+    validations_approved: validacionesAprobadas,
+    validations_returned: validacionesDevueltas,
+    deliveries_confirmed: entregasConfirmadas,
     lecciones: lessons,
   })
 
@@ -231,17 +231,17 @@ export async function reindexPrecedente(
   const record: Record<string, unknown> = {
     _id: p.id,
     [textField]: text,
-    proyecto_id: p.id,
-    numero_proyecto: p.numero_proyecto ?? '',
-    titulo: p.titulo,
-    cliente_id: p.client_id ?? '',
-    estado_v2: p.estado_v2 ?? '',
+    project_id: p.id,
+    project_number: p.project_number ?? '',
+    title: p.title,
+    client_id: p.client_id ?? '',
+    execution_status: p.execution_status ?? '',
     outcome: closure?.outcome ?? '',
-    lecciones_count: lessons.length,
+    lessons_count: lessons.length,
     deliverables_count: deliverables.length,
-    validaciones_aprobadas: validacionesAprobadas,
-    validaciones_devueltas: validacionesDevueltas,
-    entregas_confirmadas: entregasConfirmadas,
+    validations_approved: validacionesAprobadas,
+    validations_returned: validacionesDevueltas,
+    deliveries_confirmed: entregasConfirmadas,
     created_at: p.created_at,
     tags: Array.from(allTags),
   }

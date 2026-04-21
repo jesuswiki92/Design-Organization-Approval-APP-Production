@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Seccion "Definir documentacion" — checkboxes nativos de plantillas de compliance.
+ * Seccion "Definir documentacion" — checkboxes nativos de templates de compliance.
  * Guardado: API route → webhook n8n → Supabase (44 columnas booleanas doc_g12_xx).
  * Lectura: server component lee las columnas y pasa savedCodes.
  */
@@ -83,7 +83,7 @@ export function ComplianceDocumentsSection({
     setAiError(null)
 
     try {
-      const res = await fetch(`/api/consultas/${consultaId}/compliance-documents/suggest`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/compliance-documents/suggest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ referenceProjectId }),
@@ -95,7 +95,7 @@ export function ComplianceDocumentsSection({
       }
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error al sugerir documentos')
+        throw new Error(data.error || 'Error al sugerir documents')
       }
 
       const recs = Array.isArray(data.recommendations) ? data.recommendations : []
@@ -107,7 +107,7 @@ export function ComplianceDocumentsSection({
         return next
       })
     } catch (err) {
-      console.error('Error sugiriendo documentos con IA:', err)
+      console.error('Error sugiriendo documents con IA:', err)
       setAiError(err instanceof Error ? err.message : 'Error inesperado')
     } finally {
       setAiLoading(false)
@@ -125,7 +125,7 @@ export function ComplianceDocumentsSection({
         docs[codeToColumn(t.code)] = selected.has(t.code)
       }
 
-      const res = await fetch(`/api/consultas/${consultaId}/documentos`, {
+      const res = await fetch(`/api/incoming-requests/${consultaId}/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ docs }),
@@ -136,7 +136,7 @@ export function ComplianceDocumentsSection({
       setStatus('saved')
       router.refresh()
     } catch (err) {
-      console.error('Error guardando documentos compliance:', err)
+      console.error('Error guardando documents compliance:', err)
       setStatus('error')
     } finally {
       setSaving(false)
@@ -154,13 +154,13 @@ export function ComplianceDocumentsSection({
             <FileText className="h-4 w-4 text-[color:var(--ink-3)]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion bloqueado en esta fase</p>
+            <p className="text-sm font-semibold text-[color:var(--ink)]">Definir documentacion blocked en esta fase</p>
             <p className="mt-1 text-sm leading-6 text-[color:var(--ink-3)]">
-              Esta vista permanece visible como placeholder, pero la edicion de oferta sigue desactivada
-              mientras la consulta esta en modo revision y decision.
+              Esta vista permanece visible como placeholder, pero la edicion de quote sigue desactivada
+              mientras la request esta en modo review y decision.
             </p>
             <p className="mt-3 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
-              La configuracion de compliance se activara cuando la consulta salga de revision.
+              La configuracion de compliance se activara cuando la request salga de review.
             </p>
           </div>
         </div>
@@ -186,7 +186,7 @@ export function ComplianceDocumentsSection({
             type="button"
             onClick={handleSuggestWithAI}
             disabled={aiLoading || !referenceProjectId}
-            title={!referenceProjectId ? 'Selecciona un proyecto de referencia primero' : undefined}
+            title={!referenceProjectId ? 'Selecciona un project de referencia primero' : undefined}
             className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-violet-500 to-violet-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}

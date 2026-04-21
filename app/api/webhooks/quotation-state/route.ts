@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 import { requireUserApi } from '@/lib/auth/require-user'
 
 /**
- * Proxy autenticado al webhook de n8n que actualiza el estado de una cotizacion.
+ * Proxy autenticado al webhook de n8n que actualiza el status de una cotizacion.
  * La URL del webhook vive en `DOA_QUOTATION_STATE_WEBHOOK_URL` (server-only).
- * El cliente llama a `/api/webhooks/quotation-state` — la URL real nunca sale al bundle.
+ * El client llama a `/api/webhooks/quotation-state` — la URL real nunca sale al bundle.
  */
 
 export const runtime = 'nodejs'

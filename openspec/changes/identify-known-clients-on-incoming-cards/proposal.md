@@ -7,9 +7,9 @@ The Quotations board needs to distinguish unknown senders from existing clients 
 ## Scope
 
 ### In Scope
-- Resolve incoming request identity by exact email match against `doa_clientes_contactos.email`.
+- Resolve incoming request identity by exact email match against `doa_client_contacts.email`.
 - Normalize sender and contact emails with `trim().toLowerCase()` before comparing.
-- Show `cliente desconocido` when there is no exact match.
+- Show `client desconocido` when there is no exact match.
 - Show `empresa + contacto + email` when the sender matches a known contact.
 - Keep the change limited to the current incoming-card rendering path.
 
@@ -20,7 +20,7 @@ The Quotations board needs to distinguish unknown senders from existing clients 
 
 ## Approach
 
-Load the client master data and contacts alongside incoming requests, reuse the existing client/contact model, and enrich each incoming card before rendering it. The lookup must be deterministic: normalize the sender email, compare it only with normalized contact emails, and use the matched contact's company and personal details if found. Unknown matches fall back to the explicit `cliente desconocido` label.
+Load the client master data and contacts alongside incoming requests, reuse the existing client/contact model, and enrich each incoming card before rendering it. The lookup must be deterministic: normalize the sender email, compare it only with normalized contact emails, and use the matched contact's company and personal details if found. Unknown matches fall back to the explicit `client desconocido` label.
 
 ## Affected Areas
 
@@ -36,7 +36,7 @@ Load the client master data and contacts alongside incoming requests, reuse the 
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
-| `remitente` includes a display name instead of a plain email | Medium | Extract the email before matching and reject malformed values. |
+| `sender` includes a display name instead of a plain email | Medium | Extract the email before matching and reject malformed values. |
 | Duplicate contact emails exist | Low | Use a deterministic resolution rule and prefer active contacts. |
 | Unknown cards hide useful context | Medium | Keep the raw sender email visible if the UI needs operational context. |
 
@@ -47,11 +47,11 @@ Revert the identity enrichment so incoming cards go back to the current generic 
 ## Dependencies
 
 - Existing client/contact tables in Supabase.
-- Existing `Cliente`, `ClienteContacto`, and `ClienteWithContactos` structures in `types/database.ts`.
+- Existing `Client`, `ClientContact`, and `ClientWithContacts` structures in `types/database.ts`.
 
 ## Success Criteria
 
-- [ ] A sender with no matching contact email renders as `cliente desconocido`.
+- [ ] A sender with no matching contact email renders as `client desconocido`.
 - [ ] A sender with a matching contact email renders `empresa + contacto + email`.
 - [ ] Matching is exact and case-insensitive after trimming.
 - [ ] The board renders the enriched identity without changing quotation state behavior.

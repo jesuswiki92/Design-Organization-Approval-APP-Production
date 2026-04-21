@@ -89,7 +89,7 @@ export function TopBar({ title, subtitle }: TopBarProps) {
         </button>
 
         <Link
-          href="/tools/experto"
+          href="/tools/expert"
           className="flex items-center gap-1.5 rounded-[10px] border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-3 py-1.5 text-[12px] font-medium text-[color:var(--ink)] shadow-[0_1px_0_rgba(74,60,36,0.06),inset_0_1px_0_rgba(255,255,255,0.6)] transition-colors hover:bg-[color:var(--paper-3)]"
         >
           <Bot className="h-3.5 w-3.5" />

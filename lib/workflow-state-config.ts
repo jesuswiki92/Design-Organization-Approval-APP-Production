@@ -1,17 +1,17 @@
 /**
  * CONFIGURACION VISUAL DE ESTADOS DE FLUJOS DE TRABAJO (LADO CLIENTE)
  *
- * Este archivo es el "motor de estilos" de los estados de flujo de trabajo.
- * Se encarga de convertir los datos de configuracion guardados en la base de datos
- * (tabla doa_workflow_state_config) en objetos listos para pintar en la interfaz.
+ * Este archivo es el "engine de estilos" de los statuses de flujo de trabajo.
+ * Se encarga de convertir los data de configuracion guardados en la base de data
+ * (table doa_workflow_state_config) en objetos listos para pintar en la interfaz.
  *
  * Funciones principales:
- * - Define los COLORES disponibles para los estados (sky, cyan, emerald, amber, etc.)
- * - Proporciona valores POR DEFECTO para los estados de cotizaciones y consultas
- *   (en caso de que no haya configuracion personalizada en la base de datos)
+ * - Define los COLORES disponibles para los statuses (sky, cyan, emerald, amber, etc.)
+ * - Proporciona valores POR DEFECTO para los statuses de cotizaciones y requests
+ *   (en caso de que no haya configuracion personalizada en la base de data)
  * - "Resuelve" la configuracion final combinando los valores por defecto con
  *   las personalizaciones que el admin haya guardado en Supabase
- * - Ofrece funciones para obtener la informacion visual de un estado especifico
+ * - Ofrece funciones para obtener la informacion visual de un status especifico
  *
  * Este archivo se puede usar tanto en el servidor como en el navegador
  * (a diferencia de workflow-state-config.server.ts que solo funciona en el servidor).
@@ -23,27 +23,27 @@ import type {
   WorkflowStateScope,
 } from '@/types/database'
 import {
-  CONSULTA_ESTADOS,
-  CONSULTA_STATE_CONFIG,
+  INCOMING_REQUEST_STATUSES,
+  INCOMING_REQUEST_STATUS_CONFIG,
   PROJECT_STATE_CONFIG,
   PROJECT_WORKFLOW_STATES,
   QUOTATION_BOARD_STATE_CONFIG,
   QUOTATION_BOARD_STATES,
-  type EstadoConsulta,
+  type IncomingRequestStatus,
   type QuotationBoardState,
 } from '@/lib/workflow-states'
 
 // Los dos ambitos (scopes) de flujos de trabajo que existen en la app.
-// Cada uno tiene sus propios estados y se configura de forma independiente.
+// Cada uno tiene sus propios statuses y se configura de forma independiente.
 export const WORKFLOW_STATE_SCOPES = {
   INCOMING_QUERIES: 'incoming_queries',
   QUOTATION_BOARD: 'quotation_board',
   PROJECT_BOARD: 'project_board',
 } as const satisfies Record<string, WorkflowStateScope>
 
-// Lista de colores disponibles para asignar a los estados.
-// Cada color tiene variantes para texto, fondo, borde y punto indicador.
-// Un administrador puede elegir cualquiera de estos colores al personalizar un estado.
+// Lista de colores disponibles para asignar a los statuses.
+// Cada color tiene variantes para text, fondo, borde y punto indicador.
+// Un administrador puede elegir cualquiera de estos colores al personalizar un status.
 export const WORKFLOW_STATE_COLOR_TOKENS = [
   'sky',
   'cyan',
@@ -58,38 +58,38 @@ export const WORKFLOW_STATE_COLOR_TOKENS = [
   'rose',
 ] as const satisfies readonly WorkflowStateColorToken[]
 
-// Estilo de la "etiqueta" (badge) que muestra el nombre del estado.
-// Se usa en las pastillas/chips de estado que aparecen junto a cada consulta o cotizacion.
+// Estilo de la "etiqueta" (badge) que muestra el name del status.
+// Se usa en las pastillas/chips de status que aparecen junto a cada request o cotizacion.
 export type WorkflowBadgeStyle = {
-  color: string  // Clases CSS combinadas (fondo, texto y borde de la etiqueta)
+  color: string  // Clases CSS combinadas (fondo, text y borde de la etiqueta)
 }
 
 // Estilo visual de las columnas del tablero Kanban.
-// Cada columna del tablero tiene su propio fondo, borde y color de texto.
+// Cada columna del tablero tiene su propio fondo, borde y color de text.
 export type WorkflowBoardAccent = {
   bg: string      // Color de fondo de la columna
   border: string  // Color del borde de la columna
   dot: string     // Color del punto indicador
-  text: string    // Color del texto del encabezado
+  text: string    // Color del text del encabezado
   chip: string    // Estilo de las tarjetas dentro de la columna
 }
 
-// Tipo que representa un estado de flujo de trabajo completamente resuelto,
-// es decir, con todos sus datos (los de la base de datos + los estilos visuales calculados).
-// Este es el tipo que reciben los componentes de la interfaz para pintar los estados.
+// Tipo que representa un status de flujo de trabajo completamente resuelto,
+// es decir, con todos sus data (los de la base de data + los estilos visuales calculados).
+// Este es el type que reciben los componentes de la interfaz para pintar los statuses.
 export type ResolvedWorkflowStateMeta = WorkflowStateConfigRow & {
-  short_label: string               // Nombre corto del estado
+  short_label: string               // Name corto del status
   badge: WorkflowBadgeStyle          // Estilo de la etiqueta/pastilla
   boardAccent: WorkflowBoardAccent   // Estilo de la columna del tablero
 }
 
-// Mapa interno para buscar configuraciones por defecto por codigo de estado
+// Mapa internal para buscar configuraciones por defecto por codigo de status
 type WorkflowStateDefaultsMap = Record<string, WorkflowStateConfigRow>
 
 // MAPA MAESTRO DE ESTILOS POR COLOR
 // Para cada color disponible, define exactamente que clases CSS se usan
-// en la etiqueta (badge), en el tablero (boardAccent) y en el editor de estados.
-// Este mapa es el que convierte un nombre de color (ej: "sky") en clases CSS reales.
+// en la etiqueta (badge), en el tablero (boardAccent) y en el editor de statuses.
+// Este mapa es el que convierte un name de color (ej: "sky") en clases CSS reales.
 const COLOR_STYLE_MAP: Record<
   WorkflowStateColorToken,
   { badge: WorkflowBadgeStyle; boardAccent: WorkflowBoardAccent; editorChip: string; label: string }
@@ -229,16 +229,16 @@ const COLOR_STYLE_MAP: Record<
 }
 
 // VALORES POR DEFECTO PARA LOS ESTADOS DEL TABLERO DE COTIZACIONES
-// Estos son los estados que se usan si no hay configuracion personalizada
-// guardada en la base de datos. Incluyen todos los datos necesarios:
-// nombre, descripcion, color, orden de aparicion y si son de sistema.
+// Estos son los statuses que se usan si no hay configuracion personalizada
+// guardada en la base de data. Incluyen todos los data necesarios:
+// name, description, color, sort_order de aparicion y si son de sistema.
 const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.ENTRADA_RECIBIDA,
-    label: QUOTATION_BOARD_STATE_CONFIG.entrada_recibida.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.entrada_recibida.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.entrada_recibida.description,
+    state_code: QUOTATION_BOARD_STATES.REQUEST_RECEIVED,
+    label: QUOTATION_BOARD_STATE_CONFIG.request_received.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.request_received.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.request_received.description,
     color_token: 'sky',
     sort_order: 10,
     is_system: true,
@@ -246,10 +246,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.FORMULARIO_ENVIADO,
-    label: QUOTATION_BOARD_STATE_CONFIG.formulario_enviado.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.formulario_enviado.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.formulario_enviado.description,
+    state_code: QUOTATION_BOARD_STATES.FORM_SENT,
+    label: QUOTATION_BOARD_STATE_CONFIG.form_sent.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.form_sent.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.form_sent.description,
     color_token: 'cyan',
     sort_order: 20,
     is_system: true,
@@ -257,10 +257,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.FORMULARIO_RECIBIDO,
-    label: QUOTATION_BOARD_STATE_CONFIG.formulario_recibido.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.formulario_recibido.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.formulario_recibido.description,
+    state_code: QUOTATION_BOARD_STATES.FORM_RECEIVED,
+    label: QUOTATION_BOARD_STATE_CONFIG.form_received.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.form_received.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.form_received.description,
     color_token: 'green',
     sort_order: 30,
     is_system: true,
@@ -268,10 +268,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.DEFINIR_ALCANCE,
-    label: QUOTATION_BOARD_STATE_CONFIG.definir_alcance.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.definir_alcance.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.definir_alcance.description,
+    state_code: QUOTATION_BOARD_STATES.DEFINE_SCOPE,
+    label: QUOTATION_BOARD_STATE_CONFIG.define_scope.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.define_scope.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.define_scope.description,
     color_token: 'emerald',
     sort_order: 40,
     is_system: true,
@@ -279,10 +279,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.ESPERANDO_RESPUESTA_CLIENTE,
-    label: QUOTATION_BOARD_STATE_CONFIG.esperando_respuesta_cliente.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.esperando_respuesta_cliente.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.esperando_respuesta_cliente.description,
+    state_code: QUOTATION_BOARD_STATES.AWAITING_CLIENT_RESPONSE,
+    label: QUOTATION_BOARD_STATE_CONFIG.awaiting_client_response.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.awaiting_client_response.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.awaiting_client_response.description,
     color_token: 'cyan',
     sort_order: 43,
     is_system: true,
@@ -290,10 +290,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.ALCANCE_DEFINIDO,
-    label: QUOTATION_BOARD_STATE_CONFIG.alcance_definido.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.alcance_definido.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.alcance_definido.description,
+    state_code: QUOTATION_BOARD_STATES.SCOPE_DEFINED,
+    label: QUOTATION_BOARD_STATE_CONFIG.scope_defined.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.scope_defined.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.scope_defined.description,
     color_token: 'green',
     sort_order: 50,
     is_system: true,
@@ -301,10 +301,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.OFERTA_EN_REVISION,
-    label: QUOTATION_BOARD_STATE_CONFIG.oferta_en_revision.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.oferta_en_revision.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.oferta_en_revision.description,
+    state_code: QUOTATION_BOARD_STATES.QUOTE_IN_REVIEW,
+    label: QUOTATION_BOARD_STATE_CONFIG.quote_in_review.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.quote_in_review.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.quote_in_review.description,
     color_token: 'amber',
     sort_order: 60,
     is_system: true,
@@ -312,10 +312,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.OFERTA_ENVIADA,
-    label: QUOTATION_BOARD_STATE_CONFIG.oferta_enviada.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.oferta_enviada.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.oferta_enviada.description,
+    state_code: QUOTATION_BOARD_STATES.QUOTE_SENT,
+    label: QUOTATION_BOARD_STATE_CONFIG.quote_sent.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.quote_sent.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.quote_sent.description,
     color_token: 'violet',
     sort_order: 70,
     is_system: true,
@@ -323,10 +323,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.OFERTA_ACEPTADA,
-    label: QUOTATION_BOARD_STATE_CONFIG.oferta_aceptada.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.oferta_aceptada.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.oferta_aceptada.description,
+    state_code: QUOTATION_BOARD_STATES.QUOTE_ACCEPTED,
+    label: QUOTATION_BOARD_STATE_CONFIG.quote_accepted.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.quote_accepted.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.quote_accepted.description,
     color_token: 'indigo',
     sort_order: 80,
     is_system: true,
@@ -334,10 +334,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.OFERTA_RECHAZADA,
-    label: QUOTATION_BOARD_STATE_CONFIG.oferta_rechazada.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.oferta_rechazada.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.oferta_rechazada.description,
+    state_code: QUOTATION_BOARD_STATES.QUOTE_REJECTED,
+    label: QUOTATION_BOARD_STATE_CONFIG.quote_rejected.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.quote_rejected.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.quote_rejected.description,
     color_token: 'slate',
     sort_order: 85,
     is_system: true,
@@ -345,10 +345,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.REVISION_FINAL,
-    label: QUOTATION_BOARD_STATE_CONFIG.revision_final.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.revision_final.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.revision_final.description,
+    state_code: QUOTATION_BOARD_STATES.FINAL_REVIEW,
+    label: QUOTATION_BOARD_STATE_CONFIG.final_review.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.final_review.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.final_review.description,
     color_token: 'rose',
     sort_order: 90,
     is_system: true,
@@ -356,10 +356,10 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.QUOTATION_BOARD,
-    state_code: QUOTATION_BOARD_STATES.PROYECTO_ABIERTO,
-    label: QUOTATION_BOARD_STATE_CONFIG.proyecto_abierto.label,
-    short_label: QUOTATION_BOARD_STATE_CONFIG.proyecto_abierto.shortLabel,
-    description: QUOTATION_BOARD_STATE_CONFIG.proyecto_abierto.description,
+    state_code: QUOTATION_BOARD_STATES.PROJECT_OPENED,
+    label: QUOTATION_BOARD_STATE_CONFIG.project_opened.label,
+    short_label: QUOTATION_BOARD_STATE_CONFIG.project_opened.shortLabel,
+    description: QUOTATION_BOARD_STATE_CONFIG.project_opened.description,
     color_token: 'slate',
     sort_order: 95,
     is_system: true,
@@ -368,14 +368,14 @@ const QUOTATION_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
 ]
 
 // VALORES POR DEFECTO PARA LOS ESTADOS DE CONSULTAS ENTRANTES
-// Similar a los de cotizaciones, pero para el flujo de consultas comerciales.
+// Similar a los de cotizaciones, pero para el flujo de requests comerciales.
 const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   {
     scope: WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
-    state_code: CONSULTA_ESTADOS.NUEVO,
-    label: CONSULTA_STATE_CONFIG.nuevo.label,
+    state_code: INCOMING_REQUEST_STATUSES.NEW,
+    label: INCOMING_REQUEST_STATUS_CONFIG.new.label,
     short_label: 'Entrada',
-    description: CONSULTA_STATE_CONFIG.nuevo.description,
+    description: INCOMING_REQUEST_STATUS_CONFIG.new.description,
     color_token: 'blue',
     sort_order: 10,
     is_system: true,
@@ -383,10 +383,10 @@ const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
-    state_code: CONSULTA_ESTADOS.ESPERANDO_FORMULARIO,
-    label: CONSULTA_STATE_CONFIG.esperando_formulario.label,
-    short_label: 'Enviado',
-    description: CONSULTA_STATE_CONFIG.esperando_formulario.description,
+    state_code: INCOMING_REQUEST_STATUSES.AWAITING_FORM,
+    label: INCOMING_REQUEST_STATUS_CONFIG.awaiting_form.label,
+    short_label: 'Sent',
+    description: INCOMING_REQUEST_STATUS_CONFIG.awaiting_form.description,
     color_token: 'yellow',
     sort_order: 20,
     is_system: true,
@@ -394,10 +394,10 @@ const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
-    state_code: CONSULTA_ESTADOS.FORMULARIO_RECIBIDO,
-    label: CONSULTA_STATE_CONFIG.formulario_recibido.label,
+    state_code: INCOMING_REQUEST_STATUSES.FORM_RECEIVED,
+    label: INCOMING_REQUEST_STATUS_CONFIG.form_received.label,
     short_label: 'Revisar',
-    description: CONSULTA_STATE_CONFIG.formulario_recibido.description,
+    description: INCOMING_REQUEST_STATUS_CONFIG.form_received.description,
     color_token: 'green',
     sort_order: 30,
     is_system: true,
@@ -405,10 +405,10 @@ const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.INCOMING_QUERIES,
-    state_code: CONSULTA_ESTADOS.ARCHIVADO,
-    label: CONSULTA_STATE_CONFIG.archivado.label,
-    short_label: 'Archivado',
-    description: CONSULTA_STATE_CONFIG.archivado.description,
+    state_code: INCOMING_REQUEST_STATUSES.ARCHIVED,
+    label: INCOMING_REQUEST_STATUS_CONFIG.archived.label,
+    short_label: 'Archived',
+    description: INCOMING_REQUEST_STATUS_CONFIG.archived.description,
     color_token: 'slate',
     sort_order: 90,
     is_system: true,
@@ -417,15 +417,15 @@ const INCOMING_QUERY_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
 ]
 
 // VALORES POR DEFECTO PARA LOS ESTADOS DEL TABLERO DE PROYECTOS
-// Estos son los estados que se usan si no hay configuracion personalizada
-// guardada en la base de datos para el tablero de proyectos de ingenieria.
+// Estos son los statuses que se usan si no hay configuracion personalizada
+// guardada en la base de data para el tablero de projects de ingenieria.
 const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: PROJECT_WORKFLOW_STATES[0], // 'nuevo'
-    label: PROJECT_STATE_CONFIG.nuevo.label,
-    short_label: PROJECT_STATE_CONFIG.nuevo.shortLabel,
-    description: 'Proyecto recien creado, pendiente de asignar y arrancar',
+    state_code: PROJECT_WORKFLOW_STATES[0], // 'new'
+    label: PROJECT_STATE_CONFIG.new.label,
+    short_label: PROJECT_STATE_CONFIG.new.shortLabel,
+    description: 'Project recien creado, pending de asignar y arrancar',
     color_token: 'green',
     sort_order: 1,
     is_system: true,
@@ -433,9 +433,9 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: PROJECT_WORKFLOW_STATES[1], // 'en_progreso'
-    label: PROJECT_STATE_CONFIG.en_progreso.label,
-    short_label: PROJECT_STATE_CONFIG.en_progreso.shortLabel,
+    state_code: PROJECT_WORKFLOW_STATES[1], // 'in_progress'
+    label: PROJECT_STATE_CONFIG.in_progress.label,
+    short_label: PROJECT_STATE_CONFIG.in_progress.shortLabel,
     description: 'Trabajo de ingenieria en curso',
     color_token: 'blue',
     sort_order: 2,
@@ -444,10 +444,10 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: PROJECT_WORKFLOW_STATES[2], // 'revision'
-    label: PROJECT_STATE_CONFIG.revision.label,
-    short_label: PROJECT_STATE_CONFIG.revision.shortLabel,
-    description: 'En proceso de revision tecnica interna',
+    state_code: PROJECT_WORKFLOW_STATES[2], // 'review'
+    label: PROJECT_STATE_CONFIG.review.label,
+    short_label: PROJECT_STATE_CONFIG.review.shortLabel,
+    description: 'En process de review technical internal',
     color_token: 'amber',
     sort_order: 3,
     is_system: true,
@@ -455,10 +455,10 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: PROJECT_WORKFLOW_STATES[3], // 'aprobacion'
-    label: PROJECT_STATE_CONFIG.aprobacion.label,
-    short_label: PROJECT_STATE_CONFIG.aprobacion.shortLabel,
-    description: 'Pendiente de aprobacion formal',
+    state_code: PROJECT_WORKFLOW_STATES[3], // 'approval'
+    label: PROJECT_STATE_CONFIG.approval.label,
+    short_label: PROJECT_STATE_CONFIG.approval.shortLabel,
+    description: 'Pending de approval formal',
     color_token: 'violet',
     sort_order: 4,
     is_system: true,
@@ -466,10 +466,10 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: PROJECT_WORKFLOW_STATES[4], // 'entregado'
-    label: PROJECT_STATE_CONFIG.entregado.label,
-    short_label: PROJECT_STATE_CONFIG.entregado.shortLabel,
-    description: 'Documentacion entregada al cliente',
+    state_code: PROJECT_WORKFLOW_STATES[4], // 'delivered'
+    label: PROJECT_STATE_CONFIG.delivered.label,
+    short_label: PROJECT_STATE_CONFIG.delivered.shortLabel,
+    description: 'Documentacion entregada al client',
     color_token: 'emerald',
     sort_order: 5,
     is_system: true,
@@ -477,10 +477,10 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: PROJECT_WORKFLOW_STATES[5], // 'cerrado'
-    label: PROJECT_STATE_CONFIG.cerrado.label,
-    short_label: PROJECT_STATE_CONFIG.cerrado.shortLabel,
-    description: 'Proyecto completado y cerrado',
+    state_code: PROJECT_WORKFLOW_STATES[5], // 'closed'
+    label: PROJECT_STATE_CONFIG.closed.label,
+    short_label: PROJECT_STATE_CONFIG.closed.shortLabel,
+    description: 'Project completed y closed',
     color_token: 'slate',
     sort_order: 6,
     is_system: true,
@@ -488,10 +488,10 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
   },
   {
     scope: WORKFLOW_STATE_SCOPES.PROJECT_BOARD,
-    state_code: 'archivado',
-    label: PROJECT_STATE_CONFIG.archivado.label,
-    short_label: PROJECT_STATE_CONFIG.archivado.shortLabel,
-    description: 'Proyecto archivado',
+    state_code: 'archived',
+    label: PROJECT_STATE_CONFIG.archived.label,
+    short_label: PROJECT_STATE_CONFIG.archived.shortLabel,
+    description: 'Project archived',
     color_token: 'slate',
     sort_order: 90,
     is_system: true,
@@ -500,7 +500,7 @@ const PROJECT_BOARD_DEFAULT_ROWS: WorkflowStateConfigRow[] = [
 ]
 
 // Agrupa los valores por defecto por ambito, para buscar rapidamente
-// los defaults de consultas, cotizaciones o proyectos segun se necesite
+// los defaults de requests, cotizaciones o projects segun se necesite
 const DEFAULT_ROWS_BY_SCOPE: Record<WorkflowStateScope, WorkflowStateConfigRow[]> = {
   incoming_queries: INCOMING_QUERY_DEFAULT_ROWS,
   quotation_board: QUOTATION_BOARD_DEFAULT_ROWS,
@@ -508,10 +508,10 @@ const DEFAULT_ROWS_BY_SCOPE: Record<WorkflowStateScope, WorkflowStateConfigRow[]
 }
 
 /**
- * Verifica si un texto es un nombre de color valido de los disponibles
- * para estados de flujo de trabajo.
+ * Verifica si un text es un name de color valido de los disponibles
+ * para statuses de flujo de trabajo.
  *
- * @param value - El texto a verificar (ej: "sky", "cyan", "rojo")
+ * @param value - El text a verificar (ej: "sky", "cyan", "rojo")
  * @returns true si es un color valido, false si no
  */
 export function isWorkflowStateColorToken(value: string): value is WorkflowStateColorToken {
@@ -521,7 +521,7 @@ export function isWorkflowStateColorToken(value: string): value is WorkflowState
 /**
  * Obtiene los estilos CSS completos para un color dado.
  *
- * @param colorToken - El nombre del color (ej: "sky", "amber")
+ * @param colorToken - El name del color (ej: "sky", "amber")
  * @returns Objeto con los estilos de badge (etiqueta), tablero y editor
  */
 export function getWorkflowStateColorStyle(colorToken: WorkflowStateColorToken) {
@@ -530,9 +530,9 @@ export function getWorkflowStateColorStyle(colorToken: WorkflowStateColorToken) 
 
 /**
  * Devuelve la lista de colores disponibles formateada para usar en un selector (dropdown).
- * Cada opcion incluye el valor del color, su nombre visible y el estilo del chip del editor.
+ * Cada opcion incluye el valor del color, su name visible y el estilo del chip del editor.
  *
- * Se usa en el formulario donde el administrador elige el color de un estado.
+ * Se usa en el form donde el administrador elige el color de un status.
  *
  * @returns Lista de opciones de color con valor, etiqueta y estilo del chip
  */
@@ -558,20 +558,20 @@ export function getDefaultWorkflowStateRows(scope: WorkflowStateScope) {
 }
 
 /**
- * Devuelve la lista de codigos de estado permitidos para un ambito.
- * Util para validar que un codigo de estado es valido antes de usarlo.
+ * Devuelve la lista de codigos de status permitidos para un ambito.
+ * Util para validar que un codigo de status es valido antes de usarlo.
  *
  * @param scope - El ambito del flujo de trabajo
- * @returns Lista de codigos de estado (ej: ["nuevo", "esperando_formulario", ...])
+ * @returns Lista de codigos de status (ej: ["new", "awaiting_form", ...])
  */
 export function getAllowedWorkflowStateCodes(scope: WorkflowStateScope) {
   return getDefaultWorkflowStateRows(scope).map((row) => row.state_code)
 }
 
 /**
- * Convierte las filas por defecto en un mapa (diccionario) indexado por codigo de estado.
- * Esto permite buscar rapidamente la configuracion por defecto de un estado especifico.
- * (Funcion interna, no se exporta fuera de este archivo)
+ * Convierte las filas por defecto en un mapa (diccionario) indexado por codigo de status.
+ * Esto permite buscar rapidamente la configuracion por defecto de un status especifico.
+ * (Funcion internal, no se exporta fuera de este archivo)
  */
 function getDefaultRowsMap(scope: WorkflowStateScope): WorkflowStateDefaultsMap {
   return Object.fromEntries(
@@ -585,8 +585,8 @@ function getDefaultRowsMap(scope: WorkflowStateScope): WorkflowStateDefaultsMap 
  * incorrecto, se usa el valor por defecto en su lugar.
  *
  * Esto previene errores en la interfaz cuando la configuracion en la base de
- * datos tiene datos incompletos o incorrectos.
- * (Funcion interna, no se exporta fuera de este archivo)
+ * data tiene data incompletos o incorrectos.
+ * (Funcion internal, no se exporta fuera de este archivo)
  *
  * @param row - La fila de configuracion personalizada (puede tener campos vacios)
  * @param defaultRow - La fila por defecto que se usa como respaldo
@@ -612,21 +612,21 @@ function normalizeRow(
 }
 
 /**
- * FUNCION PRINCIPAL: "Resuelve" los estados de un flujo de trabajo.
+ * FUNCION PRINCIPAL: "Resuelve" los statuses de un flujo de trabajo.
  *
  * Combina los valores por defecto con las personalizaciones del administrador
- * (si las hay) y devuelve la lista final de estados con todos sus estilos
+ * (si las hay) y devuelve la lista final de statuses con todos sus estilos
  * visuales listos para pintar en la interfaz.
  *
- * El proceso es:
+ * El process es:
  * 1. Carga los valores por defecto para el ambito solicitado
- * 2. Si hay filas personalizadas en la base de datos, las normaliza y las aplica
- * 3. Ordena los estados segun su campo sort_order
+ * 2. Si hay filas personalizadas en la base de data, las normaliza y las aplica
+ * 3. Ordena los statuses segun su campo sort_order
  * 4. Calcula los estilos CSS finales (badge y boardAccent) a partir del color asignado
  *
  * @param scope - El ambito del flujo de trabajo ("incoming_queries" o "quotation_board")
- * @param rows - Las filas personalizadas leidas de la base de datos (puede estar vacia)
- * @returns Lista de estados completamente resueltos, listos para la interfaz
+ * @param rows - Las filas personalizadas leidas de la base de data (puede estar vacia)
+ * @returns Lista de statuses completamente resueltos, listos para la interfaz
  */
 export function resolveWorkflowStateRows(
   scope: WorkflowStateScope,
@@ -658,13 +658,13 @@ export function resolveWorkflowStateRows(
  * lista que puede contener filas de multiples ambitos.
  *
  * Esto se usa cuando el administrador guarda cambios en la configuracion de
- * estados: se eliminan las filas antiguas del ambito modificado y se insertan
+ * statuses: se eliminan las filas antiguas del ambito modificado y se insertan
  * las nuevas, manteniendo intactas las filas de otros ambitos.
  *
  * @param rows - Lista completa de filas de todos los ambitos
  * @param scope - El ambito cuyas filas se van a reemplazar
  * @param nextRows - Las nuevas filas que van a sustituir a las anteriores
- * @returns Nueva lista con las filas del ambito reemplazadas
+ * @returns New lista con las filas del ambito reemplazadas
  */
 export function replaceWorkflowStateRowsForScope(
   rows: WorkflowStateConfigRow[],
@@ -678,29 +678,29 @@ export function replaceWorkflowStateRowsForScope(
 }
 
 /**
- * Obtiene la informacion visual de un estado de consulta entrante,
+ * Obtiene la informacion visual de un status de request entrante,
  * teniendo en cuenta las personalizaciones del administrador.
  *
- * A diferencia de getConsultaStatusMeta (en workflow-states.ts) que solo usa
+ * A diferencia de getIncomingRequestStatusMeta (en workflow-states.ts) que solo usa
  * valores fijos, esta funcion combina los defaults con la configuracion
- * personalizada que puede existir en la base de datos.
+ * personalizada que puede existir en la base de data.
  *
- * @param estado - El codigo del estado de la consulta (ej: "nuevo", "archivado")
- * @param rows - Las filas de configuracion leidas de la base de datos (opcional)
- * @returns Objeto con nombre, nombre corto, descripcion y color del estado
+ * @param status - El codigo del status de la request (ej: "new", "archived")
+ * @param rows - Las filas de configuracion leidas de la base de data (opcional)
+ * @returns Objeto con name, name corto, description y color del status
  */
 export function getResolvedIncomingQueryStatusMeta(
-  estado: string,
+  status: string,
   rows: WorkflowStateConfigRow[] = [],
 ) {
   const resolvedRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES, rows)
-  const match = resolvedRows.find((row) => row.state_code === estado)
+  const match = resolvedRows.find((row) => row.state_code === status)
 
   if (!match) {
     return {
-      label: estado,
-      shortLabel: estado,
-      description: 'Estado desconocido',
+      label: status,
+      shortLabel: status,
+      description: 'Unknown status',
       color: COLOR_STYLE_MAP.slate.badge.color,
     }
   }
@@ -714,16 +714,16 @@ export function getResolvedIncomingQueryStatusMeta(
 }
 
 /**
- * Obtiene la informacion visual de un estado del tablero de cotizaciones,
+ * Obtiene la informacion visual de un status del tablero de cotizaciones,
  * teniendo en cuenta las personalizaciones del administrador.
  *
  * Similar a getResolvedIncomingQueryStatusMeta pero para el tablero de cotizaciones.
  * Devuelve ademas el colorToken y el estilo del tablero (accent) que se necesitan
  * para pintar las columnas del tablero Kanban.
  *
- * @param state - El codigo del estado de la cotizacion (ej: "entrada_recibida", "triage")
- * @param rows - Las filas de configuracion leidas de la base de datos (opcional)
- * @returns Objeto con nombre, nombre corto, descripcion, color y estilo del tablero
+ * @param state - El codigo del status de la cotizacion (ej: "request_received", "triage")
+ * @param rows - Las filas de configuracion leidas de la base de data (opcional)
+ * @returns Objeto con name, name corto, description, color y estilo del tablero
  */
 export function getResolvedQuotationBoardStatusMeta(
   state: string,
@@ -738,7 +738,7 @@ export function getResolvedQuotationBoardStatusMeta(
     return {
       label: state,
       shortLabel: state,
-      description: 'Estado de quotations desconocido',
+      description: 'Unknown quotation status',
       colorToken: 'slate' as WorkflowStateColorToken,
       accent: fallback.boardAccent,
     }
@@ -754,36 +754,36 @@ export function getResolvedQuotationBoardStatusMeta(
 }
 
 /**
- * Verifica si un texto es un codigo de estado valido para consultas entrantes.
+ * Verifica si un text es un codigo de status valido para requests entrantes.
  *
- * @param value - El texto a verificar
- * @returns true si es un codigo de estado de consulta valido, false si no
+ * @param value - El text a verificar
+ * @returns true si es un codigo de status de request valido, false si no
  */
-export function isIncomingQueryStateCode(value: string): value is EstadoConsulta {
+export function isIncomingQueryStateCode(value: string): value is IncomingRequestStatus {
   return getAllowedWorkflowStateCodes(WORKFLOW_STATE_SCOPES.INCOMING_QUERIES).includes(value)
 }
 
 /**
- * Verifica si un texto es un codigo de estado valido para el tablero de cotizaciones.
+ * Verifica si un text es un codigo de status valido para el tablero de cotizaciones.
  *
- * @param value - El texto a verificar
- * @returns true si es un codigo de estado de cotizacion valido, false si no
+ * @param value - El text a verificar
+ * @returns true si es un codigo de status de cotizacion valido, false si no
  */
 export function isQuotationBoardStateCode(value: string): value is QuotationBoardState {
   return getAllowedWorkflowStateCodes(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD).includes(value)
 }
 
 /**
- * Obtiene la informacion visual de un estado del tablero de proyectos,
+ * Obtiene la informacion visual de un status del tablero de projects,
  * teniendo en cuenta las personalizaciones del administrador.
  *
- * Similar a getResolvedQuotationBoardStatusMeta pero para el tablero de proyectos.
+ * Similar a getResolvedQuotationBoardStatusMeta pero para el tablero de projects.
  * Devuelve el colorToken y el estilo del tablero (accent) que se necesitan
- * para pintar las columnas del tablero Kanban de proyectos.
+ * para pintar las columnas del tablero Kanban de projects.
  *
- * @param state - El codigo del estado del proyecto (ej: "nuevo", "en_progreso")
- * @param rows - Las filas de configuracion leidas de la base de datos (opcional)
- * @returns Objeto con nombre, nombre corto, descripcion, color y estilo del tablero
+ * @param state - El codigo del status del project (ej: "new", "in_progress")
+ * @param rows - Las filas de configuracion leidas de la base de data (opcional)
+ * @returns Objeto con name, name corto, description, color y estilo del tablero
  */
 export function getResolvedProjectBoardStatusMeta(
   state: string,
@@ -798,7 +798,7 @@ export function getResolvedProjectBoardStatusMeta(
     return {
       label: state,
       shortLabel: state,
-      description: 'Estado de proyecto desconocido',
+      description: 'Status de project desconocido',
       colorToken: 'slate' as WorkflowStateColorToken,
       accent: fallback.boardAccent,
       badge: fallback.badge,
@@ -816,10 +816,10 @@ export function getResolvedProjectBoardStatusMeta(
 }
 
 /**
- * Verifica si un texto es un codigo de estado valido para el tablero de proyectos.
+ * Verifica si un text es un codigo de status valido para el tablero de projects.
  *
- * @param value - El texto a verificar
- * @returns true si es un codigo de estado de proyecto valido, false si no
+ * @param value - El text a verificar
+ * @returns true si es un codigo de status de project valido, false si no
  */
 export function isProjectBoardStateCode(value: string): boolean {
   return getAllowedWorkflowStateCodes(WORKFLOW_STATE_SCOPES.PROJECT_BOARD).includes(value)

@@ -6,22 +6,22 @@
  * Namespaces defined here (must remain disjoint — do not cross-reference codes
  * between them):
  *
- *   1. `consulta` (incoming queries)
- *        - Constants: `CONSULTA_ESTADOS`
- *        - DB table:  `doa_consultas_entrantes.estado`
- *        - Check:     `doa_consultas_entrantes_estado_check`
+ *   1. `request` (incoming queries)
+ *        - Constants: `INCOMING_REQUEST_STATUSES`
+ *        - DB table:  `doa_incoming_requests.status`
+ *        - Check:     `doa_incoming_requests_estado_check`
  *
  *   2. `quotation_board`
  *        - Constants: `QUOTATION_BOARD_STATES`
- *        - DB table:  `doa_consultas_entrantes.estado` (shared column, but the
+ *        - DB table:  `doa_incoming_requests.status` (shared column, but the
  *                     valid codes for the Kanban view are a superset here —
  *                     see audit doc 07 for the intentional overlap).
  *
  *   3. `project_execution` (machine v2)
  *        - Constants: `PROJECT_EXECUTION_STATES`, `PROJECT_EXECUTION_PHASES`
- *        - DB column: `doa_proyectos.estado_v2`, `doa_proyectos.fase_actual`
- *        - Check:     `doa_proyectos_estado_v2_check`,
- *                     `doa_proyectos_fase_actual_check`
+ *        - DB column: `doa_projects.execution_status`, `doa_projects.current_phase`
+ *        - Check:     `doa_projects_execution_status_check`,
+ *                     `doa_projects_current_phase_check`
  *
  * DAG guarantees that MUST hold for the app to be correct:
  *   (a) Every transition invoked from server code (API routes / actions) must
@@ -37,187 +37,187 @@
  * Test hint (not implemented yet — follow-up):
  *   A drift-detection script should SELECT the CHECK constraint definitions
  *   from `pg_constraint` and parse the enumerated strings, then compare them
- *   against `Object.values(CONSULTA_ESTADOS)`, `Object.values(QUOTATION_BOARD_STATES)`,
+ *   against `Object.values(INCOMING_REQUEST_STATUSES)`, `Object.values(QUOTATION_BOARD_STATES)`,
  *   `Object.values(PROJECT_EXECUTION_STATES)`, and `Object.values(PROJECT_EXECUTION_PHASES)`.
  *   Any symmetric difference is a drift. Fail the script on non-empty diff.
  * ============================================================================
  *
  * ESTADOS DE FLUJOS DE TRABAJO DE LA APLICACION
  *
- * Este es uno de los archivos mas importantes de la app. Define TODOS los estados
+ * Este es uno de los archivos mas importantes de la app. Define TODOS los statuses
  * posibles por los que pueden pasar las entidades principales del sistema:
  *
- * 1. COTIZACIONES (Quotations): Los estados del tablero visual donde se mueven
- *    las ofertas comerciales (desde que llega una consulta hasta que se cierra).
+ * 1. COTIZACIONES (Quotations): Los statuses del tablero visual donde se mueven
+ *    las quotes comerciales (desde que llega una request hasta que se cierra).
  *
- * 2. CONSULTAS ENTRANTES (Incoming Queries): Los estados por los que pasa una
- *    consulta de un cliente desde que se recibe hasta que se archiva.
+ * 2. CONSULTAS ENTRANTES (Incoming Queries): Los statuses por los que pasa una
+ *    request de un client desde que se recibe hasta que se archiva.
  *
- * 3. PROYECTOS DE INGENIERIA: Los estados simplificados de un proyecto (nuevo,
- *    en_progreso, revision, aprobacion, entregado, cerrado), mas los estados
- *    "legacy" (antiguos) que se conservan por compatibilidad con datos existentes.
+ * 3. PROYECTOS DE INGENIERIA: Los statuses simplificados de un project (new,
+ *    in_progress, review, approval, delivered, closed), mas los statuses
+ *    "legacy" (antiguos) que se conservan por compatibilidad con data existentes.
  *
- * Para cada tipo de estado se define:
- * - Los codigos posibles (por ejemplo: "entrada_recibida", "triage", etc.)
- * - La configuracion visual (nombre, color, descripcion)
- * - Las transiciones permitidas (de que estado se puede pasar a cual)
- * - Funciones auxiliares para consultar y validar estados
+ * Para cada type de status se define:
+ * - Los codigos posibles (por ejemplo: "request_received", "triage", etc.)
+ * - La configuracion visual (name, color, description)
+ * - Las transiciones permitidas (de que status se puede pasar a cual)
+ * - Funciones auxiliares para consultar y validar statuses
  *
- * REGLA IMPORTANTE: Nunca escribir nombres de estados directamente en el codigo.
- * Siempre usar las constantes definidas aqui (ej: CONSULTA_ESTADOS.NUEVO).
+ * REGLA IMPORTANTE: Nunca escribir nombres de statuses directamente en el codigo.
+ * Siempre usar las constantes definidas aqui (ej: INCOMING_REQUEST_STATUSES.NEW).
  */
 
 import type {
-  EstadoProyecto,
-  EstadoProyectoLegacy,
-  EstadoProyectoPersistido,
-  EstadoProyectoWorkflow,
+  ProjectStatus,
+  LegacyProjectStatus,
+  PersistedProjectStatus,
+  ProjectWorkflowStatus,
 } from '@/types/database'
 
 // ==========================================
 // ESTADOS VISUALES DE QUOTATIONS (COTIZACIONES)
-// Estos son los estados del tablero Kanban donde se gestionan las ofertas comerciales
+// Estos son los statuses del tablero Kanban donde se gestionan las quotes comerciales
 // ==========================================
 
-// Codigos de los estados posibles en el tablero de cotizaciones.
+// Codigos de los statuses posibles en el tablero de cotizaciones.
 // Cada constante representa una columna del tablero Kanban.
 export const QUOTATION_BOARD_STATES = {
-  ENTRADA_RECIBIDA: 'entrada_recibida',           // Acaba de llegar una consulta comercial
-  FORMULARIO_ENVIADO: 'formulario_enviado',       // Formulario enviado al cliente, esperando respuesta
-  FORMULARIO_RECIBIDO: 'formulario_recibido',     // Formulario recibido del cliente, pendiente de revision
-  DEFINIR_ALCANCE: 'definir_alcance',             // Se esta definiendo el alcance del trabajo (preliminar)
-  ESPERANDO_RESPUESTA_CLIENTE: 'esperando_respuesta_cliente', // Email enviado al cliente manualmente, esperando respuesta
-  ALCANCE_DEFINIDO: 'alcance_definido',           // Alcance definido, preparar oferta comercial
-  OFERTA_EN_REVISION: 'oferta_en_revision',       // Oferta preparada, en revision interna
-  OFERTA_ENVIADA: 'oferta_enviada',               // Oferta enviada al cliente
-  OFERTA_ACEPTADA: 'oferta_aceptada',             // El cliente acepto la oferta
-  OFERTA_RECHAZADA: 'oferta_rechazada',           // El cliente rechazo la oferta
-  REVISION_FINAL: 'revision_final',               // Revision final antes de abrir proyecto
-  PROYECTO_ABIERTO: 'proyecto_abierto',           // Proyecto ya creado desde la consulta (terminal en tablero)
+  REQUEST_RECEIVED: 'request_received',           // Acaba de llegar una commercial request
+  FORM_SENT: 'form_sent',       // Form sent al client, awaiting response
+  FORM_RECEIVED: 'form_received',     // Form received del client, awaiting review
+  DEFINE_SCOPE: 'define_scope',             // Se esta definiendo el alcance del trabajo (preliminar)
+  AWAITING_CLIENT_RESPONSE: 'awaiting_client_response', // Email sent al client manualmente, awaiting response
+  SCOPE_DEFINED: 'scope_defined',           // Alcance definido, prepare quote commercial
+  QUOTE_IN_REVIEW: 'quote_in_review',       // Oferta preparada, en review internal
+  QUOTE_SENT: 'quote_sent',               // Oferta sent al client
+  QUOTE_ACCEPTED: 'quote_accepted',             // El client acepto la quote
+  QUOTE_REJECTED: 'quote_rejected',           // El client rechazo la quote
+  FINAL_REVIEW: 'final_review',               // Review final antes de abrir project
+  PROJECT_OPENED: 'project_opened',           // Project ya creado desde la request (terminal en tablero)
 } as const
 
-// Tipo que representa cualquier estado valido del tablero de cotizaciones
+// Tipo que representa cualquier status valido del tablero de cotizaciones
 export type QuotationBoardState =
   typeof QUOTATION_BOARD_STATES[keyof typeof QUOTATION_BOARD_STATES]
 
-// Estructura de la configuracion visual de cada estado del tablero de cotizaciones
-// Define como se ve cada estado en la interfaz: nombre, color del texto, fondo, borde y punto
+// Estructura de la configuracion visual de cada status del tablero de cotizaciones
+// Define como se ve cada status en la interfaz: name, color del text, fondo, borde y punto
 type QuotationBoardConfig = {
-  label: string        // Nombre completo del estado (ej: "Entrada recibida")
-  shortLabel: string   // Nombre abreviado para espacios pequeños (ej: "Entrada")
-  description: string  // Explicacion breve de que significa estar en este estado
-  color: string        // Color del texto (clase CSS de Tailwind)
+  label: string        // Name completo del status (ej: "Request received")
+  shortLabel: string   // Name abreviado para espacios pequeños (ej: "Entrada")
+  description: string  // Explicacion breve de que significa estar en este status
+  color: string        // Color del text (clase CSS de Tailwind)
   bg: string           // Color de fondo (clase CSS de Tailwind)
   border: string       // Color del borde (clase CSS de Tailwind)
   dot: string          // Color del punto/indicador (clase CSS de Tailwind)
 }
 
-// Configuracion visual completa de cada estado del tablero de cotizaciones.
-// Aqui se define el nombre, la descripcion y los colores de cada columna del tablero.
+// Configuracion visual completa de cada status del tablero de cotizaciones.
+// Aqui se define el name, la description y los colores de cada columna del tablero.
 export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, QuotationBoardConfig> = {
-  entrada_recibida: {
-    label: 'Entrada recibida',
-    shortLabel: 'Entrada',
-    description: 'Consulta comercial que acaba de entrar en la bandeja',
+  request_received: {
+    label: 'Request received',
+    shortLabel: 'Request',
+    description: 'Commercial request that has just arrived in the inbox',
     color: 'text-sky-700',
     bg: 'bg-sky-50',
     border: 'border-sky-200',
     dot: 'bg-sky-500',
   },
-  formulario_enviado: {
-    label: 'Formulario enviado. Esperando respuesta',
-    shortLabel: 'Enviado',
-    description: 'Se envió el formulario al cliente, pendiente de respuesta',
+  form_sent: {
+    label: 'Form sent. Awaiting response',
+    shortLabel: 'Sent',
+    description: 'Form sent to the client; awaiting response',
     color: 'text-cyan-700',
     bg: 'bg-cyan-50',
     border: 'border-cyan-200',
     dot: 'bg-cyan-500',
   },
-  formulario_recibido: {
-    label: 'Formulario general recibido. Revisar',
-    shortLabel: 'Form. gral. recibido',
-    description: 'El cliente respondió el formulario, pendiente de revisión interna',
+  form_received: {
+    label: 'General form received. Review',
+    shortLabel: 'General form received',
+    description: 'Client submitted the form; awaiting internal review',
     color: 'text-teal-700',
     bg: 'bg-teal-50',
     border: 'border-teal-200',
     dot: 'bg-teal-500',
   },
-  definir_alcance: {
-    label: 'Definir alcance. Preliminar',
-    shortLabel: 'Alcance prelim.',
-    description: 'Se está definiendo el alcance técnico y comercial del trabajo',
+  define_scope: {
+    label: 'Define scope. Preliminary',
+    shortLabel: 'Preliminary scope',
+    description: 'Technical and commercial scope is being defined',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  esperando_respuesta_cliente: {
-    label: 'Esperando respuesta del cliente',
-    shortLabel: 'Esperando cliente',
-    description: 'Email enviado al cliente, esperando respuesta. Se transiciona manualmente al enviar el correo.',
+  awaiting_client_response: {
+    label: 'Awaiting client response',
+    shortLabel: 'Awaiting client',
+    description: 'Email sent to the client; awaiting response. Transitioned manually when the email is sent.',
     color: 'text-cyan-700',
     bg: 'bg-cyan-50',
     border: 'border-cyan-200',
     dot: 'bg-cyan-500',
   },
-  alcance_definido: {
-    label: 'Alcance definido. Preparar oferta',
-    shortLabel: 'Preparar',
-    description: 'Alcance clarificado, se procede a preparar la oferta comercial',
+  scope_defined: {
+    label: 'Scope defined. Prepare quote',
+    shortLabel: 'Prepare',
+    description: 'Scope clarified; prepare the commercial quote',
     color: 'text-green-700',
     bg: 'bg-green-50',
     border: 'border-green-200',
     dot: 'bg-green-500',
   },
-  oferta_en_revision: {
-    label: 'Oferta preparada. Revisar',
-    shortLabel: 'Revisión',
-    description: 'La oferta está redactada y pendiente de revisión interna',
+  quote_in_review: {
+    label: 'Quote prepared. Review',
+    shortLabel: 'Review',
+    description: 'Quote drafted and awaiting internal review',
     color: 'text-amber-700',
     bg: 'bg-amber-50',
     border: 'border-amber-200',
     dot: 'bg-amber-500',
   },
-  oferta_enviada: {
-    label: 'Oferta enviada a cliente',
-    shortLabel: 'Enviada',
-    description: 'La oferta comercial fue enviada al cliente, esperando respuesta',
+  quote_sent: {
+    label: 'Quote sent to client',
+    shortLabel: 'Sent',
+    description: 'Commercial quote sent to the client; awaiting response',
     color: 'text-violet-700',
     bg: 'bg-violet-50',
     border: 'border-violet-200',
     dot: 'bg-violet-500',
   },
-  oferta_aceptada: {
-    label: 'Oferta aceptada',
-    shortLabel: 'Aceptada',
-    description: 'El cliente aceptó la oferta comercial',
+  quote_accepted: {
+    label: 'Quote accepted',
+    shortLabel: 'Accepted',
+    description: 'Client accepted the commercial quote',
     color: 'text-indigo-700',
     bg: 'bg-indigo-50',
     border: 'border-indigo-200',
     dot: 'bg-indigo-500',
   },
-  oferta_rechazada: {
-    label: 'Oferta rechazada',
-    shortLabel: 'Rechazada',
-    description: 'El cliente rechazó la oferta comercial',
+  quote_rejected: {
+    label: 'Quote rejected',
+    shortLabel: 'Rejected',
+    description: 'Client rejected the commercial quote',
     color: 'text-slate-700',
     bg: 'bg-slate-50',
     border: 'border-slate-200',
     dot: 'bg-slate-500',
   },
-  revision_final: {
-    label: 'Revisión final. Abrir Proyecto',
+  final_review: {
+    label: 'Final review. Open project',
     shortLabel: 'Final',
-    description: 'Revisión final antes de crear el proyecto de ingeniería',
+    description: 'Review final antes de crear el project de ingeniería',
     color: 'text-rose-700',
     bg: 'bg-rose-50',
     border: 'border-rose-200',
     dot: 'bg-rose-500',
   },
-  proyecto_abierto: {
-    label: 'Proyecto abierto',
-    shortLabel: 'Abierto',
-    description: 'El proyecto de ingeniería ya fue creado desde esta consulta',
+  project_opened: {
+    label: 'Project opened',
+    shortLabel: 'Open',
+    description: 'The engineering project has already been created from this request',
     color: 'text-slate-700',
     bg: 'bg-slate-50',
     border: 'border-slate-200',
@@ -226,13 +226,13 @@ export const QUOTATION_BOARD_STATE_CONFIG: Record<QuotationBoardState, Quotation
 }
 
 /**
- * Obtiene la informacion visual de un estado del tablero de cotizaciones.
+ * Obtiene la informacion visual de un status del tablero de cotizaciones.
  *
- * Si el estado no se reconoce (por ejemplo, porque viene de datos antiguos),
+ * Si el status no se reconoce (por ejemplo, porque viene de data antiguos),
  * devuelve una configuracion por defecto en gris para que no se rompa la interfaz.
  *
- * @param state - El codigo del estado (ej: "entrada_recibida", "triage")
- * @returns Objeto con el nombre, descripcion y colores del estado
+ * @param state - El codigo del status (ej: "request_received", "triage")
+ * @returns Objeto con el name, description y colores del status
  */
 export function getQuotationBoardStatusMeta(state: string) {
   const config = QUOTATION_BOARD_STATE_CONFIG[state as QuotationBoardState]
@@ -240,7 +240,7 @@ export function getQuotationBoardStatusMeta(state: string) {
     return {
       label: state,
       shortLabel: state,
-      description: 'Estado de quotations desconocido',
+      description: 'Unknown quotation status',
       color: 'text-slate-600',
       bg: 'bg-slate-100',
       border: 'border-slate-200',
@@ -253,201 +253,201 @@ export function getQuotationBoardStatusMeta(state: string) {
 
 // ==========================================
 // ESTADOS DE CONSULTAS ENTRANTES
-// Estos estados representan el ciclo de vida de una consulta comercial
-// desde que llega por email/formulario hasta que se archiva.
+// Estos statuses representan el ciclo de vida de una commercial request
+// desde que llega por email/form hasta que se archiva.
 // ==========================================
 
-// Codigos de los estados posibles para las consultas entrantes
-export const CONSULTA_ESTADOS = {
-  NUEVO: 'nuevo',                                   // Consulta recien recibida, sin procesar
-  ESPERANDO_FORMULARIO: 'esperando_formulario',      // Se le envio un formulario al cliente, esperando respuesta
-  FORMULARIO_RECIBIDO: 'formulario_recibido',        // El cliente respondio el formulario, hay que revisarlo
-  ARCHIVADO: 'archivado',                            // Consulta cerrada y archivada
+// Codigos de los statuses posibles para las requests entrantes
+export const INCOMING_REQUEST_STATUSES = {
+  NEW: 'new',                                   // Request recien received, sin procesar
+  AWAITING_FORM: 'awaiting_form',      // Se le send un form al client, awaiting response
+  FORM_RECEIVED: 'form_received',        // El client respondio el form, hay que revisarlo
+  ARCHIVED: 'archived',                            // Request cerrada y archivada
 } as const
 
-// Tipo que representa cualquier estado valido de una consulta entrante
-export type EstadoConsulta = typeof CONSULTA_ESTADOS[keyof typeof CONSULTA_ESTADOS]
+// Tipo que representa cualquier status valido de una request entrante
+export type IncomingRequestStatus = typeof INCOMING_REQUEST_STATUSES[keyof typeof INCOMING_REQUEST_STATUSES]
 
-// Configuracion visual de cada estado de consulta: nombre visible, colores y descripcion
-export const CONSULTA_STATE_CONFIG: Record<EstadoConsulta, { label: string; color: string; description: string }> = {
-  nuevo: {
-    label: 'Nueva entrada',
+// Configuracion visual de cada status de request: name visible, colores y description
+export const INCOMING_REQUEST_STATUS_CONFIG: Record<IncomingRequestStatus, { label: string; color: string; description: string }> = {
+  new: {
+    label: 'New request',
     color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    description: 'Nueva consulta recibida, pendiente de revisión por ingeniero',
+    description: 'New request received, awaiting review por ingeniero',
   },
-  esperando_formulario: {
-    label: 'Formulario enviado',
+  awaiting_form: {
+    label: 'Form sent',
     color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    description: 'Formulario enviado al cliente, pendiente de respuesta',
+    description: 'Form sent al client, awaiting response',
   },
-  formulario_recibido: {
-    label: 'Formulario general recibido. Revisar',
+  form_received: {
+    label: 'General form received. Review',
     color: 'bg-green-500/20 text-green-400 border-green-500/30',
-    description: 'Formulario recibido del cliente, pendiente de revisión interna',
+    description: 'Form received del client, awaiting review internal',
   },
-  archivado: {
-    label: 'Archivado',
+  archived: {
+    label: 'Archived',
     color: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
     description:
-      'Consulta archivada. Se conserva en Supabase pero no aparece en la UI operativa',
+      'Request archivada. Se conserva en Supabase pero no aparece en la UI operativa',
   },
 }
 
 /**
- * Obtiene la informacion visual de un estado de consulta entrante.
+ * Obtiene la informacion visual de un status de request entrante.
  *
- * Similar a getQuotationBoardStatusMeta pero para consultas.
- * Si el estado no se reconoce, devuelve una configuracion por defecto en gris.
+ * Similar a getQuotationBoardStatusMeta pero para requests.
+ * Si el status no se reconoce, devuelve una configuracion por defecto en gris.
  *
- * @param estado - El codigo del estado de la consulta (ej: "nuevo", "archivado")
- * @returns Objeto con el nombre visible, colores y descripcion del estado
+ * @param status - El codigo del status de la request (ej: "new", "archived")
+ * @returns Objeto con el name visible, colores y description del status
  */
-export function getConsultaStatusMeta(estado: string) {
-  const config = CONSULTA_STATE_CONFIG[estado as EstadoConsulta]
-  if (!config) return { label: estado, color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30', description: 'Estado desconocido' }
+export function getIncomingRequestStatusMeta(status: string) {
+  const config = INCOMING_REQUEST_STATUS_CONFIG[status as IncomingRequestStatus]
+  if (!config) return { label: status, color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30', description: 'Unknown status' }
   return config
 }
 
-// Transiciones permitidas entre estados de consultas.
-// Define A QUE estado se puede mover una consulta DESDE cada estado.
-// Por ejemplo: desde "nuevo" se puede pasar a "esperando_formulario" o a "archivado",
-// pero desde "archivado" no se puede mover a ningun otro estado (lista vacia).
-export const CONSULTA_TRANSITIONS: Record<EstadoConsulta, EstadoConsulta[]> = {
-  nuevo: ['esperando_formulario', 'archivado'],
-  esperando_formulario: ['formulario_recibido', 'archivado'],
-  formulario_recibido: ['archivado'],
-  archivado: [],
+// Transiciones permitidas entre statuses de requests.
+// Define A QUE status se puede mover una request DESDE cada status.
+// Por ejemplo: desde "new" se puede pasar a "awaiting_form" o a "archived",
+// pero desde "archived" no se puede mover a ningun other status (lista vacia).
+export const INCOMING_REQUEST_TRANSITIONS: Record<IncomingRequestStatus, IncomingRequestStatus[]> = {
+  new: ['awaiting_form', 'archived'],
+  awaiting_form: ['form_received', 'archived'],
+  form_received: ['archived'],
+  archived: [],
 }
 
 /**
- * Devuelve la lista de estados a los que se puede mover una consulta
- * desde su estado actual.
+ * Devuelve la lista de statuses a los que se puede mover una request
+ * desde su status actual.
  *
  * La interfaz usa esta funcion para mostrar solo los botones de cambio
- * de estado que son validos segun las reglas del flujo de trabajo.
+ * de status que son validos segun las reglas del flujo de trabajo.
  *
- * @param current - El estado actual de la consulta
- * @returns Lista de estados a los que se puede transicionar, o lista vacia si no hay opciones
+ * @param current - El status actual de la request
+ * @returns Lista de statuses a los que se puede transicionar, o lista vacia si no hay opciones
  */
-export function getAllowedConsultaTransitions(current: string): EstadoConsulta[] {
-  return CONSULTA_TRANSITIONS[current as EstadoConsulta] ?? []
+export function getAllowedIncomingRequestTransitions(current: string): IncomingRequestStatus[] {
+  return INCOMING_REQUEST_TRANSITIONS[current as IncomingRequestStatus] ?? []
 }
 
 // ==========================================
 // ESTADOS DE PROYECTOS DE INGENIERIA
-// Flujo simplificado de estados de proyecto.
-// Los proyectos pasan por 6 fases generales desde su creacion hasta su cierre.
-// Se conservan los estados "legacy" (del sistema antiguo) para
-// compatibilidad con proyectos que aun tienen esos estados en la base de datos.
+// Flujo simplificado de statuses de project.
+// Los projects pasan por 6 fases generales desde su creacion hasta su closure.
+// Se conservan los statuses "legacy" (del sistema antiguo) para
+// compatibilidad con projects que aun tienen esos statuses en la base de data.
 // ==========================================
 
-// Codigos de los estados de un proyecto de ingenieria.
+// Codigos de los statuses de un project de ingenieria.
 // Usar siempre estas constantes en lugar de hardcodear strings.
 export const PROJECT_STATES = {
-  NUEVO: 'nuevo',                // Proyecto recien creado
-  EN_PROGRESO: 'en_progreso',    // Trabajo de ingenieria en curso
-  REVISION: 'revision',          // En proceso de revision tecnica
-  APROBACION: 'aprobacion',      // Pendiente de aprobacion
-  ENTREGADO: 'entregado',        // Documentacion entregada al cliente
-  CERRADO: 'cerrado',            // Proyecto completado y cerrado
-  ARCHIVADO: 'archivado',        // Proyecto archivado (oculto del tablero, conservado en BD)
-} as const satisfies Record<string, EstadoProyectoWorkflow>
+  NEW: 'new',                // Project recien creado
+  IN_PROGRESS: 'in_progress',    // Trabajo de ingenieria en curso
+  REVIEW: 'review',          // En process de review technical
+  APPROVAL: 'approval',      // Pending de approval
+  DELIVERED: 'delivered',        // Documentacion entregada al client
+  CLOSED: 'closed',            // Project completed y closed
+  ARCHIVED: 'archived',        // Project archived (oculto del tablero, conservado en BD)
+} as const satisfies Record<string, ProjectWorkflowStatus>
 
-// Lista ordenada de todos los estados de un proyecto (flujo simplificado).
+// Lista ordenada de todos los statuses de un project (flujo simplificado).
 export const PROJECT_WORKFLOW_STATES = [
-  PROJECT_STATES.NUEVO,
-  PROJECT_STATES.EN_PROGRESO,
-  PROJECT_STATES.REVISION,
-  PROJECT_STATES.APROBACION,
-  PROJECT_STATES.ENTREGADO,
-  PROJECT_STATES.CERRADO,
-  PROJECT_STATES.ARCHIVADO,
-] as const satisfies readonly EstadoProyectoWorkflow[]
+  PROJECT_STATES.NEW,
+  PROJECT_STATES.IN_PROGRESS,
+  PROJECT_STATES.REVIEW,
+  PROJECT_STATES.APPROVAL,
+  PROJECT_STATES.DELIVERED,
+  PROJECT_STATES.CLOSED,
+  PROJECT_STATES.ARCHIVED,
+] as const satisfies readonly ProjectWorkflowStatus[]
 
-// Estados que se muestran en la vista de portafolio de proyectos
-// (por ahora son los mismos que los estados de workflow)
-export const PROJECT_PORTFOLIO_STATES: EstadoProyecto[] = [
+// Statuses que se muestran en la vista de portafolio de projects
+// (por ahora son los mismos que los statuses de workflow)
+export const PROJECT_PORTFOLIO_STATES: ProjectStatus[] = [
   ...PROJECT_WORKFLOW_STATES,
 ]
 
-// Estados del sistema ANTIGUO ("legacy") que todavia existen en la base de datos.
-// Estos estados ya no se usan para proyectos nuevos, pero algunos proyectos antiguos
+// Statuses del sistema ANTIGUO ("legacy") que todavia existen en la base de data.
+// Estos statuses ya no se usan para projects nuevos, pero algunos projects antiguos
 // los conservan. La app los muestra con estilo gris para distinguirlos de los nuevos.
-const PROJECT_LEGACY_BRIDGE_STATES = [
-  'oferta',                        // Fase de oferta (antiguo)
-  'activo',                        // Proyecto activo (antiguo)
-  'en_revision',                   // En revision (antiguo)
-  'pendiente_aprobacion_cve',      // Pendiente de aprobacion CVE (antiguo)
-  'pendiente_aprobacion_easa',     // Pendiente de aprobacion EASA (antiguo)
-  'en_pausa',                      // Proyecto pausado (antiguo)
-  'cancelado',                     // Proyecto cancelado (antiguo)
-  'guardado_en_base_de_datos',     // Solo guardado como registro (antiguo)
-] as const satisfies readonly EstadoProyectoLegacy[]
+const PROJECT_LEGACY_STATUS_VALUES = [
+  'quote',                        // Fase de quote (antiguo)
+  'active',                        // Project is_active (antiguo)
+  'in_review',                   // En review (antiguo)
+  'pending_cve_approval',      // Pending de approval CVE (antiguo)
+  'pending_easa_approval',     // Pending de approval EASA (antiguo)
+  'paused',                      // Project pausado (antiguo)
+  'canceled',                     // Project canceled (antiguo)
+  'saved_to_database',     // Solo guardado como registro (antiguo)
+] as const satisfies readonly LegacyProjectStatus[]
 
-// Estructura de la configuracion visual de cada estado de proyecto
+// Estructura de la configuracion visual de cada status de project
 type WorkflowConfig = {
-  label: string        // Nombre completo del estado
-  shortLabel: string   // Nombre abreviado
-  color: string        // Color del texto
+  label: string        // Name completo del status
+  shortLabel: string   // Name abreviado
+  color: string        // Color del text
   bg: string           // Color de fondo
   border: string       // Color del borde
   dot: string          // Color del punto indicador
 }
 
-// Configuracion visual de cada estado de proyecto (flujo simplificado).
-// Define como se muestra cada estado en el tablero y las listas de la app.
-// Cada estado tiene un color diferente para identificarlo visualmente.
-export const PROJECT_STATE_CONFIG: Record<EstadoProyectoWorkflow, WorkflowConfig> = {
-  nuevo: {
-    label: 'Nuevo',
-    shortLabel: 'Nuevo',
+// Configuracion visual de cada status de project (flujo simplificado).
+// Define como se muestra cada status en el tablero y las listas de la app.
+// Cada status tiene un color diferente para identificarlo visualmente.
+export const PROJECT_STATE_CONFIG: Record<ProjectWorkflowStatus, WorkflowConfig> = {
+  new: {
+    label: 'New',
+    shortLabel: 'New',
     color: 'text-green-700',
     bg: 'bg-green-50',
     border: 'border-green-200',
     dot: 'bg-green-500',
   },
-  en_progreso: {
-    label: 'En Progreso',
+  in_progress: {
+    label: 'In Progress',
     shortLabel: 'Progreso',
     color: 'text-blue-700',
     bg: 'bg-blue-50',
     border: 'border-blue-200',
     dot: 'bg-blue-500',
   },
-  revision: {
-    label: 'Revision',
-    shortLabel: 'Revision',
+  review: {
+    label: 'Review',
+    shortLabel: 'Review',
     color: 'text-amber-700',
     bg: 'bg-amber-50',
     border: 'border-amber-200',
     dot: 'bg-amber-500',
   },
-  aprobacion: {
-    label: 'Aprobacion',
-    shortLabel: 'Aprobacion',
+  approval: {
+    label: 'Approval',
+    shortLabel: 'Approval',
     color: 'text-purple-700',
     bg: 'bg-purple-50',
     border: 'border-purple-200',
     dot: 'bg-purple-500',
   },
-  entregado: {
-    label: 'Entregado',
-    shortLabel: 'Entregado',
+  delivered: {
+    label: 'Delivered',
+    shortLabel: 'Delivered',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  cerrado: {
-    label: 'Cerrado',
-    shortLabel: 'Cerrado',
+  closed: {
+    label: 'Closed',
+    shortLabel: 'Closed',
     color: 'text-slate-700',
     bg: 'bg-slate-100',
     border: 'border-slate-200',
     dot: 'bg-slate-500',
   },
-  archivado: {
-    label: 'Archivado',
+  archived: {
+    label: 'Archived',
     shortLabel: 'Arch.',
     color: 'text-slate-700',
     bg: 'bg-slate-50',
@@ -456,50 +456,50 @@ export const PROJECT_STATE_CONFIG: Record<EstadoProyectoWorkflow, WorkflowConfig
   },
 }
 
-// Configuracion visual de los estados legacy (antiguos).
-// Todos se muestran en gris (slate) para distinguirlos de los estados operativos nuevos.
-const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> = {
-  oferta: {
+// Configuracion visual de los statuses legacy (antiguos).
+// Todos se muestran en gris (slate) para distinguirlos de los statuses operativos nuevos.
+const PROJECT_LEGACY_STATUS_CONFIG: Record<LegacyProjectStatus, WorkflowConfig> = {
+  quote: {
     label: 'Legacy - Oferta',
-    shortLabel: 'Legacy oferta',
+    shortLabel: 'Legacy quote',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  activo: {
-    label: 'Legacy - Activo',
-    shortLabel: 'Legacy activo',
+  active: {
+    label: 'Legacy - Active',
+    shortLabel: 'Legacy is_active',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  en_revision: {
-    label: 'Legacy - En revision',
-    shortLabel: 'Legacy revision',
+  in_review: {
+    label: 'Legacy - En review',
+    shortLabel: 'Legacy review',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  pendiente_aprobacion_cve: {
-    label: 'Legacy - Pendiente CVE',
+  pending_cve_approval: {
+    label: 'Legacy - Pending CVE',
     shortLabel: 'Legacy CVE',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  pendiente_aprobacion_easa: {
-    label: 'Legacy - Pendiente authority',
+  pending_easa_approval: {
+    label: 'Legacy - Pending authority',
     shortLabel: 'Legacy authority',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  en_pausa: {
+  paused: {
     label: 'Legacy - En pausa',
     shortLabel: 'Legacy pausa',
     color: 'text-slate-600',
@@ -507,16 +507,16 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  cancelado: {
+  canceled: {
     label: 'Legacy - Cancelado',
-    shortLabel: 'Legacy cancelado',
+    shortLabel: 'Legacy canceled',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
   },
-  guardado_en_base_de_datos: {
-    label: 'Legacy - Base de datos',
+  saved_to_database: {
+    label: 'Legacy - Base de data',
     shortLabel: 'Legacy base',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -525,60 +525,60 @@ const PROJECT_LEGACY_STATE_CONFIG: Record<EstadoProyectoLegacy, WorkflowConfig> 
   },
 }
 
-// Transiciones permitidas entre estados de proyecto (flujo simplificado).
-// Define las reglas de negocio: desde cada estado, solo se puede avanzar
-// a ciertos estados especificos. El flujo es lineal con posibilidad de
+// Transiciones permitidas entre statuses de project (flujo simplificado).
+// Define las reglas de negocio: desde cada status, solo se puede avanzar
+// a ciertos statuses especificos. El flujo es lineal con posibilidad de
 // retroceder en algunos casos.
-const PROJECT_TRANSITIONS: Record<EstadoProyecto, EstadoProyecto[]> = {
-  nuevo: ['en_progreso', 'archivado'],
-  en_progreso: ['revision', 'aprobacion', 'archivado'],
-  revision: ['en_progreso', 'aprobacion', 'archivado'],
-  aprobacion: ['revision', 'entregado', 'archivado'],
-  entregado: ['cerrado', 'archivado'],
-  cerrado: ['archivado'],
-  archivado: [],
+const PROJECT_TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
+  new: ['in_progress', 'archived'],
+  in_progress: ['review', 'approval', 'archived'],
+  review: ['in_progress', 'approval', 'archived'],
+  approval: ['review', 'delivered', 'archived'],
+  delivered: ['closed', 'archived'],
+  closed: ['archived'],
+  archived: [],
 }
 
-// Transiciones desde estados legacy hacia estados del nuevo flujo de trabajo.
-// Esto permite "migrar" un proyecto del sistema antiguo al nuevo.
-const PROJECT_LEGACY_TRANSITIONS: Partial<Record<EstadoProyectoLegacy, EstadoProyecto[]>> = {
-  oferta: ['nuevo'],
-  guardado_en_base_de_datos: ['nuevo'],
-  activo: ['en_progreso'],
-  en_revision: ['revision'],
-  pendiente_aprobacion_cve: ['aprobacion'],
-  pendiente_aprobacion_easa: ['aprobacion'],
-  en_pausa: ['nuevo', 'en_progreso'],
-  cancelado: [],
+// Transiciones desde statuses legacy hacia statuses del new flujo de trabajo.
+// Esto permite "migrar" un project del sistema antiguo al new.
+const PROJECT_LEGACY_STATUS_TRANSITIONS: Partial<Record<LegacyProjectStatus, ProjectStatus[]>> = {
+  quote: ['new'],
+  saved_to_database: ['new'],
+  active: ['in_progress'],
+  in_review: ['review'],
+  pending_cve_approval: ['approval'],
+  pending_easa_approval: ['approval'],
+  paused: ['new', 'in_progress'],
+  canceled: [],
 }
 
-// Mapeo automatico de estados legacy a su equivalente en el nuevo flujo.
-// Se usa para saber "a que fase corresponde" un proyecto antiguo.
-const PROJECT_LEGACY_TO_WORKFLOW: Partial<Record<EstadoProyectoLegacy, EstadoProyecto>> = {
-  oferta: 'nuevo',
-  guardado_en_base_de_datos: 'nuevo',
-  activo: 'en_progreso',
-  en_revision: 'revision',
-  pendiente_aprobacion_cve: 'aprobacion',
-  pendiente_aprobacion_easa: 'aprobacion',
-  en_pausa: 'en_progreso',
-  cancelado: 'cerrado',
+// Mapeo automatico de statuses legacy a su equivalente en el new flujo.
+// Se usa para saber "a que fase corresponde" un project antiguo.
+const PROJECT_LEGACY_TO_WORKFLOW_STATUS: Partial<Record<LegacyProjectStatus, ProjectStatus>> = {
+  quote: 'new',
+  saved_to_database: 'new',
+  active: 'in_progress',
+  in_review: 'review',
+  pending_cve_approval: 'approval',
+  pending_easa_approval: 'approval',
+  paused: 'in_progress',
+  canceled: 'closed',
 }
 
-// Estados que requieren que el usuario escriba una RAZON al cambiar a ellos.
-// Por ahora no hay estados que lo requieran en el flujo simplificado,
+// Statuses que requieren que el user_label escriba una RAZON al cambiar a ellos.
+// Por ahora no hay statuses que lo requieran en el flujo simplificado,
 // pero se mantiene la estructura por si se necesita en el futuro.
-const PROJECT_REASON_REQUIRED = new Set<EstadoProyecto>([])
+const PROJECT_REASON_REQUIRED = new Set<ProjectStatus>([])
 
 /**
- * Obtiene la informacion visual de un estado de proyecto (nombre, colores, etc.).
+ * Obtiene la informacion visual de un status de project (name, colores, etc.).
  *
- * Funciona tanto con estados del flujo simplificado (nuevo, en_progreso, revision,
- * aprobacion, entregado, cerrado) como con estados legacy (oferta, activo, etc.).
- * Si el estado no se reconoce, devuelve una configuracion por defecto en gris.
+ * Funciona tanto con statuses del flujo simplificado (new, in_progress, review,
+ * approval, delivered, closed) como con statuses legacy (quote, is_active, etc.).
+ * Si el status no se reconoce, devuelve una configuracion por defecto en gris.
  *
- * @param status - El codigo del estado del proyecto
- * @returns Objeto con el nombre, colores y estilo visual del estado
+ * @param status - El codigo del status del project
+ * @returns Objeto con el name, colores y estilo visual del status
  */
 export function getProjectStatusMeta(status: string) {
   if (isProjectWorkflowState(status)) {
@@ -586,7 +586,7 @@ export function getProjectStatusMeta(status: string) {
   }
 
   if (isProjectLegacyState(status)) {
-    return PROJECT_LEGACY_STATE_CONFIG[status]
+    return PROJECT_LEGACY_STATUS_CONFIG[status]
   }
 
   return {
@@ -600,14 +600,14 @@ export function getProjectStatusMeta(status: string) {
 }
 
 /**
- * Devuelve la lista de estados a los que se puede mover un proyecto
- * desde su estado actual.
+ * Devuelve la lista de statuses a los que se puede mover un project
+ * desde su status actual.
  *
- * Funciona tanto para estados nuevos como legacy. Los botones de la interfaz
- * usan esta funcion para mostrar solo las opciones validas al usuario.
+ * Funciona tanto para statuses nuevos como legacy. Los botones de la interfaz
+ * usan esta funcion para mostrar solo las opciones validas al user_label.
  *
- * @param status - El estado actual del proyecto
- * @returns Lista de estados permitidos como destino, o lista vacia si no hay opciones
+ * @param status - El status actual del project
+ * @returns Lista de statuses permitidos como destino, o lista vacia si no hay opciones
  */
 export function getAllowedProjectTransitions(status: string) {
   if (isProjectWorkflowState(status)) {
@@ -615,187 +615,187 @@ export function getAllowedProjectTransitions(status: string) {
   }
 
   if (isProjectLegacyState(status)) {
-    return PROJECT_LEGACY_TRANSITIONS[status] ?? []
+    return PROJECT_LEGACY_STATUS_TRANSITIONS[status] ?? []
   }
 
   return []
 }
 
 /**
- * Indica si cambiar a un determinado estado requiere que el usuario
+ * Indica si cambiar a un determinado status requiere que el user_label
  * escriba una razon o justificacion.
  *
- * Actualmente no hay estados que lo requieran en el flujo simplificado,
+ * Actualmente no hay statuses que lo requieran en el flujo simplificado,
  * pero se mantiene la estructura por si se necesita en el futuro.
  *
- * @param entity - El tipo de entidad (por ahora solo "project")
- * @param state - El estado al que se quiere cambiar
- * @returns true si se debe pedir una razon al usuario, false si no
+ * @param entity - El type de entidad (por ahora solo "project")
+ * @param state - El status al que se quiere cambiar
+ * @returns true si se debe pedir una razon al user_label, false si no
  */
 export function requiresWorkflowReason(entity: 'project', state: string) {
-  return PROJECT_REASON_REQUIRED.has(state as EstadoProyecto)
+  return PROJECT_REASON_REQUIRED.has(state as ProjectStatus)
 }
 
 /**
- * Verifica si un texto es un estado valido del flujo simplificado de proyectos
- * (nuevo, en_progreso, revision, aprobacion, entregado, cerrado).
+ * Verifica si un text es un status valido del flujo simplificado de projects
+ * (new, in_progress, review, approval, delivered, closed).
  */
-export function isProjectWorkflowState(value: string): value is EstadoProyecto {
-  return PROJECT_WORKFLOW_STATES.includes(value as EstadoProyecto)
+export function isProjectWorkflowState(value: string): value is ProjectStatus {
+  return PROJECT_WORKFLOW_STATES.includes(value as ProjectStatus)
 }
 
 /**
- * Verifica si un texto es un estado del sistema antiguo (legacy) de proyectos.
+ * Verifica si un text es un status del sistema antiguo (legacy) de projects.
  */
-export function isProjectLegacyState(value: string): value is EstadoProyectoLegacy {
-  return PROJECT_LEGACY_BRIDGE_STATES.includes(value as EstadoProyectoLegacy)
+export function isProjectLegacyState(value: string): value is LegacyProjectStatus {
+  return PROJECT_LEGACY_STATUS_VALUES.includes(value as LegacyProjectStatus)
 }
 
 /**
- * Verifica si un texto es cualquier tipo de estado de proyecto valido (nuevo o legacy).
- * Actualmente solo verifica estados del nuevo flujo.
+ * Verifica si un text es cualquier type de status de project valido (new o legacy).
+ * Actualmente solo verifica statuses del new flujo.
  */
-export function isProjectState(value: string): value is EstadoProyecto {
+export function isProjectState(value: string): value is ProjectStatus {
   return isProjectWorkflowState(value)
 }
 
 /**
- * Convierte cualquier estado de proyecto (nuevo o legacy) a su equivalente
- * en el flujo operativo nuevo.
+ * Convierte cualquier status de project (new o legacy) a su equivalente
+ * en el flujo operativo new.
  *
- * Si ya es un estado del nuevo flujo, lo devuelve tal cual.
- * Si es un estado legacy, busca su equivalente en el mapeo.
+ * Si ya es un status del new flujo, lo devuelve tal cual.
+ * Si es un status legacy, busca su equivalente en el mapeo.
  * Si no se reconoce, devuelve null.
  *
- * @param status - El estado actual del proyecto (puede ser nuevo o legacy)
- * @returns El estado operativo equivalente, o null si no se puede determinar
+ * @param status - El status actual del project (puede ser new o legacy)
+ * @returns El status operativo equivalente, o null si no se puede determinar
  */
-export function getProjectOperationalState(status: string): EstadoProyecto | null {
+export function getProjectOperationalState(status: string): ProjectStatus | null {
   if (isProjectWorkflowState(status)) return status
-  if (isProjectLegacyState(status)) return PROJECT_LEGACY_TO_WORKFLOW[status] ?? null
+  if (isProjectLegacyState(status)) return PROJECT_LEGACY_TO_WORKFLOW_STATUS[status] ?? null
   return null
 }
 
 /**
- * Verifica si un texto es un estado de proyecto que existe en la base de datos
- * (ya sea del nuevo flujo o del sistema legacy).
+ * Verifica si un text es un status de project que existe en la base de data
+ * (ya sea del new flujo o del sistema legacy).
  *
- * Esto es util para validar datos que vienen de Supabase antes de procesarlos.
+ * Esto es util para validar data que vienen de Supabase antes de procesarlos.
  */
-export function isProjectStatePersisted(value: string): value is EstadoProyectoPersistido {
+export function isProjectStatePersisted(value: string): value is PersistedProjectStatus {
   return isProjectWorkflowState(value) || isProjectLegacyState(value)
 }
 
 // ==========================================
-// PROJECT EXECUTION STATES (Sprint 1 — nueva maquina de estados v2)
-// Maquina de 13 estados que rige el ciclo de vida operativo de un proyecto
-// desde que se abre tras una oferta aceptada hasta que se archiva.
-// Se persiste en doa_proyectos.estado_v2 (columna nueva, paralela a legacy.estado).
+// PROJECT EXECUTION STATES (Sprint 1 — new maquina de statuses v2)
+// Maquina de 13 statuses que rige el ciclo de vida operativo de un project
+// desde que se abre tras una quote accepted hasta que se archiva.
+// Se persiste en doa_projects.execution_status (columna new, paralela a legacy.status).
 // ==========================================
 
-// Codigos de los 13 estados de ejecucion de un proyecto.
+// Codigos de los 13 statuses de execution de un project.
 // Cada constante representa una fase concreta del ciclo de vida.
 export const PROJECT_EXECUTION_STATES = {
-  PROYECTO_ABIERTO: 'proyecto_abierto',               // Recien creado tras oferta aceptada, pendiente de planificar
-  PLANIFICACION: 'planificacion',                     // Definicion de deliverables y asignacion de owners
-  EN_EJECUCION: 'en_ejecucion',                       // Trabajo tecnico en curso
-  REVISION_INTERNA: 'revision_interna',               // Check independiente por segundo ingeniero
-  LISTO_PARA_VALIDACION: 'listo_para_validacion',     // Todos los deliverables completados, pendiente validar
-  EN_VALIDACION: 'en_validacion',                     // DOH/DOS revisando y firmando
-  VALIDADO: 'validado',                               // Aprobado por DOH/DOS
-  DEVUELTO_A_EJECUCION: 'devuelto_a_ejecucion',       // Rechazado en validacion, vuelve a ejecucion
-  PREPARANDO_ENTREGA: 'preparando_entrega',           // Generando SoC y documentos de release
-  ENTREGADO: 'entregado',                             // SoC enviado al cliente
-  CONFIRMACION_CLIENTE: 'confirmacion_cliente',       // Cliente acuso recibo
-  CERRADO: 'cerrado',                                 // Lecciones y metricas capturadas
-  ARCHIVADO_PROYECTO: 'archivado_proyecto',           // Movido a historico, alimenta precedentes
+  PROJECT_OPENED: 'project_opened',               // Recently created tras quote accepted, pending de planificar
+  PLANNING: 'planning',                     // Definicion de deliverables y asignacion de owners
+  IN_EXECUTION: 'in_execution',                       // Trabajo technical en curso
+  INTERNAL_REVIEW: 'internal_review',               // Check independiente por segundo ingeniero
+  READY_FOR_VALIDATION: 'ready_for_validation',     // Todos los deliverables completados, pending validar
+  IN_VALIDATION: 'in_validation',                     // DOH/DOS revisando y firmando
+  VALIDATED: 'validated',                               // Approved por DOH/DOS
+  RETURNED_TO_EXECUTION: 'returned_to_execution',       // Rechazado en validation, vuelve a execution
+  PREPARING_DELIVERY: 'preparing_delivery',           // Generando SoC y documents de release
+  DELIVERED: 'delivered',                             // SoC sent al client
+  CLIENT_CONFIRMATION: 'client_confirmation',       // Client acuso recibo
+  CLOSED: 'closed',                                 // Lecciones y metricas capturadas
+  PROJECT_ARCHIVED: 'project_archived',           // Movido a historical, alimenta precedentes
 } as const
 
-// Tipo que representa cualquier estado valido de la maquina de ejecucion v2.
+// Tipo que representa cualquier status valido de la maquina de execution v2.
 export type ProjectExecutionState =
   typeof PROJECT_EXECUTION_STATES[keyof typeof PROJECT_EXECUTION_STATES]
 
-// Lista ordenada de los 13 estados (orden canonico del flujo).
+// Lista ordenada de los 13 statuses (sort_order canonico del flujo).
 export const PROJECT_EXECUTION_STATE_LIST = [
-  PROJECT_EXECUTION_STATES.PROYECTO_ABIERTO,
-  PROJECT_EXECUTION_STATES.PLANIFICACION,
-  PROJECT_EXECUTION_STATES.EN_EJECUCION,
-  PROJECT_EXECUTION_STATES.REVISION_INTERNA,
-  PROJECT_EXECUTION_STATES.LISTO_PARA_VALIDACION,
-  PROJECT_EXECUTION_STATES.EN_VALIDACION,
-  PROJECT_EXECUTION_STATES.VALIDADO,
-  PROJECT_EXECUTION_STATES.DEVUELTO_A_EJECUCION,
-  PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA,
-  PROJECT_EXECUTION_STATES.ENTREGADO,
-  PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE,
-  PROJECT_EXECUTION_STATES.CERRADO,
-  PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO,
+  PROJECT_EXECUTION_STATES.PROJECT_OPENED,
+  PROJECT_EXECUTION_STATES.PLANNING,
+  PROJECT_EXECUTION_STATES.IN_EXECUTION,
+  PROJECT_EXECUTION_STATES.INTERNAL_REVIEW,
+  PROJECT_EXECUTION_STATES.READY_FOR_VALIDATION,
+  PROJECT_EXECUTION_STATES.IN_VALIDATION,
+  PROJECT_EXECUTION_STATES.VALIDATED,
+  PROJECT_EXECUTION_STATES.RETURNED_TO_EXECUTION,
+  PROJECT_EXECUTION_STATES.PREPARING_DELIVERY,
+  PROJECT_EXECUTION_STATES.DELIVERED,
+  PROJECT_EXECUTION_STATES.CLIENT_CONFIRMATION,
+  PROJECT_EXECUTION_STATES.CLOSED,
+  PROJECT_EXECUTION_STATES.PROJECT_ARCHIVED,
 ] as const satisfies readonly ProjectExecutionState[]
 
-// Fases agregadas (agrupan los 13 estados en 4 bloques).
-// Se persiste en doa_proyectos.fase_actual para permitir agrupaciones en Kanban/dashboards.
+// Fases agregadas (agrupan los 13 statuses en 4 bloques).
+// Se persiste en doa_projects.current_phase para permitir agrupaciones en Kanban/dashboards.
 export const PROJECT_EXECUTION_PHASES = {
-  EJECUCION: 'ejecucion',     // proyecto_abierto | planificacion | en_ejecucion | revision_interna | listo_para_validacion
-  VALIDACION: 'validacion',   // en_validacion | validado | devuelto_a_ejecucion
-  ENTREGA: 'entrega',         // preparando_entrega | entregado | confirmacion_cliente
-  CIERRE: 'cierre',           // cerrado | archivado_proyecto
+  EXECUTION: 'execution',     // project_opened | planning | in_execution | internal_review | ready_for_validation
+  VALIDATION: 'validation',   // in_validation | validated | returned_to_execution
+  DELIVERY: 'delivery',         // preparing_delivery | delivered | client_confirmation
+  CLOSURE: 'closure',           // closed | project_archived
 } as const
 
 export type ProjectExecutionPhase =
   typeof PROJECT_EXECUTION_PHASES[keyof typeof PROJECT_EXECUTION_PHASES]
 
-// Mapeo inverso: dado un estado, devuelve la fase a la que pertenece.
+// Mapeo inverso: dado un status, devuelve la fase a la que pertenece.
 export const PROJECT_EXECUTION_STATE_TO_PHASE: Record<ProjectExecutionState, ProjectExecutionPhase> = {
-  proyecto_abierto: PROJECT_EXECUTION_PHASES.EJECUCION,
-  planificacion: PROJECT_EXECUTION_PHASES.EJECUCION,
-  en_ejecucion: PROJECT_EXECUTION_PHASES.EJECUCION,
-  revision_interna: PROJECT_EXECUTION_PHASES.EJECUCION,
-  listo_para_validacion: PROJECT_EXECUTION_PHASES.EJECUCION,
-  en_validacion: PROJECT_EXECUTION_PHASES.VALIDACION,
-  validado: PROJECT_EXECUTION_PHASES.VALIDACION,
-  devuelto_a_ejecucion: PROJECT_EXECUTION_PHASES.VALIDACION,
-  preparando_entrega: PROJECT_EXECUTION_PHASES.ENTREGA,
-  entregado: PROJECT_EXECUTION_PHASES.ENTREGA,
-  confirmacion_cliente: PROJECT_EXECUTION_PHASES.ENTREGA,
-  cerrado: PROJECT_EXECUTION_PHASES.CIERRE,
-  archivado_proyecto: PROJECT_EXECUTION_PHASES.CIERRE,
+  project_opened: PROJECT_EXECUTION_PHASES.EXECUTION,
+  planning: PROJECT_EXECUTION_PHASES.EXECUTION,
+  in_execution: PROJECT_EXECUTION_PHASES.EXECUTION,
+  internal_review: PROJECT_EXECUTION_PHASES.EXECUTION,
+  ready_for_validation: PROJECT_EXECUTION_PHASES.EXECUTION,
+  in_validation: PROJECT_EXECUTION_PHASES.VALIDATION,
+  validated: PROJECT_EXECUTION_PHASES.VALIDATION,
+  returned_to_execution: PROJECT_EXECUTION_PHASES.VALIDATION,
+  preparing_delivery: PROJECT_EXECUTION_PHASES.DELIVERY,
+  delivered: PROJECT_EXECUTION_PHASES.DELIVERY,
+  client_confirmation: PROJECT_EXECUTION_PHASES.DELIVERY,
+  closed: PROJECT_EXECUTION_PHASES.CLOSURE,
+  project_archived: PROJECT_EXECUTION_PHASES.CLOSURE,
 }
 
 // Grafo de transiciones permitidas (DAG de la maquina v2).
-// Desde cada estado, lista los estados a los que se puede pasar.
-// archivado_proyecto es terminal.
+// Desde cada status, lista los statuses a los que se puede pasar.
+// project_archived es terminal.
 export const PROJECT_EXECUTION_TRANSITIONS: Record<ProjectExecutionState, ProjectExecutionState[]> = {
-  proyecto_abierto: [PROJECT_EXECUTION_STATES.PLANIFICACION],
-  planificacion: [PROJECT_EXECUTION_STATES.EN_EJECUCION],
-  en_ejecucion: [PROJECT_EXECUTION_STATES.REVISION_INTERNA],
-  revision_interna: [
-    PROJECT_EXECUTION_STATES.EN_EJECUCION,           // rework
-    PROJECT_EXECUTION_STATES.LISTO_PARA_VALIDACION,
+  project_opened: [PROJECT_EXECUTION_STATES.PLANNING],
+  planning: [PROJECT_EXECUTION_STATES.IN_EXECUTION],
+  in_execution: [PROJECT_EXECUTION_STATES.INTERNAL_REVIEW],
+  internal_review: [
+    PROJECT_EXECUTION_STATES.IN_EXECUTION,           // rework
+    PROJECT_EXECUTION_STATES.READY_FOR_VALIDATION,
   ],
-  listo_para_validacion: [PROJECT_EXECUTION_STATES.EN_VALIDACION],
-  en_validacion: [
-    PROJECT_EXECUTION_STATES.VALIDADO,
-    PROJECT_EXECUTION_STATES.DEVUELTO_A_EJECUCION,
+  ready_for_validation: [PROJECT_EXECUTION_STATES.IN_VALIDATION],
+  in_validation: [
+    PROJECT_EXECUTION_STATES.VALIDATED,
+    PROJECT_EXECUTION_STATES.RETURNED_TO_EXECUTION,
   ],
-  validado: [PROJECT_EXECUTION_STATES.PREPARANDO_ENTREGA],
-  devuelto_a_ejecucion: [PROJECT_EXECUTION_STATES.EN_EJECUCION],
-  preparando_entrega: [PROJECT_EXECUTION_STATES.ENTREGADO],
-  entregado: [PROJECT_EXECUTION_STATES.CONFIRMACION_CLIENTE],
-  confirmacion_cliente: [PROJECT_EXECUTION_STATES.CERRADO],
-  cerrado: [PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO],
-  archivado_proyecto: [], // terminal
+  validated: [PROJECT_EXECUTION_STATES.PREPARING_DELIVERY],
+  returned_to_execution: [PROJECT_EXECUTION_STATES.IN_EXECUTION],
+  preparing_delivery: [PROJECT_EXECUTION_STATES.DELIVERED],
+  delivered: [PROJECT_EXECUTION_STATES.CLIENT_CONFIRMATION],
+  client_confirmation: [PROJECT_EXECUTION_STATES.CLOSED],
+  closed: [PROJECT_EXECUTION_STATES.PROJECT_ARCHIVED],
+  project_archived: [], // terminal
 }
 
 /**
- * Verifica si un texto es un codigo valido de la maquina de ejecucion v2.
+ * Verifica si un text es un codigo valido de la maquina de execution v2.
  */
 export function isProjectExecutionStateCode(value: string): value is ProjectExecutionState {
   return (PROJECT_EXECUTION_STATE_LIST as readonly string[]).includes(value)
 }
 
 /**
- * Devuelve la lista de estados a los que se puede transicionar desde el estado actual.
- * La interfaz usa esta funcion para mostrar solo las opciones validas al usuario.
+ * Devuelve la lista de statuses a los que se puede transicionar desde el status actual.
+ * La interfaz usa esta funcion para mostrar solo las opciones validas al user_label.
  */
 export function getAllowedProjectExecutionTransitions(
   current: ProjectExecutionState,
@@ -803,7 +803,7 @@ export function getAllowedProjectExecutionTransitions(
   return PROJECT_EXECUTION_TRANSITIONS[current] ?? []
 }
 
-// Configuracion visual de cada estado de ejecucion v2 (flujo de 13 estados).
+// Configuracion visual de cada status de execution v2 (flujo de 13 statuses).
 // Sigue la misma forma que QUOTATION_BOARD_STATE_CONFIG para reusar componentes.
 type ProjectExecutionConfig = {
   label: string
@@ -817,19 +817,19 @@ type ProjectExecutionConfig = {
 }
 
 export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, ProjectExecutionConfig> = {
-  proyecto_abierto: {
-    label: 'Proyecto abierto',
-    shortLabel: 'Abierto',
-    description: 'Recien creado tras oferta aceptada, pendiente de planificar',
+  project_opened: {
+    label: 'Project opened',
+    shortLabel: 'Open',
+    description: 'Recently created tras quote accepted, pending de planificar',
     accent: 'slate',
     color: 'text-slate-700',
     bg: 'bg-slate-50',
     border: 'border-slate-200',
     dot: 'bg-slate-500',
   },
-  planificacion: {
-    label: 'Planificacion',
-    shortLabel: 'Planificacion',
+  planning: {
+    label: 'Planning',
+    shortLabel: 'Planning',
     description: 'Definicion de deliverables y asignacion de owners',
     accent: 'sky',
     color: 'text-sky-700',
@@ -837,19 +837,19 @@ export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, Proje
     border: 'border-sky-200',
     dot: 'bg-sky-500',
   },
-  en_ejecucion: {
-    label: 'En ejecucion',
-    shortLabel: 'En ejecucion',
-    description: 'Trabajo tecnico en curso',
+  in_execution: {
+    label: 'In execution',
+    shortLabel: 'In execution',
+    description: 'Trabajo technical en curso',
     accent: 'cyan',
     color: 'text-cyan-700',
     bg: 'bg-cyan-50',
     border: 'border-cyan-200',
     dot: 'bg-cyan-500',
   },
-  revision_interna: {
-    label: 'Revision interna',
-    shortLabel: 'Revision',
+  internal_review: {
+    label: 'Internal review',
+    shortLabel: 'Review',
     description: 'Check independiente por segundo ingeniero',
     accent: 'indigo',
     color: 'text-indigo-700',
@@ -857,19 +857,19 @@ export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, Proje
     border: 'border-indigo-200',
     dot: 'bg-indigo-500',
   },
-  listo_para_validacion: {
-    label: 'Listo para validacion',
+  ready_for_validation: {
+    label: 'Ready for validation',
     shortLabel: 'Listo',
-    description: 'Todos los deliverables completados, pendiente validar',
+    description: 'Todos los deliverables completados, pending validar',
     accent: 'violet',
     color: 'text-violet-700',
     bg: 'bg-violet-50',
     border: 'border-violet-200',
     dot: 'bg-violet-500',
   },
-  en_validacion: {
-    label: 'En validacion',
-    shortLabel: 'Validacion',
+  in_validation: {
+    label: 'In validation',
+    shortLabel: 'Validation',
     description: 'DOH/DOS revisando y firmando',
     accent: 'amber',
     color: 'text-amber-700',
@@ -877,59 +877,59 @@ export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, Proje
     border: 'border-amber-200',
     dot: 'bg-amber-500',
   },
-  validado: {
-    label: 'Validado',
-    shortLabel: 'Validado',
-    description: 'Aprobado por DOH/DOS',
+  validated: {
+    label: 'Validated',
+    shortLabel: 'Validated',
+    description: 'Approved por DOH/DOS',
     accent: 'lime',
     color: 'text-lime-700',
     bg: 'bg-lime-50',
     border: 'border-lime-200',
     dot: 'bg-lime-500',
   },
-  devuelto_a_ejecucion: {
-    label: 'Devuelto a ejecucion',
-    shortLabel: 'Devuelto',
-    description: 'Rechazado en validacion, vuelve a ejecucion',
+  returned_to_execution: {
+    label: 'Returned to execution',
+    shortLabel: 'Returned',
+    description: 'Rechazado en validation, vuelve a execution',
     accent: 'rose',
     color: 'text-rose-700',
     bg: 'bg-rose-50',
     border: 'border-rose-200',
     dot: 'bg-rose-500',
   },
-  preparando_entrega: {
-    label: 'Preparando entrega',
-    shortLabel: 'Entrega prep',
-    description: 'Generando SoC y documentos de release',
+  preparing_delivery: {
+    label: 'Preparing delivery',
+    shortLabel: 'Delivery prep',
+    description: 'Generando SoC y documents de release',
     accent: 'teal',
     color: 'text-teal-700',
     bg: 'bg-teal-50',
     border: 'border-teal-200',
     dot: 'bg-teal-500',
   },
-  entregado: {
-    label: 'Entregado',
-    shortLabel: 'Entregado',
-    description: 'SoC enviado al cliente',
+  delivered: {
+    label: 'Delivered',
+    shortLabel: 'Delivered',
+    description: 'SoC sent al client',
     accent: 'emerald',
     color: 'text-emerald-700',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  confirmacion_cliente: {
-    label: 'Confirmacion cliente',
+  client_confirmation: {
+    label: 'Client confirmation',
     shortLabel: 'Confirmado',
-    description: 'Cliente acuso recibo',
+    description: 'Client acuso recibo',
     accent: 'green',
     color: 'text-green-700',
     bg: 'bg-green-50',
     border: 'border-green-200',
     dot: 'bg-green-500',
   },
-  cerrado: {
-    label: 'Cerrado',
-    shortLabel: 'Cerrado',
+  closed: {
+    label: 'Closed',
+    shortLabel: 'Closed',
     description: 'Lecciones y metricas capturadas',
     accent: 'emerald',
     color: 'text-emerald-700',
@@ -937,10 +937,10 @@ export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, Proje
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
   },
-  archivado_proyecto: {
-    label: 'Archivado',
-    shortLabel: 'Archivado',
-    description: 'Movido a historico, alimenta precedentes',
+  project_archived: {
+    label: 'Archived',
+    shortLabel: 'Archived',
+    description: 'Movido a historical, alimenta precedentes',
     accent: 'slate',
     color: 'text-slate-700',
     bg: 'bg-slate-50',
@@ -950,7 +950,7 @@ export const PROJECT_EXECUTION_STATE_CONFIG: Record<ProjectExecutionState, Proje
 }
 
 /**
- * Obtiene la informacion visual de un estado de la maquina de ejecucion v2.
+ * Obtiene la informacion visual de un status de la maquina de execution v2.
  * Si el codigo no se reconoce, devuelve configuracion por defecto en gris.
  */
 export function getProjectExecutionStateMeta(code: string) {
@@ -961,7 +961,7 @@ export function getProjectExecutionStateMeta(code: string) {
   return {
     label: code,
     shortLabel: code,
-    description: 'Estado de ejecucion desconocido',
+    description: 'Unknown execution status',
     accent: 'slate',
     color: 'text-slate-600',
     bg: 'bg-slate-100',
@@ -971,8 +971,8 @@ export function getProjectExecutionStateMeta(code: string) {
 }
 
 /**
- * Devuelve la fase agregada (ejecucion | validacion | entrega | cierre) a la
- * que pertenece un estado de ejecucion v2.
+ * Devuelve la fase agregada (execution | validation | delivery | closure) a la
+ * que pertenece un status de execution v2.
  */
 export function getProjectExecutionPhase(code: string): ProjectExecutionPhase | null {
   if (isProjectExecutionStateCode(code)) {
@@ -983,7 +983,7 @@ export function getProjectExecutionPhase(code: string): ProjectExecutionPhase | 
 
 // ==========================================
 // VALIDATION ROLES & DECISIONS (Sprint 2)
-// Etiquetas legibles para la UI de validacion. Los codigos canonicos viven en
+// Etiquetas legibles para la UI de validation. Los codigos canonicos viven en
 // types/database.ts como `ValidationRole` / `ValidationDecision`.
 // ==========================================
 
@@ -993,78 +993,78 @@ export const VALIDATION_ROLE_LABELS: Record<'doh' | 'dos' | 'reviewer', string> 
   reviewer: 'Reviewer',
 }
 
-export const VALIDATION_DECISION_LABELS: Record<'aprobado' | 'devuelto' | 'pendiente', string> = {
-  aprobado: 'Aprobado',
-  devuelto: 'Devuelto a ejecucion',
-  pendiente: 'Pendiente',
+export const VALIDATION_DECISION_LABELS: Record<'approved' | 'returned' | 'pending', string> = {
+  approved: 'Approved',
+  returned: 'Returned to execution',
+  pending: 'Pending',
 }
 
 export const OBSERVATION_SEVERITY_LABELS: Record<'info' | 'warn' | 'blocker', string> = {
-  info: 'Informativa',
-  warn: 'Advertencia',
-  blocker: 'Bloqueante',
+  info: 'Informational',
+  warn: 'Warning',
+  blocker: 'Blocking',
 }
 
 /**
- * Estados de deliverable considerados "listos" para validacion. Si un
- * deliverable esta en cualquier otro estado, el proyecto no puede transicionar
- * a `en_validacion`.
+ * Statuses de deliverable considerados "listos" para validation. Si un
+ * deliverable esta en cualquier other status, el project no puede transicionar
+ * a `in_validation`.
  */
 export const DELIVERABLE_VALIDATION_READY_STATES: readonly string[] = [
-  'completado',
-  'no_aplica',
+  'completed',
+  'not_applicable',
 ]
 
 // ==========================================
 // CLOSURE OUTCOMES & LESSON TAXONOMY (Sprint 4)
-// Etiquetas legibles para la UI de cierre. Los codigos canonicos viven en
+// Etiquetas legibles para la UI de closure. Los codigos canonicos viven en
 // types/database.ts.
 // ==========================================
 
 export const CLOSURE_OUTCOMES = {
-  EXITOSO: 'exitoso',
-  EXITOSO_CON_RESERVAS: 'exitoso_con_reservas',
-  PROBLEMATICO: 'problematico',
-  ABORTADO: 'abortado',
+  SUCCESSFUL: 'successful',
+  SUCCESSFUL_WITH_RESERVATIONS: 'successful_with_reservations',
+  PROBLEMATIC: 'problematic',
+  ABORTED: 'aborted',
 } as const
 
 export const CLOSURE_OUTCOME_LABELS: Record<
-  'exitoso' | 'exitoso_con_reservas' | 'problematico' | 'abortado',
+  'successful' | 'successful_with_reservations' | 'problematic' | 'aborted',
   string
 > = {
-  exitoso: 'Exitoso',
-  exitoso_con_reservas: 'Exitoso con reservas',
-  problematico: 'Problematico',
-  abortado: 'Abortado',
+  successful: 'Successful',
+  successful_with_reservations: 'Successful with reservations',
+  problematic: 'Problematic',
+  aborted: 'Aborted',
 }
 
-export const LESSON_CATEGORIA_LABELS: Record<
-  | 'tecnica'
-  | 'proceso'
-  | 'cliente'
-  | 'calidad'
-  | 'planificacion'
-  | 'herramientas'
-  | 'regulatoria'
-  | 'otro',
+export const LESSON_CATEGORY_LABELS: Record<
+  | 'technical'
+  | 'process'
+  | 'client'
+  | 'quality'
+  | 'planning'
+  | 'tools'
+  | 'regulatory'
+  | 'other',
   string
 > = {
-  tecnica: 'Tecnica',
-  proceso: 'Proceso',
-  cliente: 'Cliente',
-  calidad: 'Calidad',
-  planificacion: 'Planificacion',
-  herramientas: 'Herramientas',
-  regulatoria: 'Regulatoria',
-  otro: 'Otro',
+  technical: 'Technical',
+  process: 'Proceso',
+  client: 'Client',
+  quality: 'Calidad',
+  planning: 'Planning',
+  tools: 'Tools',
+  regulatory: 'Regulatory',
+  other: 'Other',
 }
 
-export const LESSON_TIPO_LABELS: Record<
-  'positiva' | 'negativa' | 'mejora' | 'riesgo',
+export const LESSON_TYPE_LABELS: Record<
+  'positive' | 'negative' | 'improvement' | 'risk',
   string
 > = {
-  positiva: 'Positiva',
-  negativa: 'Negativa',
-  mejora: 'Mejora',
-  riesgo: 'Riesgo',
+  positive: 'Positive',
+  negative: 'Negative',
+  improvement: 'Improvement',
+  risk: 'Risk',
 }

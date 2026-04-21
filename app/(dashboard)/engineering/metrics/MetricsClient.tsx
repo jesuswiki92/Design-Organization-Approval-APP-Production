@@ -1,15 +1,15 @@
 'use client'
 
 /**
- * Cliente del panel de metricas — Sprint 4.
+ * Client del panel de metricas — Sprint 4.
  *
  * Render:
- *   - KPI cards (proyectos totales, abiertos, cerrados, archivados, lecciones,
- *     entregas confirmadas).
- *   - Breakdown por fase (en_cotizacion / ejecucion / validacion / entrega /
- *     cierre) y por estado_v2.
- *   - Top 10 proyectos de mayor duracion (dias_totales_cerrado_vs_abierto).
- *   - Banner amarillo si el modo fallback esta activo (MV no disponible).
+ *   - KPI cards (projects totales, abiertos, cerrados, archivados, lecciones,
+ *     deliveries confirmadas).
+ *   - Breakdown por fase (en_cotizacion / execution / validation / delivery /
+ *     closure) y por execution_status.
+ *   - Top 10 projects de mayor duracion (total_days_closed_vs_opened).
+ *   - Banner amarillo si el modo fallback esta is_active (MV no disponible).
  */
 
 import Link from 'next/link'
@@ -35,10 +35,10 @@ import type { ProjectMetricsRow } from '@/types/database'
 
 const PHASE_LABELS: Record<string, string> = {
   en_cotizacion: 'En cotizacion',
-  ejecucion: 'Ejecucion',
-  validacion: 'Validacion',
-  entrega: 'Entrega',
-  cierre: 'Cierre',
+  execution: 'Ejecucion',
+  validation: 'Validation',
+  delivery: 'Delivery',
+  closure: 'Cierre',
 }
 
 type Props = {
@@ -49,10 +49,10 @@ type Props = {
 
 const PHASE_ORDER = [
   'en_cotizacion',
-  'ejecucion',
-  'validacion',
-  'entrega',
-  'cierre',
+  'execution',
+  'validation',
+  'delivery',
+  'closure',
 ] as const
 
 export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
@@ -67,29 +67,29 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
 
     const phaseCounts: Record<string, number> = {
       en_cotizacion: 0,
-      ejecucion: 0,
-      validacion: 0,
-      entrega: 0,
-      cierre: 0,
+      execution: 0,
+      validation: 0,
+      delivery: 0,
+      closure: 0,
     }
     const stateCounts: Record<string, number> = {}
     const outcomeCounts: Record<string, number> = {}
 
     for (const r of rows) {
-      const estado = r.estado_v2 ?? 'desconocido'
-      stateCounts[estado] = (stateCounts[estado] ?? 0) + 1
+      const status = r.execution_status ?? 'desconocido'
+      stateCounts[status] = (stateCounts[status] ?? 0) + 1
 
-      const fase = r.fase_actual ?? 'desconocido'
+      const fase = r.current_phase ?? 'desconocido'
       if (fase in phaseCounts) phaseCounts[fase] += 1
 
-      if (estado === PROJECT_EXECUTION_STATES.CERRADO) cerrados += 1
-      else if (estado === PROJECT_EXECUTION_STATES.ARCHIVADO_PROYECTO)
+      if (status === PROJECT_EXECUTION_STATES.CLOSED) cerrados += 1
+      else if (status === PROJECT_EXECUTION_STATES.PROJECT_ARCHIVED)
         archivados += 1
       else abiertos += 1
 
-      entregasConfirmadas += r.entregas_confirmadas ?? 0
-      lecciones += r.lecciones_count ?? 0
-      devoluciones += r.validaciones_devueltas ?? 0
+      entregasConfirmadas += r.deliveries_confirmed ?? 0
+      lecciones += r.lessons_count ?? 0
+      devoluciones += r.validations_returned ?? 0
 
       if (r.closure_outcome) {
         outcomeCounts[r.closure_outcome] =
@@ -113,11 +113,11 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
 
   const topLongest = useMemo(() => {
     return [...rows]
-      .filter((r) => r.dias_totales_cerrado_vs_abierto !== null)
+      .filter((r) => r.total_days_closed_vs_opened !== null)
       .sort(
         (a, b) =>
-          (b.dias_totales_cerrado_vs_abierto ?? 0) -
-          (a.dias_totales_cerrado_vs_abierto ?? 0),
+          (b.total_days_closed_vs_opened ?? 0) -
+          (a.total_days_closed_vs_opened ?? 0),
       )
       .slice(0, 10)
   }, [rows])
@@ -128,7 +128,7 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
-            <strong className="font-semibold">Modo fallback activo.</strong>{' '}
+            <strong className="font-semibold">Modo fallback is_active.</strong>{' '}
             La materialized view{' '}
             <code className="rounded bg-amber-100 px-1 text-[11px]">
               doa_project_metrics_mv
@@ -152,7 +152,7 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <Kpi
           icon={Boxes}
-          label="Proyectos totales"
+          label="Projects totales"
           value={summary.total}
           tint="slate"
         />
@@ -192,7 +192,7 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
       <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
         <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           <ClipboardCheck className="h-3.5 w-3.5" />
-          Proyectos por fase
+          Projects por fase
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {PHASE_ORDER.map((phase) => (
@@ -211,16 +211,16 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
         </div>
       </section>
 
-      {/* Outcomes de cierre + estados */}
+      {/* Outcomes de closure + statuses */}
       <section className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <Flag className="h-3.5 w-3.5" />
-            Outcomes de cierre
+            Outcomes de closure
           </h3>
           {Object.keys(summary.outcomeCounts).length === 0 ? (
             <p className="text-sm text-[color:var(--ink-3)]">
-              Aun no hay proyectos cerrados con outcome registrado.
+              Aun no hay projects cerrados con outcome registrado.
             </p>
           ) : (
             <ul className="space-y-1.5">
@@ -245,10 +245,10 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
         <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
           <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
             <ClipboardCheck className="h-3.5 w-3.5" />
-            Distribucion por estado_v2
+            Distribucion por execution_status
           </h3>
           {Object.keys(summary.stateCounts).length === 0 ? (
-            <p className="text-sm text-[color:var(--ink-3)]">Sin datos.</p>
+            <p className="text-sm text-[color:var(--ink-3)]">Sin data.</p>
           ) : (
             <ul className="space-y-1.5">
               {Object.entries(summary.stateCounts)
@@ -271,20 +271,20 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
       <section className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4 shadow-sm">
         <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
           <PlayCircle className="h-3.5 w-3.5" />
-          Top 10 proyectos de mayor duracion
+          Top 10 projects de mayor duracion
         </h3>
         {topLongest.length === 0 ? (
-          <p className="text-sm text-[color:var(--ink-3)]">Sin datos de duracion.</p>
+          <p className="text-sm text-[color:var(--ink-3)]">Sin data de duracion.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[color:var(--ink-4)] text-left">
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                    Proyecto
+                    Project
                   </th>
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                    Estado
+                    Status
                   </th>
                   <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
                     Dias
@@ -304,30 +304,30 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
               <tbody>
                 {topLongest.map((r, idx) => (
                   <tr
-                    key={r.proyecto_id}
+                    key={r.project_id}
                     className={`border-b border-slate-50 ${idx % 2 === 0 ? 'bg-[color:var(--paper)]' : 'bg-[color:var(--paper-2)]'}`}
                   >
                     <td className="px-3 py-2 text-sm font-medium text-[color:var(--ink-2)]">
-                      {r.titulo}
+                      {r.title}
                     </td>
                     <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
-                      {r.estado_v2 ?? '—'}
+                      {r.execution_status ?? '—'}
                     </td>
                     <td className="px-3 py-2 text-sm font-semibold text-[color:var(--ink)]">
-                      {r.dias_totales_cerrado_vs_abierto?.toFixed(1) ?? '—'} d
+                      {r.total_days_closed_vs_opened?.toFixed(1) ?? '—'} d
                     </td>
                     <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
-                      {r.entregas_confirmadas}/{r.entregas_total}
+                      {r.deliveries_confirmed}/{r.deliveries_total}
                     </td>
                     <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
-                      {r.validaciones_devueltas}
+                      {r.validations_returned}
                     </td>
                     <td className="px-3 py-2 text-xs text-[color:var(--ink-3)]">
-                      {r.lecciones_count}
+                      {r.lessons_count}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <Link
-                        href={`/engineering/projects/${r.proyecto_id}`}
+                        href={`/engineering/projects/${r.project_id}`}
                         className="inline-flex items-center gap-1 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink-2)]"
                       >
                         <ExternalLink className="h-3 w-3" />
@@ -344,7 +344,7 @@ export function MetricsClient({ rows, fallbackMode, fallbackReason }: Props) {
 
       {summary.devoluciones > 0 && (
         <p className="text-xs text-[color:var(--ink-3)]">
-          Total de devoluciones en validacion registradas: {summary.devoluciones}.
+          Total de devoluciones en validation registradas: {summary.devoluciones}.
         </p>
       )}
     </div>

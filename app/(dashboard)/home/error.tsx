@@ -20,7 +20,7 @@ export default function HomeError({
         <AlertTriangle className="h-8 w-8 text-amber-500" />
         <h2 className="text-base font-semibold text-slate-950">No se pudo cargar la portada</h2>
         <p className="max-w-xs text-center text-sm text-[color:var(--ink-3)]">
-          Hubo un error al conectar con la base de datos. Verifica tu sesión y vuelve a intentarlo.
+          Hubo un error al conectar con la base de data. Verifica tu sesión y vuelve a intentarlo.
         </p>
         <button
           onClick={reset}

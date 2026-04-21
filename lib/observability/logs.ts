@@ -185,7 +185,7 @@ export function buildLogsAnalysis(
 
   if (events.length === 0) {
     healthHints.push(
-      'No hay eventos en la muestra actual. Revisa si la tabla esta vacia o si la instrumentacion aun no ha generado actividad.',
+      'No hay eventos en la muestra actual. Revisa si la table esta vacia o si la instrumentacion aun no ha generado actividad.',
     )
   } else if (failuresLast24h.length === 0) {
     healthHints.push(
@@ -194,7 +194,7 @@ export function buildLogsAnalysis(
   } else {
     const mainFailure = buildCounter(failuresLast24h.map((event) => event.eventName), 1)[0]
     const failureDetail = mainFailure
-      ? ` El foco principal esta en ${mainFailure.label} (${mainFailure.count}).`
+      ? ` El foco primary esta en ${mainFailure.label} (${mainFailure.count}).`
       : ''
     healthHints.push(
       `${failuresLast24h.length} eventos con failure en las ultimas 24 horas.${failureDetail}`,
@@ -204,7 +204,7 @@ export function buildLogsAnalysis(
   const topEvent = buildCounter(events.map((event) => event.eventName), 1)[0]
   if (topEvent?.label === 'app.page_view') {
     healthHints.push(
-      'La mayor parte de la muestra es navegacion. Las mutaciones operativas son menos frecuentes que las vistas de ruta.',
+      'La mayor parte de la muestra es navegacion. Las mutaciones operativas son menos frecuentes que las vistas de path.',
     )
   }
 

@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * Stepper horizontal de la maquina de ejecucion de proyecto (v2, Sprint 1+).
- * Muestra las 4 fases agrupadas (ejecucion / validacion / entrega / cierre)
- * y dentro de cada una, los 13 estados ordenados. El estado actual se
+ * Stepper horizontal de la maquina de execution de project (v2, Sprint 1+).
+ * Muestra las 4 fases agrupadas (execution / validation / delivery / closure)
+ * y dentro de cada una, los 13 statuses ordenados. El status actual se
  * destaca, los anteriores se marcan como completados.
  */
 
@@ -25,17 +25,17 @@ type Props = {
 }
 
 const PHASE_LABELS: Record<ProjectExecutionPhase, string> = {
-  ejecucion: 'Ejecucion',
-  validacion: 'Validacion',
-  entrega: 'Entrega',
-  cierre: 'Cierre',
+  execution: 'Ejecucion',
+  validation: 'Validation',
+  delivery: 'Delivery',
+  closure: 'Cierre',
 }
 
 const PHASE_ORDER: ProjectExecutionPhase[] = [
-  PROJECT_EXECUTION_PHASES.EJECUCION,
-  PROJECT_EXECUTION_PHASES.VALIDACION,
-  PROJECT_EXECUTION_PHASES.ENTREGA,
-  PROJECT_EXECUTION_PHASES.CIERRE,
+  PROJECT_EXECUTION_PHASES.EXECUTION,
+  PROJECT_EXECUTION_PHASES.VALIDATION,
+  PROJECT_EXECUTION_PHASES.DELIVERY,
+  PROJECT_EXECUTION_PHASES.CLOSURE,
 ]
 
 export function ProjectStateStepper({ currentState, className }: Props) {

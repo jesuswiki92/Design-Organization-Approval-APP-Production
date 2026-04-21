@@ -5,14 +5,14 @@
  * SELECTOR DE ESTADO DEL PIPELINE DE COTIZACIONES
  * ============================================================================
  *
- * Componente reutilizable que muestra un desplegable con todos los estados
- * del pipeline de cotizaciones (10 estados). Al cambiar el estado, llama
- * al webhook de n8n que actualiza Supabase. La app lee el estado desde
- * Supabase (mismo patron que el cambio de estado de proyectos).
+ * Componente reutilizable que muestra un desplegable con todos los statuses
+ * del pipeline de cotizaciones (10 statuses). Al cambiar el status, llama
+ * al webhook de n8n que actualiza Supabase. La app lee el status desde
+ * Supabase (mismo patron que el cambio de status de projects).
  *
  * Se usa en:
  * - Las tarjetas del tablero Kanban (QuotationStatesBoard)
- * - La pagina de detalle de consulta entrante (incoming/[id])
+ * - La page de detalle de request entrante (incoming/[id])
  * ============================================================================
  */
 
@@ -67,10 +67,10 @@ export function QuotationStateSelector({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          consulta_id: consultaId,
+          incoming_request_id: consultaId,
           consulta_codigo: consultaCodigo,
-          estado_anterior: previousState,
-          estado_nuevo: nextState,
+          previous_status: previousState,
+          new_status: nextState,
           fecha_hora: new Date().toISOString(),
         }),
       })
@@ -87,7 +87,7 @@ export function QuotationStateSelector({
       setMessage(
         error instanceof Error
           ? error.message
-          : 'Error al cambiar el estado.',
+          : 'Error al cambiar el status.',
       )
     }
   }
@@ -95,7 +95,7 @@ export function QuotationStateSelector({
   return (
     <div className="relative z-20 space-y-0.5 overflow-visible">
       <label className="sr-only" htmlFor={`quotation-state-${consultaId}`}>
-        Cambiar estado en el pipeline
+        Cambiar status en el pipeline
       </label>
       <select
         id={`quotation-state-${consultaId}`}

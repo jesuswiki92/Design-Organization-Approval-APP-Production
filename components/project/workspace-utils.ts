@@ -1,7 +1,7 @@
 import type {
-  ProyectoConRelaciones,
-  ProyectoDocumento,
-  ProyectoTarea,
+  ProjectWithRelations,
+  ProjectDocument,
+  ProjectTask,
 } from '@/types/database'
 import { getProjectStatusMeta as getSharedProjectStatusMeta } from '@/lib/workflow-states'
 
@@ -11,27 +11,27 @@ export const DOCUMENT_STATUS_CONFIG: Record<
   string,
   { label: string; badge: string; accent: string }
 > = {
-  pendiente: {
-    label: 'Pendiente',
+  pending: {
+    label: 'Pending',
     badge: 'border-amber-200 bg-amber-50 text-amber-700',
     accent: 'bg-amber-500',
   },
-  en_redaccion: {
+  drafting: {
     label: 'En redaccion',
     badge: 'border-sky-200 bg-sky-50 text-sky-700',
     accent: 'bg-sky-500',
   },
-  en_revision: {
-    label: 'En revision',
+  in_review: {
+    label: 'En review',
     badge: 'border-cyan-200 bg-cyan-50 text-cyan-700',
     accent: 'bg-cyan-500',
   },
-  aprobado: {
+  approved: {
     label: 'Vigente',
     badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
     accent: 'bg-emerald-500',
   },
-  bloqueado: {
+  blocked: {
     label: 'Bloqueado',
     badge: 'border-rose-200 bg-rose-50 text-rose-700',
     accent: 'bg-rose-500',
@@ -39,18 +39,18 @@ export const DOCUMENT_STATUS_CONFIG: Record<
 }
 
 const REQUIRED_DOCUMENTS = [
-  { label: 'Classification', patterns: ['classification', 'clasificacion'] },
+  { label: 'Classification', patterns: ['classification', 'classification'] },
   { label: 'Certification Plan', patterns: ['certification plan', 'cert plan'] },
   {
     label: 'Modification Description',
-    patterns: ['modification description', 'descripcion', 'modification'],
+    patterns: ['modification description', 'description', 'modification'],
   },
   { label: 'Master Document List', patterns: ['master document list', 'mdl'] },
 ]
 
-export function calcDocumentCompletion(docs: ProyectoDocumento[]) {
+export function calcDocumentCompletion(docs: ProjectDocument[]) {
   if (docs.length === 0) return 0
-  const current = docs.filter((doc) => doc.estado === 'aprobado').length
+  const current = docs.filter((doc) => doc.status === 'approved').length
   return Math.round((current / docs.length) * 100)
 }
 
@@ -61,8 +61,8 @@ export function daysRemaining(date: string | null) {
 }
 
 /**
- * Formatea el nombre del owner del proyecto.
- * En doa_proyectos, owner es un campo texto simple.
+ * Formatea el name del owner del project.
+ * En doa_projects, owner es un campo text simple.
  */
 export function userName(user: string | null) {
   if (!user) return 'Sin asignar'
@@ -78,20 +78,20 @@ export function userInitials(user: string | null) {
 }
 
 /**
- * Label de la aeronave del proyecto.
- * En doa_proyectos, aeronave es un campo texto simple.
+ * Label de la aircraft del project.
+ * En doa_projects, aircraft es un campo text simple.
  */
-export function getAircraftLabel(aeronave: string | null) {
-  return aeronave ?? 'Sin aeronave asignada'
+export function getAircraftLabel(aircraft: string | null) {
+  return aircraft ?? 'Sin aircraft asignada'
 }
 
 /**
- * Label del cliente del proyecto.
- * En doa_proyectos, cliente es un objeto con nombre
- * o puede venir como cliente_nombre (texto simple).
+ * Label del client del project.
+ * En doa_projects, client es un objeto con name
+ * o puede venir como client_name (text simple).
  */
-export function getClientLabel(cliente: { nombre?: string } | null) {
-  return cliente?.nombre ?? 'Sin cliente asociado'
+export function getClientLabel(client: { name?: string } | null) {
+  return client?.name ?? 'Sin client asociado'
 }
 
 export function getProjectStatusMeta(status: string) {
@@ -101,12 +101,12 @@ export function getProjectStatusMeta(status: string) {
     badge: `${meta.border} ${meta.bg} ${meta.color}`,
     dot: meta.dot,
     emphasis:
-      status === 'en_pausa' ||
-      status === 'cancelado' ||
-      status === 'pendiente_aprobacion_cve' ||
-      status === 'pendiente_aprobacion_easa'
+      status === 'paused' ||
+      status === 'canceled' ||
+      status === 'pending_cve_approval' ||
+      status === 'pending_easa_approval'
         ? 'high'
-        : status === 'en_revision' || status === 'revision' || status === 'aprobacion'
+        : status === 'in_review' || status === 'review' || status === 'approval'
           ? 'medium'
           : 'low',
   }
@@ -120,11 +120,11 @@ export function getDocumentStatusMeta(status: string) {
   }
 }
 
-export function getDocumentSearchText(doc: ProyectoDocumento) {
-  return `${doc.nombre} ${doc.tipo_documento}`.toLowerCase()
+export function getDocumentSearchText(doc: ProjectDocument) {
+  return `${doc.name} ${doc.document_type}`.toLowerCase()
 }
 
-export function inferDocumentCoverage(docs: ProyectoDocumento[]) {
+export function inferDocumentCoverage(docs: ProjectDocument[]) {
   const present = REQUIRED_DOCUMENTS.filter(({ patterns }) =>
     docs.some((doc) => patterns.some((pattern) => getDocumentSearchText(doc).includes(pattern))),
   ).map((entry) => entry.label)
@@ -137,35 +137,35 @@ export function inferDocumentCoverage(docs: ProyectoDocumento[]) {
 }
 
 export function buildExpertAnalysis(params: {
-  project: ProyectoConRelaciones
-  docs: ProyectoDocumento[]
-  tasks: ProyectoTarea[]
-  selectedDoc: ProyectoDocumento | null
+  project: ProjectWithRelations
+  docs: ProjectDocument[]
+  tasks: ProjectTask[]
+  selectedDoc: ProjectDocument | null
   mode: ExpertMode
 }) {
   const { project, docs, tasks, selectedDoc, mode } = params
-  const pendingDocs = docs.filter((doc) => doc.estado !== 'aprobado')
-  const reviewDocs = docs.filter((doc) => doc.estado === 'en_revision')
-  const overdueDays = daysRemaining(project.fecha_entrega_estimada)
+  const pendingDocs = docs.filter((doc) => doc.status !== 'approved')
+  const reviewDocs = docs.filter((doc) => doc.status === 'in_review')
+  const overdueDays = daysRemaining(project.estimated_delivery_date)
   const coverage = inferDocumentCoverage(docs)
 
   if (mode === 'document' && selectedDoc) {
-    const status = getDocumentStatusMeta(selectedDoc.estado)
+    const status = getDocumentStatusMeta(selectedDoc.status)
     return {
-      eyebrow: 'Documento activo',
-      title: selectedDoc.nombre,
-      summary: `El documento esta en estado ${status.label.toLowerCase()} y se analiza dentro del contexto del expediente ${project.numero_proyecto}.`,
+      eyebrow: 'Document is_active',
+      title: selectedDoc.name,
+      summary: `El document esta en status ${status.label.toLowerCase()} y se analiza dentro del contexto del expediente ${project.project_number}.`,
       bullets: [
-        `Tipo documental: ${selectedDoc.tipo_documento}`,
-        `Version / revision actual: ${selectedDoc.version}`,
-        selectedDoc.fecha_ultima_revision
-          ? `Ultima revision registrada: ${selectedDoc.fecha_ultima_revision}`
-          : 'No hay fecha de revision registrada',
+        `Tipo documental: ${selectedDoc.document_type}`,
+        `Version / review actual: ${selectedDoc.version}`,
+        selectedDoc.last_review_date
+          ? `Ultima review registrada: ${selectedDoc.last_review_date}`
+          : 'No hay date de review registrada',
       ],
       actions: [
-        'Verificar si este documento cubre una dependencia critica del expediente',
+        'Verificar si este document cubre una dependencia critica del expediente',
         'Comparar su version actual con el resto del paquete documental',
-        'Usarlo como contexto prioritario para responder dudas del proyecto',
+        'Usarlo como contexto prioritario para responder dudas del project',
       ],
     }
   }
@@ -177,37 +177,37 @@ export function buildExpertAnalysis(params: {
         ? 'Faltan piezas criticas del paquete documental'
         : 'Cobertura documental base identificada',
       summary: coverage.missing.length
-        ? `Se detectan ${coverage.missing.length} piezas documentales clave sin correspondencia clara en la tabla actual.`
+        ? `Se detectan ${coverage.missing.length} piezas documentales clave sin correspondencia clara en la table actual.`
         : 'La base documental esencial del expediente ya tiene correspondencia visible en el workspace.',
       bullets: coverage.missing.length
-        ? coverage.missing.map((item) => `Pendiente localizar o crear: ${item}`)
+        ? coverage.missing.map((item) => `Pending localizar o crear: ${item}`)
         : coverage.present.map((item) => `Cobertura detectada: ${item}`),
       actions: [
-        'Priorizar la revision del paquete documental antes del siguiente hito',
+        'Priorizar la review del paquete documental antes del siguiente hito',
         'Confirmar si las piezas faltantes existen con otra nomenclatura',
-        'Abrir la base historica de proyectos para buscar referencias equivalentes en expedientes previos',
+        'Abrir la base historica de projects para buscar referencias equivalentes en expedientes previos',
       ],
     }
   }
 
   if (mode === 'references') {
     return {
-      eyebrow: 'Reutilizacion tecnica',
-      title: 'Consulta sugerida para la base historica de proyectos',
+      eyebrow: 'Reutilizacion technical',
+      title: 'Request sugerida para la base historica de projects',
       summary:
-        'El valor del historico esta en recuperar expedientes similares y reutilizar criterios, estructuras y documentacion.',
+        'El valor del historical esta en recuperar expedientes similares y reutilizar criterios, estructuras y documentacion.',
       bullets: [
-        `Buscar por aeronave: ${getAircraftLabel(project.aeronave)}`,
+        `Buscar por aircraft: ${getAircraftLabel(project.aircraft)}`,
         project.tcds_code
           ? `Buscar por TCDS: ${project.tcds_code}`
           : 'No hay codigo TCDS definido todavia',
-        project.cliente_nombre
-          ? `Buscar por cliente: ${project.cliente_nombre}`
-          : 'No hay cliente asociado todavia',
+        project.client_name
+          ? `Buscar por client: ${project.client_name}`
+          : 'No hay client asociado todavia',
       ],
       actions: [
-        'Consultar expedientes similares por aeronave y TCDS',
-        'Recuperar plantillas documentales y decisiones previas reutilizables',
+        'Consultar expedientes similares por aircraft y TCDS',
+        'Recuperar templates documentales y decisiones previas reutilizables',
         'Usar el experto para comparar huecos del expediente actual con referencias historicas',
       ],
     }
@@ -219,41 +219,41 @@ export function buildExpertAnalysis(params: {
       title: 'Prioridad operativa inmediata',
       summary:
         overdueDays !== null && overdueDays <= 15
-          ? 'La ventana temporal del proyecto ya exige cerrar huecos documentales y reducir incertidumbre.'
-          : 'El expediente puede avanzar mejor si se ordenan primero pendientes documentales y revision interna.',
+          ? 'La ventana temporal del project ya exige close huecos documentales y reducir incertidumbre.'
+          : 'El expediente puede avanzar mejor si se ordenan primero pendientes documentales y review internal.',
       bullets: [
         pendingDocs.length
-          ? `${pendingDocs.length} documentos siguen sin estado vigente`
-          : 'No hay pendientes documentales visibles en esta revision',
+          ? `${pendingDocs.length} documents siguen sin status vigente`
+          : 'No hay pendientes documentales visibles en esta review',
         reviewDocs.length
-          ? `${reviewDocs.length} documentos estan en revision y pueden bloquear el siguiente paso`
-          : 'No hay documentos retenidos especificamente en revision',
+          ? `${reviewDocs.length} documents estan en review y pueden bloquear el siguiente paso`
+          : 'No hay documents retenidos especificamente en review',
         tasks.length
           ? `${tasks.length} tareas registradas siguen formando parte del control operativo`
           : 'No hay tareas cargadas todavia en esta vista',
       ],
       actions: [
-        'Revisar primero los documentos en revision o pendientes',
+        'Revisar primero los documents en review o pendientes',
         'Convertir el proximo hueco critico en una tarea concreta',
-        'Lanzar consulta contextual al experto con el expediente activo',
+        'Lanzar request contextual al experto con el expediente is_active',
       ],
     }
   }
 
   return {
-    eyebrow: 'Estado del expediente',
+    eyebrow: 'Status del expediente',
     title: 'Lectura rapida del workspace',
     summary:
-      'El panel contextual resume el estado documental y operativo del expediente sin salir del entorno de trabajo.',
+      'El panel contextual resume el status documental y operativo del expediente sin salir del entorno de trabajo.',
     bullets: [
-      `Documentos visibles: ${docs.length}`,
-      `Documentos no vigentes todavia: ${pendingDocs.length}`,
+      `Documents visibles: ${docs.length}`,
+      `Documents no vigentes todavia: ${pendingDocs.length}`,
       tasks.length ? `Tareas abiertas en esta carga: ${tasks.length}` : 'Sin tareas visibles en esta carga',
     ],
     actions: [
       'Revisar primero cobertura documental y alertas abiertas',
-      'Abrir un documento para profundizar con contexto especifico',
-      'Usar busquedas de referencia cuando el expediente requiera reutilizacion tecnica',
+      'Abrir un document para profundizar con contexto especifico',
+      'Usar busquedas de referencia cuando el expediente requiera reutilizacion technical',
     ],
   }
 }

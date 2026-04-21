@@ -8,10 +8,10 @@ export function QuotationInfoSection() {
           <Receipt className="h-4 w-4 text-[color:var(--umber)]" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-[color:var(--ink)]">Quotation pendiente en esta fase</p>
+          <p className="text-sm font-semibold text-[color:var(--ink)]">Quotation pending en esta fase</p>
           <p className="mt-1 text-sm leading-6 text-[color:var(--ink-2)]">
-            Esta vista permanece visible como placeholder, pero la edicion de oferta
-            sigue desactivada mientras la consulta esta en modo revision y decision.
+            Esta vista permanece visible como placeholder, pero la edicion de quote
+            sigue desactivada mientras la request esta en modo review y decision.
           </p>
           <p className="mt-3 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-2)]">
             La preparacion de quotation se activara en la siguiente iteracion.

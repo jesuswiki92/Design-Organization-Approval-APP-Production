@@ -5,12 +5,12 @@
  * CABECERA DE FASE + GRUPO DE COLUMNAS DE ESTADO
  * ============================================================================
  *
- * Agrupa visualmente las columnas de estado que pertenecen a una misma fase
- * (Ejecucion, Validacion, Entrega, Cierre). La cabecera se pinta por encima
- * de sus N columnas de estado y las engloba con un border sutil y color
+ * Agrupa visualmente las columnas de status que pertenecen a una misma fase
+ * (Ejecucion, Validation, Delivery, Cierre). La cabecera se pinta por encima
+ * de sus N columnas de status y las engloba con un border sutil y color
  * identificativo. Debajo se disponen horizontalmente las StateColumn hijas.
  *
- * Esto da la "sensacion Kanban v2" de fases + sub-estados sin complicar
+ * Esto da la "sensacion Kanban v2" de fases + sub-statuses sin complicar
  * el layout: sigue siendo un row horizontal al final, solo que las columnas
  * se agrupan visualmente por fase.
  * ============================================================================
@@ -33,22 +33,22 @@ type PhaseStyle = {
  * with Quotations (where color only lives in the state dot).
  */
 const PHASE_STYLES: Record<ProjectExecutionPhase, PhaseStyle> = {
-  ejecucion: {
+  execution: {
     label: 'Ejecucion',
     accent: 'cyan',
     dot: 'bg-cyan-500',
   },
-  validacion: {
-    label: 'Validacion',
+  validation: {
+    label: 'Validation',
     accent: 'amber',
     dot: 'bg-amber-500',
   },
-  entrega: {
-    label: 'Entrega',
+  delivery: {
+    label: 'Delivery',
     accent: 'emerald',
     dot: 'bg-emerald-500',
   },
-  cierre: {
+  closure: {
     label: 'Cierre',
     accent: 'slate',
     dot: 'bg-[color:var(--ink-3)]',
@@ -61,7 +61,7 @@ export function getPhaseStyle(phase: ProjectExecutionPhase): PhaseStyle {
 
 /**
  * Agrupa un set de StateColumn bajo una cabecera de fase.
- * El caller pasa las StateColumn como children en el orden canonico.
+ * El caller pasa las StateColumn como children en el sort_order canonico.
  */
 export function PhaseColumnGroup({
   phase,
@@ -85,11 +85,11 @@ export function PhaseColumnGroup({
           </h2>
         </div>
         <span className="doa-kanban-chip">
-          {projectCount} proyectos
+          {projectCount} projects
         </span>
       </div>
 
-      {/* Columnas de estado en fila */}
+      {/* Columnas de status en fila */}
       <div className="flex flex-1 gap-3">{children}</div>
     </div>
   )

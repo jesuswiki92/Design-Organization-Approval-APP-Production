@@ -1,5 +1,5 @@
 import type { Phase4ProjectBaseline } from '@/lib/project-summary-phase4'
-import type { ConsultaEntrante } from '@/types/database'
+import type { IncomingRequest } from '@/types/database'
 
 type MaybeString = string | null | undefined
 
@@ -54,29 +54,29 @@ type PreliminaryScopeContinuityAssessment = {
 }
 
 export type PreliminaryScopeAircraftVariant = {
-  fabricante: string
-  modelo: string
-  msn_elegibles: string
+  manufacturer: string
+  model: string
+  eligible_msns: string
   mtow_kg: number | null
-  regulacion_base: string
+  base_regulation: string
   tcds_code: string
   tcds_code_short: string
 }
 
 export type PreliminaryScopeReferenceProject = {
-  aeronave: string | null
-  anio: number | null
+  aircraft: string | null
+  year: number | null
   baseline: Phase4ProjectBaseline
   created_at: string | null
   id: string
-  numero_proyecto: string | null
+  project_number: string | null
   summary_md: string | null
-  titulo: string | null
+  title: string | null
 }
 
 export type PreliminaryScopeModelInput = {
   clientLabel?: string | null
-  consultation: ConsultaEntrante
+  consultation: IncomingRequest
   primaryAircraftVariant?: PreliminaryScopeAircraftVariant | null
   referenceProjects?: PreliminaryScopeReferenceProject[]
 }
@@ -207,7 +207,7 @@ const IMPACT_DEFINITIONS: PreliminaryScopeImpactDefinition[] = [
     notExpectedReason: 'Aun no hay evidencia suficiente de una carga o interfaz electrica concreta.',
     possibleKeywords: ['antenna', 'avionics', 'equipment', 'install', 'radome', 'system'],
     possibleReason: 'Si la integracion confirma alimentacion, protecciones o cableado, esta disciplina pasara a ser probable.',
-    probableReason: 'Una integracion de este tipo suele arrastrar alimentacion, protecciones, cableado o EWIS asociado.',
+    probableReason: 'Una integracion de este type suele arrastrar alimentacion, protecciones, cableado o EWIS asociado.',
   },
   {
     baselineAliases: ['cabin', 'cabina', 'interior', 'interiors', 'monument'],
@@ -244,17 +244,17 @@ const IMPACT_DEFINITIONS: PreliminaryScopeImpactDefinition[] = [
     discipline: 'Flammability',
     notExpectedReason: 'No se ve todavia evidencia directa de materiales interiores o close-outs sujetos a flammability.',
     possibleKeywords: ['close-out', 'composite', 'fairing', 'panel', 'radome'],
-    possibleReason: 'Si aparecen fairings, close-outs o materiales no metalicos, podria abrirse una revision de flammability.',
-    probableReason: 'La modificacion parece tocar materiales o acabados que exigen una revision explicita de flammability.',
+    possibleReason: 'Si aparecen fairings, close-outs o materiales no metalicos, podria abrirse una review de flammability.',
+    probableReason: 'La modificacion parece tocar materiales o acabados que exigen una review explicita de flammability.',
   },
   {
     baselineAliases: ['mass', 'weight', 'weight and balance', 'weights'],
     directKeywords: ['arm', 'balance', 'cg', 'mass', 'moment', 'peso', 'weight'],
     discipline: 'Weights and Balance',
-    notExpectedReason: 'No hay datos suficientes para asegurar un delta de masa o brazo, aunque sigue siendo una validacion tipica.',
+    notExpectedReason: 'No hay data suficientes para asegurar un delta de masa o brazo, aunque sigue siendo una validation tipica.',
     possibleKeywords: ['antenna', 'equipment', 'install', 'installation', 'kit', 'radome'],
-    possibleReason: 'Si el hardware nuevo queda confirmado, habra que revisar el delta de masa y brazo.',
-    probableReason: 'La instalacion de hardware nuevo suele arrastrar revision de masa, brazo y weight and balance.',
+    possibleReason: 'Si el hardware new queda confirmado, habra que revisar el delta de masa y brazo.',
+    probableReason: 'La instalacion de hardware new suele arrastrar review de masa, brazo y weight and balance.',
   },
   {
     baselineAliases: ['ica', 'instructions', 'maintenance', 'manual'],
@@ -263,7 +263,7 @@ const IMPACT_DEFINITIONS: PreliminaryScopeImpactDefinition[] = [
     notExpectedReason: 'No hay todavia evidencia directa de una actualizacion documental de mantenimiento concreta.',
     possibleKeywords: ['antenna', 'equipment', 'install', 'installation', 'radome', 'system'],
     possibleReason: 'Si el embodiment y el equipo quedan fijados, podria requerirse actualizacion de ICA o mantenimiento.',
-    probableReason: 'Una instalacion de este tipo suele arrastrar ICA, instrucciones de mantenimiento o documentacion equivalente.',
+    probableReason: 'Una instalacion de este type suele arrastrar ICA, instrucciones de mantenimiento o documentacion equivalente.',
   },
   {
     baselineAliases: ['afm', 'flight manual', 'operational', 'operations'],
@@ -272,22 +272,22 @@ const IMPACT_DEFINITIONS: PreliminaryScopeImpactDefinition[] = [
     notExpectedReason: 'No se ve aun una limitacion operacional o suplemento de manual claramente disparado.',
     possibleKeywords: ['antenna', 'communication', 'gps', 'nav', 'satcom', 'system'],
     possibleReason: 'Podria requerirse suplemento o limitacion operacional si la funcion instalada cambia el uso del avion.',
-    probableReason: 'La evidencia actual ya sugiere una revision operacional o de Flight Manual.',
+    probableReason: 'La evidencia actual ya sugiere una review operacional o de Flight Manual.',
   },
   {
     baselineAliases: ['certification', 'classification', 'compliance', 'part 21'],
     directKeywords: ['certification', 'classification', 'compliance', 'cri', 'means of compliance', 'part 21'],
     discipline: 'Certification / Compliance',
-    notExpectedReason: 'No hay todavia base suficiente para cerrar la ruta, pero la disciplina sigue siendo necesaria para cualquier alcance.',
+    notExpectedReason: 'No hay todavia base suficiente para close la path, pero la disciplina sigue siendo necesaria para cualquier alcance.',
     possibleKeywords: ['approval', 'basis', 'cs-25', 'regulacion'],
-    possibleReason: 'La ruta existe, pero aun necesita cierre formal de clasificacion, base y medios de cumplimiento.',
-    probableReason: 'La clasificacion y el plan de compliance deben fijarse internamente desde el arranque del alcance preliminar.',
+    possibleReason: 'La path existe, pero aun necesita closure formal de classification, base y medios de cumplimiento.',
+    probableReason: 'La classification y el plan de compliance deben fijarse internamente desde el arranque del alcance preliminar.',
   },
   {
     baselineAliases: ['installation', 'production', 'shop', 'work instructions'],
     directKeywords: ['embodiment', 'install', 'installation', 'kit', 'production', 'shop', 'work instructions'],
     discipline: 'Production / Installation',
-    notExpectedReason: 'Aun no hay detalle suficiente para asegurar datos de embodiment o soporte a produccion.',
+    notExpectedReason: 'Aun no hay detalle suficiente para asegurar data de embodiment o soporte a produccion.',
     possibleKeywords: ['antenna', 'equipment', 'mount', 'radome', 'retrofit'],
     possibleReason: 'Si la solucion queda confirmada como embodiment fisico, podria requerirse soporte a produccion o instalacion.',
     probableReason: 'La lectura preliminar apunta a embodiment, instrucciones de instalacion o coordinacion con produccion/MRO.',
@@ -331,10 +331,10 @@ function containsAny(text: string, keywords: string[]) {
 }
 
 function formatYesNo(value: MaybeString) {
-  if (value === 'si') return 'Si'
+  if (value === 'yes') return 'Si'
   if (value === 'no') return 'No'
-  if (value === 'no_seguro') return 'No seguro'
-  if (value === 'no_aplica') return 'No aplica'
+  if (value === 'not_sure') return 'No seguro'
+  if (value === 'not_applicable') return 'No aplica'
   return 'Sin confirmar'
 }
 
@@ -353,19 +353,19 @@ function looselyMatches(left: MaybeString, right: MaybeString) {
   )
 }
 
-function buildAircraftLabel(consultation: ConsultaEntrante) {
+function buildAircraftLabel(consultation: IncomingRequest) {
   return (
     cleanText([consultation.aircraft_manufacturer, consultation.aircraft_model].filter(Boolean).join(' ')) ??
-    'Aeronave pendiente de confirmar'
+    'Aircraft pending de confirmar'
   )
 }
 
 function buildReferenceLabel(reference: PreliminaryScopeReferenceProject | null | undefined) {
   if (!reference) return 'Sin precedente seleccionado'
   return (
-    cleanText([reference.numero_proyecto, reference.titulo].filter(Boolean).join(' - ')) ??
-    reference.numero_proyecto ??
-    reference.titulo ??
+    cleanText([reference.project_number, reference.title].filter(Boolean).join(' - ')) ??
+    reference.project_number ??
+    reference.title ??
     'Precedente sin identificar'
   )
 }
@@ -374,10 +374,10 @@ function getChosenReference(referenceProjects: PreliminaryScopeReferenceProject[
   return referenceProjects[0] ?? null
 }
 
-function buildRequestText(consultation: ConsultaEntrante) {
+function buildRequestText(consultation: IncomingRequest) {
   return normalizeText(
     [
-      consultation.asunto,
+      consultation.subject,
       consultation.modification_summary,
       consultation.operational_goal,
       consultation.equipment_details,
@@ -404,7 +404,7 @@ function buildBaselineText(chosenReference: PreliminaryScopeReferenceProject | n
 }
 
 function buildImpactSignals(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
   primaryAircraftVariant: PreliminaryScopeAircraftVariant | null | undefined,
   requestText: string,
@@ -419,14 +419,14 @@ function buildImpactSignals(
     hasCertificationContext:
       Boolean(
         cleanText(consultation.modification_summary) ||
-          cleanText(consultation.asunto) ||
+          cleanText(consultation.subject) ||
           cleanText(chosenReference?.baseline.classificationBaseline) ||
           cleanText(chosenReference?.baseline.certificationBasisBaseline) ||
-          cleanText(primaryAircraftVariant?.regulacion_base) ||
+          cleanText(primaryAircraftVariant?.base_regulation) ||
           cleanText(primaryAircraftVariant?.tcds_code),
       ),
     hasEquipmentSignal:
-      consultation.has_equipment === 'si' ||
+      consultation.has_equipment === 'yes' ||
       containsAny(combinedText, ['antenna', 'avionics', 'equipment', 'kit', 'radome', 'satcom', 'system']),
     hasInstallationSignal:
       containsAny(combinedText, [
@@ -559,7 +559,7 @@ function buildImpactRationale(
 
   const sourceNote =
     match.fromRequest && match.fromBaseline
-      ? 'La solicitud y el precedente apuntan en la misma direccion.'
+      ? 'La solicitud y el precedente apuntan en la misma address.'
       : match.fromRequest
         ? 'La inferencia nace de la solicitud actual.'
         : match.fromBaseline
@@ -570,7 +570,7 @@ function buildImpactRationale(
 }
 
 function detectImpacts(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
   primaryAircraftVariant: PreliminaryScopeAircraftVariant | null | undefined,
 ) {
@@ -597,7 +597,7 @@ function detectImpacts(
 }
 
 function buildClientProvidedFacts(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   aircraftLabel: string,
 ) {
   return [
@@ -605,15 +605,15 @@ function buildClientProvidedFacts(
       label: 'Solicitud',
       value:
         cleanText(consultation.modification_summary) ??
-        cleanText(consultation.asunto) ??
-        'Sin descripcion tecnica suficiente',
+        cleanText(consultation.subject) ??
+        'Sin description technical suficiente',
     },
     {
       label: 'Objetivo operativo',
       value: cleanText(consultation.operational_goal) ?? 'No declarado',
     },
     {
-      label: 'Aeronave reportada',
+      label: 'Aircraft reportada',
       value: aircraftLabel,
     },
     {
@@ -627,17 +627,17 @@ function buildClientProvidedFacts(
     {
       label: 'Tipo de trabajo solicitado',
       value:
-        consultation.work_type === 'proyecto_nuevo'
-          ? 'Proyecto nuevo'
-          : consultation.work_type === 'modificacion_existente'
+        consultation.work_type === 'new_project'
+          ? 'Project new'
+          : consultation.work_type === 'existing_modification'
             ? `Modificacion sobre existente${consultation.existing_project_code ? ` (${consultation.existing_project_code})` : ''}`
             : 'No definido',
     },
     {
       label: 'Equipo / kit disponible',
       value:
-        consultation.has_equipment === 'si'
-          ? cleanText(consultation.equipment_details) ?? 'Cliente indica que dispone de equipo'
+        consultation.has_equipment === 'yes'
+          ? cleanText(consultation.equipment_details) ?? 'Client indica que dispone de equipo'
           : formatYesNo(consultation.has_equipment),
     },
     {
@@ -645,50 +645,50 @@ function buildClientProvidedFacts(
       value: `Planos: ${formatYesNo(consultation.has_drawings)} | OEM: ${formatYesNo(consultation.has_manufacturer_docs)}`,
     },
     {
-      label: 'Precedente que cita el cliente',
+      label: 'Precedente que cita el client',
       value:
-        consultation.has_previous_mod === 'si'
+        consultation.has_previous_mod === 'yes'
           ? cleanText(consultation.previous_mod_ref) ?? 'Existe precedente, sin referencia concreta'
           : formatYesNo(consultation.has_previous_mod),
     },
     {
-      label: 'Fecha / urgencia',
+      label: 'Date / urgencia',
       value:
         dedupe([
-          consultation.target_date ? `Fecha objetivo ${consultation.target_date}` : null,
-          consultation.is_aog === 'si' ? 'AOG' : consultation.is_aog === 'no' ? 'No AOG' : null,
-        ]).join(' | ') || 'Sin fecha objetivo ni urgencia confirmadas',
+          consultation.target_date ? `Date objetivo ${consultation.target_date}` : null,
+          consultation.is_aog === 'yes' ? 'AOG' : consultation.is_aog === 'no' ? 'No AOG' : null,
+        ]).join(' | ') || 'Sin date objetivo ni urgencia confirmadas',
     },
     {
-      label: 'Ubicacion y notas',
+      label: 'Ubicacion y notes',
       value:
         dedupe([consultation.aircraft_location, consultation.additional_notes]).join(' | ') ||
-        'Sin notas adicionales del cliente',
+        'Sin notes adicionales del client',
     },
   ] satisfies PreliminaryScopeFact[]
 }
 
 function buildContinuityAssessment(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
   primaryAircraftVariant: PreliminaryScopeAircraftVariant | null | undefined,
 ): PreliminaryScopeContinuityAssessment {
   if (!chosenReference) {
     return {
       detail:
-        'No hay precedente base confirmado todavia, asi que no puede declararse continuidad de familia ni de base de certificacion.',
+        'No hay precedente base confirmado todavia, asi que no puede declararse continuidad de family ni de base de certificacion.',
       highlight: null,
     }
   }
 
   const sameAircraftFamily =
-    looselyMatches(consultation.aircraft_model, chosenReference.aeronave) ||
+    looselyMatches(consultation.aircraft_model, chosenReference.aircraft) ||
     looselyMatches(consultation.aircraft_model, chosenReference.baseline.identification.join(' ')) ||
-    looselyMatches(consultation.aircraft_manufacturer, chosenReference.aeronave)
+    looselyMatches(consultation.aircraft_manufacturer, chosenReference.aircraft)
 
   const sameCertificationBasis =
     looselyMatches(
-      primaryAircraftVariant?.regulacion_base,
+      primaryAircraftVariant?.base_regulation,
       chosenReference.baseline.certificationBasisBaseline,
     ) ||
     looselyMatches(consultation.tcds_number, primaryAircraftVariant?.tcds_code) ||
@@ -701,28 +701,28 @@ function buildContinuityAssessment(
   if (sameAircraftFamily && sameCertificationBasis) {
     return {
       detail: dedupe([
-        'Se aprecia continuidad tanto de familia/plataforma como de base de certificacion con el precedente seleccionado.',
+        'Se aprecia continuidad tanto de family/plataforma como de base de certificacion con el precedente seleccionado.',
         'DOA puede reutilizar el baseline como punto de partida y justificar solo los deltas tecnicos reales.',
         weakDocumentationNote,
       ]).join(' '),
-      highlight: 'Continuidad de familia y base visible',
+      highlight: 'Continuidad de family y base visible',
     }
   }
 
   if (sameAircraftFamily) {
     return {
       detail: dedupe([
-        'Se aprecia continuidad de familia/plataforma con el precedente, pero la continuidad de base de certificacion aun debe cerrarse internamente.',
+        'Se aprecia continuidad de family/plataforma con el precedente, pero la continuidad de base de certificacion aun debe cerrarse internamente.',
         weakDocumentationNote,
       ]).join(' '),
-      highlight: 'Continuidad de familia visible',
+      highlight: 'Continuidad de family visible',
     }
   }
 
   if (sameCertificationBasis) {
     return {
       detail: dedupe([
-        'Se aprecia continuidad aparente de base de certificacion, aunque la continuidad de familia o configuracion no esta demostrada todavia.',
+        'Se aprecia continuidad aparente de base de certificacion, aunque la continuidad de family o configuracion no esta demostrada todavia.',
         weakDocumentationNote,
       ]).join(' '),
       highlight: 'Continuidad de base visible',
@@ -731,7 +731,7 @@ function buildContinuityAssessment(
 
   return {
     detail: dedupe([
-      'El precedente sirve como referencia estructural, pero no hay continuidad demostrada de familia ni de base de certificacion.',
+      'El precedente sirve como referencia estructural, pero no hay continuidad demostrada de family ni de base de certificacion.',
       weakDocumentationNote,
     ]).join(' '),
     highlight: null,
@@ -752,7 +752,7 @@ function buildBaseContribution(
 ) {
   if (!chosenReference) {
     return [
-      'Aun no hay precedente base marcado. La propuesta se apoya solo en los datos actuales del cliente y en la lectura TCDS disponible.',
+      'Aun no hay precedente base marcado. La propuesta se apoya solo en los data actuales del client y en la lectura TCDS disponible.',
     ]
   }
 
@@ -762,13 +762,13 @@ function buildBaseContribution(
   return compact<string>([
     baseline.scopeBaseline
       ? `El precedente aporta una narrativa de alcance reutilizable: ${baseline.scopeBaseline}.`
-      : 'El precedente aporta continuidad nominal, pero el PROJECT_SUMMARY no deja una descripcion de alcance suficientemente clara. No se interpreta como ausencia tecnica, sino como documentacion incompleta.',
+      : 'El precedente aporta continuidad nominal, pero el PROJECT_SUMMARY no deja una description de alcance suficientemente clara. No se interpreta como ausencia technical, sino como documentacion incompleta.',
     baseline.classificationBaseline || baseline.certificationBasisBaseline
-      ? `Deja rastro de clasificacion/base util como punto de partida: ${dedupe([baseline.classificationBaseline, baseline.certificationBasisBaseline]).join(' | ')}.`
-      : 'La ruta de certificacion no queda bien documentada en el precedente; DOA debe inferirla aparte y no asumir que no existia.',
+      ? `Deja rastro de classification/base util como punto de partida: ${dedupe([baseline.classificationBaseline, baseline.certificationBasisBaseline]).join(' | ')}.`
+      : 'La path de certificacion no queda bien documentada en el precedente; DOA debe inferirla aparte y no asumir que no existia.',
     baseline.documentPackageBaseline.length > 0
       ? `Sugiere paquete documental o analitico: ${baseline.documentPackageBaseline.slice(0, 4).join(' | ')}.`
-      : 'No se ve paquete documental claro en el PROJECT_SUMMARY del precedente; habra que reconstruirlo desde ingenieria y documentos fuente.',
+      : 'No se ve paquete documental claro en el PROJECT_SUMMARY del precedente; habra que reconstruirlo desde ingenieria y documents fuente.',
     probableImpacts.length > 0
       ? `Refuerza disciplinas probables: ${probableImpacts.map((impact) => impact.discipline).join(' | ')}.`
       : null,
@@ -789,18 +789,18 @@ function buildEngineeringReading(
     probableImpacts.includes('Structures') &&
     probableImpacts.includes('Electrical')
   ) {
-    return 'La lectura preliminar DOA encaja con una integracion de sistema/equipo sobre aeronave certificada, con analisis de instalacion e interfaces como eje inicial.'
+    return 'La lectura preliminar DOA encaja con una integracion de sistema/equipo sobre aircraft certificada, con analisis de instalacion e interfaces como eje inicial.'
   }
 
   if (probableImpacts.includes('Production / Installation')) {
-    return 'La lectura preliminar DOA encaja con una modificacion de embodiment fisico sobre plataforma existente, pendiente de cerrar profundidad por disciplina.'
+    return 'La lectura preliminar DOA encaja con una modificacion de embodiment fisico sobre plataforma existente, pending de close profundidad por disciplina.'
   }
 
   if (chosenReference?.baseline.scopeBaseline) {
-    return 'La lectura preliminar DOA apunta a continuidad parcial sobre un baseline conocido, sin cerrar todavia todos los deltas tecnicos.'
+    return 'La lectura preliminar DOA apunta a continuidad parcial sobre un baseline conocido, sin close todavia todos los deltas tecnicos.'
   }
 
-  return 'La informacion disponible permite una lectura preliminar interna, pero todavia no basta para cerrar el alcance con mayor granularidad.'
+  return 'La informacion disponible permite una lectura preliminar internal, pero todavia no basta para close el alcance con mayor granularidad.'
 }
 
 function buildCertificationRoute(
@@ -811,17 +811,17 @@ function buildCertificationRoute(
   const routeFragments = dedupe([
     chosenReference?.baseline.classificationBaseline,
     chosenReference?.baseline.certificationBasisBaseline,
-    primaryAircraftVariant?.regulacion_base,
+    primaryAircraftVariant?.base_regulation,
   ])
 
   const routeText =
     routeFragments.length > 0
       ? routeFragments.join(' | ')
-      : 'Clasificacion y base pendientes de cierre interno DOA'
+      : 'Classification y base pendientes de closure internal DOA'
 
   return [
-    `Clasificacion/base preliminar: ${routeText}.`,
-    'Esta lectura pertenece a DOA/ingenieria y no se toma como input del cliente.',
+    `Classification/base preliminar: ${routeText}.`,
+    'Esta lectura pertenece a DOA/ingenieria y no se toma como input del client.',
     continuity.highlight ? `La continuidad visible ayuda a apoyar esta lectura inicial: ${continuity.highlight}.` : null,
   ]
     .filter(Boolean)
@@ -836,11 +836,11 @@ function buildScopeHypothesis(
   const focusText =
     probableImpacts.length > 0
       ? probableImpacts.slice(0, 4).map((impact) => impact.discipline).join(' | ')
-      : 'cribado tecnico inicial'
+      : 'cribado technical inicial'
 
   return chosenReference
-    ? `Hipotesis de alcance: paquete preliminar centrado en ${focusText}, reutilizando el precedente solo donde exista continuidad trazable y dejando los deltas bajo validacion interna.`
-    : `Hipotesis de alcance: paquete preliminar centrado en ${focusText}, todavia sin baseline reutilizable suficientemente validado.`
+    ? `Hipotesis de alcance: paquete preliminar centrado en ${focusText}, reutilizando el precedente solo donde exista continuidad trazable y dejando los deltas bajo validation internal.`
+    : `Hipotesis de alcance: paquete preliminar centrado en ${focusText}, todavia sin baseline reutilizable suficientemente validated.`
 }
 
 function buildEngineeringFocus(impacts: PreliminaryScopeImpact[]) {
@@ -848,7 +848,7 @@ function buildEngineeringFocus(impacts: PreliminaryScopeImpact[]) {
   const possibleImpacts = getPossibleImpacts(impacts)
 
   if (probableImpacts.length === 0 && possibleImpacts.length === 0) {
-    return 'No hay un foco disciplinar suficientemente estable; la siguiente iteracion debe cerrar primero el cribado tecnico.'
+    return 'No hay un foco disciplinar suficientemente estable; la siguiente iteracion debe close primero el cribado technical.'
   }
 
   return [
@@ -899,13 +899,13 @@ function buildDoaInference(
     {
       key: 'confidence',
       label: 'Confidence',
-      value: `${confidence.label} (${confidence.score}/100). ${confidence.reasons.slice(0, 2).join(' ') || 'Lectura preliminar sujeta a validacion interna.'}`,
+      value: `${confidence.label} (${confidence.score}/100). ${confidence.reasons.slice(0, 2).join(' ') || 'Lectura preliminar sujeta a validation internal.'}`,
     },
   ] satisfies PreliminaryScopeInferenceItem[]
 }
 
 function buildMissingInfo(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
   primaryAircraftVariant: PreliminaryScopeAircraftVariant | null | undefined,
   impacts: PreliminaryScopeImpact[],
@@ -918,16 +918,16 @@ function buildMissingInfo(
     !consultation.aircraft_msn && chosenReference?.baseline.applicabilityBaseline
       ? 'Pedir MSN o effectivity exacta para contrastarla con la aplicabilidad del precedente.'
       : null,
-    !consultation.equipment_details && consultation.has_equipment === 'si'
+    !consultation.equipment_details && consultation.has_equipment === 'yes'
       ? 'Pedir P/N, kit, pesos e interfaces del equipo a instalar.'
       : null,
-    consultation.has_drawings !== 'si'
-      ? 'Confirmar si el cliente puede aportar drawings, fotos o datos de instalacion existentes.'
+    consultation.has_drawings !== 'yes'
+      ? 'Confirmar si el client puede aportar drawings, fotos o data de instalacion existentes.'
       : null,
-    consultation.has_manufacturer_docs !== 'si'
+    consultation.has_manufacturer_docs !== 'yes'
       ? 'Confirmar disponibilidad de AMM, IPC, SRM u otra documentacion OEM aplicable.'
       : null,
-    consultation.has_previous_mod === 'si' && !consultation.previous_mod_ref
+    consultation.has_previous_mod === 'yes' && !consultation.previous_mod_ref
       ? 'Pedir referencia concreta de modificacion previa o expediente relacionado.'
       : null,
     !consultation.operational_goal
@@ -937,11 +937,11 @@ function buildMissingInfo(
 
   const internalValidation = dedupe([
     primaryAircraftVariant?.tcds_code
-      ? `Validar aplicabilidad TCDS ${primaryAircraftVariant.tcds_code} y su base ${primaryAircraftVariant.regulacion_base || 'no visible'}.`
-      : 'Validar aeronave, TCDS aplicable y base de certificacion antes de cerrar quotation.',
-    'Definir la ruta de certificacion y el nivel de aprobacion con criterio DOA; no tomarla como input del cliente.',
+      ? `Validar aplicabilidad TCDS ${primaryAircraftVariant.tcds_code} y su base ${primaryAircraftVariant.base_regulation || 'no visible'}.`
+      : 'Validar aircraft, TCDS aplicable y base de certificacion antes de close quotation.',
+    'Definir la path de certificacion y el nivel de approval con criterio DOA; no tomarla como input del client.',
     probableAndPossibleImpacts.length > 0
-      ? `Cerrar disciplinas impactadas y su profundidad: ${probableAndPossibleImpacts.join(' | ')}.`
+      ? `Close disciplinas impactadas y su profundidad: ${probableAndPossibleImpacts.join(' | ')}.`
       : 'Realizar una criba de disciplinas impactadas con vocabulario controlado antes de fijar el alcance.',
     chosenReference
       ? 'Revisar cuanto del precedente es realmente reutilizable y cuanto esta pobremente documentado en PROJECT_SUMMARY.'
@@ -949,7 +949,7 @@ function buildMissingInfo(
     impacts.some(
       (impact) => impact.discipline === 'Instructions for Continued Airworthiness' && impact.status !== 'not expected yet',
     )
-      ? 'Validar desde el inicio si el cambio arrastra ICA o actualizacion documental de mantenimiento.'
+      ? 'Validar desde el started_at si el cambio arrastra ICA o actualizacion documental de mantenimiento.'
       : null,
     impacts.some(
       (impact) => impact.discipline === 'Flight Manual / Operational' && impact.status !== 'not expected yet',
@@ -965,7 +965,7 @@ function buildMissingInfo(
 }
 
 function buildConfidence(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
   primaryAircraftVariant: PreliminaryScopeAircraftVariant | null | undefined,
   impacts: PreliminaryScopeImpact[],
@@ -973,14 +973,14 @@ function buildConfidence(
   let score = 35
   const reasons: string[] = []
 
-  if (cleanText(consultation.modification_summary) || cleanText(consultation.asunto)) {
+  if (cleanText(consultation.modification_summary) || cleanText(consultation.subject)) {
     score += 15
-    reasons.push('Hay una solicitud tecnica base sobre la que estructurar el alcance.')
+    reasons.push('Hay una solicitud technical base sobre la que estructurar el alcance.')
   }
 
   if (cleanText(consultation.aircraft_model) || cleanText(consultation.aircraft_manufacturer)) {
     score += 10
-    reasons.push('La plataforma de aeronave esta al menos parcialmente identificada.')
+    reasons.push('La plataforma de aircraft esta al menos parcialmente identificada.')
   }
 
   if (primaryAircraftVariant?.tcds_code) {
@@ -999,14 +999,14 @@ function buildConfidence(
     }
   }
 
-  if (consultation.has_drawings === 'si' || consultation.has_manufacturer_docs === 'si') {
+  if (consultation.has_drawings === 'yes' || consultation.has_manufacturer_docs === 'yes') {
     score += 5
-    reasons.push('El cliente declara al menos una parte del soporte documental.')
+    reasons.push('El client declara al menos una parte del soporte documental.')
   }
 
   if (getProbableImpacts(impacts).length > 0) {
     score += 5
-    reasons.push('Ya se pueden anticipar disciplinas de impacto probables con un criterio conservador.')
+    reasons.push('Ya se pueden anticipar disciplinas de impact probables con un criterio conservador.')
   }
 
   score = Math.max(20, Math.min(95, score))
@@ -1019,14 +1019,14 @@ function buildConfidence(
 }
 
 function buildHeadline(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
 ) {
   const summary =
     cleanText(consultation.modification_summary) ??
     cleanText(consultation.operational_goal) ??
-    cleanText(consultation.asunto) ??
-    'solicitud sin descripcion suficiente'
+    cleanText(consultation.subject) ??
+    'solicitud sin description suficiente'
 
   if (chosenReference?.baseline.scopeBaseline) {
     return `Reutilizacion dirigida del precedente para ${summary}`
@@ -1040,7 +1040,7 @@ function buildHeadline(
 }
 
 function buildSummary(
-  consultation: ConsultaEntrante,
+  consultation: IncomingRequest,
   chosenReference: PreliminaryScopeReferenceProject | null,
   impacts: PreliminaryScopeImpact[],
   continuity: PreliminaryScopeContinuityAssessment,
@@ -1048,19 +1048,19 @@ function buildSummary(
   const scopeSeed =
     cleanText(consultation.modification_summary) ??
     cleanText(consultation.operational_goal) ??
-    cleanText(consultation.asunto) ??
-    'la consulta recibida'
+    cleanText(consultation.subject) ??
+    'la request received'
 
   const probableImpacts = getProbableImpacts(impacts)
 
   const referenceChunk = chosenReference
-    ? `Se toma ${buildReferenceLabel(chosenReference)} como precedente base para estructurar el alcance, sin asumir que sus vacios documentales equivalen a ausencia tecnica.`
-    : 'Todavia no hay precedente base confirmado, asi que el alcance se apoya solo en los datos actuales y en la lectura TCDS.'
+    ? `Se toma ${buildReferenceLabel(chosenReference)} como precedente base para estructurar el alcance, sin asumir que sus vacios documentales equivalen a ausencia technical.`
+    : 'Todavia no hay precedente base confirmado, asi que el alcance se apoya solo en los data actuales y en la lectura TCDS.'
 
   const impactChunk =
     probableImpacts.length > 0
       ? `Las disciplinas con lectura preliminar mas probable son ${probableImpacts.map((impact) => impact.discipline).join(', ')}.`
-      : 'Las disciplinas de impacto aun requieren una criba de ingenieria.'
+      : 'Las disciplinas de impact aun requieren una criba de ingenieria.'
 
   return [scopeSeed, referenceChunk, continuity.detail, impactChunk].filter(Boolean).join(' ')
 }
@@ -1089,7 +1089,7 @@ function buildMetrics(
     },
     {
       label: 'Lectura TCDS',
-      value: primaryAircraftVariant?.tcds_code ?? 'Pendiente',
+      value: primaryAircraftVariant?.tcds_code ?? 'Pending',
     },
   ]
 }
@@ -1109,14 +1109,14 @@ function buildEvidence(
       primaryAircraftVariant?.tcds_code
         ? `TCDS base considerado: ${primaryAircraftVariant.tcds_code}`
         : null,
-      primaryAircraftVariant?.regulacion_base
-        ? `Base visible en TCDS: ${primaryAircraftVariant.regulacion_base}`
+      primaryAircraftVariant?.base_regulation
+        ? `Base visible en TCDS: ${primaryAircraftVariant.base_regulation}`
         : null,
-      primaryAircraftVariant?.modelo
-        ? `Variante usada para lectura: ${primaryAircraftVariant.modelo}`
+      primaryAircraftVariant?.model
+        ? `Variante usada para lectura: ${primaryAircraftVariant.model}`
         : null,
-      primaryAircraftVariant?.msn_elegibles
-        ? `MSN elegibles segun TCDS: ${primaryAircraftVariant.msn_elegibles}`
+      primaryAircraftVariant?.eligible_msns
+        ? `MSN elegibles segun TCDS: ${primaryAircraftVariant.eligible_msns}`
         : null,
     ]),
   }
@@ -1151,7 +1151,7 @@ export function buildPreliminaryScopeModel({
       aircraftLabel,
       chosenReferenceId: chosenReference?.id ?? null,
       chosenReferenceLabel: buildReferenceLabel(chosenReference),
-      clientLabel: cleanText(clientLabel) ?? 'Cliente por confirmar',
+      clientLabel: cleanText(clientLabel) ?? 'Client por confirmar',
       referenceCount: referenceProjects.length,
     },
     doaInference: buildDoaInference(
@@ -1176,26 +1176,26 @@ export function buildPreliminaryScopeModel({
       summary: buildSummary(consultation, chosenReference, impacts, continuity),
     },
     suggestedQuestions: compact<string>([
-      'Resume el alcance preliminar en tono interno DOA.',
-      'Explica por que cada area de impacto tiene el estado actual.',
+      'Resume el alcance preliminar en tono internal DOA.',
+      'Explica por que cada area de impact tiene el status actual.',
       chosenReference
         ? `Compara la solicitud actual con ${buildReferenceLabel(chosenReference)} sin asumir que sus vacios son negativos.`
         : 'Que precedente convendria buscar para reforzar esta quotation?',
-      'Que informacion falta pedir al cliente antes de cerrar alcance?',
+      'Que informacion falta pedir al client antes de close alcance?',
     ]),
   }
 }
 
 export function formatPreliminaryScopeChatContext(model: PreliminaryScopeModel) {
   const sections = [
-    `CLIENTE\n- ${model.context.clientLabel}\n- Aeronave actual: ${model.context.aircraftLabel}`,
+    `CLIENTE\n- ${model.context.clientLabel}\n- Aircraft actual: ${model.context.aircraftLabel}`,
     `ALCANCE PRELIMINAR PROPUESTO\n- ${model.proposedScope.headline}\n- ${model.proposedScope.summary}`,
     `CONFIANZA\n- ${model.confidence.label} (${model.confidence.score}/100)\n- ${model.confidence.reasons.join('\n- ')}`,
     `LO QUE DICE EL CLIENTE\n- ${model.clientProvided.map((fact) => `${fact.label}: ${fact.value}`).join('\n- ')}`,
     `LO QUE DOA / INGENIERIA PROPONE\n- ${model.doaInference.map((item) => `${item.label}: ${item.value}`).join('\n- ')}`,
     `LO QUE APORTA EL PROYECTO BASE\n- ${model.baseContribution.join('\n- ')}`,
     `AREAS DE IMPACTO\n- ${model.impacts.map((impact) => `${impact.discipline} [${impact.status}]: ${impact.rationale}`).join('\n- ')}`,
-    `LO QUE FALTA\n- Pedir al cliente: ${model.missingInfo.askClient.join(' | ') || 'Sin items nuevos'}\n- Validacion interna: ${model.missingInfo.internalValidation.join(' | ') || 'Sin items nuevos'}`,
+    `LO QUE FALTA\n- Pedir al client: ${model.missingInfo.askClient.join(' | ') || 'Sin items nuevos'}\n- Validation internal: ${model.missingInfo.internalValidation.join(' | ') || 'Sin items nuevos'}`,
   ]
 
   if (model.evidence.summaryExcerpt) {

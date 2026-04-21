@@ -14,7 +14,7 @@ export default function DatabasesClient({ tableGroups }: { tableGroups: TableGro
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
-      <TopBar title="Bases de datos" subtitle="Gestion de datos estructurados y vectoriales" />
+      <TopBar title="Bases de data" subtitle="Gestion de data estructurados y vectoriales" />
 
       <div className="flex-1 overflow-y-auto p-6 text-[color:var(--ink)]">
         <div className="mb-6 flex flex-wrap items-center gap-4 text-sm text-[color:var(--ink-3)]">
@@ -43,7 +43,7 @@ export default function DatabasesClient({ tableGroups }: { tableGroups: TableGro
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <span className="inline-flex items-center gap-1 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-1 text-xs font-semibold text-[color:var(--ink-2)]">
                         <Database size={12} />
-                        tabla
+                        table
                       </span>
                       <span className="text-xs text-[color:var(--ink-3)]">{table.count} filas</span>
                     </div>
@@ -59,7 +59,7 @@ export default function DatabasesClient({ tableGroups }: { tableGroups: TableGro
                       href={`/databases/${encodeURIComponent(table.table)}`}
                       className="block w-full rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2 text-center text-sm font-medium text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)] hover:border-[color:var(--ink-4)]"
                     >
-                      Ver datos
+                      Ver data
                     </Link>
                   </article>
                 ))}

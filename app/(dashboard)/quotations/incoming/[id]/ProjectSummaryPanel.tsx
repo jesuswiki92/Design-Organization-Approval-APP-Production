@@ -87,7 +87,7 @@ const STOPWORDS = new Set([
   'para',
   'por',
   'project',
-  'proyecto',
+  'project',
   'requested',
   'several',
   'system',
@@ -175,7 +175,7 @@ function compareAircraft(
   if (manufacturer && normalizedReference.includes(normalizeText(manufacturer))) {
     return 'delta'
   }
-  if (currentAircraft !== 'Aeronave no definida en la consulta') {
+  if (currentAircraft !== 'Aircraft no definida en la request') {
     return 'delta'
   }
   return 'desconocido'
@@ -205,7 +205,7 @@ function compareDocumentSupport(
 ): DeltaStatus {
   if (baselineDocs.length === 0) return 'desconocido'
 
-  const positives = [hasDrawings, hasManufacturerDocs, hasPreviousMod].filter((value) => value === 'si').length
+  const positives = [hasDrawings, hasManufacturerDocs, hasPreviousMod].filter((value) => value === 'yes').length
   const answered = [hasDrawings, hasManufacturerDocs, hasPreviousMod].filter(Boolean).length
 
   if (positives >= 2) return 'igual'
@@ -221,24 +221,24 @@ function comparePreviousReference(
   if (previousModRef && projectCode && normalizeText(previousModRef).includes(normalizeText(projectCode))) {
     return 'igual'
   }
-  if (previousModRef || hasPreviousMod === 'si' || hasPreviousMod === 'no') {
+  if (previousModRef || hasPreviousMod === 'yes' || hasPreviousMod === 'no') {
     return 'delta'
   }
   return 'desconocido'
 }
 
 function formatWorkType(value: string | null) {
-  if (value === 'proyecto_nuevo') return 'Proyecto nuevo'
-  if (value === 'modificacion_existente') return 'Modificacion existente'
+  if (value === 'new_project') return 'Project new'
+  if (value === 'existing_modification') return 'Modificacion existente'
   return present(value, 'No definido')
 }
 
 function formatSupportSummary(currentRequest: CurrentRequestSnapshot) {
   const facts: string[] = []
 
-  if (currentRequest.hasDrawings === 'si') facts.push('Drawings disponibles')
-  if (currentRequest.hasManufacturerDocs === 'si') facts.push('Docs de fabricante disponibles')
-  if (currentRequest.hasPreviousMod === 'si') facts.push('Existe modificacion previa')
+  if (currentRequest.hasDrawings === 'yes') facts.push('Drawings disponibles')
+  if (currentRequest.hasManufacturerDocs === 'yes') facts.push('Docs de manufacturer disponibles')
+  if (currentRequest.hasPreviousMod === 'yes') facts.push('Existe modificacion previa')
   if (currentRequest.previousModRef) facts.push(`Ref. indicada: ${currentRequest.previousModRef}`)
 
   return facts.length > 0 ? facts.join(' | ') : 'Sin soporte documental confirmado todavia'
@@ -250,24 +250,24 @@ function summarizeCurrentUnknowns(
 ) {
   return [
     !currentRequest.aircraftModel && !currentRequest.aircraftManufacturer
-      ? 'Confirmar plataforma o modelo de aeronave.'
+      ? 'Confirmar plataforma o model de aircraft.'
       : null,
     !currentRequest.aircraftMsn && baseline.applicabilityBaseline
       ? 'Confirmar MSN o aplicabilidad frente al baseline del precedente.'
       : null,
     !currentRequest.tcdsNumber && baseline.certificationBasisBaseline
-      ? 'Confirmar TCDS y base de certificacion de la consulta actual.'
+      ? 'Confirmar TCDS y base de certificacion de la request actual.'
       : null,
     !currentRequest.modificationSummary
-      ? 'Aclarar la descripcion tecnica preliminar del cambio.'
+      ? 'Aclarar la description technical preliminar del cambio.'
       : null,
     !currentRequest.operationalGoal && baseline.impactAreas.length > 0
       ? 'Aclarar impactos esperados y objetivo operativo.'
       : null,
-    currentRequest.hasDrawings !== 'si' &&
-    currentRequest.hasManufacturerDocs !== 'si' &&
+    currentRequest.hasDrawings !== 'yes' &&
+    currentRequest.hasManufacturerDocs !== 'yes' &&
     baseline.documentPackageBaseline.length > 0
-      ? 'Confirmar si el cliente aporta drawings o documentacion de fabricante.'
+      ? 'Confirmar si el client aporta drawings o documentacion de manufacturer.'
       : null,
   ].filter(Boolean) as string[]
 }
@@ -284,19 +284,19 @@ function computeDeltaGroups(
 
   const baselineAircraft = joinList(
     [referenceAircraft ?? '', ...baseline.identification].filter(Boolean),
-    'Aeronave o configuracion no visibles en el precedente',
+    'Aircraft o configuracion no visibles en el precedente',
   )
 
   return [
     {
-      title: 'Aeronave / configuracion',
+      title: 'Aircraft / configuracion',
       items: [
         {
           label: 'Plataforma base',
-          actual: present(currentAircraft, 'Aeronave no definida en la consulta'),
+          actual: present(currentAircraft, 'Aircraft no definida en la request'),
           baseline: baselineAircraft,
           status: compareAircraft(
-            present(currentAircraft, 'Aeronave no definida en la consulta'),
+            present(currentAircraft, 'Aircraft no definida en la request'),
             baselineAircraft,
             currentRequest.aircraftManufacturer,
             currentRequest.aircraftModel,
@@ -322,7 +322,7 @@ function computeDeltaGroups(
           ),
           note:
             currentRequest.tcdsNumber && baseline.certificationBasisBaseline
-              ? 'La consulta trae TCDS; el precedente aporta la base y ruta de referencia.'
+              ? 'La request trae TCDS; el precedente aporta la base y path de referencia.'
               : undefined,
           status:
             currentRequest.tcdsNumber && baseline.certificationBasisBaseline
@@ -332,13 +332,13 @@ function computeDeltaGroups(
       ],
     },
     {
-      title: 'Cambio tecnico',
+      title: 'Cambio technical',
       items: [
         {
           label: 'Alcance preliminar',
           actual: present(
             currentRequest.modificationSummary,
-            'Sin descripcion tecnica clara en la consulta',
+            'Sin description technical clara en la request',
           ),
           baseline: present(
             baseline.scopeBaseline,
@@ -347,13 +347,13 @@ function computeDeltaGroups(
           status: compareScope(currentRequest.modificationSummary, baseline.scopeBaseline),
         },
         {
-          label: 'Tipo de trabajo / ruta',
+          label: 'Tipo de trabajo / path',
           actual: formatWorkType(currentRequest.workType),
           baseline: baseline.classificationBaseline
             ? `Cambio ${baseline.classificationBaseline}`
-            : 'Clasificacion base no visible',
+            : 'Classification base no visible',
           note: baseline.classificationBaseline
-            ? 'El precedente sirve como ruta de aprobacion base, no como clasificacion cerrada para la consulta.'
+            ? 'El precedente sirve como path de approval base, no como classification cerrada para la request.'
             : undefined,
           status:
             baseline.classificationBaseline && currentRequest.workType
@@ -361,24 +361,24 @@ function computeDeltaGroups(
               : 'desconocido',
         },
         {
-          label: 'Clasificacion base reutilizable',
-          actual: 'Sin clasificacion preliminar confirmada',
+          label: 'Classification base reutilizable',
+          actual: 'Sin classification preliminar confirmada',
           baseline: present(
             baseline.classificationBaseline,
-            'Clasificacion base no visible',
+            'Classification base no visible',
           ),
           status: 'desconocido',
         },
       ],
     },
     {
-      title: 'Areas de impacto',
+      title: 'Areas de impact',
       items: [
         {
           label: 'Impactos previsibles',
           actual: present(
             currentRequest.operationalGoal ?? currentRequest.additionalNotes,
-            'La consulta no enumera impactos todavia',
+            'La request no enumera impactos todavia',
           ),
           baseline: joinList(
             baseline.impactAreas.length > 0 ? baseline.impactAreas : baseline.impactedDisciplines,
@@ -398,7 +398,7 @@ function computeDeltaGroups(
           label: 'Limitaciones / condiciones',
           actual: present(
             currentRequest.additionalNotes,
-            'Sin condiciones especiales visibles en la consulta',
+            'Sin condiciones especiales visibles en la request',
           ),
           baseline: joinList(
             dedupe([...baseline.specialConditions, ...baseline.limitations]),
@@ -434,10 +434,10 @@ function computeDeltaGroups(
           label: 'Referencia previa enlazada',
           actual: currentRequest.previousModRef
             ? currentRequest.previousModRef
-            : currentRequest.hasPreviousMod === 'si'
-              ? 'El cliente indica precedente previo, sin codigo'
+            : currentRequest.hasPreviousMod === 'yes'
+              ? 'El client indica precedente previo, sin codigo'
               : currentRequest.hasPreviousMod === 'no'
-                ? 'El cliente indica que no hay precedente previo'
+                ? 'El client indica que no hay precedente previo'
                 : 'No confirmado',
           baseline: present(projectCode, 'Precedente sin codigo visible'),
           status: comparePreviousReference(
@@ -455,7 +455,7 @@ function computeDeltaGroups(
           label: 'Huecos visibles en esta fase',
           actual: joinList(
             summarizeCurrentUnknowns(currentRequest, baseline),
-            'Sin vacios adicionales detectados en la consulta actual',
+            'Sin vacios adicionales detectados en la request actual',
           ),
           baseline: joinList(
             baseline.unknowns,
@@ -484,8 +484,8 @@ function computeFit(groups: DeltaGroup[], baseline: Phase4ProjectBaseline) {
         : 'Encaje debil'
 
   const reasons = dedupe([
-    equals > 0 ? 'Hay coincidencias visibles entre la consulta y el baseline del precedente.' : '',
-    deltas > 0 ? 'Existen diferencias que piden validacion humana antes de reutilizar el alcance.' : '',
+    equals > 0 ? 'Hay coincidencias visibles entre la request y el baseline del precedente.' : '',
+    deltas > 0 ? 'Existen diferencias que piden validation humana antes de reutilizar el alcance.' : '',
     unknowns > 0 ? 'Todavia hay campos no comparables o no confirmados en esta fase preliminar.' : '',
     baseline.documentPackageBaseline.length > 0
       ? `El precedente aporta ${baseline.documentPackageBaseline.length} referencias documentales reutilizables.`
@@ -697,7 +697,7 @@ export function ProjectSummaryPanel({
     setRawError(null)
 
     try {
-      const res = await fetch(`/api/proyectos-historico/${projectId}/summary`)
+      const res = await fetch(`/api/historical-projects/${projectId}/summary`)
       if (!res.ok) {
         throw new Error(`Error ${res.status}`)
       }
@@ -727,7 +727,7 @@ export function ProjectSummaryPanel({
               </span>
             ) : null}
             <h3 className="text-sm font-semibold text-slate-950">
-              {baseline.baselineTitle ?? projectTitle ?? 'Precedente sin titulo visible'}
+              {baseline.baselineTitle ?? projectTitle ?? 'Precedente sin title visible'}
             </h3>
           </div>
           <p className="mt-1 text-xs text-[color:var(--ink-3)]">
@@ -736,10 +736,10 @@ export function ProjectSummaryPanel({
         </div>
 
         <Link
-          href={`/proyectos-historico/${projectId}`}
+          href={`/historical-projects/${projectId}`}
           className="inline-flex items-center gap-1.5 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-xs font-semibold text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
         >
-          Abrir ficha historica
+          Open record historica
           <ExternalLink className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -763,10 +763,10 @@ export function ProjectSummaryPanel({
 
             <div className="space-y-1.5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
-                Clasificacion / base
+                Classification / base
               </p>
               <p className="text-sm leading-6 text-[color:var(--ink)]">
-                {baseline.classificationBaseline ?? 'Clasificacion no visible'}
+                {baseline.classificationBaseline ?? 'Classification no visible'}
               </p>
               <p className="text-xs leading-5 text-[color:var(--ink-3)]">
                 {baseline.certificationBasisBaseline ?? 'Base de certificacion no visible'}
@@ -778,7 +778,7 @@ export function ProjectSummaryPanel({
                 Scope baseline
               </p>
               <p className="text-sm leading-6 text-[color:var(--ink)]">
-                {baseline.scopeBaseline ?? 'No se ve una descripcion de alcance reutilizable en PROJECT_SUMMARY.'}
+                {baseline.scopeBaseline ?? 'No se ve una description de alcance reutilizable en PROJECT_SUMMARY.'}
               </p>
             </div>
 
@@ -873,7 +873,7 @@ export function ProjectSummaryPanel({
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--umber)]">
-                        Consulta actual
+                        Request actual
                       </p>
                       <p className="mt-1 text-sm leading-6 text-[color:var(--ink)]">{item.actual}</p>
                     </div>
@@ -920,7 +920,7 @@ export function ProjectSummaryPanel({
 
         <div className="mt-4 rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
-            Preguntas que este precedente sugiere cerrar
+            Preguntas que este precedente sugiere close
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {baseline.formQuestionCandidates.length > 0 ? (

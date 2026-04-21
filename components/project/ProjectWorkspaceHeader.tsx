@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { ProyectoConRelaciones } from '@/types/database'
+import type { ProjectWithRelations } from '@/types/database'
 
 import {
   daysRemaining,
@@ -23,7 +23,7 @@ export function ProjectWorkspaceHeader({
   onRegisterHour,
   onCopyReference,
 }: {
-  project: ProyectoConRelaciones
+  project: ProjectWithRelations
   docsCount: number
   tasksCount: number
   onOpenExpert: () => void
@@ -31,8 +31,8 @@ export function ProjectWorkspaceHeader({
   onRegisterHour: () => void
   onCopyReference: () => void
 }) {
-  const status = getProjectStatusMeta(project.estado)
-  const deliveryDays = daysRemaining(project.fecha_entrega_estimada)
+  const status = getProjectStatusMeta(project.status)
+  const deliveryDays = daysRemaining(project.estimated_delivery_date)
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-sky-200 bg-white shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
@@ -41,7 +41,7 @@ export function ProjectWorkspaceHeader({
           <div className="min-w-0 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 font-mono text-[11px] tracking-[0.16em] text-slate-500 uppercase">
-                {project.numero_proyecto}
+                {project.project_number}
               </span>
               <span
                 className={cn(
@@ -52,29 +52,29 @@ export function ProjectWorkspaceHeader({
                 <span className={cn('h-2 w-2 rounded-full', status.dot)} />
                 {status.label}
               </span>
-              {project.prioridad && project.prioridad !== 'normal' && (
+              {project.priority && project.priority !== 'normal' && (
                 <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs text-slate-700">
-                  {project.prioridad}
+                  {project.priority}
                 </span>
               )}
             </div>
 
             <div className="space-y-2">
               <h1 className="text-[28px] leading-[1.1] font-semibold text-slate-950">
-                {project.titulo}
+                {project.title}
               </h1>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
                 <span className="inline-flex items-center gap-2">
                   <Plane className="h-4 w-4 text-slate-400" />
-                  {getAircraftLabel(project.aeronave)}
+                  {getAircraftLabel(project.aircraft)}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <User className="h-4 w-4 text-slate-400" />
-                  {project.cliente_nombre ?? 'Sin cliente asociado'}
+                  {project.client_name ?? 'Sin client asociado'}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Shield className="h-4 w-4 text-slate-400" />
-                  {project.tcds_code ?? 'TCDS pendiente'}
+                  {project.tcds_code ?? 'TCDS pending'}
                 </span>
               </div>
             </div>
@@ -96,7 +96,7 @@ export function ProjectWorkspaceHeader({
             <ActionButton
               icon={<History className="h-4 w-4" />}
               label="Abrir experto"
-              title="Lanza el experto contextual con el proyecto activo"
+              title="Lanza el experto contextual con el project is_active"
               onClick={onOpenExpert}
             />
             <ActionButton
@@ -112,14 +112,14 @@ export function ProjectWorkspaceHeader({
       <div className="grid gap-4 px-6 py-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="Estado del expediente"
+            label="Status del expediente"
             value={status.label}
-            hint="Nivel operativo actual del proyecto"
+            hint="Nivel operativo actual del project"
           />
           <MetricCard
             label="Progreso documental"
             value={`${docsCount} docs`}
-            hint="La tabla documental concentra la lectura principal"
+            hint="La table documental concentra la lectura primary"
           />
           <MetricCard
             label="Tareas abiertas"
@@ -128,12 +128,12 @@ export function ProjectWorkspaceHeader({
           />
           <MetricCard
             label="Proximo hito"
-            value={project.fecha_entrega_estimada ?? 'Sin fecha'}
+            value={project.estimated_delivery_date ?? 'Sin date'}
             hint={
               deliveryDays === null
-                ? 'Planificacion aun abierta'
+                ? 'Planning aun abierta'
                 : deliveryDays <= 0
-                  ? 'Hito vencido o en revision de plazo'
+                  ? 'Hito vencido o en review de plazo'
                   : `${deliveryDays} dias restantes`
             }
             tone={
@@ -153,8 +153,8 @@ export function ProjectWorkspaceHeader({
           <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
             <InfoPill label="Owner" value={userName(project.owner)} />
             <InfoPill
-              label="Aeronave"
-              value={project.aeronave ?? '-'}
+              label="Aircraft"
+              value={project.aircraft ?? '-'}
             />
             <InfoPill
               label="Alertas"

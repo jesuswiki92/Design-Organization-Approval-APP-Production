@@ -22,7 +22,7 @@ export type Phase4ProjectBaseline = {
 }
 
 const UNKNOWN_VALUE_RE =
-  /\b(pendiente|por confirmar|unknown|n\/a|not (?:visible|available|identified)|sin (?:dato|identificar)|no visible|to be confirmed)\b/i
+  /\b(pending|por confirmar|unknown|n\/a|not (?:visible|available|identified)|sin (?:dato|identificar)|no visible|to be confirmed)\b/i
 
 const SECTION_HEADER_RE = /^(#{1,6}\s+.+|\d+\.\s+[A-Z0-9_ /&()-]+|[A-Z][A-Z0-9_ /&()-]{5,})$/
 
@@ -263,26 +263,26 @@ export function extractPhase4BaselineFromSummary(
   ])
   const formQuestionCandidates = dedupeList([
     classificationBaseline || certificationBasisBaseline
-      ? 'Confirmar clasificacion preliminar esperada y ruta de aprobacion.'
+      ? 'Confirmar classification preliminar esperada y path de approval.'
       : null,
     applicabilityBaseline
       ? 'Confirmar effectivity exacta: MSN, configuracion y restricciones de aplicabilidad.'
       : null,
     impactData.impactedDisciplines.includes('Estructural')
-      ? 'Aclarar si existe impacto estructural o necesidad de analisis estructural.'
+      ? 'Aclarar si existe impact estructural o necesidad de analisis estructural.'
       : null,
     impactData.impactedDisciplines.includes('Electrico') ||
     impactData.impactedDisciplines.includes('EWIS')
-      ? 'Aclarar alcance electrico, interfaces, carga y posible impacto EWIS.'
+      ? 'Aclarar alcance electrico, interfaces, carga y posible impact EWIS.'
       : null,
     impactData.impactedDisciplines.includes('Weight & Balance')
       ? 'Confirmar efecto esperado en Weight & Balance.'
       : null,
     documentPackageBaseline.some((item) => normalizeText(item).includes('manual'))
-      ? 'Confirmar si habra impacto en ICA, manuals o supplements.'
+      ? 'Confirmar si habra impact en ICA, manuals o supplements.'
       : null,
     documentPackageBaseline.length > 0
-      ? 'Confirmar que documentacion base aporta el cliente y cual habra que generar.'
+      ? 'Confirmar que documentacion base aporta el client y cual habra que generar.'
       : null,
     limitations.length > 0 || specialConditions.length > 0
       ? 'Capturar limitaciones especiales, configuraciones previas o condiciones de instalacion.'
@@ -298,7 +298,7 @@ export function extractPhase4BaselineFromSummary(
 
   const unknowns = dedupeList([
     !scopeBaseline ? 'Alcance base no visible en PROJECT_SUMMARY.' : null,
-    !classificationBaseline ? 'Clasificacion base no visible en PROJECT_SUMMARY.' : null,
+    !classificationBaseline ? 'Classification base no visible en PROJECT_SUMMARY.' : null,
     !certificationBasisBaseline ? 'Base de certificacion no visible en PROJECT_SUMMARY.' : null,
     impactData.impactedDisciplines.length === 0
       ? 'Impactos tecnicos no explicitados en PROJECT_SUMMARY.'

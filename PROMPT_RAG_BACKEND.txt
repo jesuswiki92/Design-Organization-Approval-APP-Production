@@ -26,7 +26,7 @@ DOA App (Next.js en localhost:3010)
 PASO 1: COPIAR EL BACKEND
 ================================================================================
 
-1. Copia TODA la carpeta backend del RAG original:
+1. Copia TODA la folder backend del RAG original:
    ORIGEN: C:\Users\Jesús Andrés\Desktop\Aplicaciones - Desarrollo\RAG-AERONATIC-FINAL\backend\
    DESTINO: C:\Users\Jesús Andrés\Desktop\Aplicaciones - Desarrollo\Design Organization Approval - APP Production\01.Desarrollo de App\rag-backend\
 
@@ -38,15 +38,15 @@ PASO 1: COPIAR EL BACKEND
    - core/embeddings.py → generación de embeddings OpenAI
    - core/semantic_chunker.py → chunking semántico con GPT
    - core/ocr_processor.py → OCR con Mistral
-   - database/supabase_client.py → cliente Supabase
+   - database/supabase_client.py → client Supabase
    - config/ → configuración
    - chat/ → lógica de chat/agente
    - utils/ → utilidades
 
 3. NO copies:
-   - La carpeta frontend/ (web/) → la UI ya está en la app Next.js
+   - La folder frontend/ (website/) → la UI ya está en la app Next.js
    - Docker files (docker-compose.yml, Dockerfile) → por ahora se corre directo
-   - .env del original → crearemos uno nuevo
+   - .env del original → crearemos uno new
 
 ================================================================================
 PASO 2: CREAR TABLA NUEVA EN SUPABASE
@@ -160,7 +160,7 @@ BEGIN
 END;
 $$;
 
-COMMENT ON TABLE doa_tcds_embeddings IS 'Embeddings de documentos TCDS para búsqueda semántica RAG en DOA Hub';
+COMMENT ON TABLE doa_tcds_embeddings IS 'Embeddings de documents TCDS para búsqueda semántica RAG en DOA Hub';
 ```
 
 También crear el bucket de storage si no existe:
@@ -181,7 +181,7 @@ COHERE_API_KEY=[copiar del .env del RAG original]
 ANTHROPIC_API_KEY=[copiar del .env del RAG original]
 OPENROUTER_API_KEY=[copiar del .env del RAG original]
 
-# === Supabase (MISMO proyecto, tabla DIFERENTE) ===
+# === Supabase (MISMO project, tabla DIFERENTE) ===
 SUPABASE_URL=https://gterzsoapepzozgqbljk.supabase.co
 SUPABASE_KEY=[copiar del .env del RAG original — es la misma]
 SUPABASE_TABLE=doa_tcds_embeddings
@@ -194,7 +194,7 @@ EMBEDDING_DIM=3072
 # === Auth (mismas credenciales) ===
 ADMIN_USERNAME=jesus.arevalotorres@gmail.com
 ADMIN_PASSWORD_HASH=[copiar del .env del RAG original]
-JWT_SECRET=[generar uno NUEVO, diferente del original]
+JWT_SECRET=[generar uno NEW, diferente del original]
 JWT_EXPIRE_HOURS=8
 
 # === Server ===
@@ -214,7 +214,7 @@ Cambios necesarios en la copia (NO en el original):
    - En main.py o start_web.py: buscar "3001" y cambiar a "3002"
    - En config si existe: cambiar puerto por defecto
 
-2. TABLA: Cambiar nombre de tabla
+2. TABLA: Cambiar name de tabla
    - En database/supabase_client.py: buscar "DocumentacionCertificacion"
      y reemplazar por "doa_tcds_embeddings"
    - En config.py si existe: cambiar SUPABASE_TABLE
@@ -225,7 +225,7 @@ Cambios necesarios en la copia (NO en el original):
    - Buscar "match_documents_filtered" → reemplazar por "match_doa_tcds"
      (usar la misma con filtros)
 
-4. STORAGE BUCKET: Cambiar nombre
+4. STORAGE BUCKET: Cambiar name
    - Buscar "StorageCertificacion" → "doa-tcds-storage"
    - Buscar "StoragePDFs-Imagenes" → "doa-tcds-storage"
 
@@ -236,8 +236,8 @@ Cambios necesarios en la copia (NO en el original):
    - official_code: código TCDS (ej: "EASA.A.089")
    - doc_type: "TCDS"
    - agency: "EASA"
-   - aircraft_type: tipo de aeronave (ej: "PC-12")
-   - manufacturer: fabricante (ej: "Pilatus Aircraft Ltd.")
+   - aircraft_type: type de aircraft (ej: "PC-12")
+   - manufacturer: manufacturer (ej: "Pilatus Aircraft Ltd.")
    - issue: issue del TCDS (ej: "Issue 11")
 
 7. NO incluir el frontend React del RAG original.
@@ -248,7 +248,7 @@ Cambios necesarios en la copia (NO en el original):
 PASO 5: INSTALAR Y PROBAR
 ================================================================================
 
-1. Ir a la carpeta del backend:
+1. Ir a la folder del backend:
    cd "C:\Users\Jesús Andrés\Desktop\Aplicaciones - Desarrollo\Design Organization Approval - APP Production\01.Desarrollo de App\rag-backend"
 
 2. Crear entorno virtual:
@@ -331,8 +331,8 @@ con UI placeholder. Hay que conectarla al backend:
 
    // Endpoints disponibles:
    // ragFetch('/api/dashboard')           → stats del sistema
-   // ragFetch('/api/documents')           → lista documentos indexados
-   // ragFetch('/api/documents/CODE/chunks') → chunks de un documento
+   // ragFetch('/api/documents')           → lista documents indexados
+   // ragFetch('/api/documents/CODE/chunks') → chunks de un document
    // ragUpload('/api/ingest/analyze', file) → analizar PDF
    // ragUpload('/api/ingest/process', file) → procesar PDF (OCR + chunking)
    // ragFetch('/api/ingest/save', { method: 'POST', body: JSON.stringify(data) })
@@ -348,7 +348,7 @@ con UI placeholder. Hay que conectarla al backend:
    - Importar las funciones de lib/rag-api.ts
    - En el tab Dashboard: llamar a /api/dashboard y mostrar stats reales
    - En el tab Ingest: conectar los botones al pipeline real
-   - En el tab Documents: cargar y mostrar documentos reales
+   - En el tab Documents: cargar y mostrar documents reales
 
 ================================================================================
 RESUMEN DE ARCHIVOS CLAVE
@@ -360,13 +360,13 @@ Archivos del RAG original a estudiar (para entender la lógica):
 - backend/core/embeddings.py → generación embeddings OpenAI (64 líneas)
 - backend/core/semantic_chunker.py → chunking semántico (1000+ líneas)
 - backend/core/ocr_processor.py → OCR con Mistral
-- backend/database/supabase_client.py → cliente base de datos (400+ líneas)
+- backend/database/supabase_client.py → client base de datos (400+ líneas)
 - backend/chat/agent_web.py → agente de chat RAG
 - backend/config/ → configuración y constantes
 
 Archivos de la app DOA a modificar:
 - settings/tcds-rag/TcdsRagClient.tsx → conectar UI al backend
-- lib/rag-api.ts → CREAR (cliente API)
+- lib/rag-api.ts → CREAR (client API)
 - .env.local → añadir NEXT_PUBLIC_RAG_API_URL
 
 ================================================================================
@@ -380,7 +380,7 @@ REGLAS CRÍTICAS
 5. El .env del backend copia tiene que tener las API keys reales
    (copiar del .env del RAG original)
 6. No romper la app Next.js existente — solo añadir/modificar los archivos indicados
-7. Las credenciales de Supabase son las MISMAS (mismo proyecto),
+7. Las credenciales de Supabase son las MISMAS (mismo project),
    solo cambia la tabla y el bucket
 
 ================================================================================

@@ -1,5 +1,5 @@
 {
-  "name": "DOA - Receptor Formularios Clientes (POST)",
+  "name": "DOA - Receptor Forms Clients (POST)",
   "nodes": [
     {
       "parameters": {
@@ -9,7 +9,7 @@
         "options": {}
       },
       "id": "webhook_post_srv",
-      "name": "Recibir Formulario POST",
+      "name": "Recibir Form POST",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $json.body || $json;\nconst clean = (v) => (v ?? '').toString().trim() || null;\n\nreturn {\n  json: {\n    consulta_id: clean(body.consulta_id),\n    company_name: clean(body.company_name),\n    vat_tax_id: clean(body.vat_tax_id),\n    country: clean(body.country),\n    city: clean(body.city),\n    address: clean(body.address),\n    company_phone: clean(body.company_phone),\n    website: clean(body.website),\n    contact_first_name: clean(body.contact_first_name),\n    contact_last_name: clean(body.contact_last_name),\n    contact_email: clean(body.contact_email),\n    contact_phone: clean(body.contact_phone),\n    position_role: clean(body.position_role),\n    aircraft_manufacturer: clean(body.aircraft_manufacturer),\n    aircraft_model: clean(body.aircraft_model),\n    registration: clean(body.registration),\n    project_type: clean(body.project_type),\n    modification_description: clean(body.modification_description),\n    affected_aircraft_count: parseInt(body.affected_aircraft_count) || null,\n    number_of_stcs: clean(body.number_of_stcs),\n    ata_chapter: clean(body.ata_chapter),\n    applicable_regulation: clean(body.applicable_regulation),\n    has_previous_approval: body.has_previous_approval === 'yes' || body.has_previous_approval === true,\n    reference_document: clean(body.reference_document),\n    aircraft_effectivity: clean(body.aircraft_effectivity),\n    aircraft_location: clean(body.aircraft_location),\n    desired_timeline: clean(body.desired_timeline),\n    is_aog: body.is_aog === 'yes' || body.is_aog === true,\n    has_drawings: body.has_drawings === 'yes' || body.has_drawings === true,\n    additional_notes: clean(body.additional_notes),\n    estado: 'recibido'\n  }\n};"
+        "jsCode": "const body = $json.body || $json;\nconst clean = (v) => (v ?? '').toString().trim() || null;\n\nreturn {\n  json: {\n    incoming_request_id: clean(body.incoming_request_id),\n    company_name: clean(body.company_name),\n    vat_tax_id: clean(body.vat_tax_id),\n    country: clean(body.country),\n    city: clean(body.city),\n    address: clean(body.address),\n    company_phone: clean(body.company_phone),\n    website: clean(body.website),\n    contact_first_name: clean(body.contact_first_name),\n    contact_last_name: clean(body.contact_last_name),\n    contact_email: clean(body.contact_email),\n    contact_phone: clean(body.contact_phone),\n    position_role: clean(body.position_role),\n    aircraft_manufacturer: clean(body.aircraft_manufacturer),\n    aircraft_model: clean(body.aircraft_model),\n    registration: clean(body.registration),\n    project_type: clean(body.project_type),\n    modification_description: clean(body.modification_description),\n    affected_aircraft_count: parseInt(body.affected_aircraft_count) || null,\n    number_of_stcs: clean(body.number_of_stcs),\n    ata_chapter: clean(body.ata_chapter),\n    applicable_regulation: clean(body.applicable_regulation),\n    has_previous_approval: body.has_previous_approval === 'yes' || body.has_previous_approval === true,\n    reference_document: clean(body.reference_document),\n    aircraft_effectivity: clean(body.aircraft_effectivity),\n    aircraft_location: clean(body.aircraft_location),\n    desired_timeline: clean(body.desired_timeline),\n    is_aog: body.is_aog === 'yes' || body.is_aog === true,\n    has_drawings: body.has_drawings === 'yes' || body.has_drawings === true,\n    additional_notes: clean(body.additional_notes),\n    status: 'received'\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -29,11 +29,11 @@
         300
       ],
       "id": "normalizar_form_srv",
-      "name": "Normalizar Respuesta"
+      "name": "Normalizar Response"
     },
     {
       "parameters": {
-        "tableId": "doa_respuestas_formularios",
+        "tableId": "doa_form_responses",
         "dataToSend": "autoMapInputData"
       },
       "type": "n8n-nodes-base.supabase",
@@ -54,21 +54,21 @@
     {
       "parameters": {
         "operation": "update",
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "filters": {
           "conditions": [
             {
               "keyName": "id",
               "condition": "eq",
-              "keyValue": "={{ $('Normalizar Respuesta').first().json.consulta_id }}"
+              "keyValue": "={{ $('Normalizar Response').first().json.incoming_request_id }}"
             }
           ]
         },
         "fieldsUi": {
           "fieldValues": [
             {
-              "fieldId": "estado",
-              "fieldValue": "formulario_completado"
+              "fieldId": "status",
+              "fieldValue": "form_received"
             }
           ]
         }
@@ -80,7 +80,7 @@
         300
       ],
       "id": "actualizar_estado_srv",
-      "name": "Actualizar Estado Consulta",
+      "name": "Actualizar Status Request",
       "credentials": {
         "supabaseApi": {
           "id": "H1ZHvBDstWZ1K6KS",
@@ -111,22 +111,22 @@
         300
       ],
       "id": "gracias_srv",
-      "name": "Página de Gracias"
+      "name": "Page de Gracias"
     }
   ],
   "connections": {
-    "Recibir Formulario POST": {
+    "Recibir Form POST": {
       "main": [
         [
           {
-            "node": "Normalizar Respuesta",
+            "node": "Normalizar Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalizar Respuesta": {
+    "Normalizar Response": {
       "main": [
         [
           {
@@ -141,18 +141,18 @@
       "main": [
         [
           {
-            "node": "Actualizar Estado Consulta",
+            "node": "Actualizar Status Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Actualizar Estado Consulta": {
+    "Actualizar Status Request": {
       "main": [
         [
           {
-            "node": "Página de Gracias",
+            "node": "Page de Gracias",
             "type": "main",
             "index": 0
           }

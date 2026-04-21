@@ -17,7 +17,7 @@
  *   import { subscribeToTableChanges } from '@/lib/realtime/local-cache'
  *
  *   useEffect(() => {
- *     const off = subscribeToTableChanges('doa_proyectos', () => {
+ *     const off = subscribeToTableChanges('doa_projects', () => {
  *       localStorage.removeItem('portfolio-cache-v1')
  *       router.refresh()
  *     })

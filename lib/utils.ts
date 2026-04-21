@@ -10,7 +10,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 /**
- * Combina varias clases de estilo CSS en una sola cadena de texto.
+ * Combina varias clases de estilo CSS en una sola cadena de text.
  *
  * Esto es necesario porque Tailwind CSS (el sistema de estilos de la app)
  * a veces genera conflictos cuando se juntan varias clases. Esta funcion
@@ -19,7 +19,7 @@ import { twMerge } from "tailwind-merge"
  * Se usa en practicamente todos los componentes visuales de la app.
  *
  * @param inputs - Una o mas clases de estilo que se quieren combinar
- * @returns Una cadena de texto con las clases de estilo ya combinadas sin conflictos
+ * @returns Una cadena de text con las clases de estilo ya combinadas sin conflictos
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

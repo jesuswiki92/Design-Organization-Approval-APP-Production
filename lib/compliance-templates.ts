@@ -3,17 +3,17 @@
  * PLANTILLAS DE DOCUMENTOS DE COMPLIANCE (DOA)
  * ============================================================================
  *
- * Lista maestra de las plantillas G12-xx y G18-xx disponibles en:
- *   02. Datos DOA / 01. Plantillas
+ * Lista maestra de las templates G12-xx y G18-xx disponibles en:
+ *   02. Data DOA / 01. Plantillas
  *
- * FUENTE DE VERDAD: tabla `doa_plantillas_compliance` en Supabase.
+ * FUENTE DE VERDAD: table `doa_compliance_templates` en Supabase.
  * Las constantes de este archivo se usan como fallback y para el mapeo
- * FAMILIA_TO_TEMPLATES que conecta las familias documentales de proyectos
- * historicos (doa_proyectos_historico_documentos.familia_documental) con
- * los codigos de plantilla, permitiendo la pre-seleccion automatica cuando
- * el ingeniero marca un proyecto como referencia.
+ * FAMILIA_TO_TEMPLATES que conecta las familias documentales de projects
+ * historicos (doa_historical_project_documents.familia_documental) con
+ * los codigos de template, permitiendo la pre-seleccion automatica cuando
+ * el ingeniero marca un project como referencia.
  *
- * La pagina de detalle carga las plantillas desde BD (server component)
+ * La page de detalle carga las templates desde BD (server component)
  * y las pasa al client component ComplianceDocumentsSection.
  * ============================================================================
  */
@@ -25,7 +25,7 @@ export type ComplianceTemplate = {
 }
 
 export const COMPLIANCE_TEMPLATES: ComplianceTemplate[] = [
-  // --- Clasificacion y descripcion ---
+  // --- Classification y description ---
   { code: 'G12-01', name: 'Change Classification', category: 'classification' },
   { code: 'G12-17', name: 'Modification Description', category: 'classification' },
   { code: 'G12-46', name: 'Repair Description', category: 'classification' },
@@ -84,9 +84,9 @@ export const COMPLIANCE_TEMPLATES: ComplianceTemplate[] = [
   { code: 'G18-03', name: 'Engineering Change Proposal', category: 'management' },
 ]
 
-/** Nombre legible para cada categoria */
+/** Name legible para cada category */
 export const CATEGORY_LABELS: Record<ComplianceTemplate['category'], string> = {
-  classification: 'Clasificacion y descripcion',
+  classification: 'Classification y description',
   review: 'Revisiones de diseno',
   approval: 'Aprobaciones y declaraciones',
   analysis: 'Analisis',
@@ -107,9 +107,9 @@ export const CATEGORY_ORDER: ComplianceTemplate['category'][] = [
 ]
 
 /**
- * Mapeo de familia_documental (doa_proyectos_historico_documentos)
- * a codigos de plantilla. Cuando el ingeniero marca un proyecto como
- * referencia, se pre-seleccionan las plantillas correspondientes.
+ * Mapeo de familia_documental (doa_historical_project_documents)
+ * a codigos de template. Cuando el ingeniero marca un project como
+ * referencia, se pre-seleccionan las templates correspondientes.
  */
 export const FAMILIA_TO_TEMPLATES: Record<string, string[]> = {
   'Change Classification': ['G12-01'],
@@ -132,13 +132,13 @@ export const FAMILIA_TO_TEMPLATES: Record<string, string[]> = {
 }
 
 /**
- * Dado un array de familias documentales de un proyecto historico,
- * devuelve los codigos de plantilla que se deben pre-seleccionar.
+ * Dado un array de familias documentales de un project historical,
+ * devuelve los codigos de template que se deben pre-seleccionar.
  */
 export function getPreselectedTemplates(familias: string[]): string[] {
   const codes = new Set<string>()
-  for (const familia of familias) {
-    const mapped = FAMILIA_TO_TEMPLATES[familia]
+  for (const family of familias) {
+    const mapped = FAMILIA_TO_TEMPLATES[family]
     if (mapped) {
       for (const code of mapped) codes.add(code)
     }
@@ -147,7 +147,7 @@ export function getPreselectedTemplates(familias: string[]): string[] {
 }
 
 /**
- * Convierte codigo de plantilla a nombre de columna en BD.
+ * Convierte codigo de template a name de columna en BD.
  * "G12-01" → "doc_g12_01"
  */
 export function codeToColumn(code: string): string {
@@ -155,12 +155,12 @@ export function codeToColumn(code: string): string {
 }
 
 /**
- * Convierte nombre de columna a codigo de plantilla.
+ * Convierte name de columna a codigo de template.
  * "doc_g12_01" → "G12-01"
  */
 export function columnToCode(col: string): string {
   return col.replace('doc_', '').replace('_', '-').toUpperCase()
 }
 
-/** Lista de todas las columnas doc_* en doa_consultas_entrantes */
+/** Lista de todas las columnas doc_* en doa_incoming_requests */
 export const ALL_DOC_COLUMNS = COMPLIANCE_TEMPLATES.map((t) => codeToColumn(t.code))

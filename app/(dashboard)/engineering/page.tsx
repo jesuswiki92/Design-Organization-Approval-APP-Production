@@ -3,12 +3,12 @@
  * PAGINA PRINCIPAL DE PROYECTOS (ENGINEERING)
  * ============================================================================
  *
- * Esta pagina es el punto de entrada al modulo de Proyectos (Engineering).
- * Muestra una vista operativa del equipo de proyectos con tablero tipo
+ * Esta page es el punto de entrada al modulo de Projects (Engineering).
+ * Muestra una vista operativa del equipo de projects con tablero type
  * Kanban y vista lista.
  *
- * NOTA: Actualmente los datos son MOCK (simulados). Todavia no estan
- * conectados a la base de datos real. La interfaz esta preparada para
+ * NOTA: Actualmente los data son MOCK (simulados). Todavia no estan
+ * conectados a la base de data real. La interfaz esta preparada para
  * cuando se conecte el backend.
  *
  * NOTA TECNICA: Es un Server Component que simplemente renderiza la
@@ -16,19 +16,19 @@
  * ============================================================================
  */
 
-// Barra superior de la pagina
+// Barra superior de la page
 import { TopBar } from '@/components/layout/TopBar'
 
-// Componente visual interactivo con el tablero de proyectos
+// Componente visual interactivo con el tablero de projects
 import { EngineeringClient } from './EngineeringClient'
 
-/** Pagina principal del modulo de Proyectos */
+/** Page primary del modulo de Projects */
 export default function EngineeringIndexPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
-      {/* Barra superior con titulo */}
-      <TopBar title="Proyectos" subtitle="Vista principal de proyectos" />
-      {/* Tablero interactivo de proyectos */}
+      {/* Barra superior con title */}
+      <TopBar title="Projects" subtitle="Vista primary de projects" />
+      {/* Tablero interactivo de projects */}
       <EngineeringClient />
     </div>
   )

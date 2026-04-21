@@ -85,12 +85,12 @@
 
   /* ---- Warm Executive EXTENDED — section identity accents ----
      Used to tint per-section icon circles, labels and tick marks so that
-     Cliente / Aeronave / Tecnico / Alcance don't all collapse into the
+     Client / Aircraft / Tecnico / Alcance don't all collapse into the
      same beige-washed card. All chosen to sit harmoniously on paper with
      AA contrast when used as 600-series accent on --paper / --paper-2. */
-  --sage:            #6f7d5a;   /* cliente */
+  --sage:            #6f7d5a;   /* client */
   --sage-soft:       #e8ece0;
-  --terracotta:      #a76342;   /* aeronave */
+  --terracotta:      #a76342;   /* aircraft */
   --terracotta-soft: #f1e2d8;
   --parchment-gold:  #8a7438;   /* tecnico */
   --parchment-soft:  #ece5d0;
@@ -277,7 +277,7 @@
       linear-gradient(0deg, rgba(47, 74, 168, 0.025), rgba(47, 74, 168, 0.025)),
       var(--paper-2);
   }
-  .doa-kanban-card[data-stage="oferta"] {
+  .doa-kanban-card[data-stage="quote"] {
     background:
       linear-gradient(0deg, rgba(138, 90, 43, 0.03), rgba(138, 90, 43, 0.03)),
       var(--paper-2);
@@ -370,13 +370,13 @@
   /* ============================================================
      SECTION IDENTITY — per-section accent system.
      Used across /quotations/incoming/[id] and similar review
-     routes so each section (Cliente, Aeronave, Tecnico, etc.)
+     routes so each section (Client, Aircraft, Tecnico, etc.)
      has a distinct but warm accent without ever going pure white.
      Usage:
        <section class="doa-section doa-section--sage">
          <div class="doa-section-head">
            <div class="doa-section-icon"><Icon /></div>
-           <span class="doa-section-label">Cliente</span>
+           <span class="doa-section-label">Client</span>
          </div>
        </section>
      The CSS variable --accent is set per-variant and consumed by
@@ -434,7 +434,7 @@
   }
 
   /* Sub-card label — used inside review summary grid where each cell
-     identifies a specific datum (Cliente, Aeronave, etc.). Same mono
+     identifies a specific datum (Client, Aircraft, etc.). Same mono
      11px but the colour comes from the sub-card's own --accent. */
   .doa-sub-label {
     font-family: var(--font-mono);

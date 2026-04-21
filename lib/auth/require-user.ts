@@ -75,7 +75,7 @@ export async function requireUserApi(): Promise<Response | AuthOk> {
  *
  * Si no hay sesion valida, llama a `redirect('/login')` de `next/navigation`.
  * `redirect` lanza una excepcion especial que Next.js intercepta para
- * redirigir al usuario, por eso esta funcion nunca "devuelve" un Response.
+ * redirigir al user_label, por eso esta funcion nunca "devuelve" un Response.
  *
  * Uso tipico en un Server Action:
  *
@@ -83,14 +83,14 @@ export async function requireUserApi(): Promise<Response | AuthOk> {
  * 'use server'
  * import { requireUserAction } from '@/lib/auth/require-user'
  *
- * export async function actualizarConsulta(id: string, datos: unknown) {
+ * export async function actualizarConsulta(id: string, data: unknown) {
  *   const { user, supabase } = await requireUserAction()
  *   // ... logica de la accion ...
  * }
  * ```
  *
  * @returns `{ user, supabase }` cuando la sesion es valida. Si no hay sesion,
- *          la funcion NO retorna: `redirect` interrumpe la ejecucion.
+ *          la funcion NO retorna: `redirect` interrumpe la execution.
  */
 export async function requireUserAction(): Promise<AuthOk> {
   const supabase = await createClient()

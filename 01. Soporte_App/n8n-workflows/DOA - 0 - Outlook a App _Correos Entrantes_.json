@@ -2,7 +2,7 @@
   "updatedAt": "2026-04-02T17:12:02.595Z",
   "createdAt": "2026-03-14T10:56:44.597Z",
   "id": "pEFW1V46yyLR58c8",
-  "name": "DOA - 0 - Outlook a App (Correos Entrantes)",
+  "name": "DOA - 0 - Outlook a App (Emails Entrantes)",
   "description": null,
   "active": true,
   "isArchived": false,
@@ -55,11 +55,11 @@
         "messages": {
           "values": [
             {
-              "content": "Eres un clasificador de correos para una DOA aeronáutica. Analiza el asunto y el cuerpo del correo y devuelve solo JSON válido. Usa exclusivamente una de estas etiquetas para el campo clasificacion: Cliente solicita proyecto nuevo, Cliente solicita modificacion a proyecto existente, Clasificacion pendiente. Usa Cliente solicita proyecto nuevo cuando el cliente plantea una necesidad o proyecto desde cero. Usa Cliente solicita modificacion a proyecto existente cuando el cliente menciona cambios, ajustes o ampliaciones sobre un proyecto ya existente. Usa Clasificacion pendiente si el correo es ambiguo o no permite decidir con seguridad. Devuelve exclusivamente un objeto JSON con dos claves: clasificacion y razon. razon debe ser una frase corta en español de máximo 20 palabras.",
+              "content": "Eres un clasificador de emails para una DOA aeronáutica. Analiza el subject y el body del email y devuelve solo JSON válido. Usa exclusivamente una de estas etiquetas para el campo classification: Client solicita project new, Client solicita modificacion a project existente, Classification pending. Usa Client solicita project new cuando el client plantea una necesidad o project desde cero. Usa Client solicita modificacion a project existente cuando el client menciona cambios, ajustes o ampliaciones sobre un project ya existente. Usa Classification pending si el email es ambiguo o no permite decidir con seguridad. Devuelve exclusivamente un objeto JSON con dos claves: classification y razon. razon debe ser una frase corta en español de máximo 20 palabras.",
               "role": "system"
             },
             {
-              "content": "=Clasifica este correo y responde solo json.\\n\\nASUNTO: {{$json.subject || ''}}\\n\\nREMITENTE: {{$json.from?.emailAddress?.address || ''}}\\n\\nCUERPO: {{$json.bodyPreview || ''}}"
+              "content": "=Clasifica este email y responde solo json.\\n\\nASUNTO: {{$json.subject || ''}}\\n\\nREMITENTE: {{$json.from?.emailAddress?.address || ''}}\\n\\nCUERPO: {{$json.bodyPreview || ''}}"
             }
           ]
         },
@@ -67,7 +67,7 @@
         "options": {}
       },
       "id": "clasificar_correo_ia",
-      "name": "Clasificar Correo IA",
+      "name": "Clasificar Email IA",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
@@ -92,19 +92,19 @@
         "messages": {
           "values": [
             {
-              "content": "Eres personal de gestion de una DOA. Redactas respuestas iniciales a clientes de forma profesional, clara y operativa. Tu objetivo es encauzar la solicitud hacia el formulario de intake del proyecto para recopilar la informacion necesaria. La URL del formulario se incluirá mas adelante. No la añadas ahora. Solo incluye donde ira el formulario la frase \"(Form intake here)\".  Esta frase tiene que ir textualemente porque luego reemplaremos. No actues como ingeniero certificador. No prometas viabilidad, aprobacion tecnica, plazos cerrados ni soluciones definitivas. Pide siempre que el cliente complete el formulario del proyecto con la informacion basica necesaria para evaluar la solicitud.  No solicites en el correo ninguna información extra. Responde siempre en el mismo idioma principal del correo del cliente.  Sigue estrictamente la instruccion operativa que recibes. Devuelve solo JSON valido con una unica clave: respuesta_ia.",
+              "content": "Eres personal de gestion de una DOA. Redactas responses iniciales a clients de forma profesional, clara y operativa. Tu objetivo es encauzar la solicitud hacia el form de intake del project para recopilar la informacion necesaria. La URL del form se incluirá mas adelante. No la añadas ahora. Solo incluye donde ira el form la frase \"(Form intake here)\".  Esta frase tiene que ir textualemente porque luego reemplaremos. No actues como ingeniero certificador. No prometas viabilidad, approval technical, plazos cerrados ni soluciones definitivas. Pide siempre que el client complete el form del project con la informacion basica necesaria para evaluar la solicitud.  No solicites en el email ninguna información extra. Responde siempre en el mismo idioma primary del email del client.  Sigue estrictamente la instruction operativa que recibes. Devuelve solo JSON valido con una unica clave: ai_response.",
               "role": "system"
             },
             {
-              "content": "=Draft the reply in the same language as the customer's email and respond only with json.\n\\n\\nCLASIFICACION CANONICA: {{$json.clasificacion_canonica}}\\n\\nINSTRUCCION OPERATIVA: \\n ASUNTO: {{$json.asunto}}\\n\\nREMITENTE: {{$json.remitente}}\\n\\nCUERPO: {{$json.cuerpo_original}}"
+              "content": "=Draft the reply in the same language as the customer's email and respond only with json.\n\\n\\nCLASIFICACION CANONICA: {{$json.clasificacion_canonica}}\\n\\nINSTRUCCION OPERATIVA: \\n ASUNTO: {{$json.subject}}\\n\\nREMITENTE: {{$json.sender}}\\n\\nCUERPO: {{$json.original_body}}"
             }
           ]
         },
         "jsonOutput": true,
         "options": {}
       },
-      "id": "redactar_respuesta_ia",
-      "name": "Redactar Respuesta IA",
+      "id": "redactar_ai_response",
+      "name": "Redactar Response IA",
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
@@ -121,10 +121,10 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "function parseAiPayload(input) {\n  const candidates = [\n    input?.message?.content,\n    input?.text,\n    input?.response,\n    input?.output,\n    input,\n  ];\n\n  for (const candidate of candidates) {\n    let parsed = null;\n    if (typeof candidate === 'string') {\n      const cleaned = candidate.replace(/```json/gi, '').replace(/```/g, '').trim();\n      try {\n        parsed = JSON.parse(cleaned);\n      } catch (error) {\n        parsed = null;\n      }\n    } else if (candidate && typeof candidate === 'object') {\n      parsed = candidate;\n    }\n\n    if (parsed && typeof parsed === 'object') {\n      return parsed;\n    }\n  }\n\n  return {};\n}\n\n// 1. Extraemos solo la respuesta de la IA\nconst draftPayload = parseAiPayload($json || {});\nconst respuesta = (draftPayload.respuesta_ia || draftPayload.borrador || draftPayload.reply || '').toString().trim();\n\n// 2. Extraemos los metadatos puros directo del trigger de Outlook para que nunca falle\nconst outlook = $('Outlook Trigger').item.json || {};\nconst clasificacionReal = $('Filtro Correo entrante').item.json['clasificacion.email'] || 'Clasificacion pendiente';\n\nreturn {\n  json: {\n    asunto: outlook.subject || '',\n    remitente: (outlook.from?.emailAddress?.address || ''),\n    cuerpo_original: outlook.bodyPreview || '',\n    clasificacion: clasificacionReal,\n    respuesta_ia: respuesta,\n  },\n};\n"
+        "jsCode": "function parseAiPayload(input) {\n  const candidates = [\n    input?.message?.content,\n    input?.text,\n    input?.response,\n    input?.output,\n    input,\n  ];\n\n  for (const candidate of candidates) {\n    let parsed = null;\n    if (typeof candidate === 'string') {\n      const cleaned = candidate.replace(/```json/gi, '').replace(/```/g, '').trim();\n      try {\n        parsed = JSON.parse(cleaned);\n      } catch (error) {\n        parsed = null;\n      }\n    } else if (candidate && typeof candidate === 'object') {\n      parsed = candidate;\n    }\n\n    if (parsed && typeof parsed === 'object') {\n      return parsed;\n    }\n  }\n\n  return {};\n}\n\n// 1. Extraemos solo la response de la IA\nconst draftPayload = parseAiPayload($json || {});\nconst response = (draftPayload.ai_response || draftPayload.borrador || draftPayload.reply || '').toString().trim();\n\n// 2. Extraemos los metadatos puros directo del trigger de Outlook para que nunca falle\nconst outlook = $('Outlook Trigger').item.json || {};\nconst clasificacionReal = $('Filtro Email entrante').item.json['classification.email'] || 'Classification pending';\n\nreturn {\n  json: {\n    subject: outlook.subject || '',\n    sender: (outlook.from?.emailAddress?.address || ''),\n    original_body: outlook.bodyPreview || '',\n    classification: clasificacionReal,\n    ai_response: response,\n  },\n};\n"
       },
       "id": "normalizar_correo",
-      "name": "Normalizar Correo",
+      "name": "Normalizar Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -141,7 +141,7 @@
         }
       },
       "id": "marcar_como_leido",
-      "name": "Marcar Correo como Leido",
+      "name": "Marcar Email como Leido",
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
@@ -162,38 +162,38 @@
           "assignments": [
             {
               "id": "fefceeed-9c02-42d2-9324-92a9535e492c",
-              "name": "asunto",
-              "value": "={{ $json.asunto }}",
+              "name": "subject",
+              "value": "={{ $json.subject }}",
               "type": "string"
             },
             {
               "id": "de73e6ce-06d5-4eae-9c0c-3a42d7ad1b41",
-              "name": "remitente",
-              "value": "={{ $json.remitente }}",
+              "name": "sender",
+              "value": "={{ $json.sender }}",
               "type": "string"
             },
             {
               "id": "eb62b735-3a8a-4efe-a3dd-9360fe1a3cf2",
-              "name": "cuerpo_original",
-              "value": "={{ $json.cuerpo_original }}",
+              "name": "original_body",
+              "value": "={{ $json.original_body }}",
               "type": "string"
             },
             {
               "id": "5388ff4d-f398-406f-8eda-84341ffbf7db",
-              "name": "clasificacion",
-              "value": "={{ $json.clasificacion }}",
+              "name": "classification",
+              "value": "={{ $json.classification }}",
               "type": "string"
             },
             {
               "id": "4248c572-d2e3-4fee-bb16-5f1310b933c0",
-              "name": "respuesta_ia",
-              "value": "={{ $json.respuesta_ia }}",
+              "name": "ai_response",
+              "value": "={{ $json.ai_response }}",
               "type": "string"
             },
             {
               "id": "d18c7edf-8504-4397-b684-a6a8b9c63e72",
               "name": "public_form_url",
-              "value": "={{ $('Generar URL Formulario').item.json.public_form_url }}",
+              "value": "={{ $('Generar URL Form').item.json.public_form_url }}",
               "type": "string"
             }
           ]
@@ -223,8 +223,8 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.message.content.clasificacion }}",
-                    "rightValue": "Cliente solicita proyecto nuevo",
+                    "leftValue": "={{ $json.message.content.classification }}",
+                    "rightValue": "Client solicita project new",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -246,8 +246,8 @@
                 "conditions": [
                   {
                     "id": "b65d36d8-9187-4395-b6f2-1619f9766c35",
-                    "leftValue": "={{ $json.message.content.clasificacion }}",
-                    "rightValue": "Cliente solicita modificacion a proyecto existente",
+                    "leftValue": "={{ $json.message.content.classification }}",
+                    "rightValue": "Client solicita modificacion a project existente",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -268,8 +268,8 @@
                 "conditions": [
                   {
                     "id": "778be39b-f826-4b4a-a3d4-dbac7f3b977e",
-                    "leftValue": "={{ $json.message.content.clasificacion }}",
-                    "rightValue": "Cliente solicita proyecto nuevo",
+                    "leftValue": "={{ $json.message.content.classification }}",
+                    "rightValue": "Client solicita project new",
                     "operator": {
                       "type": "string",
                       "operation": "notEquals"
@@ -290,8 +290,8 @@
                 "conditions": [
                   {
                     "id": "fde93e98-f8eb-4604-b295-e01e14cb289f",
-                    "leftValue": "={{ $json.message.content.clasificacion }}",
-                    "rightValue": "Cliente solicita modificacion a proyecto existente",
+                    "leftValue": "={{ $json.message.content.classification }}",
+                    "rightValue": "Client solicita modificacion a project existente",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -331,14 +331,14 @@
           "assignments": [
             {
               "id": "ff582b50-a25f-4ad1-ad45-3b8cf6046595",
-              "name": "clasificacion.email",
-              "value": "={{ $('Clasificar Correo IA').item.json.message.content.clasificacion }}",
+              "name": "classification.email",
+              "value": "={{ $('Clasificar Email IA').item.json.message.content.classification }}",
               "type": "string"
             },
             {
               "id": "89cb6404-0bda-40d1-813f-547495434082",
               "name": "razon.email",
-              "value": "={{ $('Clasificar Correo IA').item.json.message.content.razon }}",
+              "value": "={{ $('Clasificar Email IA').item.json.message.content.razon }}",
               "type": "string"
             },
             {
@@ -355,13 +355,13 @@
             },
             {
               "id": "253bf9a5-bb6b-463b-93a8-a0731cc63ae8",
-              "name": "Email.Cliente",
+              "name": "Email.Client",
               "value": "={{ $('Outlook Trigger').item.json.from.emailAddress.address }}",
               "type": "string"
             },
             {
               "id": "93ff1040-e5cd-4220-a095-0f6c0d9a0211",
-              "name": "id.supabase.doa.consultas.entrantes",
+              "name": "id.supabase.doa.requests.entrantes",
               "value": "={{ $json.id }}",
               "type": "string"
             }
@@ -376,17 +376,17 @@
         304
       ],
       "id": "9ca67f4e-1e4e-4415-a233-bd097ce259c8",
-      "name": "Filtro Correo entrante"
+      "name": "Filtro Email entrante"
     },
     {
       "parameters": {
         "operation": "get",
-        "tableId": "doa_clientes_datos_generales",
+        "tableId": "doa_clients",
         "filters": {
           "conditions": [
             {
               "keyName": "id",
-              "keyValue": "={{ $('Ver si el cliente es conocido').item.json.cliente_id }}"
+              "keyValue": "={{ $('Ver si el client es conocido').item.json.client_id }}"
             }
           ]
         }
@@ -412,56 +412,56 @@
           "assignments": [
             {
               "id": "7649a396-dc8d-4ef7-8dc0-e30e746e51e8",
-              "name": "nombre.empresa",
-              "value": "={{ $json.nombre }}",
+              "name": "name.empresa",
+              "value": "={{ $json.name }}",
               "type": "string"
             },
             {
               "id": "b6f27331-137e-425c-a076-c2a394a8d295",
-              "name": "cif_vat",
-              "value": "={{ $json.cif_vat }}",
+              "name": "vat_tax_id",
+              "value": "={{ $json.vat_tax_id }}",
               "type": "string"
             },
             {
               "id": "d1362500-2393-40a6-944b-f25e03494bb2",
-              "name": "pais",
-              "value": "={{ $json.pais }}",
+              "name": "country",
+              "value": "={{ $json.country }}",
               "type": "string"
             },
             {
               "id": "f5f8e558-952c-4a14-8aa4-4fdbbb43e232",
-              "name": "ciudad",
-              "value": "={{ $json.ciudad }}",
+              "name": "city",
+              "value": "={{ $json.city }}",
               "type": "string"
             },
             {
               "id": "219c9afb-8110-4a75-a1a9-e3f7ed9fee39",
-              "name": "direccion",
-              "value": "={{ $json.direccion }}",
+              "name": "address",
+              "value": "={{ $json.address }}",
               "type": "string"
             },
             {
               "id": "30983dbf-0575-49af-85bb-fa01fa83ac34",
-              "name": "telefono",
-              "value": "={{ $json.telefono }}",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
               "type": "string"
             },
             {
               "id": "e2bc889c-d6d5-454b-83e3-836941383698",
-              "name": "web",
-              "value": "={{ $json.web }}",
+              "name": "website",
+              "value": "={{ $json.website }}",
               "type": "string"
             },
             {
               "id": "bba43d22-72e4-4c18-8f7a-27a4fb66afbb",
-              "name": "dominio_email",
-              "value": "={{ $json.dominio_email }}",
+              "name": "email_domain",
+              "value": "={{ $json.email_domain }}",
               "type": "string"
             },
             {
               "id": "f2bd07fb-0c46-4163-a9a9-d70dba2ae683",
-              "name": "tipo_cliente",
-              "value": "={{ $json.tipo_cliente }}",
+              "name": "client_type",
+              "value": "={{ $json.client_type }}",
               "type": "string"
             }
           ]
@@ -475,7 +475,7 @@
         48
       ],
       "id": "b4ee8704-ba84-4003-9786-579136cceb81",
-      "name": "Datos empresa"
+      "name": "Data empresa"
     },
     {
       "parameters": {
@@ -491,7 +491,7 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $('Ver si el cliente es conocido').item.json.email }}",
+                    "leftValue": "={{ $('Ver si el client es conocido').item.json.email }}",
                     "rightValue": "",
                     "operator": {
                       "type": "string",
@@ -504,7 +504,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "Cliente Conocido"
+              "outputKey": "Client Conocido"
             },
             {
               "conditions": {
@@ -517,7 +517,7 @@
                 "conditions": [
                   {
                     "id": "d34d4b84-6999-4d8a-8fd6-4f3fd96ab68f",
-                    "leftValue": "={{ $('Ver si el cliente es conocido').item.json.email }}",
+                    "leftValue": "={{ $('Ver si el client es conocido').item.json.email }}",
                     "rightValue": "",
                     "operator": {
                       "type": "string",
@@ -529,7 +529,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "Cliente No Conocido"
+              "outputKey": "Client No Conocido"
             }
           ]
         },
@@ -546,7 +546,7 @@
     },
     {
       "parameters": {
-        "tableId": "doa_consultas_entrantes"
+        "tableId": "doa_incoming_requests"
       },
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -566,12 +566,12 @@
     {
       "parameters": {
         "operation": "get",
-        "tableId": "doa_clientes_contactos",
+        "tableId": "doa_client_contacts",
         "filters": {
           "conditions": [
             {
               "keyName": "email",
-              "keyValue": "={{ $json.Email.Cliente.trim() }}"
+              "keyValue": "={{ $json.Email.Client.trim() }}"
             }
           ]
         }
@@ -583,7 +583,7 @@
         304
       ],
       "id": "b20dad45-7a54-430a-b4c8-45b03e4766d9",
-      "name": "Ver si el cliente es conocido",
+      "name": "Ver si el client es conocido",
       "credentials": {
         "supabaseApi": {
           "id": "H1ZHvBDstWZ1K6KS",
@@ -594,37 +594,37 @@
     {
       "parameters": {
         "operation": "update",
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "filters": {
           "conditions": [
             {
               "keyName": "id",
               "condition": "eq",
-              "keyValue": "={{ $('Filtro Correo entrante').item.json.id.supabase.doa.consultas.entrantes }}"
+              "keyValue": "={{ $('Filtro Email entrante').item.json.id.supabase.doa.requests.entrantes }}"
             }
           ]
         },
         "fieldsUi": {
           "fieldValues": [
             {
-              "fieldId": "remitente",
+              "fieldId": "sender",
               "fieldValue": "={{ $json.email }}"
             },
             {
-              "fieldId": "asunto",
-              "fieldValue": "={{ $('Filtro Correo entrante').item.json.subject.email }}"
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Filtro Email entrante').item.json.subject.email }}"
             },
             {
-              "fieldId": "cuerpo_original",
-              "fieldValue": "={{ $('Filtro Correo entrante').item.json.body.email }}"
+              "fieldId": "original_body",
+              "fieldValue": "={{ $('Filtro Email entrante').item.json.body.email }}"
             },
             {
-              "fieldId": "clasificacion",
-              "fieldValue": "={{ $('Filtro Correo entrante').item.json.clasificacion.email }}"
+              "fieldId": "classification",
+              "fieldValue": "={{ $('Filtro Email entrante').item.json.classification.email }}"
             },
             {
-              "fieldId": "estado",
-              "fieldValue": "nuevo"
+              "fieldId": "status",
+              "fieldValue": "new"
             }
           ]
         }
@@ -651,7 +651,7 @@
             {
               "id": "urlgen123",
               "name": "public_form_url",
-              "value": "={{ 'https://sswebhook.testn8n.com/webhook/doa-form?id=' + $('Filtro Correo entrante').first().json.id.supabase.doa.consultas.entrantes }}",
+              "value": "={{ 'https://sswebhook.testn8n.com/webhook/doa-form?id=' + $('Filtro Email entrante').first().json.id.supabase.doa.requests.entrantes }}",
               "type": "string"
             }
           ]
@@ -665,29 +665,29 @@
         320
       ],
       "id": "generador_url_unica",
-      "name": "Generar URL Formulario"
+      "name": "Generar URL Form"
     },
     {
       "parameters": {
         "operation": "update",
-        "tableId": "doa_consultas_entrantes",
+        "tableId": "doa_incoming_requests",
         "filters": {
           "conditions": [
             {
               "keyName": "id",
               "condition": "eq",
-              "keyValue": "={{ $('Filtro Correo entrante').item.json.id.supabase.doa.consultas.entrantes }}"
+              "keyValue": "={{ $('Filtro Email entrante').item.json.id.supabase.doa.requests.entrantes }}"
             }
           ]
         },
         "fieldsUi": {
           "fieldValues": [
             {
-              "fieldId": "respuesta_ia",
-              "fieldValue": "={{ $json.respuesta_ia }}"
+              "fieldId": "ai_response",
+              "fieldValue": "={{ $json.ai_response }}"
             },
             {
-              "fieldId": "url_formulario",
+              "fieldId": "form_url",
               "fieldValue": "={{ $json.public_form_url }}"
             }
           ]
@@ -714,14 +714,14 @@
       "main": [
         [
           {
-            "node": "Clasificar Correo IA",
+            "node": "Clasificar Email IA",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Clasificar Correo IA": {
+    "Clasificar Email IA": {
       "main": [
         [
           {
@@ -732,18 +732,18 @@
         ]
       ]
     },
-    "Redactar Respuesta IA": {
+    "Redactar Response IA": {
       "main": [
         [
           {
-            "node": "Normalizar Correo",
+            "node": "Normalizar Email",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalizar Correo": {
+    "Normalizar Email": {
       "main": [
         [
           {
@@ -796,11 +796,11 @@
         ]
       ]
     },
-    "Filtro Correo entrante": {
+    "Filtro Email entrante": {
       "main": [
         [
           {
-            "node": "Ver si el cliente es conocido",
+            "node": "Ver si el client es conocido",
             "type": "main",
             "index": 0
           }
@@ -811,18 +811,18 @@
       "main": [
         [
           {
-            "node": "Datos empresa",
+            "node": "Data empresa",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Datos empresa": {
+    "Data empresa": {
       "main": [
         [
           {
-            "node": "Generar URL Formulario",
+            "node": "Generar URL Form",
             "type": "main",
             "index": 0
           }
@@ -840,7 +840,7 @@
         ],
         [
           {
-            "node": "Generar URL Formulario",
+            "node": "Generar URL Form",
             "type": "main",
             "index": 0
           }
@@ -851,14 +851,14 @@
       "main": [
         [
           {
-            "node": "Filtro Correo entrante",
+            "node": "Filtro Email entrante",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Ver si el cliente es conocido": {
+    "Ver si el client es conocido": {
       "main": [
         [
           {
@@ -880,11 +880,11 @@
         ]
       ]
     },
-    "Generar URL Formulario": {
+    "Generar URL Form": {
       "main": [
         [
           {
-            "node": "Redactar Respuesta IA",
+            "node": "Redactar Response IA",
             "type": "main",
             "index": 0
           }
@@ -895,7 +895,7 @@
       "main": [
         [
           {
-            "node": "Marcar Correo como Leido",
+            "node": "Marcar Email como Leido",
             "type": "main",
             "index": 0
           }
@@ -1039,11 +1039,11 @@
           "messages": {
             "values": [
               {
-                "content": "Eres un clasificador de correos para una DOA aeronáutica. Analiza el asunto y el cuerpo del correo y devuelve solo JSON válido. Usa exclusivamente una de estas etiquetas para el campo clasificacion: Cliente solicita proyecto nuevo, Cliente solicita modificacion a proyecto existente, Clasificacion pendiente. Usa Cliente solicita proyecto nuevo cuando el cliente plantea una necesidad o proyecto desde cero. Usa Cliente solicita modificacion a proyecto existente cuando el cliente menciona cambios, ajustes o ampliaciones sobre un proyecto ya existente. Usa Clasificacion pendiente si el correo es ambiguo o no permite decidir con seguridad. Devuelve exclusivamente un objeto JSON con dos claves: clasificacion y razon. razon debe ser una frase corta en español de máximo 20 palabras.",
+                "content": "Eres un clasificador de emails para una DOA aeronáutica. Analiza el subject y el body del email y devuelve solo JSON válido. Usa exclusivamente una de estas etiquetas para el campo classification: Client solicita project new, Client solicita modificacion a project existente, Classification pending. Usa Client solicita project new cuando el client plantea una necesidad o project desde cero. Usa Client solicita modificacion a project existente cuando el client menciona cambios, ajustes o ampliaciones sobre un project ya existente. Usa Classification pending si el email es ambiguo o no permite decidir con seguridad. Devuelve exclusivamente un objeto JSON con dos claves: classification y razon. razon debe ser una frase corta en español de máximo 20 palabras.",
                 "role": "system"
               },
               {
-                "content": "=Clasifica este correo y responde solo json.\\n\\nASUNTO: {{$json.subject || ''}}\\n\\nREMITENTE: {{$json.from?.emailAddress?.address || ''}}\\n\\nCUERPO: {{$json.bodyPreview || ''}}"
+                "content": "=Clasifica este email y responde solo json.\\n\\nASUNTO: {{$json.subject || ''}}\\n\\nREMITENTE: {{$json.from?.emailAddress?.address || ''}}\\n\\nCUERPO: {{$json.bodyPreview || ''}}"
               }
             ]
           },
@@ -1051,7 +1051,7 @@
           "options": {}
         },
         "id": "clasificar_correo_ia",
-        "name": "Clasificar Correo IA",
+        "name": "Clasificar Email IA",
         "type": "@n8n/n8n-nodes-langchain.openAi",
         "typeVersion": 1.8,
         "position": [
@@ -1076,19 +1076,19 @@
           "messages": {
             "values": [
               {
-                "content": "Eres personal de gestion de una DOA. Redactas respuestas iniciales a clientes de forma profesional, clara y operativa. Tu objetivo es encauzar la solicitud hacia el formulario de intake del proyecto para recopilar la informacion necesaria. La URL del formulario se incluirá mas adelante. No la añadas ahora. Solo incluye donde ira el formulario la frase \"(Form intake here)\".  Esta frase tiene que ir textualemente porque luego reemplaremos. No actues como ingeniero certificador. No prometas viabilidad, aprobacion tecnica, plazos cerrados ni soluciones definitivas. Pide siempre que el cliente complete el formulario del proyecto con la informacion basica necesaria para evaluar la solicitud.  No solicites en el correo ninguna información extra. Responde siempre en el mismo idioma principal del correo del cliente.  Sigue estrictamente la instruccion operativa que recibes. Devuelve solo JSON valido con una unica clave: respuesta_ia.",
+                "content": "Eres personal de gestion de una DOA. Redactas responses iniciales a clients de forma profesional, clara y operativa. Tu objetivo es encauzar la solicitud hacia el form de intake del project para recopilar la informacion necesaria. La URL del form se incluirá mas adelante. No la añadas ahora. Solo incluye donde ira el form la frase \"(Form intake here)\".  Esta frase tiene que ir textualemente porque luego reemplaremos. No actues como ingeniero certificador. No prometas viabilidad, approval technical, plazos cerrados ni soluciones definitivas. Pide siempre que el client complete el form del project con la informacion basica necesaria para evaluar la solicitud.  No solicites en el email ninguna información extra. Responde siempre en el mismo idioma primary del email del client.  Sigue estrictamente la instruction operativa que recibes. Devuelve solo JSON valido con una unica clave: ai_response.",
                 "role": "system"
               },
               {
-                "content": "=Draft the reply in the same language as the customer's email and respond only with json.\n\\n\\nCLASIFICACION CANONICA: {{$json.clasificacion_canonica}}\\n\\nINSTRUCCION OPERATIVA: \\n ASUNTO: {{$json.asunto}}\\n\\nREMITENTE: {{$json.remitente}}\\n\\nCUERPO: {{$json.cuerpo_original}}"
+                "content": "=Draft the reply in the same language as the customer's email and respond only with json.\n\\n\\nCLASIFICACION CANONICA: {{$json.clasificacion_canonica}}\\n\\nINSTRUCCION OPERATIVA: \\n ASUNTO: {{$json.subject}}\\n\\nREMITENTE: {{$json.sender}}\\n\\nCUERPO: {{$json.original_body}}"
               }
             ]
           },
           "jsonOutput": true,
           "options": {}
         },
-        "id": "redactar_respuesta_ia",
-        "name": "Redactar Respuesta IA",
+        "id": "redactar_ai_response",
+        "name": "Redactar Response IA",
         "type": "@n8n/n8n-nodes-langchain.openAi",
         "typeVersion": 1.8,
         "position": [
@@ -1105,10 +1105,10 @@
       {
         "parameters": {
           "mode": "runOnceForEachItem",
-          "jsCode": "function parseAiPayload(input) {\n  const candidates = [\n    input?.message?.content,\n    input?.text,\n    input?.response,\n    input?.output,\n    input,\n  ];\n\n  for (const candidate of candidates) {\n    let parsed = null;\n    if (typeof candidate === 'string') {\n      const cleaned = candidate.replace(/```json/gi, '').replace(/```/g, '').trim();\n      try {\n        parsed = JSON.parse(cleaned);\n      } catch (error) {\n        parsed = null;\n      }\n    } else if (candidate && typeof candidate === 'object') {\n      parsed = candidate;\n    }\n\n    if (parsed && typeof parsed === 'object') {\n      return parsed;\n    }\n  }\n\n  return {};\n}\n\n// 1. Extraemos solo la respuesta de la IA\nconst draftPayload = parseAiPayload($json || {});\nconst respuesta = (draftPayload.respuesta_ia || draftPayload.borrador || draftPayload.reply || '').toString().trim();\n\n// 2. Extraemos los metadatos puros directo del trigger de Outlook para que nunca falle\nconst outlook = $('Outlook Trigger').item.json || {};\nconst clasificacionReal = $('Filtro Correo entrante').item.json['clasificacion.email'] || 'Clasificacion pendiente';\n\nreturn {\n  json: {\n    asunto: outlook.subject || '',\n    remitente: (outlook.from?.emailAddress?.address || ''),\n    cuerpo_original: outlook.bodyPreview || '',\n    clasificacion: clasificacionReal,\n    respuesta_ia: respuesta,\n  },\n};\n"
+          "jsCode": "function parseAiPayload(input) {\n  const candidates = [\n    input?.message?.content,\n    input?.text,\n    input?.response,\n    input?.output,\n    input,\n  ];\n\n  for (const candidate of candidates) {\n    let parsed = null;\n    if (typeof candidate === 'string') {\n      const cleaned = candidate.replace(/```json/gi, '').replace(/```/g, '').trim();\n      try {\n        parsed = JSON.parse(cleaned);\n      } catch (error) {\n        parsed = null;\n      }\n    } else if (candidate && typeof candidate === 'object') {\n      parsed = candidate;\n    }\n\n    if (parsed && typeof parsed === 'object') {\n      return parsed;\n    }\n  }\n\n  return {};\n}\n\n// 1. Extraemos solo la response de la IA\nconst draftPayload = parseAiPayload($json || {});\nconst response = (draftPayload.ai_response || draftPayload.borrador || draftPayload.reply || '').toString().trim();\n\n// 2. Extraemos los metadatos puros directo del trigger de Outlook para que nunca falle\nconst outlook = $('Outlook Trigger').item.json || {};\nconst clasificacionReal = $('Filtro Email entrante').item.json['classification.email'] || 'Classification pending';\n\nreturn {\n  json: {\n    subject: outlook.subject || '',\n    sender: (outlook.from?.emailAddress?.address || ''),\n    original_body: outlook.bodyPreview || '',\n    classification: clasificacionReal,\n    ai_response: response,\n  },\n};\n"
         },
         "id": "normalizar_correo",
-        "name": "Normalizar Correo",
+        "name": "Normalizar Email",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
@@ -1125,7 +1125,7 @@
           }
         },
         "id": "marcar_como_leido",
-        "name": "Marcar Correo como Leido",
+        "name": "Marcar Email como Leido",
         "type": "n8n-nodes-base.microsoftOutlook",
         "typeVersion": 2,
         "position": [
@@ -1146,38 +1146,38 @@
             "assignments": [
               {
                 "id": "fefceeed-9c02-42d2-9324-92a9535e492c",
-                "name": "asunto",
-                "value": "={{ $json.asunto }}",
+                "name": "subject",
+                "value": "={{ $json.subject }}",
                 "type": "string"
               },
               {
                 "id": "de73e6ce-06d5-4eae-9c0c-3a42d7ad1b41",
-                "name": "remitente",
-                "value": "={{ $json.remitente }}",
+                "name": "sender",
+                "value": "={{ $json.sender }}",
                 "type": "string"
               },
               {
                 "id": "eb62b735-3a8a-4efe-a3dd-9360fe1a3cf2",
-                "name": "cuerpo_original",
-                "value": "={{ $json.cuerpo_original }}",
+                "name": "original_body",
+                "value": "={{ $json.original_body }}",
                 "type": "string"
               },
               {
                 "id": "5388ff4d-f398-406f-8eda-84341ffbf7db",
-                "name": "clasificacion",
-                "value": "={{ $json.clasificacion }}",
+                "name": "classification",
+                "value": "={{ $json.classification }}",
                 "type": "string"
               },
               {
                 "id": "4248c572-d2e3-4fee-bb16-5f1310b933c0",
-                "name": "respuesta_ia",
-                "value": "={{ $json.respuesta_ia }}",
+                "name": "ai_response",
+                "value": "={{ $json.ai_response }}",
                 "type": "string"
               },
               {
                 "id": "d18c7edf-8504-4397-b684-a6a8b9c63e72",
                 "name": "public_form_url",
-                "value": "={{ $('Generar URL Formulario').item.json.public_form_url }}",
+                "value": "={{ $('Generar URL Form').item.json.public_form_url }}",
                 "type": "string"
               }
             ]
@@ -1207,8 +1207,8 @@
                   },
                   "conditions": [
                     {
-                      "leftValue": "={{ $json.message.content.clasificacion }}",
-                      "rightValue": "Cliente solicita proyecto nuevo",
+                      "leftValue": "={{ $json.message.content.classification }}",
+                      "rightValue": "Client solicita project new",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -1230,8 +1230,8 @@
                   "conditions": [
                     {
                       "id": "b65d36d8-9187-4395-b6f2-1619f9766c35",
-                      "leftValue": "={{ $json.message.content.clasificacion }}",
-                      "rightValue": "Cliente solicita modificacion a proyecto existente",
+                      "leftValue": "={{ $json.message.content.classification }}",
+                      "rightValue": "Client solicita modificacion a project existente",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -1252,8 +1252,8 @@
                   "conditions": [
                     {
                       "id": "778be39b-f826-4b4a-a3d4-dbac7f3b977e",
-                      "leftValue": "={{ $json.message.content.clasificacion }}",
-                      "rightValue": "Cliente solicita proyecto nuevo",
+                      "leftValue": "={{ $json.message.content.classification }}",
+                      "rightValue": "Client solicita project new",
                       "operator": {
                         "type": "string",
                         "operation": "notEquals"
@@ -1274,8 +1274,8 @@
                   "conditions": [
                     {
                       "id": "fde93e98-f8eb-4604-b295-e01e14cb289f",
-                      "leftValue": "={{ $json.message.content.clasificacion }}",
-                      "rightValue": "Cliente solicita modificacion a proyecto existente",
+                      "leftValue": "={{ $json.message.content.classification }}",
+                      "rightValue": "Client solicita modificacion a project existente",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -1315,14 +1315,14 @@
             "assignments": [
               {
                 "id": "ff582b50-a25f-4ad1-ad45-3b8cf6046595",
-                "name": "clasificacion.email",
-                "value": "={{ $('Clasificar Correo IA').item.json.message.content.clasificacion }}",
+                "name": "classification.email",
+                "value": "={{ $('Clasificar Email IA').item.json.message.content.classification }}",
                 "type": "string"
               },
               {
                 "id": "89cb6404-0bda-40d1-813f-547495434082",
                 "name": "razon.email",
-                "value": "={{ $('Clasificar Correo IA').item.json.message.content.razon }}",
+                "value": "={{ $('Clasificar Email IA').item.json.message.content.razon }}",
                 "type": "string"
               },
               {
@@ -1339,13 +1339,13 @@
               },
               {
                 "id": "253bf9a5-bb6b-463b-93a8-a0731cc63ae8",
-                "name": "Email.Cliente",
+                "name": "Email.Client",
                 "value": "={{ $('Outlook Trigger').item.json.from.emailAddress.address }}",
                 "type": "string"
               },
               {
                 "id": "93ff1040-e5cd-4220-a095-0f6c0d9a0211",
-                "name": "id.supabase.doa.consultas.entrantes",
+                "name": "id.supabase.doa.requests.entrantes",
                 "value": "={{ $json.id }}",
                 "type": "string"
               }
@@ -1360,17 +1360,17 @@
           304
         ],
         "id": "9ca67f4e-1e4e-4415-a233-bd097ce259c8",
-        "name": "Filtro Correo entrante"
+        "name": "Filtro Email entrante"
       },
       {
         "parameters": {
           "operation": "get",
-          "tableId": "doa_clientes_datos_generales",
+          "tableId": "doa_clients",
           "filters": {
             "conditions": [
               {
                 "keyName": "id",
-                "keyValue": "={{ $('Ver si el cliente es conocido').item.json.cliente_id }}"
+                "keyValue": "={{ $('Ver si el client es conocido').item.json.client_id }}"
               }
             ]
           }
@@ -1396,56 +1396,56 @@
             "assignments": [
               {
                 "id": "7649a396-dc8d-4ef7-8dc0-e30e746e51e8",
-                "name": "nombre.empresa",
-                "value": "={{ $json.nombre }}",
+                "name": "name.empresa",
+                "value": "={{ $json.name }}",
                 "type": "string"
               },
               {
                 "id": "b6f27331-137e-425c-a076-c2a394a8d295",
-                "name": "cif_vat",
-                "value": "={{ $json.cif_vat }}",
+                "name": "vat_tax_id",
+                "value": "={{ $json.vat_tax_id }}",
                 "type": "string"
               },
               {
                 "id": "d1362500-2393-40a6-944b-f25e03494bb2",
-                "name": "pais",
-                "value": "={{ $json.pais }}",
+                "name": "country",
+                "value": "={{ $json.country }}",
                 "type": "string"
               },
               {
                 "id": "f5f8e558-952c-4a14-8aa4-4fdbbb43e232",
-                "name": "ciudad",
-                "value": "={{ $json.ciudad }}",
+                "name": "city",
+                "value": "={{ $json.city }}",
                 "type": "string"
               },
               {
                 "id": "219c9afb-8110-4a75-a1a9-e3f7ed9fee39",
-                "name": "direccion",
-                "value": "={{ $json.direccion }}",
+                "name": "address",
+                "value": "={{ $json.address }}",
                 "type": "string"
               },
               {
                 "id": "30983dbf-0575-49af-85bb-fa01fa83ac34",
-                "name": "telefono",
-                "value": "={{ $json.telefono }}",
+                "name": "phone",
+                "value": "={{ $json.phone }}",
                 "type": "string"
               },
               {
                 "id": "e2bc889c-d6d5-454b-83e3-836941383698",
-                "name": "web",
-                "value": "={{ $json.web }}",
+                "name": "website",
+                "value": "={{ $json.website }}",
                 "type": "string"
               },
               {
                 "id": "bba43d22-72e4-4c18-8f7a-27a4fb66afbb",
-                "name": "dominio_email",
-                "value": "={{ $json.dominio_email }}",
+                "name": "email_domain",
+                "value": "={{ $json.email_domain }}",
                 "type": "string"
               },
               {
                 "id": "f2bd07fb-0c46-4163-a9a9-d70dba2ae683",
-                "name": "tipo_cliente",
-                "value": "={{ $json.tipo_cliente }}",
+                "name": "client_type",
+                "value": "={{ $json.client_type }}",
                 "type": "string"
               }
             ]
@@ -1459,7 +1459,7 @@
           48
         ],
         "id": "b4ee8704-ba84-4003-9786-579136cceb81",
-        "name": "Datos empresa"
+        "name": "Data empresa"
       },
       {
         "parameters": {
@@ -1475,7 +1475,7 @@
                   },
                   "conditions": [
                     {
-                      "leftValue": "={{ $('Ver si el cliente es conocido').item.json.email }}",
+                      "leftValue": "={{ $('Ver si el client es conocido').item.json.email }}",
                       "rightValue": "",
                       "operator": {
                         "type": "string",
@@ -1488,7 +1488,7 @@
                   "combinator": "and"
                 },
                 "renameOutput": true,
-                "outputKey": "Cliente Conocido"
+                "outputKey": "Client Conocido"
               },
               {
                 "conditions": {
@@ -1501,7 +1501,7 @@
                   "conditions": [
                     {
                       "id": "d34d4b84-6999-4d8a-8fd6-4f3fd96ab68f",
-                      "leftValue": "={{ $('Ver si el cliente es conocido').item.json.email }}",
+                      "leftValue": "={{ $('Ver si el client es conocido').item.json.email }}",
                       "rightValue": "",
                       "operator": {
                         "type": "string",
@@ -1513,7 +1513,7 @@
                   "combinator": "and"
                 },
                 "renameOutput": true,
-                "outputKey": "Cliente No Conocido"
+                "outputKey": "Client No Conocido"
               }
             ]
           },
@@ -1530,7 +1530,7 @@
       },
       {
         "parameters": {
-          "tableId": "doa_consultas_entrantes"
+          "tableId": "doa_incoming_requests"
         },
         "type": "n8n-nodes-base.supabase",
         "typeVersion": 1,
@@ -1550,12 +1550,12 @@
       {
         "parameters": {
           "operation": "get",
-          "tableId": "doa_clientes_contactos",
+          "tableId": "doa_client_contacts",
           "filters": {
             "conditions": [
               {
                 "keyName": "email",
-                "keyValue": "={{ $json.Email.Cliente.trim() }}"
+                "keyValue": "={{ $json.Email.Client.trim() }}"
               }
             ]
           }
@@ -1567,7 +1567,7 @@
           304
         ],
         "id": "b20dad45-7a54-430a-b4c8-45b03e4766d9",
-        "name": "Ver si el cliente es conocido",
+        "name": "Ver si el client es conocido",
         "credentials": {
           "supabaseApi": {
             "id": "H1ZHvBDstWZ1K6KS",
@@ -1578,37 +1578,37 @@
       {
         "parameters": {
           "operation": "update",
-          "tableId": "doa_consultas_entrantes",
+          "tableId": "doa_incoming_requests",
           "filters": {
             "conditions": [
               {
                 "keyName": "id",
                 "condition": "eq",
-                "keyValue": "={{ $('Filtro Correo entrante').item.json.id.supabase.doa.consultas.entrantes }}"
+                "keyValue": "={{ $('Filtro Email entrante').item.json.id.supabase.doa.requests.entrantes }}"
               }
             ]
           },
           "fieldsUi": {
             "fieldValues": [
               {
-                "fieldId": "remitente",
+                "fieldId": "sender",
                 "fieldValue": "={{ $json.email }}"
               },
               {
-                "fieldId": "asunto",
-                "fieldValue": "={{ $('Filtro Correo entrante').item.json.subject.email }}"
+                "fieldId": "subject",
+                "fieldValue": "={{ $('Filtro Email entrante').item.json.subject.email }}"
               },
               {
-                "fieldId": "cuerpo_original",
-                "fieldValue": "={{ $('Filtro Correo entrante').item.json.body.email }}"
+                "fieldId": "original_body",
+                "fieldValue": "={{ $('Filtro Email entrante').item.json.body.email }}"
               },
               {
-                "fieldId": "clasificacion",
-                "fieldValue": "={{ $('Filtro Correo entrante').item.json.clasificacion.email }}"
+                "fieldId": "classification",
+                "fieldValue": "={{ $('Filtro Email entrante').item.json.classification.email }}"
               },
               {
-                "fieldId": "estado",
-                "fieldValue": "nuevo"
+                "fieldId": "status",
+                "fieldValue": "new"
               }
             ]
           }
@@ -1635,7 +1635,7 @@
               {
                 "id": "urlgen123",
                 "name": "public_form_url",
-                "value": "={{ 'https://sswebhook.testn8n.com/webhook/doa-form?id=' + $('Filtro Correo entrante').first().json.id.supabase.doa.consultas.entrantes }}",
+                "value": "={{ 'https://sswebhook.testn8n.com/webhook/doa-form?id=' + $('Filtro Email entrante').first().json.id.supabase.doa.requests.entrantes }}",
                 "type": "string"
               }
             ]
@@ -1649,29 +1649,29 @@
           320
         ],
         "id": "generador_url_unica",
-        "name": "Generar URL Formulario"
+        "name": "Generar URL Form"
       },
       {
         "parameters": {
           "operation": "update",
-          "tableId": "doa_consultas_entrantes",
+          "tableId": "doa_incoming_requests",
           "filters": {
             "conditions": [
               {
                 "keyName": "id",
                 "condition": "eq",
-                "keyValue": "={{ $('Filtro Correo entrante').item.json.id.supabase.doa.consultas.entrantes }}"
+                "keyValue": "={{ $('Filtro Email entrante').item.json.id.supabase.doa.requests.entrantes }}"
               }
             ]
           },
           "fieldsUi": {
             "fieldValues": [
               {
-                "fieldId": "respuesta_ia",
-                "fieldValue": "={{ $json.respuesta_ia }}"
+                "fieldId": "ai_response",
+                "fieldValue": "={{ $json.ai_response }}"
               },
               {
-                "fieldId": "url_formulario",
+                "fieldId": "form_url",
                 "fieldValue": "={{ $json.public_form_url }}"
               }
             ]
@@ -1698,14 +1698,14 @@
         "main": [
           [
             {
-              "node": "Clasificar Correo IA",
+              "node": "Clasificar Email IA",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Clasificar Correo IA": {
+      "Clasificar Email IA": {
         "main": [
           [
             {
@@ -1716,18 +1716,18 @@
           ]
         ]
       },
-      "Redactar Respuesta IA": {
+      "Redactar Response IA": {
         "main": [
           [
             {
-              "node": "Normalizar Correo",
+              "node": "Normalizar Email",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Normalizar Correo": {
+      "Normalizar Email": {
         "main": [
           [
             {
@@ -1780,11 +1780,11 @@
           ]
         ]
       },
-      "Filtro Correo entrante": {
+      "Filtro Email entrante": {
         "main": [
           [
             {
-              "node": "Ver si el cliente es conocido",
+              "node": "Ver si el client es conocido",
               "type": "main",
               "index": 0
             }
@@ -1795,18 +1795,18 @@
         "main": [
           [
             {
-              "node": "Datos empresa",
+              "node": "Data empresa",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Datos empresa": {
+      "Data empresa": {
         "main": [
           [
             {
-              "node": "Generar URL Formulario",
+              "node": "Generar URL Form",
               "type": "main",
               "index": 0
             }
@@ -1824,7 +1824,7 @@
           ],
           [
             {
-              "node": "Generar URL Formulario",
+              "node": "Generar URL Form",
               "type": "main",
               "index": 0
             }
@@ -1835,14 +1835,14 @@
         "main": [
           [
             {
-              "node": "Filtro Correo entrante",
+              "node": "Filtro Email entrante",
               "type": "main",
               "index": 0
             }
           ]
         ]
       },
-      "Ver si el cliente es conocido": {
+      "Ver si el client es conocido": {
         "main": [
           [
             {
@@ -1864,11 +1864,11 @@
           ]
         ]
       },
-      "Generar URL Formulario": {
+      "Generar URL Form": {
         "main": [
           [
             {
-              "node": "Redactar Respuesta IA",
+              "node": "Redactar Response IA",
               "type": "main",
               "index": 0
             }
@@ -1879,7 +1879,7 @@
         "main": [
           [
             {
-              "node": "Marcar Correo como Leido",
+              "node": "Marcar Email como Leido",
               "type": "main",
               "index": 0
             }

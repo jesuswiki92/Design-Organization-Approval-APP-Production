@@ -1,5 +1,5 @@
 import {
-  CONSULTA_ESTADOS,
+  INCOMING_REQUEST_STATUSES,
   QUOTATION_BOARD_STATES,
   type QuotationBoardState,
 } from '@/lib/workflow-states'
@@ -17,31 +17,31 @@ import {
 } from './incoming-queries'
 
 function isArchivedIncomingState(state: string | null | undefined) {
-  return state?.trim().toLowerCase() === CONSULTA_ESTADOS.ARCHIVADO
+  return state?.trim().toLowerCase() === INCOMING_REQUEST_STATUSES.ARCHIVED
 }
 
 /**
- * Mapea el estado guardado en la consulta entrante a la columna del tablero.
+ * Mapea el status guardado en la request entrante a la columna del tablero.
  *
- * Si el estado ya es un codigo de columna del tablero (ej: 'definir_alcance'),
- * se devuelve tal cual. Si es un estado legacy de consulta entrante (ej: 'nuevo'),
+ * Si el status ya es un codigo de columna del tablero (ej: 'define_scope'),
+ * se devuelve tal cual. Si es un status legacy de request entrante (ej: 'new'),
  * se convierte a su columna equivalente.
  */
 function mapIncomingStateToQuotationLane(state: string): QuotationBoardState {
-  // Si ya es un estado del tablero, usarlo directamente
+  // Si ya es un status del tablero, usarlo directamente
   if (Object.values(QUOTATION_BOARD_STATES).includes(state as QuotationBoardState)) {
     return state as QuotationBoardState
   }
 
-  // Mapeo de estados legacy de consultas entrantes
+  // Mapeo de statuses legacy de requests entrantes
   switch (state) {
-    case CONSULTA_ESTADOS.ESPERANDO_FORMULARIO:
-      return QUOTATION_BOARD_STATES.FORMULARIO_ENVIADO
-    case CONSULTA_ESTADOS.FORMULARIO_RECIBIDO:
-      return QUOTATION_BOARD_STATES.FORMULARIO_RECIBIDO
-    case CONSULTA_ESTADOS.NUEVO:
+    case INCOMING_REQUEST_STATUSES.AWAITING_FORM:
+      return QUOTATION_BOARD_STATES.FORM_SENT
+    case INCOMING_REQUEST_STATUSES.FORM_RECEIVED:
+      return QUOTATION_BOARD_STATES.FORM_RECEIVED
+    case INCOMING_REQUEST_STATUSES.NEW:
     default:
-      return QUOTATION_BOARD_STATES.ENTRADA_RECIBIDA
+      return QUOTATION_BOARD_STATES.REQUEST_RECEIVED
   }
 }
 
@@ -143,18 +143,18 @@ const ACCENTS: QuotationLaneAccent[] = [
 ]
 
 const EMPTY_QUOTATION_CARDS: Record<QuotationBoardState, QuotationCard[]> = {
-  entrada_recibida: [],
-  formulario_enviado: [],
-  formulario_recibido: [],
-  definir_alcance: [],
-  esperando_respuesta_cliente: [],
-  alcance_definido: [],
-  oferta_en_revision: [],
-  oferta_enviada: [],
-  oferta_aceptada: [],
-  oferta_rechazada: [],
-  revision_final: [],
-  proyecto_abierto: [],
+  request_received: [],
+  form_sent: [],
+  form_received: [],
+  define_scope: [],
+  awaiting_client_response: [],
+  scope_defined: [],
+  quote_in_review: [],
+  quote_sent: [],
+  quote_accepted: [],
+  quote_rejected: [],
+  final_review: [],
+  project_opened: [],
 }
 
 function createId(prefix: string) {
@@ -169,21 +169,21 @@ function toIncomingQuotationCard(
   query: IncomingQuery,
   rows: WorkflowStateConfigRow[],
 ): QuotationCard {
-  const statusMeta = getResolvedIncomingQueryStatusMeta(query.estado, rows)
+  const statusMeta = getResolvedIncomingQueryStatusMeta(query.status, rows)
 
   return {
     id: query.id,
     code: query.codigo,
-    title: query.asunto,
+    title: query.subject,
     note: query.resumen,
-    owner: query.remitente,
+    owner: query.sender,
     due: query.recibidoEn,
     tag: statusMeta.shortLabel,
-    customer: query.remitente,
-    aircraft: 'Consulta entrante',
+    customer: query.sender,
+    aircraft: 'Request entrante',
     amount: 'Sin importe',
     requestDate: query.recibidoEn,
-    channel: query.clasificacion ?? 'Email',
+    channel: query.classification ?? 'Email',
     priority: statusMeta.label,
     nextStep: 'Abrir detalle',
     href: `/quotations/incoming/${query.id}`,
@@ -223,7 +223,7 @@ export function makeCustomQuotationLane(title: string, index: number): Quotation
     id: slug ? createId(slug) : createId('quotation-state'),
     state: title,
     title,
-    description: 'Estado creado manualmente desde la UI local',
+    description: 'Status creado manualmente desde la UI local',
     isCustom: true,
     accent,
     cards: [],
@@ -236,16 +236,16 @@ export function defaultQuotationLanes(
 ) {
   const quotationRows = resolveWorkflowStateRows(WORKFLOW_STATE_SCOPES.QUOTATION_BOARD, rows)
 
-  // Convertir consultas entrantes a tarjetas y mapearlas a columnas del tablero
+  // Convertir requests entrantes a tarjetas y mapearlas a columnas del tablero
   const incomingCards = incomingQueries
-    .filter((query) => !isArchivedIncomingState(query.estado))
+    .filter((query) => !isArchivedIncomingState(query.status))
     .map((query) => toIncomingQuotationCard(query, rows))
   const cardsByLane = new Map<string, QuotationCard[]>()
 
   for (const card of incomingCards) {
     const laneId = card.stateCode
       ? mapIncomingStateToQuotationLane(card.stateCode)
-      : 'entrada_recibida'
+      : 'request_received'
 
     const existing = cardsByLane.get(laneId)
     if (existing) {
@@ -255,7 +255,7 @@ export function defaultQuotationLanes(
     }
   }
 
-  // Solo columnas del tablero de cotizaciones (pipeline unificado de 4 estados)
+  // Solo columnas del tablero de cotizaciones (pipeline unificado de 4 statuses)
   return quotationRows.map((row) => {
     const lane = makeQuotationLaneFromState(row.state_code as QuotationBoardState, rows)
     const mappedCards = cardsByLane.get(row.state_code) ?? []
@@ -302,7 +302,7 @@ function normalizeStoredLane(value: unknown, index: number): QuotationLane | nul
     description:
       typeof candidate.description === 'string'
         ? candidate.description
-        : 'Estado creado manualmente desde la UI local',
+        : 'Status creado manualmente desde la UI local',
     state: typeof candidate.state === 'string' ? candidate.state : candidate.title,
     isCustom:
       typeof candidate.isCustom === 'boolean'

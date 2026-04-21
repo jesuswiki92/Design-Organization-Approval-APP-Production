@@ -37,7 +37,7 @@ function parseSseChunk(chunk: string) {
 }
 
 function buildWelcomeMessage(model: PreliminaryScopeModel) {
-  return `Chat contextual para esta fase de alcance. Contexto activo: ${model.context.clientLabel}, ${model.context.aircraftLabel}, precedente base ${model.context.chosenReferenceLabel}.`
+  return `Chat contextual para esta fase de alcance. Contexto is_active: ${model.context.clientLabel}, ${model.context.aircraftLabel}, precedente base ${model.context.chosenReferenceLabel}.`
 }
 
 export function PreliminaryScopeChatPanel({
@@ -94,7 +94,7 @@ export function PreliminaryScopeChatPanel({
           role: message.role,
         }))
 
-      const response = await fetch(`/api/consultas/${consultaId}/preliminary-scope/chat`, {
+      const response = await fetch(`/api/incoming-requests/${consultaId}/preliminary-scope/chat`, {
         body: JSON.stringify({
           history,
           question: trimmedQuestion,
@@ -108,7 +108,7 @@ export function PreliminaryScopeChatPanel({
 
       if (!response.ok || !response.body) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null
-        throw new Error(payload?.error || 'No se pudo obtener respuesta contextual.')
+        throw new Error(payload?.error || 'No se pudo obtener response contextual.')
       }
 
       const reader = response.body.getReader()
@@ -181,7 +181,7 @@ export function PreliminaryScopeChatPanel({
           entry.id === assistantMessage.id
             ? {
                 ...entry,
-                content: entry.content || 'No he podido completar la respuesta en este momento.',
+                content: entry.content || 'No he podido completar la response en este momento.',
               }
             : entry,
         ),
@@ -207,7 +207,7 @@ export function PreliminaryScopeChatPanel({
               Chat contextual para esta quotation
             </h3>
             <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
-              Usa datos de la consulta actual, la lectura TCDS y el precedente base ya seleccionado.
+              Usa data de la request actual, la lectura TCDS y el precedente base ya seleccionado.
             </p>
           </div>
         </div>
@@ -224,7 +224,7 @@ export function PreliminaryScopeChatPanel({
         <div className="mt-4 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
           <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
             <Sparkles className="h-3.5 w-3.5" />
-            Contexto activo
+            Contexto is_active
           </div>
           <ul className="mt-3 space-y-2 text-sm leading-6 text-[color:var(--ink-3)]">
             <li>{model.context.clientLabel}</li>
@@ -239,8 +239,8 @@ export function PreliminaryScopeChatPanel({
         {messages.length === 1 && (
           <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-4">
             <p className="text-sm leading-6 text-[color:var(--ink-3)]">
-              Pregunta por deltas contra el precedente, datos a pedir al cliente, disciplinas
-              impactadas o framing interno de certificacion.
+              Pregunta por deltas contra el precedente, data a pedir al client, disciplinas
+              impactadas o framing internal de certificacion.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {model.suggestedQuestions.map((question) => (
@@ -287,7 +287,7 @@ export function PreliminaryScopeChatPanel({
                     isAssistant ? 'text-[color:var(--ink-3)]' : 'text-sky-100'
                   }`}
                 >
-                  {isAssistant ? 'Asistente' : 'Usuario'}
+                  {isAssistant ? 'Asistente' : 'User'}
                 </div>
                 <div className="mt-2 whitespace-pre-wrap text-sm leading-7">{message.content}</div>
 
@@ -323,13 +323,13 @@ export function PreliminaryScopeChatPanel({
                 void sendQuestion(input)
               }
             }}
-            placeholder="Pregunta por deltas, ruta de certificacion, faltantes o alcance propuesto..."
+            placeholder="Pregunta por deltas, path de certificacion, faltantes o alcance propuesto..."
             className="min-h-[110px] resize-none border-0 bg-transparent px-1 text-sm leading-6 text-[color:var(--ink)] shadow-none focus-visible:ring-0"
           />
 
           <div className="mt-3 flex items-center justify-between gap-3">
             <p className="text-xs text-[color:var(--ink-3)]">
-              Contexto servidor: consulta actual + precedente base + lectura TCDS.
+              Contexto servidor: request actual + precedente base + lectura TCDS.
             </p>
             <Button
               type="button"
@@ -341,7 +341,7 @@ export function PreliminaryScopeChatPanel({
               }}
             >
               <Send className="mr-2 h-4 w-4" />
-              Enviar
+              Send
             </Button>
           </div>
         </div>

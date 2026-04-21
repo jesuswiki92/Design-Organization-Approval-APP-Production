@@ -3,25 +3,25 @@
  * PAGINA DE DETALLE DE CONSULTA ENTRANTE
  * ============================================================================
  *
- * Renderiza vistas diferentes segun el estado (data.estado) de la consulta.
- * Misma URL /quotations/incoming/[id], diferente layout por estado.
+ * Renderiza vistas diferentes segun el status (data.status) de la request.
+ * Misma URL /quotations/incoming/[id], diferente layout por status.
  *
- * VIEW 1 — estado "nuevo":
- *   Solo hilo de emails + compositor de respuesta. Limpio, enfocado en el email.
+ * VIEW 1 — status "new":
+ *   Solo hilo de emails + compositor de response. Limpio, enfocado en el email.
  *
- * VIEW 2 — estado "esperando_formulario":
- *   Banner de espera (amber) + resumen de cliente si se conoce + hilo de emails.
+ * VIEW 2 — status "awaiting_form":
+ *   Banner de espera (amber) + resumen de client si se conoce + hilo de emails.
  *
- * VIEW 3 — estado "formulario_recibido" (y cualquier otro estado como default):
- *   1. Resumen de revision
+ * VIEW 3 — status "form_received" (y cualquier other status como default):
+ *   1. Resumen de review
  *   2. Comunicaciones — hilo de emails (colapsable)
- *   3. Datos del cliente (colapsable)
- *   4. Datos de aeronave / TCDS (colapsable)
- *   5. Datos tecnicos del proyecto (colapsable)
+ *   3. Data del client (colapsable)
+ *   4. Data de aircraft / TCDS (colapsable)
+ *   5. Data tecnicos del project (colapsable)
  *   6. Definir alcance preliminar
  *   7. Definir documentacion (colapsable)
  *   8. Oferta / Quotation (colapsable)
- *   9. Panel de decision (crear proyecto / solicitar info / rechazar)
+ *   9. Panel de decision (crear project / solicitar info / rechazar)
  *
  * La barra lateral izquierda de navegacion NO se toca.
  * ============================================================================
@@ -32,15 +32,15 @@ import { AlertTriangle, ArrowLeft, Building2, Calendar, CheckCircle2, ClipboardL
 
 import { TopBar } from '@/components/layout/TopBar'
 // import { buildPreliminaryScopeModel } from '@/lib/quotations/build-preliminary-scope-model'
-import { ensureConsultaFolder } from '@/lib/quotations/ensure-consulta-folder'
-import { syncConsultaEmails } from '@/lib/quotations/sync-consulta-emails'
+import { ensureConsultaFolder } from '@/lib/quotations/ensure-request-folder'
+import { syncConsultaEmails } from '@/lib/quotations/sync-request-emails'
 import { createClient } from '@/lib/supabase/server'
 import { escapeIlikePattern, escapeOrFilterLiteral } from '@/lib/supabase/escape-or-filter'
-import { CONSULTA_ESTADOS, QUOTATION_BOARD_STATES } from '@/lib/workflow-states'
+import { INCOMING_REQUEST_STATUSES, QUOTATION_BOARD_STATES } from '@/lib/workflow-states'
 import {
   extractPhase4BaselineFromSummary,
 } from '@/lib/project-summary-phase4'
-import type { Cliente, ClienteContacto, ConsultaEntrante, DoaEmail } from '@/types/database'
+import type { Client, ClientContact, IncomingRequest, DoaEmail } from '@/types/database'
 
 import { ClientDetailPanel } from '../../../clients/ClientDetailPanel'
 import {
@@ -64,31 +64,31 @@ import { ReferenceProjectButton } from './ReferenceProjectButton'
 import { TcdsStatusBanner } from './TcdsStatusBanner'
 
 // ---------------------------------------------------------------------------
-// Sub-componente: Panel de cliente desconocido
+// Sub-componente: Panel de client desconocido
 // ---------------------------------------------------------------------------
 
 function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
   return (
     <section className="flex h-full min-h-0 flex-col rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
       <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-4">
-        <h2 className="text-base font-semibold text-[color:var(--ink)]">Detalle del cliente</h2>
+        <h2 className="text-base font-semibold text-[color:var(--ink)]">Detalle del client</h2>
       </div>
       <div className="flex flex-1 flex-col gap-4 px-5 py-4">
         <div className="rounded-[20px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-5">
           <div className="flex items-start gap-3">
             <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             <div>
-              <p className="text-sm font-semibold text-[color:var(--ink)]">Cliente desconocido</p>
+              <p className="text-sm font-semibold text-[color:var(--ink)]">Client desconocido</p>
               <p className="mt-2 text-sm leading-6 text-[color:var(--ink-2)]">
-                Esta consulta todavia no se ha podido vincular con un cliente registrado
-                en la base de datos.
+                Esta request todavia no se ha podido vincular con un client registrado
+                en la base de data.
               </p>
             </div>
           </div>
         </div>
         <div className="rounded-[18px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
-            Email remitente
+            Email sender
           </p>
           <div className="mt-3 flex items-start gap-3">
             <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--ink-3)]" />
@@ -104,10 +104,10 @@ function UnknownClientPanel({ senderEmail }: { senderEmail: string | null }) {
 
 type ClientProjectHistoryItem = {
   id: string
-  numero_proyecto: string | null
-  titulo: string | null
-  descripcion: string | null
-  estado: string | null
+  project_number: string | null
+  title: string | null
+  description: string | null
+  status: string | null
   created_at: string | null
   source: 'active' | 'historic'
 }
@@ -120,7 +120,7 @@ function formatProjectYear(createdAt: string | null) {
 function getProjectHistoryHref(project: ClientProjectHistoryItem) {
   return project.source === 'active'
     ? `/engineering/projects/${project.id}`
-    : `/proyectos-historico/${project.id}`
+    : `/historical-projects/${project.id}`
 }
 
 function ProjectHistoryGroup({
@@ -164,19 +164,19 @@ function ProjectHistoryGroup({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
-                {project.numero_proyecto && (
+                {project.project_number && (
                   <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
-                    {project.numero_proyecto}
+                    {project.project_number}
                   </span>
                 )}
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${sourceBadgeClass}`}
                 >
-                  {source === 'active' ? 'Activo' : 'Historico'}
+                  {source === 'active' ? 'Active' : 'Historical'}
                 </span>
               </div>
               <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">
-                {project.titulo ?? '—'}
+                {project.title ?? '—'}
               </p>
               {project.created_at && (
                 <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
@@ -185,18 +185,18 @@ function ProjectHistoryGroup({
               )}
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {project.estado && (
+              {project.status && (
                 <span
                   className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusBadgeClass}`}
                 >
-                  {project.estado}
+                  {project.status}
                 </span>
               )}
               <Link
                 href={getProjectHistoryHref(project)}
                 className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
-                title={source === 'active' ? 'Abrir proyecto activo' : 'Abrir ficha historica'}
-                aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                title={source === 'active' ? 'Abrir project is_active' : 'Open record historica'}
+                aria-label={`Open record de ${project.project_number}`}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Link>
@@ -217,7 +217,7 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
       <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-3">
         <div className="flex items-center gap-2">
           <FolderOpen className="h-4 w-4 text-[color:var(--ink-2)]" />
-          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Client projects</h2>
           <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
             {projects.length}
           </span>
@@ -226,17 +226,17 @@ function ClientProjectsPanel({ projects }: { projects: ClientProjectHistoryItem[
       <details className="group">
         <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
           <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-          Ver proyectos
+          View projects
         </summary>
         <div className="space-y-4 px-5 pb-4">
           {projects.length > 0 ? (
             <>
               <ProjectHistoryGroup title="Activos" source="active" projects={activeProjects} />
-              <ProjectHistoryGroup title="Historico" source="historic" projects={historicProjects} />
+              <ProjectHistoryGroup title="Historical" source="historic" projects={historicProjects} />
             </>
           ) : (
             <p className="text-xs italic text-[color:var(--ink-2)]">
-              No se encontraron proyectos para este cliente.
+              No projects found for this client.
             </p>
           )}
         </div>
@@ -263,10 +263,10 @@ function ReviewSummarySection({
   scopeSummary: string
 }) {
   const cards: { label: string; value: string; accent: string }[] = [
-    { label: 'Cliente', value: clientLabel, accent: 'var(--cobalt)' },
-    { label: 'Aeronave', value: aircraftLabel, accent: 'var(--terracotta)' },
+    { label: 'Client', value: clientLabel, accent: 'var(--cobalt)' },
+    { label: 'Aircraft', value: aircraftLabel, accent: 'var(--terracotta)' },
     { label: 'Tipo de trabajo', value: workTypeLabel, accent: 'var(--parchment-gold)' },
-    { label: 'Plazo y prioridad', value: scheduleLabel, accent: 'var(--umber)' },
+    { label: 'Plazo y priority', value: scheduleLabel, accent: 'var(--umber)' },
     { label: 'Soporte disponible', value: documentLabel, accent: 'var(--ok)' },
     { label: 'Referencias', value: referencesLabel, accent: 'var(--slate-warm)' },
   ]
@@ -276,10 +276,10 @@ function ReviewSummarySection({
       <div className="border-b border-[color:var(--ink-4)] px-5 py-3">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-[color:var(--ink-3)]" />
-          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Resumen de revision</h2>
+          <h2 className="text-sm font-semibold text-[color:var(--ink)]">Resumen de review</h2>
         </div>
         <p className="mt-1 text-xs text-[color:var(--ink-2)]">
-          Vista rapida de los datos clave para decidir esta consulta en fase 3.
+          Vista rapida de los data clave para decidir esta request en fase 3.
         </p>
       </div>
       <div className="space-y-4 px-5 py-4">
@@ -317,7 +317,7 @@ function ReviewSummarySection({
             className="font-[family-name:var(--font-mono)] text-[10.5px] font-semibold uppercase tracking-[0.14em]"
             style={{ color: 'var(--cobalt)' }}
           >
-            Alcance enviado
+            Alcance sent
           </p>
           <p className="mt-1 text-sm leading-6 text-[color:var(--ink-2)]">{scopeSummary}</p>
         </div>
@@ -327,7 +327,7 @@ function ReviewSummarySection({
 }
 
 // ---------------------------------------------------------------------------
-// Componente principal de la pagina
+// Componente primary de la page
 // ---------------------------------------------------------------------------
 
 export default async function IncomingQuotationDetailPage({
@@ -338,9 +338,9 @@ export default async function IncomingQuotationDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // --- Cargar la consulta ---
+  // --- Cargar la request ---
   const { data, error } = await supabase
-    .from('doa_consultas_entrantes')
+    .from('doa_incoming_requests')
     .select('*')
     .eq('id', id)
     .maybeSingle()
@@ -349,8 +349,8 @@ export default async function IncomingQuotationDetailPage({
     return (
       <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
         <TopBar
-          title="Detalle de consulta"
-          subtitle="Entrada comercial previa a quotation"
+          title="Detalle de request"
+          subtitle="Entrada commercial previa a quotation"
         />
         <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[color:var(--paper)] px-5 pb-8 pt-5">
           <Link
@@ -363,10 +363,10 @@ export default async function IncomingQuotationDetailPage({
           <section className="rounded-[34px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 shadow-[0_24px_50px_rgba(74,60,36,0.08)]">
             <div className="space-y-2">
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
-                Consulta no encontrada
+                Request no encontrada
               </h1>
               <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-2)]">
-                {error ? `Error: ${error.message}` : 'No se encontro una consulta con este identificador.'}
+                {error ? `Error: ${error.message}` : 'No se encontro una request con este identificador.'}
               </p>
             </div>
           </section>
@@ -375,21 +375,21 @@ export default async function IncomingQuotationDetailPage({
     )
   }
 
-  // --- Crear carpeta de simulacion y sincronizar emails (side-effect, fire-and-forget) ---
-  if (data.numero_entrada) {
-    ensureConsultaFolder(data.numero_entrada)
-      .then(() => syncConsultaEmails(data.numero_entrada!, id))
+  // --- Crear folder de simulacion y sincronizar emails (side-effect, fire-and-forget) ---
+  if (data.entry_number) {
+    ensureConsultaFolder(data.entry_number)
+      .then(() => syncConsultaEmails(data.entry_number!, id))
       .catch((err) => {
-        console.error('Error asegurando carpeta / sincronizando emails:', err)
+        console.error('Error asegurando folder / sincronizando emails:', err)
       })
   }
 
-  // --- Cargar emails de doa_emails para esta consulta ---
+  // --- Cargar emails de doa_emails para esta request ---
   const { data: emailRows, error: emailError } = await supabase
     .from('doa_emails')
     .select('*')
-    .eq('consulta_id', id)
-    .order('fecha', { ascending: true })
+    .eq('incoming_request_id', id)
+    .order('date', { ascending: true })
 
   if (emailError) {
     console.error('Error cargando emails de doa_emails:', emailError)
@@ -397,59 +397,59 @@ export default async function IncomingQuotationDetailPage({
 
   const emails: DoaEmail[] = (emailRows ?? []) as DoaEmail[]
 
-  // --- Cargar clientes y contactos ---
+  // --- Cargar clients y contacts ---
   const [{ data: clientRows, error: clientError }, { data: contactRows, error: contactError }] =
     await Promise.all([
       supabase
-        .from('doa_clientes_datos_generales')
+        .from('doa_clients')
         .select('*')
-        .order('nombre', { ascending: true }),
+        .order('name', { ascending: true }),
       supabase
-        .from('doa_clientes_contactos')
+        .from('doa_client_contacts')
         .select('*')
-        .order('es_principal', { ascending: false })
-        .order('activo', { ascending: false })
+        .order('is_primary', { ascending: false })
+        .order('active', { ascending: false })
         .order('created_at', { ascending: true }),
     ])
 
   if (clientError) {
-    console.error('Error cargando clientes para la consulta entrante:', clientError)
+    console.error('Error cargando clients para la request entrante:', clientError)
   }
   if (contactError) {
-    console.error('Error cargando contactos para la consulta entrante:', contactError)
+    console.error('Error cargando contacts para la request entrante:', contactError)
   }
 
-  // --- Emparejamiento de cliente ---
-  const clients: Cliente[] = clientRows ?? []
-  const contacts: ClienteContacto[] = contactRows ?? []
+  // --- Emparejamiento de client ---
+  const clients: Client[] = clientRows ?? []
+  const contacts: ClientContact[] = contactRows ?? []
   const clientLookup = buildIncomingClientLookup(clients, contacts)
-  const query = toIncomingQuery(data as ConsultaEntrante, clientLookup)
-  const matchedClient = resolveIncomingClientRecord(query.remitente, clients, contacts)
+  const query = toIncomingQuery(data as IncomingRequest, clientLookup)
+  const matchedClient = resolveIncomingClientRecord(query.sender, clients, contacts)
 
-  // --- Verificar TCDS en doa_aeronaves ---
+  // --- Verificar TCDS en doa_aircraft ---
   let aeronaveVariants: {
     tcds_code: string
     tcds_code_short: string
     tcds_issue: string
     tcds_date: string
-    fabricante: string
-    pais: string
-    tipo: string
-    modelo: string
-    motor: string
+    manufacturer: string
+    country: string
+    type: string
+    model: string
+    engine: string
     mtow_kg: number | null
     mlw_kg: number | null
-    regulacion_base: string
-    categoria: string
-    msn_elegibles: string
-    notas: string
+    base_regulation: string
+    category: string
+    eligible_msns: string
+    notes: string
   }[] = []
   let tcdsFallbackUsed = false
 
   if (data.tcds_number) {
     const { data: aeronaveRows } = await supabase
-      .from('doa_aeronaves')
-      .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, fabricante, pais, tipo, modelo, motor, mtow_kg, mlw_kg, regulacion_base, categoria, msn_elegibles, notas')
+      .from('doa_aircraft')
+      .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, manufacturer, country, type, model, engine, mtow_kg, mlw_kg, base_regulation, category, eligible_msns, notes')
       .eq('tcds_code', data.tcds_number)
 
     if (aeronaveRows && aeronaveRows.length > 0) {
@@ -460,13 +460,13 @@ export default async function IncomingQuotationDetailPage({
   if (aeronaveVariants.length === 0 && (data.aircraft_model || data.aircraft_manufacturer)) {
     tcdsFallbackUsed = true
     let fallbackQuery = supabase
-      .from('doa_aeronaves')
-      .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, fabricante, pais, tipo, modelo, motor, mtow_kg, mlw_kg, regulacion_base, categoria, msn_elegibles, notas')
+      .from('doa_aircraft')
+      .select('tcds_code, tcds_code_short, tcds_issue, tcds_date, manufacturer, country, type, model, engine, mtow_kg, mlw_kg, base_regulation, category, eligible_msns, notes')
 
     if (data.aircraft_model) {
-      fallbackQuery = fallbackQuery.ilike('modelo', `%${data.aircraft_model}%`)
+      fallbackQuery = fallbackQuery.ilike('model', `%${data.aircraft_model}%`)
     } else if (data.aircraft_manufacturer) {
-      fallbackQuery = fallbackQuery.ilike('fabricante', `%${data.aircraft_manufacturer}%`)
+      fallbackQuery = fallbackQuery.ilike('manufacturer', `%${data.aircraft_manufacturer}%`)
     }
 
     const { data: fallbackRows } = await fallbackQuery
@@ -475,36 +475,36 @@ export default async function IncomingQuotationDetailPage({
     }
   }
 
-  // --- Cargar historial de proyectos del cliente ---
+  // --- Cargar historial de projects del client ---
   let projectHistory: ClientProjectHistoryItem[] = []
   if (matchedClient) {
-    // Defense in depth: matchedClient.id is a UUID and matchedClient.nombre
+    // Defense in depth: matchedClient.id is a UUID and matchedClient.name
     // comes from our DB, but the values land inside a PostgREST .or() clause
     // string, so any stray `,`, `(`, `)`, `*`, `%`, `_` would alter the
     // filter. Escape both before interpolation.
     const safeClientId = escapeOrFilterLiteral(matchedClient.id)
-    const safeClientNombre = escapeOrFilterLiteral(matchedClient.nombre ?? '')
+    const safeClientNombre = escapeOrFilterLiteral(matchedClient.name ?? '')
     const [
       { data: activeRows, error: activeError },
       { data: historyRows, error: historyError },
     ] = await Promise.all([
       supabase
-        .from('doa_proyectos')
-        .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
-        .or(`client_id.eq.${safeClientId},cliente_nombre.ilike.${safeClientNombre}`)
+        .from('doa_projects')
+        .select('id, project_number, title, description, status, created_at')
+        .or(`client_id.eq.${safeClientId},client_name.ilike.${safeClientNombre}`)
         .order('created_at', { ascending: false }),
       supabase
-        .from('doa_proyectos_historico')
-        .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
+        .from('doa_historical_projects')
+        .select('id, project_number, title, description, status, created_at')
         .eq('client_id', matchedClient.id)
         .order('created_at', { ascending: false }),
     ])
 
     if (activeError) {
-      console.error('Error cargando proyectos activos del cliente:', activeError)
+      console.error('Error cargando projects activos del client:', activeError)
     }
     if (historyError) {
-      console.error('Error cargando historial de proyectos del cliente:', historyError)
+      console.error('Error cargando historial de projects del client:', historyError)
     }
 
     const activeProjects = (activeRows ?? []).map((p) => ({ ...p, source: 'active' as const }))
@@ -513,7 +513,7 @@ export default async function IncomingQuotationDetailPage({
     const seen = new Set<string>()
     const combined: typeof projectHistory = []
     for (const p of [...activeProjects, ...historicProjects]) {
-      const key = p.numero_proyecto ?? p.id
+      const key = p.project_number ?? p.id
       if (!seen.has(key)) {
         seen.add(key)
         combined.push(p)
@@ -529,40 +529,40 @@ export default async function IncomingQuotationDetailPage({
     projectHistory = combined
   }
 
-  // --- Proyectos marcados como referencia ---
+  // --- Projects marcados como referencia ---
   const currentRefs: string[] = Array.isArray(data.proyectos_referencia)
     ? data.proyectos_referencia
     : []
 
-  // Cargar datos completos de los proyectos referencia para la comparacion
+  // Cargar data completos de los projects referencia para la comparacion
   type RefProject = {
     id: string
     baseline: ReturnType<typeof extractPhase4BaselineFromSummary>
-    numero_proyecto: string | null
-    titulo: string | null
-    descripcion: string | null
-    estado: string | null
-    aeronave: string | null
+    project_number: string | null
+    title: string | null
+    description: string | null
+    status: string | null
+    aircraft: string | null
     msn: string | null
-    cliente_nombre: string | null
-    anio: number | null
+    client_name: string | null
+    year: number | null
     created_at: string | null
     summary_md: string | null
   }
   let referenceProjects: RefProject[] = []
   if (currentRefs.length > 0) {
     const { data: refRows } = await supabase
-      .from('doa_proyectos_historico')
-      .select('id, numero_proyecto, titulo, descripcion, estado, aeronave, msn, cliente_nombre, anio, created_at, summary_md')
+      .from('doa_historical_projects')
+      .select('id, project_number, title, description, status, aircraft, msn, client_name, year, created_at, summary_md')
       .in('id', currentRefs)
     const refOrder = new Map(currentRefs.map((refId, index) => [refId, index]))
     referenceProjects =
       (refRows?.map((project) => ({
         ...project,
         baseline: extractPhase4BaselineFromSummary(project.summary_md, {
-          aircraftLabel: project.aeronave,
-          projectCode: project.numero_proyecto,
-          projectTitle: project.titulo,
+          aircraftLabel: project.aircraft,
+          projectCode: project.project_number,
+          projectTitle: project.title,
         }),
       })) ?? []).sort(
         (left, right) =>
@@ -573,7 +573,7 @@ export default async function IncomingQuotationDetailPage({
 
   // --- Plantillas de compliance (desde BD) y pre-seleccion por referencia ---
   const { data: templateRows } = await supabase
-    .from('doa_plantillas_compliance')
+    .from('doa_compliance_templates')
     .select('code, name, category')
     .eq('active', true)
     .order('category')
@@ -585,13 +585,13 @@ export default async function IncomingQuotationDetailPage({
     category: r.category as ComplianceTemplate['category'],
   }))
 
-  // Documentos del proyecto referencia → familias → codigos pre-seleccionados
+  // Documents del project referencia → familias → codigos pre-seleccionados
   let preselectedComplianceCodes: string[] = []
   if (currentRefs.length > 0) {
     const { data: refDocRows } = await supabase
-      .from('doa_proyectos_historico_documentos')
+      .from('doa_historical_project_documents')
       .select('familia_documental')
-      .in('proyecto_id', currentRefs)
+      .in('project_id', currentRefs)
 
     if (refDocRows && refDocRows.length > 0) {
       const familias = [...new Set(refDocRows.map((d) => d.familia_documental).filter(Boolean))]
@@ -607,11 +607,11 @@ export default async function IncomingQuotationDetailPage({
     })
     .map((t) => t.code)
 
-  // --- Buscar proyectos similares basados en datos tecnicos ---
-  // Solo busca en doa_proyectos_historico (cerrados). Filtra palabras genericas
+  // --- Buscar projects similares basados en data tecnicos ---
+  // Solo busca en doa_historical_projects (cerrados). Filtra palabras genericas
   // del dominio aeronautico para buscar por terminos especificos (ej: "rack",
   // "antenna", "STC") y no por genericos (ej: "installation", "modification").
-  let similarProjects: { id: string; numero_proyecto: string | null; titulo: string | null; descripcion: string | null; estado: string | null; created_at: string | null; source: 'active' | 'historic'; matchedKeywords: string[] }[] = []
+  let similarProjects: { id: string; project_number: string | null; title: string | null; description: string | null; status: string | null; created_at: string | null; source: 'active' | 'historic'; matchedKeywords: string[] }[] = []
   const hasTechnicalData = !!(data.modification_summary || data.subject)
   const senderEmail =
     query.clientIdentity.kind === 'unknown'
@@ -621,7 +621,7 @@ export default async function IncomingQuotationDetailPage({
   const historicProjectCount = projectHistory.filter((project) => project.source === 'historic').length
   const matchedAircraftVariant = data.aircraft_model
     ? aeronaveVariants.find(
-        (variant) => variant.modelo.toLowerCase() === data.aircraft_model!.toLowerCase(),
+        (variant) => variant.model.toLowerCase() === data.aircraft_model!.toLowerCase(),
       ) ?? null
     : null
   const primaryAircraftVariant = matchedAircraftVariant ?? aeronaveVariants[0] ?? null
@@ -639,29 +639,29 @@ export default async function IncomingQuotationDetailPage({
     Boolean(data.tcds_pdf_url) ||
     aeronaveVariants.length > 0 ||
     tcdsFallbackUsed
-  const reviewClientLabel = matchedClient?.nombre ?? senderEmail ?? 'Cliente no identificado'
+  const reviewClientLabel = matchedClient?.name ?? senderEmail ?? 'Client no identificado'
   const reviewAircraftLabel =
     [data.aircraft_manufacturer, data.aircraft_model].filter(Boolean).join(' ') ||
-    'Pendiente de validar'
+    'Pending de validar'
   const reviewWorkTypeLabel =
-    data.work_type === 'proyecto_nuevo'
-      ? 'Proyecto nuevo'
-      : data.work_type === 'modificacion_existente'
+    data.work_type === 'new_project'
+      ? 'Project new'
+      : data.work_type === 'existing_modification'
         ? `Modificacion de existente${data.existing_project_code ? ` (${data.existing_project_code})` : ''}`
         : 'Sin definir'
   const reviewScheduleLabel =
-    data.is_aog === 'si'
-      ? 'AOG / urgente'
+    data.is_aog === 'yes'
+      ? 'AOG / urgent'
       : data.target_date
         ? new Intl.DateTimeFormat('es-ES', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
           }).format(new Date(data.target_date))
-        : 'Sin fecha objetivo'
+        : 'Sin date objetivo'
   const reviewDocumentLabel = [
-    `Planos: ${data.has_drawings === 'si' ? 'si' : data.has_drawings === 'no' ? 'no' : 'sin dato'}`,
-    `OEM: ${data.has_manufacturer_docs === 'si' ? 'si' : data.has_manufacturer_docs === 'no' ? 'no' : 'sin dato'}`,
+    `Planos: ${data.has_drawings === 'yes' ? 'yes' : data.has_drawings === 'no' ? 'no' : 'sin dato'}`,
+    `OEM: ${data.has_manufacturer_docs === 'yes' ? 'yes' : data.has_manufacturer_docs === 'no' ? 'no' : 'sin dato'}`,
   ].join(' | ')
   const reviewReferencesLabel = [
     `${activeProjectCount} activos`,
@@ -672,8 +672,8 @@ export default async function IncomingQuotationDetailPage({
     data.modification_summary ??
     data.operational_goal ??
     data.subject ??
-    query.asunto ??
-    'Sin descripcion tecnica recibida.'
+    query.subject ??
+    'Sin description technical received.'
   // const preliminaryScopeModel = buildPreliminaryScopeModel({
   //   clientLabel: reviewClientLabel,
   //   consultation: data,
@@ -698,13 +698,13 @@ export default async function IncomingQuotationDetailPage({
       'modification', 'modify', 'modified', 'modifying',
       'repair', 'repaired', 'repairing',
       'design', 'designed', 'designing',
-      'project', 'proyecto', 'projects', 'proyectos',
+      'project', 'project', 'projects', 'projects',
       'provide', 'provided', 'providing',
       'equipment', 'system', 'systems', 'component', 'components',
-      'aircraft', 'airplane', 'aeronave', 'avion',
+      'aircraft', 'airplane', 'aircraft', 'avion',
       'approval', 'approved', 'certificate', 'certification',
       'compliance', 'compliant', 'requirement', 'requirements',
-      'minor', 'major', 'mod', 'nuevo', 'nueva', 'new',
+      'minor', 'major', 'mod', 'new', 'new', 'new',
       'cabin', 'within', 'area', 'zone', 'section',
       'data', 'document', 'documentation', 'report',
       'part', 'parts', 'number', 'serial',
@@ -737,34 +737,34 @@ export default async function IncomingQuotationDetailPage({
       .filter((kw) => kw.length > 0)
 
     const orClauses = safeKeywords
-      .flatMap((kw) => [`titulo.ilike.%${kw}%`, `descripcion.ilike.%${kw}%`])
+      .flatMap((kw) => [`title.ilike.%${kw}%`, `description.ilike.%${kw}%`])
       .slice(0, MAX_OR_CLAUSES)
 
     if (orClauses.length > 0) {
       const orFilters = orClauses.join(',')
 
-      // Solo buscamos en proyectos historicos (cerrados)
+      // Solo buscamos en projects historicos (cerrados)
       const { data: simHistRows, error: simHistError } = await supabase
-        .from('doa_proyectos_historico')
-        .select('id, numero_proyecto, titulo, descripcion, estado, created_at')
+        .from('doa_historical_projects')
+        .select('id, project_number, title, description, status, created_at')
         .or(orFilters)
         .order('created_at', { ascending: false })
         .limit(10)
 
       if (simHistError) {
-        console.error('Error buscando proyectos similares historicos:', simHistError)
+        console.error('Error buscando projects similares historicos:', simHistError)
       }
 
       const seenSimilar = new Set<string>()
       const combinedSimilar: typeof similarProjects = []
 
       for (const p of (simHistRows ?? [])) {
-        const key = p.numero_proyecto ?? p.id
+        const key = p.project_number ?? p.id
         if (seenSimilar.has(key)) continue
         seenSimilar.add(key)
 
-        const titleLower = (p.titulo ?? '').toLowerCase()
-        const descLower = (p.descripcion ?? '').toLowerCase()
+        const titleLower = (p.title ?? '').toLowerCase()
+        const descLower = (p.description ?? '').toLowerCase()
         const matched = searchKeywords.filter(
           (kw) => titleLower.includes(kw) || descLower.includes(kw),
         )
@@ -772,7 +772,7 @@ export default async function IncomingQuotationDetailPage({
         combinedSimilar.push({ ...p, source: 'historic' as const, matchedKeywords: matched })
       }
 
-      // Ordenar por relevancia (mas keywords coinciden = primero), luego por fecha
+      // Ordenar por relevancia (mas keywords coinciden = primero), luego por date
       combinedSimilar.sort((a, b) => {
         const diff = b.matchedKeywords.length - a.matchedKeywords.length
         if (diff !== 0) return diff
@@ -792,8 +792,8 @@ export default async function IncomingQuotationDetailPage({
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar
-        title="Detalle de consulta"
-        subtitle="Entrada comercial previa a quotation"
+        title="Detalle de request"
+        subtitle="Entrada commercial previa a quotation"
       />
 
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto bg-[color:var(--paper)] px-5 pb-8 pt-5">
@@ -808,7 +808,7 @@ export default async function IncomingQuotationDetailPage({
           </Link>
           <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)]/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--ink-2)] shadow-sm">
             <ScanSearch className="h-3.5 w-3.5" />
-            Consulta entrante
+            Request entrante
           </div>
         </div>
 
@@ -818,30 +818,30 @@ export default async function IncomingQuotationDetailPage({
             <div className="space-y-2">
               <p className="font-mono text-xs text-[color:var(--ink-2)]">{query.codigo}</p>
               <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--ink)]">
-                {query.asunto}
+                {query.subject}
               </h1>
               <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-2)]">
-                {data.estado === CONSULTA_ESTADOS.NUEVO
-                  ? 'Consulta recien recibida. Revisa el email y prepara la respuesta al cliente.'
-                  : data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO
-                    ? 'Formulario enviado al cliente. Esperando su respuesta.'
-                    : 'Formulario recibido. Revisa toda la informacion para tomar una decision.'}
+                {data.status === INCOMING_REQUEST_STATUSES.NEW
+                  ? 'New request received. Review the email and prepare the client response.'
+                  : data.status === INCOMING_REQUEST_STATUSES.AWAITING_FORM
+                    ? 'Form sent to the client. Awaiting response.'
+                    : 'Form received. Review all information before making a decision.'}
               </p>
             </div>
             <div className="relative z-20 shrink-0 pt-1">
               <QuotationStateSelector
                 consultaId={query.id}
                 consultaCodigo={query.codigo}
-                currentEstado={data.estado ?? 'entrada_recibida'}
+                currentEstado={data.status ?? 'request_received'}
               />
             </div>
           </div>
         </section>
 
         {/* ================================================================
-            VIEW 1: NUEVO — Email thread + reply composer + client info
+            VIEW 1: NEW — Email thread + reply composer + client info
             ================================================================ */}
-        {data.estado === CONSULTA_ESTADOS.NUEVO && (
+        {data.status === INCOMING_REQUEST_STATUSES.NEW && (
           <>
           <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
             <CenterColumnCollapsible
@@ -849,23 +849,23 @@ export default async function IncomingQuotationDetailPage({
               query={{
                 id: query.id,
                 codigo: query.codigo,
-                asunto: query.asunto,
-                remitente: query.remitente,
+                subject: query.subject,
+                sender: query.sender,
                 urlFormulario: query.urlFormulario,
-                clasificacion: query.clasificacion,
+                classification: query.classification,
                 cuerpoOriginal: query.cuerpoOriginal,
                 respuestaIa: query.respuestaIa,
                 creadoEn: data.created_at,
-                correoClienteEnviadoAt: data.correo_cliente_enviado_at ?? null,
-                correoClienteEnviadoBy: data.correo_cliente_enviado_by ?? null,
-                ultimoBorradorCliente: data.ultimo_borrador_cliente ?? null,
+                correoClienteEnviadoAt: data.client_email_sent_at ?? null,
+                correoClienteEnviadoBy: data.client_email_sent_by ?? null,
+                ultimoBorradorCliente: data.last_client_draft ?? null,
                 replyBody: data.reply_body ?? null,
                 replySentAt: data.reply_sent_at ?? null,
               }}
             />
           </section>
 
-          {/* Cliente + Proyectos del cliente (50/50) */}
+          {/* Client + Client projects (50/50) */}
           {matchedClient ? (
             <div className="grid gap-5 lg:grid-cols-2">
               <ClientDetailPanel client={matchedClient} />
@@ -873,7 +873,7 @@ export default async function IncomingQuotationDetailPage({
                 <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-3">
                   <div className="flex items-center gap-2">
                     <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
-                    <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+                    <h2 className="text-sm font-semibold text-[color:var(--ink)]">Client projects</h2>
                     <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
                       {projectHistory.length}
                     </span>
@@ -882,7 +882,7 @@ export default async function IncomingQuotationDetailPage({
                 <details className="group">
                   <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                     <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                    Ver proyectos
+                    View projects
                   </summary>
                   <div className="space-y-2 px-5 pb-4">
                     {projectHistory.length > 0 ? (
@@ -891,9 +891,9 @@ export default async function IncomingQuotationDetailPage({
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-1.5">
-                                {project.numero_proyecto && (
+                                {project.project_number && (
                                   <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
-                                    {project.numero_proyecto}
+                                    {project.project_number}
                                   </span>
                                 )}
                                 <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide ${
@@ -901,10 +901,10 @@ export default async function IncomingQuotationDetailPage({
                                     ? 'bg-emerald-100 text-emerald-700'
                                     : 'bg-[color:var(--paper-3)] text-[color:var(--ink-3)]'
                                 }`}>
-                                  Historico
+                                  Historical
                                 </span>
                               </div>
-                              <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
+                              <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.title ?? '—'}</p>
                               {project.created_at && (
                                 <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                                   {new Date(project.created_at).getFullYear()}
@@ -912,20 +912,20 @@ export default async function IncomingQuotationDetailPage({
                               )}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
-                              {project.estado && (
+                              {project.status && (
                                 <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
                                   project.source === 'active'
                                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                                     : 'border-[color:var(--ink-4)] bg-[color:var(--paper)] text-[color:var(--ink-3)]'
                                 }`}>
-                                  {project.estado}
+                                  {project.status}
                                 </span>
                               )}
                               <Link
-                                href={`/proyectos-historico/${project.id}`}
+                                href={`/historical-projects/${project.id}`}
                                 className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
-                                title="Abrir ficha"
-                                aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                                title="Open record"
+                                aria-label={`Open record de ${project.project_number}`}
                               >
                                 <Plus className="h-3.5 w-3.5" />
                               </Link>
@@ -934,7 +934,7 @@ export default async function IncomingQuotationDetailPage({
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos para este cliente.</p>
+                      <p className="text-xs italic text-[color:var(--ink-3)]">No projects found for this client.</p>
                     )}
                   </div>
                 </details>
@@ -945,7 +945,7 @@ export default async function IncomingQuotationDetailPage({
               <div className="flex items-start gap-3 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
                 <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <p className="text-sm text-[color:var(--ink-2)]">
-                  Cliente no identificado — se registrara con el formulario
+                  Client not identified — it will be registered from the form
                 </p>
               </div>
             </section>
@@ -956,9 +956,9 @@ export default async function IncomingQuotationDetailPage({
         {/* ================================================================
             VIEW 2: ESPERANDO FORMULARIO — Email thread + waiting banner
             ================================================================ */}
-        {data.estado === CONSULTA_ESTADOS.ESPERANDO_FORMULARIO && (
+        {data.status === INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
           <>
-            {/* Hilo de emails (con respuesta enviada visible, sin compositor) */}
+            {/* Hilo de emails (con response sent visible, sin compositor) */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
               <CenterColumnCollapsible
                 hideComposer
@@ -966,16 +966,16 @@ export default async function IncomingQuotationDetailPage({
                 query={{
                   id: query.id,
                   codigo: query.codigo,
-                  asunto: query.asunto,
-                  remitente: query.remitente,
+                  subject: query.subject,
+                  sender: query.sender,
                   urlFormulario: query.urlFormulario,
-                  clasificacion: query.clasificacion,
+                  classification: query.classification,
                   cuerpoOriginal: query.cuerpoOriginal,
                   respuestaIa: query.respuestaIa,
                   creadoEn: data.created_at,
-                  correoClienteEnviadoAt: data.correo_cliente_enviado_at ?? null,
-                  correoClienteEnviadoBy: data.correo_cliente_enviado_by ?? null,
-                  ultimoBorradorCliente: data.ultimo_borrador_cliente ?? null,
+                  correoClienteEnviadoAt: data.client_email_sent_at ?? null,
+                  correoClienteEnviadoBy: data.client_email_sent_by ?? null,
+                  ultimoBorradorCliente: data.last_client_draft ?? null,
                   replyBody: data.reply_body ?? null,
                   replySentAt: data.reply_sent_at ?? null,
                 }}
@@ -990,23 +990,23 @@ export default async function IncomingQuotationDetailPage({
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-amber-900">
-                    Esperando respuesta del formulario del cliente
+                    Awaiting the client's form response
                   </h2>
                   <p className="mt-0.5 text-sm text-amber-700">
-                    Se envio el formulario de toma de datos. Cuando el cliente lo complete,
-                    la consulta avanzara automaticamente al siguiente paso.
+                    The intake form has been sent. When the client completes it,
+                    the request will automatically move to the next step.
                   </p>
-                  {data.correo_cliente_enviado_at && (
+                  {data.client_email_sent_at && (
                     <p className="mt-1 text-xs text-amber-600">
-                      Formulario enviado el{' '}
-                      {new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(data.correo_cliente_enviado_at))}
+                      Form sent el{' '}
+                      {new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(data.client_email_sent_at))}
                     </p>
                   )}
                 </div>
               </div>
             </section>
 
-            {/* Cliente + Proyectos del cliente (50/50) */}
+            {/* Client + Client projects (50/50) */}
             {matchedClient ? (
               <div className="grid gap-5 lg:grid-cols-2">
                 <ClientDetailPanel client={matchedClient} />
@@ -1014,7 +1014,7 @@ export default async function IncomingQuotationDetailPage({
                   <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
-                      <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+                      <h2 className="text-sm font-semibold text-[color:var(--ink)]">Client projects</h2>
                       <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
                         {projectHistory.length}
                       </span>
@@ -1023,7 +1023,7 @@ export default async function IncomingQuotationDetailPage({
                   <details className="group">
                     <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                       <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                      Ver proyectos
+                      View projects
                     </summary>
                     <div className="space-y-2 px-5 pb-4">
                       {projectHistory.length > 0 ? (
@@ -1032,16 +1032,16 @@ export default async function IncomingQuotationDetailPage({
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
-                                  {project.numero_proyecto && (
+                                  {project.project_number && (
                                     <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
-                                      {project.numero_proyecto}
+                                      {project.project_number}
                                     </span>
                                   )}
                                   <span className={"rounded-full bg-[color:var(--paper-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[color:var(--ink-3)]"}>
-                                    Historico
+                                    Historical
                                   </span>
                                 </div>
-                                <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
+                                <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.title ?? '—'}</p>
                                 {project.created_at && (
                                   <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                                     {new Date(project.created_at).getFullYear()}
@@ -1049,16 +1049,16 @@ export default async function IncomingQuotationDetailPage({
                                 )}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
-                                {project.estado && (
+                                {project.status && (
                                   <span className={"rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]"}>
-                                    {project.estado}
+                                    {project.status}
                                   </span>
                                 )}
                                 <Link
-                                  href={`/proyectos-historico/${project.id}`}
+                                  href={`/historical-projects/${project.id}`}
                                   className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
-                                  title="Abrir ficha"
-                                  aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                                  title="Open record"
+                                  aria-label={`Open record de ${project.project_number}`}
                                 >
                                   <Plus className="h-3.5 w-3.5" />
                                 </Link>
@@ -1067,7 +1067,7 @@ export default async function IncomingQuotationDetailPage({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs italic text-[color:var(--ink-2)]">No se encontraron proyectos para este cliente.</p>
+                        <p className="text-xs italic text-[color:var(--ink-2)]">No projects found for this client.</p>
                       )}
                     </div>
                   </details>
@@ -1078,7 +1078,7 @@ export default async function IncomingQuotationDetailPage({
                 <div className="flex items-start gap-3 rounded-xl border border-dashed border-amber-200 bg-amber-50/50 px-4 py-3">
                   <UserRoundX className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                   <p className="text-sm text-amber-800">
-                    Cliente no identificado — se registrara con el formulario
+                    Client not identified — it will be registered from the form
                   </p>
                 </div>
               </section>
@@ -1087,10 +1087,10 @@ export default async function IncomingQuotationDetailPage({
         )}
 
         {/* ================================================================
-            VIEW 3: FORMULARIO RECIBIDO (+ default for any other estado)
+            VIEW 3: FORMULARIO RECIBIDO (+ default for any other status)
             Full review layout with all sections
             ================================================================ */}
-        {data.estado !== CONSULTA_ESTADOS.NUEVO && data.estado !== CONSULTA_ESTADOS.ESPERANDO_FORMULARIO && (
+        {data.status !== INCOMING_REQUEST_STATUSES.NEW && data.status !== INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
           <>
             <ReviewSummarySection
               clientLabel={reviewClientLabel}
@@ -1122,16 +1122,16 @@ export default async function IncomingQuotationDetailPage({
                     query={{
                       id: query.id,
                       codigo: query.codigo,
-                      asunto: query.asunto,
-                      remitente: query.remitente,
+                      subject: query.subject,
+                      sender: query.sender,
                       urlFormulario: query.urlFormulario,
-                      clasificacion: query.clasificacion,
+                      classification: query.classification,
                       cuerpoOriginal: query.cuerpoOriginal,
                       respuestaIa: query.respuestaIa,
                       creadoEn: data.created_at,
-                      correoClienteEnviadoAt: data.correo_cliente_enviado_at ?? null,
-                      correoClienteEnviadoBy: data.correo_cliente_enviado_by ?? null,
-                      ultimoBorradorCliente: data.ultimo_borrador_cliente ?? null,
+                      correoClienteEnviadoAt: data.client_email_sent_at ?? null,
+                      correoClienteEnviadoBy: data.client_email_sent_by ?? null,
+                      ultimoBorradorCliente: data.last_client_draft ?? null,
                       replyBody: data.reply_body ?? null,
                       replySentAt: data.reply_sent_at ?? null,
                     }}
@@ -1140,18 +1140,18 @@ export default async function IncomingQuotationDetailPage({
               </details>
             </section>
 
-            {/* --- Datos del cliente (ancho completo, colapsable) --- */}
+            {/* --- Data del client (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--cobalt)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--cobalt)]/15">
                   <UserRound className="h-4 w-4 text-[color:var(--cobalt)]" />
                 </span>
-                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos del cliente</h2>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Data del client</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  Ver datos del cliente
+                  Ver data del client
                 </summary>
                 <div className="space-y-5 px-5 pb-4">
             <div className="grid gap-5 lg:grid-cols-2">
@@ -1171,7 +1171,7 @@ export default async function IncomingQuotationDetailPage({
                   <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FolderOpen className="h-4 w-4 text-[color:var(--ink-3)]" />
-                      <h2 className="text-sm font-semibold text-[color:var(--ink)]">Proyectos del cliente</h2>
+                      <h2 className="text-sm font-semibold text-[color:var(--ink)]">Client projects</h2>
                       <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-2)]">
                         {projectHistory.length}
                       </span>
@@ -1180,7 +1180,7 @@ export default async function IncomingQuotationDetailPage({
                   <details className="group">
                     <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                       <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                      Ver proyectos
+                      View projects
                     </summary>
                     <div className="space-y-2 px-5 pb-4">
                       {projectHistory.length > 0 ? (
@@ -1189,16 +1189,16 @@ export default async function IncomingQuotationDetailPage({
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
-                                  {project.numero_proyecto && (
+                                  {project.project_number && (
                                     <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
-                                      {project.numero_proyecto}
+                                      {project.project_number}
                                     </span>
                                   )}
                                   <span className={"rounded-full bg-[color:var(--paper-3)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[color:var(--ink-3)]"}>
-                                    Historico
+                                    Historical
                                   </span>
                                 </div>
-                                <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
+                                <p className="mt-1 text-sm font-medium leading-snug text-[color:var(--ink)]">{project.title ?? '—'}</p>
                                 {project.created_at && (
                                   <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
                                     {new Date(project.created_at).getFullYear()}
@@ -1206,16 +1206,16 @@ export default async function IncomingQuotationDetailPage({
                                 )}
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
-                                {project.estado && (
+                                {project.status && (
                                   <span className={"rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]"}>
-                                    {project.estado}
+                                    {project.status}
                                   </span>
                                 )}
                                 <Link
-                                  href={`/proyectos-historico/${project.id}`}
+                                  href={`/historical-projects/${project.id}`}
                                   className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
-                                  title="Abrir ficha"
-                                  aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                                  title="Open record"
+                                  aria-label={`Open record de ${project.project_number}`}
                                 >
                                   <Plus className="h-3.5 w-3.5" />
                                 </Link>
@@ -1224,7 +1224,7 @@ export default async function IncomingQuotationDetailPage({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs italic text-[color:var(--ink-2)]">No se encontraron proyectos para este cliente.</p>
+                        <p className="text-xs italic text-[color:var(--ink-2)]">No projects found for this client.</p>
                       )}
                     </div>
                   </details>
@@ -1235,9 +1235,9 @@ export default async function IncomingQuotationDetailPage({
                 <section className="flex items-center justify-center rounded-[22px] border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 p-8">
                   <div className="text-center">
                     <FolderOpen className="mx-auto h-6 w-6 text-[color:var(--ink-4)]" />
-                    <p className="mt-2 text-sm font-medium text-[color:var(--ink-3)]">Proyectos del cliente</p>
+                    <p className="mt-2 text-sm font-medium text-[color:var(--ink-3)]">Client projects</p>
                     <p className="mt-1 text-xs text-[color:var(--ink-4)]">
-                      Se mostraran cuando se identifique al cliente
+                      Se mostraran cuando se identifique al client
                     </p>
                   </div>
                 </section>
@@ -1247,40 +1247,40 @@ export default async function IncomingQuotationDetailPage({
               </details>
             </section>
 
-            {/* --- Datos de aeronave / TCDS (ancho completo) --- */}
+            {/* --- Data de aircraft / TCDS (ancho completo) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--terracotta)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--terracotta)]/15">
                   <Plane className="h-4 w-4 text-[color:var(--terracotta)]" />
                 </span>
-                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos de aeronave</h2>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Data de aircraft</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  Ver datos de aeronave
+                  Ver data de aircraft
                 </summary>
                 <div className="space-y-3 px-5 pb-4">
                   {hasAircraftData ? (
                     <>
-                      {/* Datos enviados por el cliente */}
+                      {/* Data enviados por el client */}
                       <div className="mb-4 grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3 text-sm">
-                        <div className="col-span-2 mb-1 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Datos del formulario</div>
+                        <div className="col-span-2 mb-1 text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Data del form</div>
                         {data.aircraft_manufacturer && (
                           <div>
-                            <span className="text-[color:var(--ink-2)]">Fabricante</span>
+                            <span className="text-[color:var(--ink-2)]">Manufacturer</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_manufacturer}</p>
                           </div>
                         )}
                         {data.aircraft_model && (
                           <div>
-                            <span className="text-[color:var(--ink-2)]">Modelo</span>
+                            <span className="text-[color:var(--ink-2)]">Model</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_model}</p>
                           </div>
                         )}
                         {data.aircraft_count && (
                           <div>
-                            <span className="text-[color:var(--ink-2)]">Cantidad de aeronaves</span>
+                            <span className="text-[color:var(--ink-2)]">Cantidad de aircraft</span>
                             <p className="text-[color:var(--ink)]">{data.aircraft_count}</p>
                           </div>
                         )}
@@ -1295,7 +1295,7 @@ export default async function IncomingQuotationDetailPage({
                       <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/70 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
-                            Revision TCDS
+                            Review TCDS
                           </p>
                           <span className="rounded-full bg-[color:var(--paper)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
                             {aeronaveVariants.length} variante{aeronaveVariants.length === 1 ? '' : 's'} encontrada{aeronaveVariants.length === 1 ? '' : 's'}
@@ -1315,10 +1315,10 @@ export default async function IncomingQuotationDetailPage({
                           ) : (
                             <div className="rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-3">
                               <p className="text-sm font-medium text-[color:var(--ink-2)]">
-                                Sin revision TCDS disponible todavia.
+                                Sin review TCDS disponible todavia.
                               </p>
                               <p className="mt-1 text-xs text-[color:var(--ink-2)]">
-                                El operador puede validar el TCDS mas adelante con los datos de aeronave ya recibidos.
+                                El operador puede validar el TCDS mas adelante con los data de aircraft ya recibidos.
                               </p>
                             </div>
                           )}
@@ -1328,7 +1328,7 @@ export default async function IncomingQuotationDetailPage({
                               <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2.5">
                                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Variante usada para revisar</p>
                                 <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">
-                                  {primaryAircraftVariant?.modelo ?? 'Pendiente'}
+                                  {primaryAircraftVariant?.model ?? 'Pending'}
                                 </p>
                               </div>
                               <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-2.5">
@@ -1348,7 +1348,7 @@ export default async function IncomingQuotationDetailPage({
                                     rel="noreferrer"
                                     className="mt-0.5 inline-flex text-sm font-medium text-[color:var(--ink-2)] underline hover:text-[color:var(--ink-2)]"
                                   >
-                                    Abrir PDF enviado
+                                    Abrir PDF sent
                                   </a>
                                 ) : (
                                   <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">
@@ -1430,15 +1430,15 @@ export default async function IncomingQuotationDetailPage({
                           <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.tcds_number}</p>
                         </div>
                         <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Fabricante</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Manufacturer</p>
                           <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_manufacturer ?? '—'}</p>
                         </div>
                         <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Modelo</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Model</p>
                           <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_model ?? '—'}</p>
                         </div>
                         <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Cantidad de aeronaves</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">Cantidad de aircraft</p>
                           <p className="mt-0.5 text-sm font-medium text-[color:var(--ink)]">{data.aircraft_count ?? '—'}</p>
                         </div>
                         <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-2.5">
@@ -1467,24 +1467,24 @@ export default async function IncomingQuotationDetailPage({
                       )}
                     </>
                   ) : (
-                    <p className="text-xs italic text-[color:var(--ink-2)]">No se han enviado datos de aeronave todavia.</p>
+                    <p className="text-xs italic text-[color:var(--ink-2)]">No se han sent data de aircraft todavia.</p>
                   )}
                 </div>
               </details>
             </section>
 
-            {/* --- Datos tecnicos del Proyecto (ancho completo, colapsable) --- */}
+            {/* --- Data tecnicos del Project (ancho completo, colapsable) --- */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--parchment-gold)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
               <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--parchment-gold)]/15">
                   <ClipboardList className="h-4 w-4 text-[color:var(--parchment-gold)]" />
                 </span>
-                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Datos técnicos del Proyecto</h2>
+                <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Data técnicos del Project</h2>
               </div>
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  Ver datos técnicos
+                  Ver data técnicos
                 </summary>
                 <div className="px-5 pb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
@@ -1501,7 +1501,7 @@ export default async function IncomingQuotationDetailPage({
                             <div>
                               <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Tipo de trabajo</span>
                               <p className="mt-0.5 text-sm text-[color:var(--ink)]">
-                                {data.work_type === 'proyecto_nuevo' ? 'Proyecto nuevo' : data.work_type === 'modificacion_existente' ? 'Modificación a proyecto existente' : data.work_type}
+                                {data.work_type === 'new_project' ? 'Project new' : data.work_type === 'existing_modification' ? 'Modificación a project existente' : data.work_type}
                                 {data.existing_project_code && (
                                   <span className="ml-2 text-xs text-[color:var(--ink-3)]">({data.existing_project_code})</span>
                                 )}
@@ -1510,7 +1510,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.modification_summary && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Descripción</span>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Description</span>
                               <p className="mt-0.5 text-sm text-[color:var(--ink)]">{data.modification_summary}</p>
                             </div>
                           )}
@@ -1522,13 +1522,13 @@ export default async function IncomingQuotationDetailPage({
                           )}
                           {data.additional_notes && (
                             <div>
-                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Notas adicionales</span>
+                              <span className="text-xs font-medium uppercase tracking-wider text-[color:var(--ink-3)]">Notes adicionales</span>
                               <p className="mt-0.5 text-sm text-[color:var(--ink-2)]">{data.additional_notes}</p>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1565,8 +1565,8 @@ export default async function IncomingQuotationDetailPage({
                           {data.impact_structural_attachment && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Fijación estructural</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_structural_attachment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_structural_attachment === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                {data.impact_structural_attachment === 'si' ? 'Sí' : data.impact_structural_attachment === 'no' ? 'No' : data.impact_structural_attachment === 'no_seguro' ? 'No seguro' : data.impact_structural_attachment}
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_structural_attachment === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_structural_attachment === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                {data.impact_structural_attachment === 'yes' ? 'Sí' : data.impact_structural_attachment === 'no' ? 'No' : data.impact_structural_attachment === 'not_sure' ? 'No seguro' : data.impact_structural_attachment}
                               </span>
                             </div>
                           )}
@@ -1579,14 +1579,14 @@ export default async function IncomingQuotationDetailPage({
                           {data.affects_primary_structure && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Afecta PSE</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.affects_primary_structure === 'si' ? 'bg-red-500/20 text-red-400' : data.affects_primary_structure === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                {data.affects_primary_structure === 'si' ? 'Sí' : data.affects_primary_structure === 'no' ? 'No' : data.affects_primary_structure === 'no_seguro' ? 'No seguro' : data.affects_primary_structure}
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.affects_primary_structure === 'yes' ? 'bg-red-500/20 text-red-400' : data.affects_primary_structure === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                {data.affects_primary_structure === 'yes' ? 'Sí' : data.affects_primary_structure === 'no' ? 'No' : data.affects_primary_structure === 'not_sure' ? 'No seguro' : data.affects_primary_structure}
                               </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1601,22 +1601,22 @@ export default async function IncomingQuotationDetailPage({
                           {data.impact_electrical && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Cableado eléctrico</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_electrical === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_electrical === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                {data.impact_electrical === 'si' ? 'Sí' : data.impact_electrical === 'no' ? 'No' : data.impact_electrical === 'no_seguro' ? 'No seguro' : data.impact_electrical}
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_electrical === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_electrical === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                {data.impact_electrical === 'yes' ? 'Sí' : data.impact_electrical === 'no' ? 'No' : data.impact_electrical === 'not_sure' ? 'No seguro' : data.impact_electrical}
                               </span>
                             </div>
                           )}
                           {data.impact_avionics && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Aviónica / instrumentos</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_avionics === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_avionics === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                {data.impact_avionics === 'si' ? 'Sí' : data.impact_avionics === 'no' ? 'No' : data.impact_avionics === 'no_seguro' ? 'No seguro' : data.impact_avionics}
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_avionics === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_avionics === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                {data.impact_avionics === 'yes' ? 'Sí' : data.impact_avionics === 'no' ? 'No' : data.impact_avionics === 'not_sure' ? 'No seguro' : data.impact_avionics}
                               </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1694,7 +1694,7 @@ export default async function IncomingQuotationDetailPage({
                           })()}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1709,22 +1709,22 @@ export default async function IncomingQuotationDetailPage({
                           {data.impact_cabin_layout && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Layout cabina</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_cabin_layout === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_cabin_layout === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                {data.impact_cabin_layout === 'si' ? 'Sí' : data.impact_cabin_layout === 'no' ? 'No' : data.impact_cabin_layout === 'no_seguro' ? 'No seguro' : data.impact_cabin_layout}
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_cabin_layout === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_cabin_layout === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                {data.impact_cabin_layout === 'yes' ? 'Sí' : data.impact_cabin_layout === 'no' ? 'No' : data.impact_cabin_layout === 'not_sure' ? 'No seguro' : data.impact_cabin_layout}
                               </span>
                             </div>
                           )}
                           {data.impact_pressurized && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Zona presurizada</span>
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_pressurized === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_pressurized === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                {data.impact_pressurized === 'si' ? 'Sí' : data.impact_pressurized === 'no' ? 'No' : data.impact_pressurized === 'no_seguro' ? 'No seguro' : data.impact_pressurized}
+                              <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_pressurized === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_pressurized === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                {data.impact_pressurized === 'yes' ? 'Sí' : data.impact_pressurized === 'no' ? 'No' : data.impact_pressurized === 'not_sure' ? 'No seguro' : data.impact_pressurized}
                               </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1737,12 +1737,12 @@ export default async function IncomingQuotationDetailPage({
                       {data.impact_operational_change ? (
                         <div className="flex items-start justify-between gap-2 text-sm">
                           <span className="text-[color:var(--ink-2)]">Cambio operacional</span>
-                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_operational_change === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_operational_change === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                            {data.impact_operational_change === 'si' ? 'Sí' : data.impact_operational_change === 'no' ? 'No' : data.impact_operational_change === 'no_seguro' ? 'No seguro' : data.impact_operational_change}
+                          <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.impact_operational_change === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.impact_operational_change === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                            {data.impact_operational_change === 'yes' ? 'Sí' : data.impact_operational_change === 'no' ? 'No' : data.impact_operational_change === 'not_sure' ? 'No seguro' : data.impact_operational_change}
                           </span>
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1756,11 +1756,11 @@ export default async function IncomingQuotationDetailPage({
                         <div className="space-y-1.5">
                           <div className="flex items-start justify-between gap-2 text-sm">
                             <span className="text-[color:var(--ink-2)]">Motivado por AD</span>
-                            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'bg-emerald-500/20 text-emerald-400' : val === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]' })()}`}>
-                              {(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'si' ? 'Sí' : val === 'no' ? 'No' : val === 'no_seguro' ? 'No seguro' : val })()}
+                            <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : val === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]' })()}`}>
+                              {(() => { const val = data.related_to_ad ?? data.motivated_by_ad; return val === 'yes' ? 'Sí' : val === 'no' ? 'No' : val === 'not_sure' ? 'No seguro' : val })()}
                             </span>
                           </div>
-                          {(data.related_to_ad ?? data.motivated_by_ad) === 'si' && data.ad_reference && (
+                          {(data.related_to_ad ?? data.motivated_by_ad) === 'yes' && data.ad_reference && (
                             <div className="flex items-start justify-between gap-2 text-sm">
                               <span className="text-[color:var(--ink-2)]">Referencia AD</span>
                               <span className="font-mono text-[color:var(--ink)]">{data.ad_reference}</span>
@@ -1768,7 +1768,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1787,41 +1787,41 @@ export default async function IncomingQuotationDetailPage({
                               <div className="mt-2 grid grid-cols-2 gap-2">
                                 {data.has_equipment && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_equipment === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                      {data.has_equipment === 'si' ? 'Sí' : data.has_equipment === 'no' ? 'No' : '—'}
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_equipment === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                      {data.has_equipment === 'yes' ? 'Sí' : data.has_equipment === 'no' ? 'No' : '—'}
                                     </span>
                                     <span className="text-[color:var(--ink-2)]">Equipo</span>
                                   </div>
                                 )}
                                 {data.has_drawings && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_drawings === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                      {data.has_drawings === 'si' ? 'Sí' : data.has_drawings === 'no' ? 'No' : '—'}
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_drawings === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                      {data.has_drawings === 'yes' ? 'Sí' : data.has_drawings === 'no' ? 'No' : '—'}
                                     </span>
                                     <span className="text-[color:var(--ink-2)]">Planos</span>
                                   </div>
                                 )}
                                 {data.has_manufacturer_docs && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_manufacturer_docs === 'si' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                      {data.has_manufacturer_docs === 'si' ? 'Sí' : data.has_manufacturer_docs === 'no' ? 'No' : '—'}
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_manufacturer_docs === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                      {data.has_manufacturer_docs === 'yes' ? 'Sí' : data.has_manufacturer_docs === 'no' ? 'No' : '—'}
                                     </span>
-                                    <span className="text-[color:var(--ink-2)]">Doc. fabricante</span>
+                                    <span className="text-[color:var(--ink-2)]">Doc. manufacturer</span>
                                   </div>
                                 )}
                                 {data.has_previous_mod && (
                                   <div className="flex items-center gap-1.5 text-sm">
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_previous_mod === 'si' ? 'bg-emerald-500/20 text-emerald-400' : data.has_previous_mod === 'no_seguro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                      {data.has_previous_mod === 'si' ? 'Sí' : data.has_previous_mod === 'no_seguro' ? '?' : 'No'}
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.has_previous_mod === 'yes' ? 'bg-emerald-500/20 text-emerald-400' : data.has_previous_mod === 'not_sure' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                      {data.has_previous_mod === 'yes' ? 'Sí' : data.has_previous_mod === 'not_sure' ? '?' : 'No'}
                                     </span>
                                     <span className="text-[color:var(--ink-2)]">Mod. previa</span>
                                   </div>
                                 )}
                               </div>
-                              {data.equipment_details && data.has_equipment === 'si' && (
+                              {data.equipment_details && data.has_equipment === 'yes' && (
                                 <p className="mt-1.5 text-xs text-[color:var(--ink-2)]">Equipo: {data.equipment_details}</p>
                               )}
-                              {data.previous_mod_ref && data.has_previous_mod === 'si' && (
+                              {data.previous_mod_ref && data.has_previous_mod === 'yes' && (
                                 <p className="mt-1.5 text-xs text-[color:var(--ink-2)]">Ref. mod. previa: {data.previous_mod_ref}</p>
                               )}
                             </div>
@@ -1833,7 +1833,7 @@ export default async function IncomingQuotationDetailPage({
                               <div className="mt-2 space-y-1.5">
                                 {data.target_date && (
                                   <div className="flex items-center justify-between text-sm">
-                                    <span className="text-[color:var(--ink-2)]">Fecha deseada</span>
+                                    <span className="text-[color:var(--ink-2)]">Desired date</span>
                                     <span className="text-[color:var(--ink)]">
                                       {new Date(data.target_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </span>
@@ -1842,8 +1842,8 @@ export default async function IncomingQuotationDetailPage({
                                 {data.is_aog && (
                                   <div className="flex items-center justify-between text-sm">
                                     <span className="text-[color:var(--ink-2)]">AOG</span>
-                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.is_aog === 'si' ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
-                                      {data.is_aog === 'si' ? 'Sí — AOG' : 'No'}
+                                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${data.is_aog === 'yes' ? 'bg-red-500/20 text-red-400' : 'bg-slate-500/20 text-[color:var(--ink-3)]'}`}>
+                                      {data.is_aog === 'yes' ? 'Sí — AOG' : 'No'}
                                     </span>
                                   </div>
                                 )}
@@ -1852,7 +1852,7 @@ export default async function IncomingQuotationDetailPage({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-[color:var(--ink-2)]">Sin datos</p>
+                        <p className="text-sm text-[color:var(--ink-2)]">Sin data</p>
                       )}
                     </div>
 
@@ -1870,15 +1870,15 @@ export default async function IncomingQuotationDetailPage({
                 <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">Definir alcance preliminar</h2>
               </div>
               <div className="px-5 py-4 space-y-4">
-                {/* Proyectos sugeridos + Busqueda manual (grid 50/50) */}
+                {/* Suggested projects + Search manual (grid 50/50) */}
                 <div className="grid gap-4 lg:grid-cols-2">
-                  {/* Proyectos sugeridos automaticamente */}
+                  {/* Suggested projects automaticamente */}
                   <div>
                     {hasTechnicalData ? (
                       <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50">
                         <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] px-4 py-2.5">
                           <ScanSearch className="h-3.5 w-3.5 text-[color:var(--ink-3)]" />
-                          <span className="text-xs font-semibold text-[color:var(--ink-2)]">Proyectos sugeridos</span>
+                          <span className="text-xs font-semibold text-[color:var(--ink-2)]">Suggested projects</span>
                           <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[9px] font-semibold text-[color:var(--ink-2)]">
                             {similarProjects.length}
                           </span>
@@ -1889,7 +1889,7 @@ export default async function IncomingQuotationDetailPage({
                         <details className="group">
                           <summary className="flex cursor-pointer items-center gap-1 px-4 py-2 text-[11px] font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                             <svg className="h-3 w-3 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                            Ver proyectos sugeridos
+                            View projects sugeridos
                           </summary>
                           <div className="space-y-1.5 px-4 pb-3">
                             {similarProjects.length > 0 ? (
@@ -1907,9 +1907,9 @@ export default async function IncomingQuotationDetailPage({
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-1.5">
-                                          {project.numero_proyecto && (
+                                          {project.project_number && (
                                             <span className="inline-block rounded bg-[color:var(--paper-3)] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[color:var(--ink-2)]">
-                                              {project.numero_proyecto}
+                                              {project.project_number}
                                             </span>
                                           )}
                                           {isRef && (
@@ -1918,7 +1918,7 @@ export default async function IncomingQuotationDetailPage({
                                             </span>
                                           )}
                                         </div>
-                                        <p className="mt-1 text-xs font-medium leading-snug text-[color:var(--ink)]">{project.titulo ?? '—'}</p>
+                                        <p className="mt-1 text-xs font-medium leading-snug text-[color:var(--ink)]">{project.title ?? '—'}</p>
                                         <div className="mt-0.5 flex flex-wrap items-center gap-1">
                                           {project.created_at && (
                                             <p className="text-[10px] text-[color:var(--ink-3)]">
@@ -1940,9 +1940,9 @@ export default async function IncomingQuotationDetailPage({
                                         </div>
                                       </div>
                                       <div className="flex shrink-0 items-center gap-1.5">
-                                        {project.estado && (
+                                        {project.status && (
                                           <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-1.5 py-0.5 text-[9px] font-semibold text-[color:var(--ink-3)]">
-                                            {project.estado}
+                                            {project.status}
                                           </span>
                                         )}
                                         <ReferenceProjectButton
@@ -1951,10 +1951,10 @@ export default async function IncomingQuotationDetailPage({
                                           isReferenced={isRef}
                                         />
                                         <Link
-                                          href={`/proyectos-historico/${project.id}`}
+                                          href={`/historical-projects/${project.id}`}
                                           className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] text-[color:var(--ink-2)] transition-colors hover:bg-[color:var(--paper-3)]"
-                                          title="Abrir ficha"
-                                          aria-label={`Abrir ficha de ${project.numero_proyecto}`}
+                                          title="Open record"
+                                          aria-label={`Open record de ${project.project_number}`}
                                         >
                                           <Plus className="h-3 w-3" />
                                         </Link>
@@ -1964,7 +1964,7 @@ export default async function IncomingQuotationDetailPage({
                                 )
                               })
                             ) : (
-                              <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron proyectos similares.</p>
+                              <p className="text-xs italic text-[color:var(--ink-3)]">No se encontraron projects similares.</p>
                             )}
                           </div>
                         </details>
@@ -1973,17 +1973,17 @@ export default async function IncomingQuotationDetailPage({
                       <div className="flex h-24 items-center justify-center rounded-xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50">
                         <div className="text-center">
                           <ScanSearch className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
-                          <p className="mt-1 text-xs text-[color:var(--ink-3)]">Proyectos sugeridos</p>
+                          <p className="mt-1 text-xs text-[color:var(--ink-3)]">Suggested projects</p>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Busqueda manual de proyectos */}
+                  {/* Search manual de projects */}
                   <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50">
                     <div className="flex items-center gap-2 border-b border-[color:var(--ink-4)] px-4 py-2.5">
                       <Search className="h-3.5 w-3.5 text-[color:var(--ink-3)]" />
-                      <span className="text-xs font-semibold text-[color:var(--ink-2)]">Buscar proyectos</span>
+                      <span className="text-xs font-semibold text-[color:var(--ink-2)]">Buscar projects</span>
                       <span className="rounded-full bg-[color:var(--paper-2)] px-1.5 py-0.5 text-[8px] font-medium text-[color:var(--ink-3)]">
                         manual
                       </span>
@@ -2040,10 +2040,10 @@ export default async function IncomingQuotationDetailPage({
                     additional_notes: data.additional_notes as string | null,
                   }}
                   clientEmail={senderEmail ?? undefined}
-                  clientName={matchedClient?.nombre ?? undefined}
-                  numeroEntrada={data.numero_entrada as string | undefined}
-                  remitente={data.remitente as string | undefined}
-                  asunto={data.asunto as string | undefined}
+                  clientName={matchedClient?.name ?? undefined}
+                  numeroEntrada={data.entry_number as string | undefined}
+                  sender={data.sender as string | undefined}
+                  subject={data.subject as string | undefined}
                 />
               </div>
             </section>
@@ -2059,7 +2059,7 @@ export default async function IncomingQuotationDetailPage({
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  Seleccionar documentos de compliance
+                  Seleccionar documents de compliance
                 </summary>
                 <div className="px-5 pb-5">
                   <ComplianceDocumentsSection
@@ -2084,7 +2084,7 @@ export default async function IncomingQuotationDetailPage({
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-2)] hover:text-[color:var(--ink)]">
                   <svg className="h-3.5 w-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                  Preparar datos de oferta
+                  Prepare data de quote
                 </summary>
                 <div className="px-5 pb-5">
                   <QuotationInfoSection />
@@ -2093,28 +2093,28 @@ export default async function IncomingQuotationDetailPage({
             </section>
 
             {/* --- Panel de decision (ancho completo) ---
-                 Si la consulta esta en estado avanzado (oferta_aceptada /
-                 revision_final) mostramos el panel "Abrir proyecto". En
+                 Si la request esta en status avanzado (quote_accepted /
+                 final_review) mostramos el panel "Abrir project". En
                  caso contrario, mantenemos los botones originales. */}
-            {data.estado === QUOTATION_BOARD_STATES.OFERTA_ACEPTADA || data.estado === QUOTATION_BOARD_STATES.REVISION_FINAL ? (
+            {data.status === QUOTATION_BOARD_STATES.QUOTE_ACCEPTED || data.status === QUOTATION_BOARD_STATES.FINAL_REVIEW ? (
               <PreparaProyectoPanel
                 consultaId={data.id}
-                currentState={data.estado ?? ''}
+                currentState={data.status ?? ''}
               />
             ) : (
               <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
                 <h2 className="text-sm font-semibold text-[color:var(--ink)]">Panel de decision</h2>
                 <p className="mt-1 text-xs text-[color:var(--ink-2)]">
-                  Revisa toda la informacion y decide como proceder con esta consulta.
+                  Revisa toda la informacion y decide como proceder con esta request.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  {/* TODO: implement crear proyecto action */}
+                  {/* TODO: implement crear project action */}
                   <button
                     type="button"
                     className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-100 px-5 py-2.5 text-sm font-semibold text-emerald-800 shadow-sm transition-colors hover:bg-emerald-200"
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    Crear proyecto
+                    Crear project
                   </button>
                   {/* TODO: implement solicitar mas informacion action */}
                   <button

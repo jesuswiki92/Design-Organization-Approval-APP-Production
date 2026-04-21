@@ -20,7 +20,7 @@ We need to replace external form tooling with app-hosted forms that fit the exis
 
 ## Approach
 
-Create a public form URL linked to `doa_consultas_entrantes.id` through a secure token. Resolve whether the sender is a known client from the quotations flow; if yes, prefill the client summary and show only the technical section. If not, show the full client-data block. Save submissions as structured JSON plus normalized key fields, then let the existing automation/state flow consume the result.
+Create a public form URL linked to `doa_incoming_requests.id` through a secure token. Resolve whether the sender is a known client from the quotations flow; if yes, prefill the client summary and show only the technical section. If not, show the full client-data block. Save submissions as structured JSON plus normalized key fields, then let the existing automation/state flow consume the result.
 
 ## Affected Areas
 

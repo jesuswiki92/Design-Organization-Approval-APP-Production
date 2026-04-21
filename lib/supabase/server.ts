@@ -1,16 +1,16 @@
 /**
  * CONEXION A SUPABASE DESDE EL SERVIDOR (LADO SERVIDOR)
  *
- * Este archivo crea la conexion a Supabase (la base de datos de la app)
+ * Este archivo crea la conexion a Supabase (la base de data de la app)
  * para usarla en las partes de la app que se ejecutan en el servidor
  * (las paginas "page.tsx", las API routes, y los Server Components).
  *
  * A diferencia del archivo "client.ts", esta version maneja las "cookies"
- * (pequenos datos que el navegador guarda para mantener la sesion del usuario).
+ * (pequenos data que el navegador guarda para mantener la sesion del user_label).
  * Esto permite que el servidor sepa quien esta conectado y verificar permisos.
  *
  * IMPORTANTE: No modificar este archivo sin una razon clara.
- * Es una pieza critica de la autenticacion y el acceso a datos.
+ * Es una pieza critica de la autenticacion y el acceso a data.
  */
 
 import { createServerClient } from '@supabase/ssr'
@@ -20,16 +20,16 @@ import { cookies } from 'next/headers'
  * Crea y devuelve una conexion a Supabase para usar desde el servidor.
  *
  * Esta funcion es "async" (asincrona) porque necesita esperar a leer
- * las cookies del navegador del usuario antes de crear la conexion.
+ * las cookies del navegador del user_label antes de crear la conexion.
  *
  * La configuracion de cookies permite que Supabase:
- * - getAll: lea las cookies existentes para saber quien es el usuario
+ * - getAll: lea las cookies existentes para saber quien es el user_label
  * - setAll: guarde o actualice cookies (por ejemplo, al renovar la sesion)
  *
  * El bloque "catch" vacio en setAll es intencional: en los Server Components
  * de Next.js no se pueden modificar cookies, asi que se ignora el error.
  *
- * @returns Un objeto de conexion a Supabase listo para hacer consultas autenticadas
+ * @returns Un objeto de conexion a Supabase listo para hacer requests autenticadas
  */
 export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

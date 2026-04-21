@@ -29,7 +29,7 @@
     .confirmation h2{font-size:24px;color:#16a34a;margin:12px 0 8px}
     .confirmation p{color:var(--muted);font-size:15px}
     .error-msg{margin-top:8px;padding:10px 14px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:13px;display:none}
-    @media (max-width:880px){.hero,.cols2{grid-template-columns:1fr}}@media (max-width:720px){body{padding:20px 12px}.hero-card,.summary,.section,.submit{padding:22px}}
+    @medium (max-width:880px){.hero,.cols2{grid-template-columns:1fr}}@medium (max-width:720px){body{padding:20px 12px}.hero-card,.summary,.section,.submit{padding:22px}}
   </style>
 </head>
 <body>
@@ -51,7 +51,7 @@
       </aside>
     </div>
 
-    <input type="hidden" id="consulta_id" value="{{CONSULTA_ID}}" />
+    <input type="hidden" id="incoming_request_id" value="{{CONSULTA_ID}}" />
     <input type="hidden" id="variant" value="{{FORM_VARIANT_KNOWN}}" />
     <input type="hidden" id="client_id" value="{{CLIENT_ID}}" />
     <input type="hidden" id="client_contact_id" value="{{CLIENT_CONTACT_ID}}" />
@@ -104,8 +104,8 @@
             <label for="work_type">Work type <span style="color:#ef4444">*</span></label>
             <select id="work_type" name="work_type" required onchange="toggleWorkType()">
               <option value="">Select...</option>
-              <option value="proyecto_nuevo">New project</option>
-              <option value="modificacion_existente">Modification to existing project</option>
+              <option value="new_project">New project</option>
+              <option value="existing_modification">Modification to existing project</option>
             </select>
           </div>
           <div class="field hidden" id="field-existing-project">
@@ -147,7 +147,7 @@
             <p class="hint">Drilling, cutouts, brackets, doublers, or any structural interface</p>
             <select id="impact_structural_attachment" name="impact_structural_attachment" required onchange="toggleStructuralAttachment()">
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="no_se">Not sure</option>
             </select>
@@ -162,7 +162,7 @@
           <p class="hint">Primary Structural Elements &mdash; load-bearing members whose failure could be catastrophic</p>
           <select id="affects_primary_structure" name="affects_primary_structure">
             <option value="">Select...</option>
-            <option value="si">Yes / S&iacute;</option>
+            <option value="yes">Yes / S&iacute;</option>
             <option value="no">No</option>
             <option value="no_se">Not sure / No estoy seguro</option>
           </select>
@@ -193,7 +193,7 @@
         <input type="hidden" id="items_weight_list" name="items_weight_list" value="[]" />
         <div id="items-list-container" style="margin-top:12px">
           <div class="item-row" style="display:grid;grid-template-columns:1fr .4fr .4fr 40px;gap:10px;align-items:end;margin-bottom:10px">
-            <div class="field"><label>Item description <span style="color:#ef4444">*</span></label><input type="text" class="item-name" required placeholder="e.g. GPS antenna, cargo net..." /></div>
+            <div class="field"><label>Item description <span style="color:#ef4444">*</span></label><input type="text" class="item-name" required placeholder="e.g. GPS antenna, job_title net..." /></div>
             <div class="field"><label>Weight added (kg) <span style="color:#ef4444">*</span></label><input type="number" class="item-weight-add" step="0.1" min="0" required placeholder="0.0" /></div>
             <div class="field"><label>Weight removed (kg)</label><input type="number" class="item-weight-rem" step="0.1" min="0" value="0" placeholder="0.0" /></div>
             <button type="button" class="btn-remove-item" onclick="removeItemRow(this)" style="width:36px;height:36px;border:1px solid #fecaca;border-radius:10px;background:#fef2f2;color:#dc2626;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px" title="Remove item">&times;</button>
@@ -210,7 +210,7 @@
             <label for="impact_electrical">Does the modification require electrical connections or wiring? <span style="color:#ef4444">*</span></label>
             <select id="impact_electrical" name="impact_electrical" required>
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="no_se">Not sure</option>
             </select>
@@ -220,7 +220,7 @@
             <p class="hint">Antennas, transponders, radios, sensors, displays, navigation equipment</p>
             <select id="impact_avionics" name="impact_avionics" required>
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="no_se">Not sure</option>
             </select>
@@ -232,7 +232,7 @@
             <p class="hint">Seats, monuments, galleys, lavatories, stowage compartments</p>
             <select id="impact_cabin_layout" name="impact_cabin_layout" required>
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
           </div>
@@ -240,7 +240,7 @@
           <label for="impact_pressurized">Is the installation zone pressurized? <span style="color:#ef4444">*</span></label>
           <select id="impact_pressurized" name="impact_pressurized" required>
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="no_se">Not sure</option>
             </select>
@@ -256,7 +256,7 @@
           <p class="hint">New limitations, new procedures, changed dispatch conditions</p>
           <select id="impact_operational_change" name="impact_operational_change" required>
             <option value="">Select...</option>
-            <option value="si">Yes</option>
+            <option value="yes">Yes</option>
             <option value="no">No</option>
             <option value="no_se">Not sure</option>
           </select>
@@ -265,7 +265,7 @@
           <label for="motivated_by_ad">Is the modification driven by an Airworthiness Directive (AD)? / &iquest;La modificaci&oacute;n viene motivada por una Directiva de Aeronavegabilidad (AD)? <span style="color:#ef4444">*</span></label>
           <select id="motivated_by_ad" name="motivated_by_ad" required onchange="toggleAD()">
             <option value="">Select...</option>
-            <option value="si">Yes / S&iacute;</option>
+            <option value="yes">Yes / S&iacute;</option>
             <option value="no">No</option>
             <option value="no_se">Not sure / No estoy seguro</option>
           </select>
@@ -284,9 +284,9 @@
             <label for="has_equipment">Do you already have the equipment/component to install? <span style="color:#ef4444">*</span></label>
             <select id="has_equipment" name="has_equipment" required onchange="toggleEquipment()">
               <option value="">Select...</option>
-              <option value="si">Yes, I already have it</option>
+              <option value="yes">Yes, I already have it</option>
               <option value="no">No, I need guidance</option>
-              <option value="no_aplica">Not applicable</option>
+              <option value="not_applicable">Not applicable</option>
             </select>
           </div>
           <div class="field hidden" id="field-equipment-details">
@@ -299,7 +299,7 @@
             <label for="has_drawings">Do you have drawings, schematics or technical documentation? <span style="color:#ef4444">*</span></label>
             <select id="has_drawings" name="has_drawings" required>
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
           </div>
@@ -307,9 +307,9 @@
             <label for="has_previous_mod">Is there a similar previous modification on this or another aircraft? <span style="color:#ef4444">*</span></label>
             <select id="has_previous_mod" name="has_previous_mod" required onchange="togglePreviousMod()">
               <option value="">Select...</option>
-              <option value="si">Yes</option>
+              <option value="yes">Yes</option>
               <option value="no">No</option>
-              <option value="no_seguro">Not sure</option>
+              <option value="not_sure">Not sure</option>
             </select>
           </div>
         </div>
@@ -343,7 +343,7 @@
           <label for="has_manufacturer_docs">Do you have equipment manufacturer documentation? <span style="color:#ef4444">*</span></label>
           <select id="has_manufacturer_docs" name="has_manufacturer_docs" required>
             <option value="">Select...</option>
-            <option value="si">Yes (installation manuals, datasheets...)</option>
+            <option value="yes">Yes (installation manuals, datasheets...)</option>
             <option value="no">No</option>
           </select>
         </div>
@@ -361,7 +361,7 @@
             <label for="is_aog">Is this an AOG (Aircraft on Ground) situation? <span style="color:#ef4444">*</span></label>
             <select id="is_aog" name="is_aog" required>
               <option value="">Select...</option>
-              <option value="si">Yes, urgent</option>
+              <option value="yes">Yes, urgent</option>
               <option value="no">No</option>
             </select>
           </div>
@@ -435,7 +435,7 @@
       showState('loading');
       var ts=Date.now();
       var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-      var consultaId=(document.getElementById('consulta_id')||{}).value||'sin-consulta';
+      var consultaId=(document.getElementById('incoming_request_id')||{}).value||'sin-request';
       var path=consultaId+'/tcds/'+ts+'_'+safeName;
       try{
         var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
@@ -482,7 +482,7 @@
           if(file.size>25*1024*1024){throw new Error('Each file must be 25 MB or smaller.');}
           var ts=Date.now();
           var safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-          var consultaId=(document.getElementById('consulta_id')||{}).value||'sin-consulta';
+          var consultaId=(document.getElementById('incoming_request_id')||{}).value||'sin-request';
           var path=consultaId+'/drawings/'+ts+'_'+i+'_'+safeName;
           var r=await fetch(SB_URL+'/storage/v1/object/'+BUCKET+'/'+path,{
             method:'POST',
@@ -542,26 +542,26 @@
     window.toggleWorkType=function(){
       var v=document.getElementById('work_type').value;
       var f=document.getElementById('field-existing-project');
-      f.classList.toggle('hidden',v!=='modificacion_existente');
+      f.classList.toggle('hidden',v!=='existing_modification');
     };
     window.toggleEquipment=function(){
       var v=document.getElementById('has_equipment').value;
       var f=document.getElementById('field-equipment-details');
-      f.classList.toggle('hidden',v!=='si');
+      f.classList.toggle('hidden',v!=='yes');
     };
     window.toggleStructuralAttachment=function(){
       var v=document.getElementById('impact_structural_attachment').value;
       var f=document.getElementById('field-structural-interface');
       var p=document.getElementById('field-primary-structure');
-      f.classList.toggle('hidden',v!=='si');
-      p.classList.toggle('hidden',v!=='si');
-      if(v!=='si'){document.getElementById('affects_primary_structure').value='';}
+      f.classList.toggle('hidden',v!=='yes');
+      p.classList.toggle('hidden',v!=='yes');
+      if(v!=='yes'){document.getElementById('affects_primary_structure').value='';}
     };
     window.toggleAD=function(){
       var v=document.getElementById('motivated_by_ad').value;
       var f=document.getElementById('field-ad-reference');
-      f.classList.toggle('hidden',v!=='si');
-      if(v!=='si'){document.getElementById('ad_reference').value='';}
+      f.classList.toggle('hidden',v!=='yes');
+      if(v!=='yes'){document.getElementById('ad_reference').value='';}
     };
 
     /* --- Dynamic item list --- */
@@ -570,7 +570,7 @@
       var row=document.createElement('div');
       row.className='item-row';
       row.style.cssText='display:grid;grid-template-columns:1fr .4fr .4fr 40px;gap:10px;align-items:end;margin-bottom:10px';
-      row.innerHTML='<div class="field"><label>Item description <span style="color:#ef4444">*</span></label><input type="text" class="item-name" required placeholder="e.g. GPS antenna, cargo net..." /></div>'
+      row.innerHTML='<div class="field"><label>Item description <span style="color:#ef4444">*</span></label><input type="text" class="item-name" required placeholder="e.g. GPS antenna, job_title net..." /></div>'
         +'<div class="field"><label>Weight added (kg) <span style="color:#ef4444">*</span></label><input type="number" class="item-weight-add" step="0.1" min="0" required placeholder="0.0" /></div>'
         +'<div class="field"><label>Weight removed (kg)</label><input type="number" class="item-weight-rem" step="0.1" min="0" value="0" placeholder="0.0" /></div>'
         +'<button type="button" class="btn-remove-item" onclick="removeItemRow(this)" style="width:36px;height:36px;border:1px solid #fecaca;border-radius:10px;background:#fef2f2;color:#dc2626;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:8px" title="Remove item">&times;</button>';
@@ -604,7 +604,7 @@
     window.togglePreviousMod=function(){
       var v=document.getElementById('has_previous_mod').value;
       var f=document.getElementById('field-previous-mod-ref');
-      f.classList.toggle('hidden',v!=='si');
+      f.classList.toggle('hidden',v!=='yes');
     };
 
     window.submitAll=async function(){
@@ -628,11 +628,11 @@
         if(!el.value.trim()){el.focus();errTech.textContent='Please fill in all required fields.';errTech.style.display='block';return;}
       }
 
-      var consultaId=document.getElementById('consulta_id').value;
+      var consultaId=document.getElementById('incoming_request_id').value;
 
       var aircraftData={
         section:'aircraft',
-        consulta_id:consultaId,
+        incoming_request_id:consultaId,
         tcds_number:document.getElementById('tcds_number').value.trim(),
         aircraft_manufacturer:document.getElementById('aircraft_manufacturer').value.trim(),
         aircraft_model:document.getElementById('aircraft_model').value.trim(),
@@ -646,7 +646,7 @@
 
       var techData={
         section:'technical',
-        consulta_id:consultaId,
+        incoming_request_id:consultaId,
         work_type:document.getElementById('work_type').value,
         existing_project_code:document.getElementById('existing_project_code').value.trim()||'',
         modification_summary:document.getElementById('modification_summary').value.trim(),

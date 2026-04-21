@@ -31,7 +31,7 @@ export type AppEventInput = {
 }
 
 const SENSITIVE_KEY_PATTERN =
-  /(authorization|cookie|password|token|secret|body|message|html|content|text|email|mail|subject|payload|headers?|cuerpo|remitente|reply)/i
+  /(authorization|cookie|password|token|secret|body|message|html|content|text|email|mail|subject|payload|headers?|body|sender|reply)/i
 
 const MAX_STRING_LENGTH = 160
 const MAX_ARRAY_ITEMS = 20

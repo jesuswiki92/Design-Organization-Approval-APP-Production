@@ -1,16 +1,16 @@
-# Guia del Proyecto - DOA Operations Hub
+# Guia del Project - DOA Operations Hub
 
 ## Que es esta aplicacion?
 
-DOA Operations Hub es una herramienta interna para el equipo de DOA (Design Organisation Approval) bajo la normativa EASA Part 21J. Sirve para gestionar el dia a dia del departamento de ingenieria:
+DOA Operations Hub es una herramienta internal para el equipo de DOA (Design Organisation Approval) bajo la normativa EASA Part 21J. Sirve para gestionar el dia a dia del departamento de ingenieria:
 
-- **Cotizaciones y ofertas**: recibir consultas de clientes, preparar presupuestos
-- **Proyectos de ingenieria**: seguimiento de proyectos activos, documentos, tareas
-- **Clientes**: base de datos de clientes con sus contactos
-- **Aeronaves**: catalogo de modelos de aeronave con los que trabajamos
+- **Cotizaciones y quotes**: recibir requests de clients, prepare presupuestos
+- **Projects de ingenieria**: seguimiento de projects activos, documents, tareas
+- **Clients**: base de data de clients con sus contacts
+- **Aircraft**: catalogo de models de aircraft con los que trabajamos
 - **Asistente IA**: un chat experto que ayuda con dudas tecnicas
 
-Es como un "centro de operaciones" digital donde todo el equipo puede ver que esta pasando con cada proyecto y cada cliente.
+Es como un "centro de operaciones" digital donde todo el equipo puede ver que esta pasando con cada project y cada client.
 
 ---
 
@@ -20,45 +20,45 @@ Aqui explicamos cada herramienta y por que la elegimos:
 
 | Tecnologia | Que es | Por que la usamos |
 |------------|--------|-------------------|
-| **Next.js** | Un "framework" (estructura base) para construir aplicaciones web. Piensa en el como los cimientos y la estructura de una casa. | Nos permite crear tanto las paginas que ves en el navegador como la logica del servidor, todo en un solo proyecto. |
-| **React** | Una libreria (coleccion de herramientas) para construir interfaces de usuario. | Nos permite crear la interfaz como piezas de Lego: cada boton, cada tabla, cada formulario es una pieza que se puede reutilizar. |
-| **Supabase** | Nuestra base de datos y sistema de autenticacion (login). Es como una hoja de calculo muy potente en la nube. | Guarda todos los datos (clientes, proyectos, ofertas) y gestiona quien puede entrar a la app. |
+| **Next.js** | Un "framework" (estructura base) para construir aplicaciones website. Piensa en el como los cimientos y la estructura de una casa. | Nos permite crear tanto las paginas que ves en el navegador como la logica del servidor, todo en un solo project. |
+| **React** | Una libreria (coleccion de tools) para construir interfaces de user_label. | Nos permite crear la interfaz como piezas de Lego: cada boton, cada table, cada form es una pieza que se puede reutilizar. |
+| **Supabase** | Nuestra base de data y sistema de autenticacion (login). Es como una hoja de calculo muy potente en la nube. | Guarda todos los data (clients, projects, quotes) y gestiona quien puede entrar a la app. |
 | **Tailwind CSS** | Un sistema para dar estilo y diseno a las paginas. En vez de escribir CSS clasico, usamos clases cortas directamente en el HTML. | Permite disenar rapido sin salir del codigo del componente. |
 | **shadcn/ui** | Una coleccion de componentes visuales ya hechos: botones, dialogos, pestanas, tablas, etc. | No tenemos que disenar cada boton desde cero. Son componentes bonitos y accesibles que ya funcionan. |
-| **OpenRouter** | Un servicio que nos conecta con modelos de inteligencia artificial. | Lo usamos para el "Experto IA", un chat donde puedes hacer preguntas tecnicas y recibir respuestas inteligentes. |
-| **n8n** | Una plataforma de automatizaciones. Piensa en ella como "robots" que hacen tareas repetitivas. | Procesa emails entrantes de clientes automaticamente y los convierte en consultas dentro de la app. Tambien envia respuestas por email. |
-| **Zustand** | Una libreria pequena para gestionar el "estado" de la interfaz (que pestana esta abierta, que filtro esta activo, etc.). | Mantiene sincronizada la informacion entre diferentes partes de la pantalla sin complicaciones. |
+| **OpenRouter** | Un servicio que nos conecta con models de inteligencia artificial. | Lo usamos para el "Experto IA", un chat donde puedes hacer preguntas tecnicas y recibir responses inteligentes. |
+| **n8n** | Una plataforma de automatizaciones. Piensa en ella como "robots" que hacen tareas repetitivas. | Procesa emails entrantes de clients automaticamente y los convierte en requests dentro de la app. Tambien envia responses por email. |
+| **Zustand** | Una libreria pequena para gestionar el "status" de la interfaz (que pestana esta abierta, que filtro esta is_active, etc.). | Mantiene sincronizada la informacion entre diferentes partes de la pantalla sin complicaciones. |
 
 ---
 
 ## Estructura de carpetas
 
-A continuacion explicamos que hay en cada carpeta y para que sirve.
+A continuacion explicamos que hay en cada folder y para que sirve.
 
 ### `app/` — Las paginas de la aplicacion
 
-En Next.js, cada carpeta dentro de `app/` se convierte en una pagina web (una URL). Asi es como esta organizado:
+En Next.js, cada folder dentro de `app/` se convierte en una page website (una URL). Asi es como esta organizado:
 
-| Carpeta / Archivo | URL que crea | Que ve el usuario | Datos que necesita |
+| Folder / Archivo | URL que crea | Que ve el user_label | Data que necesita |
 |-------------------|-------------|-------------------|-------------------|
 | `app/page.tsx` | `/` | Redirige automaticamente a `/home` | Ninguno |
-| `app/login/` | `/login` | Pagina de inicio de sesion con email y contrasena | Supabase Auth |
-| `app/home/` | `/home` | Panel principal (dashboard) con resumen general | Estadisticas generales |
-| `app/engineering/` | `/engineering` | Pagina indice visible como `Proyectos` con tablero y lista mock | Ninguno (es un menu) |
-| `app/engineering/portfolio/` | `/engineering/portfolio` | Lista de todos los proyectos de ingenieria con filtros | `doa_proyectos_generales`, `doa_clientes_datos_generales`, `doa_aeronaves_modelos` |
-| `app/engineering/projects/[id]/` | `/engineering/projects/123` | Espacio de trabajo de un proyecto individual: documentos, tareas, detalles | `doa_proyectos_generales`, `doa_proyectos_documentos`, `doa_proyectos_tareas`, `doa_usuarios` |
-| `app/quotations/` | `/quotations` | Workspace de quotations con selector `Tablero` / `Lista` | `doa_ofertas`, `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
-| `app/quotations/[id]/` | `/quotations/456` | Detalle de una quotation con bloques preparados para crecer | Datos mock de quotations mientras no exista backend final |
-| `app/quotations/incoming/[id]/` | `/quotations/incoming/456` | Detalle de una consulta entrante especifica: email original, datos del cliente, respuesta IA | `doa_consultas_entrantes`, `doa_clientes_datos_generales` |
-| `app/clients/` | `/clients` | Gestion de clientes: lista, busqueda, detalles y contactos | `doa_clientes_datos_generales`, `doa_clientes_contactos` |
-| `app/databases/` | `/databases` | Navegador de tablas: permite ver todas las tablas de la base de datos | Catalogo de tablas (`lib/databases.ts`) |
-| `app/databases/[table]/` | `/databases/nombre_tabla` | Vista de los datos de una tabla especifica en formato tabla | Datos dinamicos segun la tabla seleccionada |
-| `app/tools/` | `/tools` | Seccion de herramientas | Ninguno (es un menu) |
-| `app/tools/experto/` | `/tools/experto` | Chat con el asistente de IA experto | OpenRouter API |
+| `app/login/` | `/login` | Page de started_at de sesion con email y contrasena | Supabase Auth |
+| `app/home/` | `/home` | Panel primary (dashboard) con resumen general | Estadisticas generales |
+| `app/engineering/` | `/engineering` | Page indice visible como `Projects` con tablero y lista mock | Ninguno (es un menu) |
+| `app/engineering/portfolio/` | `/engineering/portfolio` | Lista de todos los projects de ingenieria con filtros | `doa_general_projects`, `doa_clients`, `doa_aircraft_models` |
+| `app/engineering/projects/[id]/` | `/engineering/projects/123` | Espacio de trabajo de un project individual: documents, tareas, detalles | `doa_general_projects`, `doa_projects_documentos`, `doa_projects_tareas`, `doa_usuarios` |
+| `app/quotations/` | `/quotations` | Workspace de quotations con selector `Tablero` / `Lista` | `doa_ofertas`, `doa_incoming_requests`, `doa_clients` |
+| `app/quotations/[id]/` | `/quotations/456` | Detalle de una quotation con bloques preparados para crecer | Data mock de quotations mientras no exista backend final |
+| `app/quotations/incoming/[id]/` | `/quotations/incoming/456` | Detalle de una request entrante especifica: email original, data del client, response IA | `doa_incoming_requests`, `doa_clients` |
+| `app/clients/` | `/clients` | Gestion de clients: lista, search, detalles y contacts | `doa_clients`, `doa_client_contacts` |
+| `app/databases/` | `/databases` | Navegador de tablas: permite ver todas las tablas de la base de data | Catalogo de tablas (`lib/databases.ts`) |
+| `app/databases/[table]/` | `/databases/nombre_tabla` | Vista de los data de una table especifica en formato table | Data dinamicos segun la table seleccionada |
+| `app/tools/` | `/tools` | Seccion de tools | Ninguno (es un menu) |
+| `app/tools/expert/` | `/tools/expert` | Chat con el asistente de IA experto | OpenRouter API |
 
-> **Nota sobre `[id]` y `[table]`**: Los corchetes significan que es una ruta "dinamica". Es decir, el valor cambia. Por ejemplo, `/engineering/projects/123` muestra el proyecto numero 123, y `/engineering/projects/456` muestra el 456.
+> **Nota sobre `[id]` y `[table]`**: Los corchetes significan que es una path "dinamica". Es decir, el valor cambia. Por ejemplo, `/engineering/projects/123` muestra el project numero 123, y `/engineering/projects/456` muestra el 456.
 
-> **Nota actual sobre `Engineering`**: En la interfaz visible, esta seccion se presenta como `Proyectos`. El nombre tecnico de la ruta sigue siendo `engineering`.
+> **Nota actual sobre `Engineering`**: En la interfaz visible, esta seccion se presenta como `Projects`. El name technical de la path sigue siendo `engineering`.
 
 ---
 
@@ -71,7 +71,7 @@ Los "componentes" son como piezas de Lego. En vez de escribir el mismo boton 50 
 Estos componentes forman la "carcasa" de la aplicacion, lo que siempre esta visible:
 
 - **`Sidebar.tsx`** — El menu de navegacion lateral izquierdo. Tiene los enlaces a cada seccion (Home, Engineering, Quotations, Clients, etc.).
-- **`TopBar.tsx`** — La barra superior con el titulo de la pagina actual y controles generales.
+- **`TopBar.tsx`** — La barra superior con el title de la page actual y controles generales.
 
 #### `components/ui/` — Componentes base (shadcn/ui)
 
@@ -81,62 +81,62 @@ Estos son componentes visuales genericos que vienen de la libreria shadcn/ui. So
 - `dialog.tsx` — Ventanas emergentes (popups)
 - `tabs.tsx` — Pestanas
 - `table.tsx` — Tablas
-- `input.tsx` — Campos de texto
-- `badge.tsx` — Etiquetas pequenas (como "Activo", "Pendiente")
+- `input.tsx` — Campos de text
+- `badge.tsx` — Etiquetas pequenas (como "Active", "Pending")
 - Y muchos mas...
 
 > No necesitas modificar estos archivos normalmente. Son componentes estandar.
 
-#### `components/workflow/` — Gestion de estados
+#### `components/workflow/` — Gestion de statuses
 
-- **`WorkflowStateChanger.tsx`** — Un componente que permite cambiar el estado de una oferta o proyecto (por ejemplo, de "Borrador" a "Enviada" a "Aceptada"). Muestra los estados posibles y permite hacer la transicion.
+- **`WorkflowStateChanger.tsx`** — Un componente que permite cambiar el status de una quote o project (por ejemplo, de "Borrador" a "Enviada" a "Accepted"). Muestra los statuses posibles y permite hacer la transicion.
 
-#### `components/project/` — Workspace de proyecto
+#### `components/project/` — Workspace de project
 
-Componentes especificos para la pagina de un proyecto individual:
+Componentes especificos para la page de un project individual:
 
-- **`ProjectWorkspaceClient.tsx`** — El componente principal que organiza todo el workspace del proyecto
-- **`Header.tsx`** — Cabecera del proyecto con titulo, estado y acciones
-- **`DocumentsTable.tsx`** — Tabla con los documentos del proyecto
-- **`ExpertPanel.tsx`** — Panel lateral con el asistente IA contextualizado al proyecto
+- **`ProjectWorkspaceClient.tsx`** — El componente primary que organiza todo el workspace del project
+- **`Header.tsx`** — Cabecera del project con title, status y acciones
+- **`DocumentsTable.tsx`** — Table con los documents del project
+- **`ExpertPanel.tsx`** — Panel lateral con el asistente IA contextualizado al project
 
 ---
 
 ### `lib/` — Logica y utilidades
 
-Esta carpeta contiene codigo que NO es visual, sino logica de negocio y conexiones:
+Esta folder contiene codigo que NO es visual, sino logica de negocio y conexiones:
 
-- **`lib/supabase/`** — Conexion a la base de datos Supabase
+- **`lib/supabase/`** — Conexion a la base de data Supabase
   - `server.ts` — Conexion desde el servidor (para las APIs)
   - `client.ts` — Conexion desde el navegador (para las paginas)
-- **`lib/workflow-states.ts`** — Define la "maquina de estados": que estados puede tener una oferta o proyecto, y que transiciones son validas (por ejemplo, una oferta no puede pasar de "Borrador" a "Completada" directamente).
-- **`lib/databases.ts`** — Catalogo de tablas para el navegador de bases de datos (`/databases`). Define que tablas se muestran y como se llaman.
-- **`lib/utils.ts`** — Funciones de utilidad generales (formatear fechas, combinar clases CSS, etc.).
+- **`lib/workflow-states.ts`** — Define la "maquina de statuses": que statuses puede tener una quote o project, y que transiciones son validas (por ejemplo, una quote no puede pasar de "Borrador" a "Completada" directamente).
+- **`lib/databases.ts`** — Catalogo de tablas para el navegador de bases de data (`/databases`). Define que tablas se muestran y como se llaman.
+- **`lib/utils.ts`** — Funciones de utilidad generales (formatear dates, combinar clases CSS, etc.).
 - **`lib/app-release.ts`** — Registro de la version actual de la aplicacion.
 
 ---
 
-### `types/` — Definiciones de datos
+### `types/` — Definiciones de data
 
-- **`database.ts`** — Contiene todas las "definiciones de tipos" de TypeScript. Esto es como un diccionario que dice "un Cliente tiene: nombre (texto), CIF (texto), pais (texto), etc.". Ayuda a que el codigo no tenga errores porque siempre sabemos que forma tienen los datos.
+- **`database.ts`** — Contiene todas las "definiciones de tipos" de TypeScript. Esto es como un diccionario que dice "un Client tiene: name (text), CIF (text), country (text), etc.". Ayuda a que el codigo no tenga errores porque siempre sabemos que forma tienen los data.
 
 ---
 
 ### `app/api/` — Rutas del servidor (APIs)
 
-Las APIs son "puertas traseras" de la aplicacion. No las ve el usuario directamente, pero las paginas las usan para hacer operaciones:
+Las APIs son "puertas traseras" de la aplicacion. No las ve el user_label directamente, pero las paginas las usan para hacer operaciones:
 
-- **`/api/workflow/transition`** — Endpoint reservado para la transicion de estado de ofertas o proyectos. En el estado actual devuelve `503`, asi que no debe considerarse operativo todavia.
-- **`/api/tools/chat`** — Gestiona el chat con la IA. Envia tu pregunta a OpenRouter y devuelve la respuesta.
-- **`/api/consultas/[id]/send-client`** — Envia un email de respuesta al cliente. Llama al webhook de n8n que se encarga de enviar el email real.
+- **`/api/workflow/transition`** — Endpoint reservado para la transicion de status de quotes o projects. En el status actual devuelve `503`, asi que no debe considerarse operativo todavia.
+- **`/api/tools/chat`** — Gestiona el chat con la IA. Envia tu pregunta a OpenRouter y devuelve la response.
+- **`/api/incoming-requests/[id]/send-client`** — Envia un email de response al client. Llama al webhook de n8n que se encarga de send el email real.
 
 ---
 
-### `supabase/` — Migraciones de base de datos
+### `supabase/` — Migraciones de base de data
 
-Aqui hay archivos SQL (el lenguaje de las bases de datos). Cada archivo es una "migracion": un cambio que se hizo a la estructura de la base de datos.
+Aqui hay archivos SQL (el lenguaje de las bases de data). Cada archivo es una "migracion": un cambio que se hizo a la estructura de la base de data.
 
-Por ejemplo, una migracion podria ser "crear la tabla de clientes" o "anadir la columna telefono a la tabla de contactos". Se guardan en orden para poder reproducir la base de datos desde cero si fuera necesario.
+Por ejemplo, una migracion podria ser "crear la table de clients" o "anadir la columna phone a la table de contacts". Se guardan en sort_order para poder reproducir la base de data desde cero si fuera necesario.
 
 ---
 
@@ -145,7 +145,7 @@ Por ejemplo, una migracion podria ser "crear la tabla de clientes" o "anadir la 
 | Archivo | Para que sirve |
 |---------|---------------|
 | `proxy.ts` (middleware) | Protege las rutas de la app. Si no has iniciado sesion, te redirige a `/login`. Sin esto, cualquiera podria acceder. |
-| `package.json` | Lista todas las dependencias (librerias externas) del proyecto. Cuando ejecutas `npm install`, lee este archivo para saber que instalar. |
+| `package.json` | Lista todas las dependencias (librerias externas) del project. Cuando ejecutas `npm install`, lee este archivo para saber que instalar. |
 | `.env.local` | Contiene las claves secretas y configuracion (URLs de Supabase, claves API, etc.). **NUNCA compartas este archivo ni lo subas a Git.** |
 | `next.config.ts` | Configuracion de Next.js (como se comporta el framework). |
 | `globals.css` | Estilos CSS globales que aplican a toda la aplicacion. |
@@ -155,40 +155,40 @@ Por ejemplo, una migracion podria ser "crear la tabla de clientes" o "anadir la 
 
 ---
 
-## Como funciona el flujo principal
+## Como funciona el flujo primary
 
-El flujo mas importante de la aplicacion es el de **consultas entrantes**. Funciona asi:
+El flujo mas importante de la aplicacion es el de **requests entrantes**. Funciona asi:
 
-1. **Un cliente envia un email** pidiendo un presupuesto o haciendo una consulta tecnica.
+1. **Un client envia un email** pidiendo un presupuesto o haciendo una request technical.
 
 2. **n8n (la automatizacion) procesa el email** automaticamente:
    - Lee el email
-   - Extrae la informacion relevante (asunto, remitente, contenido)
-   - Usa IA para clasificar la consulta y preparar un borrador de respuesta
-   - Crea un registro en la tabla `doa_consultas_entrantes`
+   - Extrae la informacion relevante (subject, sender, contenido)
+   - Usa IA para clasificar la request y prepare un borrador de response
+   - Crea un registro en la table `doa_incoming_requests`
 
-3. **La app muestra la consulta** en la seccion `/quotations` como una "consulta entrante" nueva.
+3. **La app muestra la request** en la seccion `/quotations` como una "request entrante" new.
 
 4. **Un ingeniero del equipo la revisa**:
-   - Abre el detalle de la consulta (`/quotations/incoming/[id]`)
-   - Ve el email original, la clasificacion automatica y la respuesta sugerida por la IA
-   - Puede editar la respuesta o escribir una nueva
-   - Hace clic en "Enviar al cliente"
+   - Abre el detalle de la request (`/quotations/incoming/[id]`)
+   - Ve el email original, la classification automatica y la response sugerida por la IA
+   - Puede editar la response o escribir una new
+   - Hace clic en "Send al client"
 
-5. **La app envia la respuesta** a traves de n8n (que gestiona el envio real del email).
+5. **La app envia la response** a traves de n8n (que gestiona el send real del email).
 
-6. **El estado cambia** para reflejar el progreso: la consulta pasa de "Nueva" a "Respondida", y si se genera una oferta, esta sigue su propio flujo de estados (Borrador -> Enviada -> Aceptada/Rechazada).
+6. **El status cambia** para reflejar el progreso: la request pasa de "New" a "Respondida", y si se genera una quote, esta sigue su propio flujo de statuses (Borrador -> Enviada -> Accepted/Rejected).
 
 ---
 
 ## Variables de entorno necesarias
 
-Estas se configuran en el archivo `.env.local` en la raiz del proyecto. **Son secretas** — nunca las compartas.
+Estas se configuran en el archivo `.env.local` en la raiz del project. **Son secretas** — nunca las compartas.
 
 | Variable | Que es | Ejemplo |
 |----------|--------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | La URL de tu proyecto en Supabase. Es la direccion donde esta tu base de datos. | `https://xxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | La clave publica de Supabase. Permite que la app se conecte a la base de datos (con permisos limitados). | `eyJhbGci...` (texto largo) |
+| `NEXT_PUBLIC_SUPABASE_URL` | La URL de tu project en Supabase. Es la address donde esta tu base de data. | `https://xxxx.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | La clave publica de Supabase. Permite que la app se conecte a la base de data (con permisos limitados). | `eyJhbGci...` (text largo) |
 | `OPENROUTER_API_KEY` | Clave para conectarse a OpenRouter (el servicio de IA). Sin esto, el chat experto no funciona. | `sk-or-v1-...` |
 | `NEXT_PUBLIC_APP_URL` | La URL donde corre tu aplicacion. En desarrollo es localhost. | `http://localhost:3000` |
 
@@ -196,7 +196,7 @@ Estas se configuran en el archivo `.env.local` en la raiz del proyecto. **Son se
 
 ### Como configurarlas
 
-1. Copia el archivo `.env.example` (si existe) o crea un archivo nuevo llamado `.env.local`
+1. Copia el archivo `.env.example` (si existe) o crea un archivo new llamado `.env.local`
 2. Rellena cada variable con los valores reales
 3. Reinicia la aplicacion (`npm run dev`) para que tome los cambios
 
@@ -204,22 +204,22 @@ Estas se configuran en el archivo `.env.local` en la raiz del proyecto. **Son se
 
 ## Indice de documentacion
 
-| Documento | Contenido |
+| Document | Contenido |
 |-----------|-----------|
-| `docs/01-guia-proyecto.md` | Mapa completo del proyecto (este archivo) |
-| `docs/02-bases-de-datos.md` | Inventario de tablas y plan de reconexion |
-| `docs/03-flujo-consultas.md` | Flujo de consultas entrantes y estado actual de Quotations |
+| `docs/01-guia-project.md` | Mapa completo del project (este archivo) |
+| `docs/02-bases-de-data.md` | Inventario de tablas y plan de reconexion |
+| `docs/03-flujo-requests.md` | Flujo de requests entrantes y status actual de Quotations |
 | `docs/04-como-añadir-cosas.md` | Recetas para cambios comunes |
 | `docs/05-buenas-practicas.md` | Reglas de codigo |
-| `docs/06-estado-actual.md` | Estado funcional actual de la app |
+| `docs/06-status-actual.md` | Status funcional actual de la app |
 
 ---
 
 ## Documentacion estrategica (referencia)
 
-La carpeta `estrategia_base_datos_proyecto/` contiene la vision a largo plazo para integrar busqueda de precedentes tecnicos en quotations:
+La folder `estrategia_base_datos_proyecto/` contiene la vision a largo plazo para integrar search de precedentes tecnicos en quotations:
 - Roadmap de 7 fases de implementacion
-- Ejemplo de estructura de proyecto historico (B30_058)
+- Ejemplo de estructura de project historical (B30_058)
 - Filosofia de testing y criterios de exito
 
-> **Nota:** Estos documentos describen planes FUTUROS, no estado actual. Consultar `docs/06-estado-actual.md` para el estado funcional real.
+> **Nota:** Estos documents describen planes FUTUROS, no status actual. Consultar `docs/06-status-actual.md` para el status funcional real.
