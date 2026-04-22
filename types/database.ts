@@ -317,8 +317,15 @@ export interface Project {
   closed_at: string | null
 
   // --- Folder ---
-  // Path del project en el filesystem
+  // Path del project en el filesystem (legacy — solo simulacion local)
   project_path: string | null
+  // ID de la carpeta del proyecto en Google Drive, poblado por el workflow
+  // n8n "AMS - Crear Carpeta Drive Proyecto" al abrir el proyecto.
+  drive_folder_id: string | null
+  // Link directo (https://drive.google.com/drive/folders/{id}) que la UI
+  // renderiza como boton "Abrir carpeta Drive". Null hasta que la carpeta
+  // se haya creado.
+  drive_folder_url: string | null
 
   // --- Metadata ---
   // Prioridad del project: low, normal, high, urgent

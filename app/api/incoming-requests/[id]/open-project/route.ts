@@ -1,24 +1,20 @@
 import { NextRequest } from 'next/server'
-import { mkdir } from 'fs/promises'
-import path from 'path'
 
 import { requireUserApi } from '@/lib/auth/require-user'
 import { logServerEvent } from '@/lib/observability/server'
 import { buildRequestContext } from '@/lib/observability/shared'
 import {
-  PROJECT_FOLDER_STRUCTURE,
-  buildProjectFolderPath,
   computeNextSequence,
   deriveModelPrefix,
   formatProjectNumber,
 } from '@/lib/project-builder'
-import { PROJECT_STATES, QUOTATION_BOARD_STATES } from '@/lib/workflow-states'
+import {
+  CreateProjectFolderError,
+  createProjectFolder,
+} from '@/lib/quotations/call-n8n-folder'
+import { INCOMING_REQUEST_STATUSES, PROJECT_STATES } from '@/lib/workflow-states'
 
 export const runtime = 'nodejs'
-
-const SIMULATION_BASE_PATH =
-  process.env.DOA_SIMULATION_BASE_PATH ??
-  'C:/Users/Jesús Andrés/Desktop/Aplicaciones - Desarrollo/Design Organization Approval - APP Production/02. Data DOA/00. APP sinulation'
 
 function jsonResponse(status: number, data: unknown) {
   return Response.json(data, { status })
@@ -30,12 +26,17 @@ function jsonResponse(status: number, data: unknown) {
  * Pasos:
  *  1. Autenticar y cargar la request.
  *  2. Calcular (o validar) el project_number.
- *  3. Crear la folder del project con las 6 subcarpetas estandar.
- *  4. Insertar la fila en `doa_projects`.
+ *  3. Insertar la fila en `doa_projects`.
+ *  4. Pedir al workflow n8n `AMS - Crear Carpeta Drive Proyecto` que cree la
+ *     carpeta + subfolders EASA en Google Drive y escriba
+ *     `drive_folder_id` + `drive_folder_url` en la propia fila. Si falla, se
+ *     registra pero NO se revierte el project — la carpeta puede crearse
+ *     manualmente a posteriori.
+ *  5. Archivar la request (status namespace `INCOMING_REQUEST_STATUSES`).
  *
  * Body (opcional): { project_number?: string, title?: string }.
  * Respuestas:
- *  - 201 con `{ id, project_number, folder_path }` cuando se crea.
+ *  - 201 con `{ id, project_number, folder_url }` cuando se crea.
  *  - 409 si el `project_number` ya existe.
  */
 export async function POST(
@@ -113,11 +114,10 @@ export async function POST(
       (incomingRequest.subject as string | null) ||
       'Project sin title'
 
-    // 3. Insertar fila en doa_projects PRIMERO (antes de crear carpetas).
-    //    Asi, si el INSERT falla por unique_violation u other motivo,
-    //    no dejamos carpetas huerfanas en disco que generen duplicados
-    //    en siguientes reintentos.
-    const folderPath = buildProjectFolderPath(SIMULATION_BASE_PATH, numeroProyecto)
+    // 3. Insertar fila en doa_projects. La carpeta Drive se pide a n8n DESPUES
+    //    del insert, y los campos drive_folder_* quedan null hasta entonces.
+    //    Si el insert falla por unique_violation, no dejamos ni fila ni
+    //    carpeta: la llamada a n8n solo ocurre con un project_id real.
     const { data: inserted, error: insertError } = await supabase
       .from('doa_projects')
       .insert({
@@ -130,7 +130,6 @@ export async function POST(
         tcds_code: tcdsNumber,
         tcds_code_short: tcdsCodeShort,
         client_name: sender,
-        project_path: folderPath,
         title,
       })
       .select('id, project_number')
@@ -165,62 +164,66 @@ export async function POST(
       return jsonResponse(500, { error: insertError.message })
     }
 
-    // 4. Crear carpetas fisicas. Si falla, intentar rollback del INSERT.
+    // 4. Pedir a n8n que cree la carpeta en Drive. Si falla, se loguea pero el
+    //    project se mantiene abierto (backfill via admin script o reintento).
+    let folderUrl: string | null = null
+    let folderId: string | null = null
     try {
-      await mkdir(folderPath, { recursive: true })
-      await Promise.all(
-        PROJECT_FOLDER_STRUCTURE.map((sub) =>
-          mkdir(path.join(folderPath, sub), { recursive: true }),
-        ),
-      )
-    } catch (mkdirError) {
-      const mkdirMessage =
-        mkdirError instanceof Error ? mkdirError.message : 'Unknown mkdir error'
-      const { error: rollbackError } = await supabase
-        .from('doa_projects')
-        .delete()
-        .eq('id', inserted.id)
-
-      if (rollbackError) {
-        // Rollback failed: queda inconsistencia entre BD y disco. Log con severity=error.
-        await logServerEvent({
-          eventName: 'project.open.inconsistent',
-          eventCategory: 'quotation',
-          outcome: 'failure',
-          severity: 'error',
-          actorUserId: user.id,
-          requestId: requestContext.requestId,
-          route: requestContext.route,
-          method: httpRequest.method,
-          entityType: 'project',
-          entityId: inserted.id,
-          metadata: {
-            project_number: numeroProyecto,
-            folder_path: folderPath,
-            mkdir_error: mkdirMessage,
-            rollback_error: rollbackError.message,
-          },
-          userAgent: requestContext.userAgent,
-          ipAddress: requestContext.ipAddress,
-          referrer: requestContext.referrer,
-        })
-        return jsonResponse(500, {
-          error:
-            `Inconsistencia al abrir project ${numeroProyecto}: fila creada pero carpetas fallaron y el rollback no pudo eliminar la fila. Requiere limpieza manual (project_id=${inserted.id}).`,
-        })
-      }
-
-      return jsonResponse(500, {
-        error: `No se pudieron crear las carpetas del project: ${mkdirMessage}`,
+      const result = await createProjectFolder({
+        projectId: inserted.id,
+        projectNumber: numeroProyecto,
+        incomingRequestId: id,
+        clientName: sender,
+        subject: (incomingRequest.subject as string | null) ?? null,
+      })
+      folderUrl = result.folderUrl
+      folderId = result.folderId
+    } catch (folderError) {
+      const code =
+        folderError instanceof CreateProjectFolderError
+          ? folderError.code
+          : 'unknown'
+      const message =
+        folderError instanceof Error
+          ? folderError.message
+          : 'Unknown folder webhook error'
+      await logServerEvent({
+        eventName: 'project.drive_folder.failed',
+        eventCategory: 'project',
+        outcome: 'failure',
+        severity: 'warn',
+        actorUserId: user.id,
+        requestId: requestContext.requestId,
+        route: requestContext.route,
+        method: httpRequest.method,
+        entityType: 'project',
+        entityId: inserted.id,
+        metadata: {
+          project_id: inserted.id,
+          project_number: numeroProyecto,
+          folder_error_code: code,
+          folder_error_message: message,
+          upstream_status:
+            folderError instanceof CreateProjectFolderError
+              ? folderError.status
+              : undefined,
+        },
+        userAgent: requestContext.userAgent,
+        ipAddress: requestContext.ipAddress,
+        referrer: requestContext.referrer,
       })
     }
 
-    // 5. Close la request marcandola como 'project_opened' para que
-    //    desaparezca del tablero de cotizaciones. Si falla, solo se loguea:
-    //    el project ya existe y la folder tambien, no debemos romper la request.
+    // 5. Archivar la request (namespace INCOMING_REQUEST_STATUSES). Corrige el
+    //    bug anterior donde se escribia QUOTATION_BOARD_STATES.PROJECT_OPENED
+    //    en doa_incoming_requests.status — ese codigo pertenece al namespace
+    //    quotation_board, no a request. Al terminar el flujo de quotation, la
+    //    request entrante se considera cerrada y pasa a `archived`, que SI es
+    //    un codigo valido de INCOMING_REQUEST_STATUSES y saca la tarjeta del
+    //    tablero.
     const { error: consultaUpdateError } = await supabase
       .from('doa_incoming_requests')
-      .update({ status: QUOTATION_BOARD_STATES.PROJECT_OPENED })
+      .update({ status: INCOMING_REQUEST_STATUSES.ARCHIVED })
       .eq('id', id)
 
     if (consultaUpdateError) {
@@ -236,7 +239,7 @@ export async function POST(
         entityType: 'request',
         entityId: id,
         metadata: {
-          stage: 'close_consulta',
+          stage: 'archive_request',
           project_id: inserted.id,
           project_number: numeroProyecto,
           consulta_update_error: consultaUpdateError.message,
@@ -260,7 +263,8 @@ export async function POST(
       metadata: {
         project_id: inserted.id,
         project_number: numeroProyecto,
-        folder_path: folderPath,
+        drive_folder_id: folderId,
+        drive_folder_url: folderUrl,
       },
       userAgent: requestContext.userAgent,
       ipAddress: requestContext.ipAddress,
@@ -270,7 +274,8 @@ export async function POST(
     return jsonResponse(201, {
       id: inserted.id,
       project_number: numeroProyecto,
-      folder_path: folderPath,
+      drive_folder_url: folderUrl,
+      drive_folder_id: folderId,
     })
   } catch (error) {
     console.error('abrir-project POST error:', error)

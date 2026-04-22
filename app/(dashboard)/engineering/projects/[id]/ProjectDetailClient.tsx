@@ -24,6 +24,7 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
+  FolderOpen,
   Pencil,
   Save,
   Trash2,
@@ -452,6 +453,18 @@ export function ProjectDetailClient({
               <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${estadoColor}`}>
                 {estadoLabel}
               </span>
+              {project.drive_folder_url && (
+                <a
+                  href={project.drive_folder_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+                  title={`Abrir carpeta Drive del proyecto ${project.project_number}`}
+                >
+                  <FolderOpen className="h-3.5 w-3.5" />
+                  Abrir carpeta Drive
+                </a>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm text-[color:var(--ink-3)]">
               <span className="inline-flex items-center gap-1">

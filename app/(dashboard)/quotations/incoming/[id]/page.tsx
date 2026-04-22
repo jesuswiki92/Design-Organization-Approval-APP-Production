@@ -32,7 +32,6 @@ import { AlertTriangle, ArrowLeft, Building2, Calendar, CheckCircle2, ClipboardL
 
 import { TopBar } from '@/components/layout/TopBar'
 // import { buildPreliminaryScopeModel } from '@/lib/quotations/build-preliminary-scope-model'
-import { ensureConsultaFolder } from '@/lib/quotations/ensure-request-folder'
 import { syncConsultaEmails } from '@/lib/quotations/sync-request-emails'
 import { createClient } from '@/lib/supabase/server'
 import { escapeIlikePattern, escapeOrFilterLiteral } from '@/lib/supabase/escape-or-filter'
@@ -385,13 +384,14 @@ export default async function IncomingQuotationDetailPage({
   // (vista de formulario recibido) y ocultaba el compositor de response IA.
   const resolvedStatus = normalizeIncomingStatus(data.status)
 
-  // --- Crear folder de simulacion y sincronizar emails (side-effect, fire-and-forget) ---
+  // --- Sincronizar emails (side-effect, fire-and-forget) ---
+  //     Phase C: la creacion de carpeta de simulacion local se elimino; las
+  //     carpetas del proyecto viven en Google Drive y las crea el workflow
+  //     n8n "AMS - Crear Carpeta Drive Proyecto" cuando se abre el proyecto.
   if (data.entry_number) {
-    ensureConsultaFolder(data.entry_number)
-      .then(() => syncConsultaEmails(data.entry_number!, id))
-      .catch((err) => {
-        console.error('Error asegurando folder / sincronizando emails:', err)
-      })
+    syncConsultaEmails(data.entry_number, id).catch((err) => {
+      console.error('Error sincronizando emails:', err)
+    })
   }
 
   // --- Cargar emails de doa_emails para esta request ---
