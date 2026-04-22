@@ -79,7 +79,7 @@ export async function POST(
     }
 
     if (!id) {
-      return jsonResponse(400, 'Request no válida.')
+      return jsonResponse(400, 'Invalid request.')
     }
 
     const query = body.query ?? {}
@@ -107,7 +107,7 @@ export async function POST(
       })
       return jsonResponse(
         500,
-        'DOA_SEND_CLIENT_WEBHOOK_URL no está configurada. Añádela en el entorno antes de send emails al client.',
+        'DOA_SEND_CLIENT_WEBHOOK_URL is not configured. Set it in the environment before sending client emails.',
       )
     }
 
@@ -151,8 +151,8 @@ export async function POST(
       formUrl: resolvedFormUrl,
       formVariant: null,
       // Rendered message under multiple keys for forward compat.
-      // NOTE: top-level `body` is now reserved for the ES wrapper below,
-      // so the rendered HTML lives under `message` / `mensaje` / `clientMessage`.
+      // n8n workflow I59H3jFoXXPkRCGc reads the rendered HTML from root `body`
+      // ($json.body.body in n8n means POST-body field named `body`).
       mensaje: finalMessage,
       message: finalMessage,
       clientMessage: finalMessage,
@@ -170,20 +170,22 @@ export async function POST(
         formUrl: resolvedFormUrl,
         formVariant: null,
       },
-      // ES-contract wrapper that n8n workflow "AMS - Enviar Correo al Cliente"
-      // actually reads ($json.body.consulta.* and $json.body.body).
-      // Keep this shape stable — older n8n workflows depend on it.
-      body: {
-        consulta: {
-          id,
-          codigo: query.codigo ?? null,
-          remitente: to,
-          asunto: subject,
-          clasificacion: query.classification ?? null,
-          cuerpo_original: query.cuerpoOriginal ?? null,
-        },
-        body: finalMessage,
+      // Flat ES contract that n8n workflow "AMS - Enviar Correo al Cliente"
+      // (id I59H3jFoXXPkRCGc) actually reads. The workflow references
+      // $json.body.consulta.* and $json.body.body — in n8n webhook nodes,
+      // $json.body is the parsed POST body, so these expressions map to
+      // root-level POST keys `consulta` and `body`. Do NOT re-wrap under
+      // another `body` key — that would nest one level too deep and break
+      // the Outlook toRecipients / bodyContent bindings.
+      consulta: {
+        id,
+        codigo: query.codigo ?? null,
+        remitente: to,
+        asunto: subject,
+        clasificacion: query.classification ?? null,
+        cuerpo_original: query.cuerpoOriginal ?? null,
       },
+      body: finalMessage,
     }
 
     const webhookResponse = await fetch(webhookUrl, {
@@ -219,21 +221,21 @@ export async function POST(
       })
       return Response.json(
         {
-          error: `El webhook devolvió ${webhookResponse.status}.`,
+          error: `Webhook returned ${webhookResponse.status}.`,
           details: rawText.slice(0, 500),
         },
         { status: 502 },
       )
     }
 
-    // Guardar la response sent en Supabase para mostrarla en el hilo de emails
+    // Persist the sent response in Supabase so it shows up in the email thread.
     const { error: replyError } = await supabase
       .from('doa_incoming_requests')
       .update({ reply_body: message, reply_sent_at: now })
       .eq('id', id)
 
     if (replyError) {
-      console.error('Error guardando reply_body en Supabase:', replyError)
+      console.error('Error persisting reply_body in Supabase:', replyError)
     }
 
     let responsePayload: unknown = null
@@ -267,11 +269,11 @@ export async function POST(
 
     return Response.json({
       ok: true,
-      message: 'Mensaje sent correctamente al webhook del client.',
-      // Aviso cuando se envia sin form (para informar al user_label)
+      message: 'Message sent to client webhook successfully.',
+      // Notice shown when the email was sent without a form link.
       warning: resolvedFormUrl
         ? null
-        : 'El email se envió sin enlace al form porque la request no tiene form_url.',
+        : 'Email was sent without a form link because the request has no form_url.',
       formLink: {
         id: null,
         token: null,
