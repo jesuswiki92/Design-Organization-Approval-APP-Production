@@ -1,0 +1,66 @@
+# Keep the Docker build context small and reproducible.
+# CRITICAL: exclude .env* files so build-host values never bake into the image.
+# Runtime env vars (docker-compose.swarm.yml / service update --env-add) are the
+# single source of truth for secrets in production.
+
+# Env files — never bake into the image (see obs #115, #130)
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Dependencies — installed fresh in the builder stage
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm-cache
+
+# Build artifacts — regenerated in the builder stage
+.next
+out
+build
+coverage
+*.tsbuildinfo
+
+# Local dev artifacts
+dev-boot.log
+tmp-*.log
+*.log
+.codex-*.log
+Formularios/_backup_preforms_v2
+
+# Editor / OS
+.DS_Store
+.vscode
+.idea
+*.swp
+.atl
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Claude/assistant artifacts
+.claude
+
+# Secrets / runbooks not needed in the image
+VPS_DEPLOYMENT_RUNBOOK_PRIVATE.txt
+VPS_DEPLOYMENT_RUNBOOK_CODEX_PRIVATE.txt
+fallos_durante_desarrollo.txt
+
+# RAG backend lives in its own container; exclude its venv/cache
+rag-backend/venv
+rag-backend/__pycache__
+rag-backend/**/__pycache__
+rag-backend/.env
+rag-backend/.tmp
+rag-backend/temp
+
+# Docs — not needed at runtime
+docs
+
+# Next.js build output that may exist locally
+.vercel
