@@ -3,6 +3,11 @@
  * GET /f/[token]  (Forms v2 — public intake landing)
  * ============================================================================
  *
+ * Intentionally a route handler returning raw HTML. Converting this to a
+ * React `page.tsx` would wrap the form HTML in the root layout's `<html>`
+ * tags and break the embedded `<script>` that handles file upload to
+ * Supabase Storage. Do NOT port this to a server component.
+ *
  * Public, unauthenticated endpoint that serves the stored HTML form (from
  * `doa_forms.html`) with placeholders resolved for the given token's context.
  *
