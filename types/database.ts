@@ -1060,3 +1060,47 @@ export interface HistoricalProjectFile {
   content_md: string | null
   created_at: string
 }
+
+// ===========================================================================
+// Forms v2 — public intake forms with token-gated access
+// ===========================================================================
+
+/** Row in `doa_forms` — the HTML template + metadata for a public form. */
+export interface DoaForm {
+  slug: 'cliente_conocido' | 'cliente_desconocido'
+  html: string
+  description: string | null
+  updated_at: string
+  created_at: string
+}
+
+/**
+ * Row in `doa_form_tokens`. Acts as the capability token for anonymous form
+ * access. Valid while `expires_at > now()` AND `used_at IS NULL`. Single-
+ * submit, multi-view. Issued by `/api/forms/issue-link`.
+ */
+export interface DoaFormToken {
+  token: string
+  slug: 'cliente_conocido' | 'cliente_desconocido'
+  incoming_request_id: string
+  expires_at: string
+  used_at: string | null
+  first_viewed_at: string | null
+  view_count: number
+  created_at: string
+}
+
+/** Payload accepted by `POST /api/forms/issue-link` (HMAC-signed by n8n). */
+export interface IssueLinkPayload {
+  incoming_request_id: string
+  slug: 'cliente_conocido' | 'cliente_desconocido'
+  /** Optional. Defaults to 14 days. Max 60. */
+  ttl_days?: number
+}
+
+/** Response from `POST /api/forms/issue-link`. */
+export interface IssueLinkResponse {
+  url: string
+  token: string
+  expires_at: string
+}

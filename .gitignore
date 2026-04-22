@@ -32,6 +32,12 @@ yarn-error.log*
 .pnpm-debug.log*
 .codex-*.log
 tmp-*.log
+dev-boot.log
+*.log
+
+# local dev artifacts
+Formularios/_backup_preforms_v2/
+login-body.html
 
 # env files (can opt-in for committing if needed)
 .env*

@@ -78,6 +78,7 @@
 
     <input type="hidden" id="incoming_request_id" value="{{CONSULTA_ID}}" />
     <input type="hidden" id="variant" value="unknown" />
+    <input type="hidden" id="form_token" name="form_token" value="{{FORM_TOKEN}}" />
 
     <div class="sections" id="sections-container">
 
@@ -472,7 +473,7 @@
     var SB_URL='https://gterzsoapepzozgqbljk.supabase.co';
     var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0ZXJ6c29hcGVwem96Z3FibGprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTQzODMsImV4cCI6MjA4NTc3MDM4M30.ImK5L8stHYwolDcYaPG1-RoWs4jJSviLs_0vgXDAGjc';
     var BUCKET='tcds-documents';
-    var SUBMIT_URL='https://sswebhook.testn8n.com/webhook/doa-form-submit';
+    var SUBMIT_URL='{{SUBMIT_URL}}';
 
     /* --- TCDS PDF Upload --- */
     var zone=document.getElementById('drop-zone');
@@ -585,31 +586,29 @@
       if(e.dataTransfer.files&&e.dataTransfer.files.length)uploadDrawings(Array.prototype.slice.call(e.dataTransfer.files));
     });
 
-    /* --- Hidden iframe form submit (no CORS issues) --- */
-    function postViaIframe(url,data){
-      return new Promise(function(resolve){
-        var id='_f'+Date.now()+Math.random().toString(36).slice(2,6);
-        var iframe=document.createElement('iframe');
-        iframe.name=id;iframe.style.display='none';
-        document.body.appendChild(iframe);
-        var form=document.createElement('form');
-        form.method='POST';form.action=url;form.target=id;
-        for(var k in data){
-          if(data[k]===null||data[k]===undefined)continue;
-          var inp=document.createElement('input');
-          inp.type='hidden';inp.name=k;inp.value=data[k];
-          form.appendChild(inp);
-        }
-        document.body.appendChild(form);
-        /* Wait for initial about:blank load, then set real handler and submit */
-        setTimeout(function(){
-          iframe.onload=function(){
-            setTimeout(function(){try{document.body.removeChild(iframe);document.body.removeChild(form);}catch(e){}},500);
-            resolve();
-          };
-          form.submit();
-        },100);
-      });
+    /* --- Helpers for payload coercion --- */
+    function toBool(v){
+      if(v==='yes'||v===true||v==='true')return true;
+      if(v==='no'||v===false||v==='false')return false;
+      return undefined;
+    }
+    function strOrUndef(v){
+      if(v===null||v===undefined)return undefined;
+      var s=String(v).trim();
+      return s===''?undefined:s;
+    }
+    function intOrUndef(v){
+      var n=parseInt(v,10);
+      return isNaN(n)?undefined:n;
+    }
+    function floatOrUndef(v){
+      if(v===''||v===null||v===undefined)return undefined;
+      var n=parseFloat(v);
+      return isNaN(n)?undefined:n;
+    }
+    function parseJSONArray(raw){
+      if(!raw)return [];
+      try{var p=JSON.parse(raw);return Array.isArray(p)?p:[];}catch(e){return [];}
     }
 
     /* --- Toggle conditional fields --- */
@@ -658,85 +657,108 @@
         if(!el.value.trim()){el.focus();errTech.textContent='Please fill in all required fields.';errTech.style.display='block';return;}
       }
 
-      var incoming_request_id=document.getElementById('incoming_request_id').value;
-
-      var clientData={
-        section:'client',
-        incoming_request_id:incoming_request_id,
-        company_name:document.getElementById('company_name').value.trim(),
-        vat_number:document.getElementById('vat_number').value.trim(),
-        country:document.getElementById('country').value.trim(),
-        city:document.getElementById('city').value.trim(),
-        address:document.getElementById('address').value.trim(),
-        company_phone:document.getElementById('company_phone').value.trim(),
-        website:document.getElementById('website').value.trim(),
-        customer_type:document.getElementById('customer_type').value,
-        contact_first_name:document.getElementById('contact_first_name').value.trim(),
-        contact_last_name:document.getElementById('contact_last_name').value.trim(),
-        contact_email:document.getElementById('contact_email').value.trim(),
-        contact_phone:document.getElementById('contact_phone').value.trim(),
-        contact_role:document.getElementById('contact_role').value.trim()
+      var client={
+        company_name:strOrUndef(document.getElementById('company_name').value),
+        vat_number:strOrUndef(document.getElementById('vat_number').value),
+        country:strOrUndef(document.getElementById('country').value),
+        city:strOrUndef(document.getElementById('city').value),
+        address:strOrUndef(document.getElementById('address').value),
+        company_phone:strOrUndef(document.getElementById('company_phone').value),
+        website:strOrUndef(document.getElementById('website').value),
+        customer_type:strOrUndef(document.getElementById('customer_type').value),
+        contact_first_name:strOrUndef(document.getElementById('contact_first_name').value),
+        contact_last_name:strOrUndef(document.getElementById('contact_last_name').value),
+        contact_email:strOrUndef(document.getElementById('contact_email').value),
+        contact_phone:strOrUndef(document.getElementById('contact_phone').value),
+        contact_role:strOrUndef(document.getElementById('contact_role').value)
       };
 
-      var aircraftData={
-        section:'aircraft',
-        incoming_request_id:incoming_request_id,
-        tcds_number:document.getElementById('tcds_number').value.trim(),
-        aircraft_manufacturer:document.getElementById('aircraft_manufacturer').value.trim(),
-        aircraft_model:document.getElementById('aircraft_model').value.trim(),
-        aircraft_count:document.getElementById('aircraft_count').value,
-        aircraft_msn:document.getElementById('aircraft_msn').value.trim(),
+      var aircraft={
+        tcds_number:strOrUndef(document.getElementById('tcds_number').value),
+        aircraft_manufacturer:strOrUndef(document.getElementById('aircraft_manufacturer').value),
+        aircraft_model:strOrUndef(document.getElementById('aircraft_model').value),
+        aircraft_count:intOrUndef(document.getElementById('aircraft_count').value),
+        aircraft_msn:strOrUndef(document.getElementById('aircraft_msn').value),
         tcds_pdf_url:document.getElementById('tcds_pdf_url').value||''
       };
 
-      var techData={
-        section:'technical',
-        incoming_request_id:incoming_request_id,
-        work_type:document.getElementById('work_type').value,
-        existing_project_code:document.getElementById('existing_project_code').value.trim()||'',
-        modification_summary:document.getElementById('modification_summary').value.trim(),
-        operational_goal:document.getElementById('operational_goal').value.trim(),
-        impact_location:document.getElementById('impact_location').value,
-        impact_structural_attachment:document.getElementById('impact_structural_attachment').value,
-        impact_structural_interface:document.getElementById('impact_structural_interface').value.trim()||'',
-        affects_primary_structure:(document.getElementById('affects_primary_structure')||{}).value||'',
-        fuselage_position:(document.getElementById('fuselage_position')||{}).value||'',
-        sta_location:((document.getElementById('sta_location')||{}).value||'').trim(),
-        items_weight_list:(document.getElementById('items_weight_list')||{}).value||'',
-        installation_weight_kg:(document.getElementById('installation_weight_kg')||{}).value||'',
-        impact_electrical:document.getElementById('impact_electrical').value,
-        impact_avionics:document.getElementById('impact_avionics').value,
-        impact_cabin_layout:document.getElementById('impact_cabin_layout').value,
-        impact_pressurized:document.getElementById('impact_pressurized').value,
-        impact_operational_change:document.getElementById('impact_operational_change').value,
-        motivated_by_ad:(document.getElementById('motivated_by_ad')||{}).value||'',
-        ad_reference:((document.getElementById('ad_reference')||{}).value||'').trim(),
-        has_equipment:document.getElementById('has_equipment').value,
-        equipment_details:document.getElementById('equipment_details').value.trim()||'',
-        has_drawings:document.getElementById('has_drawings').value,
-        installation_drawings:document.getElementById('installation_drawings').value||'',
-        has_previous_mod:document.getElementById('has_previous_mod').value,
-        previous_mod_ref:document.getElementById('previous_mod_ref').value.trim()||'',
-        has_manufacturer_docs:document.getElementById('has_manufacturer_docs').value,
-        target_date:document.getElementById('target_date').value||'',
-        is_aog:document.getElementById('is_aog').value,
-        aircraft_location:document.getElementById('aircraft_location').value.trim()||'',
-        additional_notes:document.getElementById('additional_notes').value.trim()||''
+      var technical={
+        work_type:strOrUndef(document.getElementById('work_type').value),
+        modification_summary:strOrUndef(document.getElementById('modification_summary').value),
+        operational_goal:strOrUndef(document.getElementById('operational_goal').value),
+        existing_project_code:strOrUndef(document.getElementById('existing_project_code').value),
+        has_equipment:strOrUndef(document.getElementById('has_equipment').value),
+        equipment_details:strOrUndef(document.getElementById('equipment_details').value),
+        has_drawings:toBool(document.getElementById('has_drawings').value),
+        has_previous_mod:strOrUndef(document.getElementById('has_previous_mod').value),
+        previous_mod_ref:strOrUndef(document.getElementById('previous_mod_ref').value),
+        has_manufacturer_docs:toBool(document.getElementById('has_manufacturer_docs').value),
+        target_date:strOrUndef(document.getElementById('target_date').value),
+        is_aog:toBool(document.getElementById('is_aog').value),
+        aircraft_location:strOrUndef(document.getElementById('aircraft_location').value),
+        additional_notes:strOrUndef(document.getElementById('additional_notes').value),
+        impact_location:strOrUndef(document.getElementById('impact_location').value),
+        impact_structural_attachment:strOrUndef(document.getElementById('impact_structural_attachment').value),
+        impact_structural_interface:strOrUndef(document.getElementById('impact_structural_interface').value),
+        impact_electrical:strOrUndef(document.getElementById('impact_electrical').value),
+        impact_avionics:strOrUndef(document.getElementById('impact_avionics').value),
+        impact_cabin_layout:toBool(document.getElementById('impact_cabin_layout').value),
+        impact_pressurized:strOrUndef(document.getElementById('impact_pressurized').value),
+        impact_operational_change:strOrUndef(document.getElementById('impact_operational_change').value),
+        installation_drawings:parseJSONArray(document.getElementById('installation_drawings').value),
+        items_weight_list:[],
+        installation_weight_kg:floatOrUndef(document.getElementById('installation_weight_kg').value),
+        fuselage_position:undefined,
+        sta_location:undefined,
+        affects_primary_structure:undefined,
+        ad_reference:undefined,
+        motivated_by_ad:undefined
+      };
+
+      var payload={
+        form_token:document.getElementById('form_token').value,
+        client:client,
+        aircraft:aircraft,
+        technical:technical
       };
 
       btn.disabled=true;btn.textContent='Submitting...';
 
       try{
-        await postViaIframe(SUBMIT_URL,clientData);
-        await new Promise(function(r){setTimeout(r,2000);});
-        await postViaIframe(SUBMIT_URL,aircraftData);
-        await new Promise(function(r){setTimeout(r,2000);});
-        await postViaIframe(SUBMIT_URL,techData);
-        await new Promise(function(r){setTimeout(r,2000);});
-        document.getElementById('sections-container').style.display='none';
-        document.getElementById('confirmation').style.display='block';
+        var resp=await fetch(SUBMIT_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(payload),
+          credentials:'omit'
+        });
+        var data={};
+        try{data=await resp.json();}catch(e){data={};}
+
+        if(resp.ok){
+          document.getElementById('sections-container').style.display='none';
+          document.getElementById('confirmation').style.display='block';
+          return;
+        }
+
+        var msg='';
+        if(resp.status===410){
+          if(data&&data.error==='token_used'){
+            msg='This form has already been submitted. Thank you.';
+          }else{
+            msg='This link has expired. Please request a new one.';
+          }
+        }else if(resp.status===400){
+          msg='Please check the highlighted fields and try again.';
+        }else if(resp.status>=500){
+          msg='Something went wrong on our side. Please try again in a moment.';
+        }else{
+          msg=(data&&data.message)||('Submission failed (status '+resp.status+').');
+        }
+        errEl.textContent=msg;errEl.style.display='block';
+        btn.disabled=false;btn.textContent='Submit complete form';
       }catch(err){
-        errEl.textContent='Error: '+err.message;errEl.style.display='block';
+        errEl.textContent='Network error. Please check your connection and try again.';
+        errEl.style.display='block';
         btn.disabled=false;btn.textContent='Submit complete form';
       }
     };

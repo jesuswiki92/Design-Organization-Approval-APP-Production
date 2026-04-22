@@ -9,7 +9,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { RouteViewTracker } from '@/components/observability/RouteViewTracker'
 import { trackUiEvent } from '@/lib/observability/client'
 import { createClient } from '@/lib/supabase/client'
@@ -78,7 +78,9 @@ export default function LoginPage() {
       className="flex min-h-screen items-center justify-center px-6"
       style={{ background: 'linear-gradient(180deg,#edeae4 0%,#f5f3ee 60%,#ebe8e1 100%)' }}
     >
-      <RouteViewTracker scope="auth" />
+      <Suspense fallback={null}>
+        <RouteViewTracker scope="auth" />
+      </Suspense>
       <div className="w-full max-w-[420px]">
         {/* Cabecera marca */}
         <div className="mb-8 flex flex-col items-center text-center">
