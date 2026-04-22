@@ -122,13 +122,9 @@
             <select id="customer_type" name="customer_type" required>
               <option value="">Select an option</option>
               <option value="airline">Airline</option>
-              <option value="operador_privado">Private operator</option>
-              <option value="camo">CAMO</option>
               <option value="mro">MRO</option>
-              <option value="lessor">Lessor</option>
-              <option value="fabricante_proveedor">Manufacturer / Supplier</option>
-              <option value="ambulancia_aerea">Air ambulance</option>
-              <option value="gobierno_militar">Government / Military</option>
+              <option value="private">Private operator</option>
+              <option value="manufacturer">Manufacturer / Supplier</option>
               <option value="other">Other</option>
             </select>
           </div>
