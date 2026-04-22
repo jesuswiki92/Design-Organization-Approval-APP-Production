@@ -60,7 +60,7 @@ export function normalizeIncomingStatus(
 ): IncomingQueryStatus {
   const normalized = value?.trim().toLowerCase()
 
-  if (!normalized || normalized === 'new_entry' || normalized === 'pending' || normalized === 'pending') {
+  if (!normalized || normalized === 'new' || normalized === 'nuevo' || normalized === 'new_entry' || normalized === 'pending') {
     return INCOMING_REQUEST_STATUSES.NEW as IncomingQueryStatus
   }
 
@@ -68,7 +68,7 @@ export function normalizeIncomingStatus(
     return INCOMING_REQUEST_STATUSES.AWAITING_FORM as IncomingQueryStatus
   }
 
-  if (normalized === 'form_received') {
+  if (normalized === 'form_received' || normalized === 'formulario_recibido') {
     return INCOMING_REQUEST_STATUSES.FORM_RECEIVED as IncomingQueryStatus
   }
 

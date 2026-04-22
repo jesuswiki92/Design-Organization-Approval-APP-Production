@@ -45,6 +45,7 @@ import type { Client, ClientContact, IncomingRequest, DoaEmail } from '@/types/d
 import { ClientDetailPanel } from '../../../clients/ClientDetailPanel'
 import {
   buildIncomingClientLookup,
+  normalizeIncomingStatus,
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
@@ -374,6 +375,14 @@ export default async function IncomingQuotationDetailPage({
       </div>
     )
   }
+
+  // --- Normalizar el status de la request ---
+  // Los valores legacy en espanol (p.ej. 'nuevo') y los sinonimos deben
+  // mapearse al codigo canonico (INCOMING_REQUEST_STATUSES.NEW, etc.) antes
+  // de comparar con las constantes para elegir que VIEW renderizar.
+  // Sin esta normalizacion, una fila con status='nuevo' caia a la VIEW 3
+  // (vista de formulario recibido) y ocultaba el compositor de response IA.
+  const resolvedStatus = normalizeIncomingStatus(data.status)
 
   // --- Crear folder de simulacion y sincronizar emails (side-effect, fire-and-forget) ---
   if (data.entry_number) {
@@ -830,9 +839,9 @@ export default async function IncomingQuotationDetailPage({
                 {query.subject}
               </h1>
               <p className="max-w-3xl text-sm leading-7 text-[color:var(--ink-2)]">
-                {data.status === INCOMING_REQUEST_STATUSES.NEW
+                {resolvedStatus === INCOMING_REQUEST_STATUSES.NEW
                   ? 'New request received. Review the email and prepare the client response.'
-                  : data.status === INCOMING_REQUEST_STATUSES.AWAITING_FORM
+                  : resolvedStatus === INCOMING_REQUEST_STATUSES.AWAITING_FORM
                     ? 'Form sent to the client. Awaiting response.'
                     : 'Form received. Review all information before making a decision.'}
               </p>
@@ -850,7 +859,7 @@ export default async function IncomingQuotationDetailPage({
         {/* ================================================================
             VIEW 1: NEW — Email thread + reply composer + client info
             ================================================================ */}
-        {data.status === INCOMING_REQUEST_STATUSES.NEW && (
+        {resolvedStatus === INCOMING_REQUEST_STATUSES.NEW && (
           <>
           <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
             <CenterColumnCollapsible
@@ -965,7 +974,7 @@ export default async function IncomingQuotationDetailPage({
         {/* ================================================================
             VIEW 2: ESPERANDO FORMULARIO — Email thread + waiting banner
             ================================================================ */}
-        {data.status === INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
+        {resolvedStatus === INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
           <>
             {/* Hilo de emails (con response sent visible, sin compositor) */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
@@ -1099,7 +1108,7 @@ export default async function IncomingQuotationDetailPage({
             VIEW 3: FORMULARIO RECIBIDO (+ default for any other status)
             Full review layout with all sections
             ================================================================ */}
-        {data.status !== INCOMING_REQUEST_STATUSES.NEW && data.status !== INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
+        {resolvedStatus !== INCOMING_REQUEST_STATUSES.NEW && resolvedStatus !== INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
           <>
             <ReviewSummarySection
               clientLabel={reviewClientLabel}
