@@ -10,7 +10,7 @@
  *
  * Fuente de data (priority):
  *   1. Table doa_emails — si el array emails[] tiene elementos, se usa como
- *      fuente primary. Los emails se separan por address ('inbound' / 'outbound')
+ *      fuente primary. Los emails se separan por address ('entrante' / 'saliente')
  *      y se muestran en sort_order cronologico por date en cada columna.
  *   2. Campos legacy de la request (sender, subject, original_body, etc.) —
  *      se usan como fallback cuando el array emails[] esta vacio, para mantener
@@ -424,7 +424,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     if (useDoaEmails) {
       // Usar emails de doa_emails
       const inc: ThreadEmail[] = liveEmails
-        .filter((e) => e.direction === "inbound")
+        .filter((e) => e.direction === "entrante")
         .map((e) => ({
           id: e.id,
           direction: "incoming" as EmailDirection,
@@ -438,7 +438,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
         }))
 
       const out: ThreadEmail[] = liveEmails
-        .filter((e) => e.direction === "outbound")
+        .filter((e) => e.direction === "saliente")
         .map((e) => ({
           id: e.id,
           direction: "outgoing" as EmailDirection,

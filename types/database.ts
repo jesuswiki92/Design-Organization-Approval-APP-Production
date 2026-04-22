@@ -910,8 +910,8 @@ export interface DoaEmail {
   id: string
   // Referencia a la request entrante a la que pertenece este email
   incoming_request_id: string
-  // Address del email: 'inbound' (del client) o 'outbound' (nuestra response)
-  direction: 'inbound' | 'outbound'
+  // Address del email: 'entrante' (del client) o 'saliente' (nuestra response)
+  direction: 'entrante' | 'saliente'
   // Address de email del sender
   from_email: string
   // Address de email del destinatario (puede estar vacio)
