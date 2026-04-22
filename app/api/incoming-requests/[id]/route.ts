@@ -49,6 +49,50 @@ export async function DELETE(
       })
     }
 
+    // Cascade manual en orden de dependencia:
+    //
+    // La mayoria de child tables (doa_emails, doa_form_tokens,
+    // doa_form_submissions, doa_quotations) ya tienen `ON DELETE CASCADE`
+    // en la FK hacia doa_incoming_requests, asi que Postgres las borra
+    // automaticamente cuando se borra la request.
+    //
+    // La excepcion es `doa_projects.incoming_request_id`, cuya FK es
+    // `NO ACTION` (bloquea el delete). Hay que borrar los projects
+    // asociados primero; sus descendientes (time entries, deliverables,
+    // closures, signatures, validations, lessons, deliveries) sí
+    // cascadean desde doa_projects.
+    //
+    // El resto de tables se borran en orden como defensa en profundidad
+    // por si alguna FK se cambia en el futuro a NO ACTION.
+    const childTables: Array<
+      'doa_emails' | 'doa_form_tokens' | 'doa_form_submissions' | 'doa_quotations' | 'doa_projects'
+    > = [
+      'doa_emails',
+      'doa_form_tokens',
+      'doa_form_submissions',
+      'doa_quotations',
+      'doa_projects',
+    ]
+
+    for (const table of childTables) {
+      const childDeletion = await supabase
+        .from(table)
+        .delete()
+        .eq('incoming_request_id', id)
+
+      if (childDeletion.error) {
+        if (isMissingSchemaError(childDeletion.error)) {
+          // La table aun no existe o la columna no esta — seguimos con las demas.
+          continue
+        }
+
+        return jsonResponse(
+          500,
+          `No se pudo borrar registros relacionados en ${table}: ${childDeletion.error.message}`,
+        )
+      }
+    }
+
     const deletion = await supabase
       .from('doa_incoming_requests')
       .delete()
