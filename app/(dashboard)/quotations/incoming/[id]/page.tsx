@@ -385,14 +385,23 @@ export default async function IncomingQuotationDetailPage({
   }
 
   // --- Cargar emails de doa_emails para esta request ---
+  // Nota: la tabla real usa columnas `from_addr`, `to_addr`, `sent_at`. Se aliasean
+  // a `from_email`, `to_email`, `date` para mantener el tipo DoaEmail usado aguas abajo.
   const { data: emailRows, error: emailError } = await supabase
     .from('doa_emails')
-    .select('*')
+    .select(
+      'id, incoming_request_id, direction, from_email:from_addr, to_email:to_addr, subject, body, date:sent_at, message_id, in_reply_to, created_at',
+    )
     .eq('incoming_request_id', id)
-    .order('date', { ascending: true })
+    .order('sent_at', { ascending: true })
 
   if (emailError) {
-    console.error('Error cargando emails de doa_emails:', emailError)
+    console.error('Error cargando emails de doa_emails:', {
+      message: emailError.message,
+      code: (emailError as { code?: string }).code,
+      details: (emailError as { details?: string }).details,
+      hint: (emailError as { hint?: string }).hint,
+    })
   }
 
   const emails: DoaEmail[] = (emailRows ?? []) as DoaEmail[]

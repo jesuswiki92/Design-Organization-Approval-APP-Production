@@ -83,14 +83,24 @@ export async function syncConsultaEmails(
   try {
     const supabase = await createClient()
 
+    // Nota: la tabla real usa columnas `from_addr`, `to_addr`, `sent_at`.
+    // Se aliasean a `from_email`, `to_email`, `date` para coincidir con el tipo `DoaEmail`
+    // usado en todo el codigo (buildEmailFilename, buildEmlContent, etc.).
     const { data: emails, error: dbError } = await supabase
       .from('doa_emails')
-      .select('*')
+      .select(
+        'id, incoming_request_id, direction, from_email:from_addr, to_email:to_addr, subject, body, date:sent_at, message_id, in_reply_to, created_at',
+      )
       .eq('incoming_request_id', consultaId)
-      .order('date', { ascending: true })
+      .order('sent_at', { ascending: true })
 
     if (dbError) {
-      console.error('syncConsultaEmails — error consultando doa_emails:', dbError)
+      console.error('syncConsultaEmails — error consultando doa_emails:', {
+        message: dbError.message,
+        code: (dbError as { code?: string }).code,
+        details: (dbError as { details?: string }).details,
+        hint: (dbError as { hint?: string }).hint,
+      })
       return { written: -1, error: dbError.message }
     }
 

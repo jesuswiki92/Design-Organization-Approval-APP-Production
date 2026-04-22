@@ -397,14 +397,22 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
       .eq('id', emailId)
 
     if (error) {
-      console.error('Error eliminando email:', error)
+      console.error('Error eliminando email:', {
+        message: error.message,
+        code: (error as { code?: string }).code,
+        details: (error as { details?: string }).details,
+        hint: (error as { hint?: string }).hint,
+      })
       // Revertir: volver a cargar desde server
+      // Nota: aliasear `from_addr`/`to_addr`/`sent_at` a los name del tipo DoaEmail.
       const { data } = await supabase
         .from('doa_emails')
-        .select('*')
+        .select(
+          'id, incoming_request_id, direction, from_email:from_addr, to_email:to_addr, subject, body, date:sent_at, message_id, in_reply_to, created_at',
+        )
         .eq('incoming_request_id', query.id)
-        .order('date', { ascending: true })
-      if (data) setLiveEmails(data)
+        .order('sent_at', { ascending: true })
+      if (data) setLiveEmails(data as typeof liveEmails)
     }
   }
 
