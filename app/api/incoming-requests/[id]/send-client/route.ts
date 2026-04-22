@@ -50,6 +50,12 @@ function toHtmlEmail(message: string, formUrl: string | null) {
       html = html.replace(escapeHtml(FORM_LINK_MARKER), linkHtml)
     } else if (html.includes(escapeHtml(FORM_INTAKE_PLACEHOLDER))) {
       html = html.replace(escapeHtml(FORM_INTAKE_PLACEHOLDER), linkHtml)
+    } else {
+      // Defensive fallback: the LLM disobeyed the MANDATORY placeholder rule,
+      // or the user deleted the marker without clicking "remove form". We still
+      // have a valid form URL, so append it as a short block so the link
+      // always reaches the client — regression insurance for BUG-02.
+      html = `${html}\n\n${linkHtml}`
     }
   } else {
     // Sin URL de form: eliminar los marcadores si quedaron en el text
@@ -111,29 +117,85 @@ export async function POST(
       )
     }
 
+    // Resolve the form URL with a 3-step fallback chain:
+    //   1) persistedUrl — URL sent by the composer (query.urlFormulario from page.tsx)
+    //   2) doa_incoming_requests.form_url — denormalized column written by n8n
+    //   3) doa_form_tokens — build `${NEXT_PUBLIC_APP_URL}/f/${token}` from the latest
+    //      unused, unexpired token for this request. Mirrors page.tsx fallback.
+    // Without (3) an empty form_url column silently strips the marker from the email.
     const persistedUrl =
       typeof query.urlFormulario === 'string' ? query.urlFormulario.trim() : ''
-    const formUrl =
-      persistedUrl ||
-      (await (async () => {
-        const consultaResult = await supabase
-          .from('doa_incoming_requests')
-          .select('form_url')
-          .eq('id', id)
-          .maybeSingle()
 
-        if (consultaResult.error) {
-          throw consultaResult.error
-        }
+    async function resolveFormUrlFromDb(): Promise<string> {
+      const consultaResult = await supabase
+        .from('doa_incoming_requests')
+        .select('form_url')
+        .eq('id', id)
+        .maybeSingle()
 
-        return consultaResult.data?.form_url?.trim() ?? ''
-      })())
+      if (consultaResult.error) {
+        throw consultaResult.error
+      }
+
+      const persisted = consultaResult.data?.form_url?.trim() ?? ''
+      if (persisted) return persisted
+
+      // Fallback: look up the active public-form token and build the URL.
+      const nowIso = new Date().toISOString()
+      const { data: tokenRow, error: tokenError } = await supabase
+        .from('doa_form_tokens')
+        .select('token')
+        .eq('incoming_request_id', id)
+        .is('used_at', null)
+        .gt('expires_at', nowIso)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (tokenError) {
+        console.error('[send-client] error loading doa_form_tokens fallback:', tokenError)
+        return ''
+      }
+
+      if (!tokenRow?.token) return ''
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
+      if (!appUrl) {
+        console.error(
+          '[send-client] NEXT_PUBLIC_APP_URL is not configured; cannot build form URL from token fallback',
+        )
+        return ''
+      }
+
+      return `${appUrl.replace(/\/$/, '')}/f/${tokenRow.token}`
+    }
+
+    const formUrl = persistedUrl || (await resolveFormUrlFromDb())
+
+    // Defensive warning: composer submitted a message that still contains the
+    // marker but we could not resolve a form URL. The email will be sent with
+    // the marker stripped — log so regressions are visible.
+    if (!formUrl && message.includes(FORM_LINK_MARKER)) {
+      console.warn(
+        `[send-client] incoming_request_id=${id} message contains FORM_LINK_MARKER but no form URL could be resolved (persistedUrl empty, form_url column empty, no active token). Marker will be stripped from email body.`,
+      )
+    }
 
     // Si no hay formUrl, se envia el email sin enlace al form
     const now = new Date().toISOString()
     const finalMessage = toHtmlEmail(message, formUrl || null)
     // formUrl normalizado: string si existe, null si no
     const resolvedFormUrl = formUrl || null
+
+    // Defensive warning: we have a form URL but the marker was missing from the
+    // composer's message. toHtmlEmail cannot substitute it and the link will be
+    // absent from the email — log so we can catch LLM prompts that drop the
+    // placeholder or users who accidentally delete it.
+    if (resolvedFormUrl && !message.includes(FORM_LINK_MARKER) && !message.includes(FORM_INTAKE_PLACEHOLDER)) {
+      console.warn(
+        `[send-client] incoming_request_id=${id} form URL resolved but FORM_LINK_MARKER not present in message body; email will be sent without the link.`,
+      )
+    }
 
     const webhookPayload = {
       event: 'doa.request.reviewed_send_client',
