@@ -12,6 +12,18 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build-time public env vars. Pass via --build-arg NEXT_PUBLIC_SUPABASE_URL=...
+# These ARE safe to bake into the bundle because they are public by design
+# (NEXT_PUBLIC_* is emitted to the client). NEVER pass secrets like
+# SUPABASE_SERVICE_ROLE_KEY here — those stay runtime-only via
+# docker-compose.swarm.yml / service update --env-add (see obs #115, #130).
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_APP_URL
+
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
