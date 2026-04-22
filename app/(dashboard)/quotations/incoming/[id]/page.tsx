@@ -55,6 +55,7 @@ import { codeToColumn, getPreselectedTemplates, type ComplianceTemplate } from '
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 import { ComplianceDocumentsSection } from './ComplianceDocumentsSection'
 import { ManualProjectSearch } from './ManualProjectSearch'
+import { PublicFormLinkCard } from './PublicFormLinkCard'
 // import { PreliminaryScopeChatPanel } from './PreliminaryScopeChatPanel'
 // import { PreliminaryScopePanel } from './PreliminaryScopePanel'
 import { PreparaProyectoPanel } from './PreparaProyectoPanel'
@@ -441,8 +442,38 @@ export default async function IncomingQuotationDetailPage({
   const clients: Client[] = clientRows ?? []
   const contacts: ClientContact[] = contactRows ?? []
   const clientLookup = buildIncomingClientLookup(clients, contacts)
-  const query = toIncomingQuery(data as IncomingRequest, clientLookup)
-  const matchedClient = resolveIncomingClientRecord(query.sender, clients, contacts)
+  const baseQuery = toIncomingQuery(data as IncomingRequest, clientLookup)
+  const matchedClient = resolveIncomingClientRecord(baseQuery.sender, clients, contacts)
+
+  // --- Cargar token del formulario publico activo (no expirado, no usado) ---
+  // El token real lo emite n8n en doa_form_tokens. La columna form_url de
+  // doa_incoming_requests puede quedar vacia, asi que construimos la URL aqui
+  // a partir del token + NEXT_PUBLIC_APP_URL para que el link sea visible en
+  // el compositor y en la tarjeta dedicada encima del hilo de emails.
+  const nowIso = new Date().toISOString()
+  const { data: tokenRow, error: tokenError } = await supabase
+    .from('doa_form_tokens')
+    .select('token, expires_at, used_at')
+    .eq('incoming_request_id', id)
+    .is('used_at', null)
+    .gt('expires_at', nowIso)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (tokenError) {
+    console.error('Error cargando token del formulario publico:', tokenError)
+  }
+
+  const publicFormBaseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://doa.testn8n.com').replace(/\/$/, '')
+  const publicFormUrl = tokenRow?.token ? `${publicFormBaseUrl}/f/${tokenRow.token}` : null
+  const publicFormExpiresAt = tokenRow?.expires_at ?? null
+
+  // Si el backend no tiene form_url denormalizado pero si hay token activo,
+  // exponemos la URL construida al resto de la pagina (compositor incluido).
+  const query = publicFormUrl && !baseQuery.urlFormulario
+    ? { ...baseQuery, urlFormulario: publicFormUrl }
+    : baseQuery
 
   // --- Verificar TCDS en doa_aircraft ---
   let aeronaveVariants: {
@@ -861,6 +892,9 @@ export default async function IncomingQuotationDetailPage({
             ================================================================ */}
         {resolvedStatus === INCOMING_REQUEST_STATUSES.NEW && (
           <>
+          {publicFormUrl ? (
+            <PublicFormLinkCard url={publicFormUrl} expiresAt={publicFormExpiresAt} />
+          ) : null}
           <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
             <CenterColumnCollapsible
               emails={emails}
@@ -976,6 +1010,9 @@ export default async function IncomingQuotationDetailPage({
             ================================================================ */}
         {resolvedStatus === INCOMING_REQUEST_STATUSES.AWAITING_FORM && (
           <>
+            {publicFormUrl ? (
+              <PublicFormLinkCard url={publicFormUrl} expiresAt={publicFormExpiresAt} />
+            ) : null}
             {/* Hilo de emails (con response sent visible, sin compositor) */}
             <section className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-5 shadow-[0_12px_28px_rgba(74,60,36,0.12)]">
               <CenterColumnCollapsible
