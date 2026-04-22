@@ -169,7 +169,7 @@ export async function POST(
           'sender',
           'original_body',
           'classification',
-          'ai_response',
+          'ai_reply',
           'status',
           'entry_number',
           'form_url',

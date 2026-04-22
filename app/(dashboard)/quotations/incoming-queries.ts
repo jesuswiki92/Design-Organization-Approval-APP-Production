@@ -342,7 +342,7 @@ export function toIncomingQuery(
     resumen: buildSummary(query.original_body, query.subject),
     cuerpoOriginal: query.original_body?.trim() || 'Sin body original disponible',
     classification: query.classification?.trim() || null,
-    respuestaIa: query.ai_response?.trim() || null,
+    respuestaIa: query.ai_reply?.trim() || null,
     recibidoEn: formatReceivedAt(query.created_at),
     status: normalizeIncomingStatus(rawStatus),
     estadoBackend: rawStatus,

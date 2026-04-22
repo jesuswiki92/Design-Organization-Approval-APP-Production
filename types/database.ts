@@ -681,7 +681,7 @@ export interface IncomingRequest {
   // Classification automatica de la request hecha por la IA (puede estar vacia)
   classification: string | null
   // Response sugerida por la IA para send al client (puede estar vacia)
-  ai_response: string | null
+  ai_reply: string | null
   // Status actual de la request dentro del flujo de cotizaciones
   status: string
   // Numero de entrada asignado para seguimiento internal (ej: "ENT-2024-0001")
