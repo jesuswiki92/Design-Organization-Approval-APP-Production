@@ -34,6 +34,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logServerEvent } from '@/lib/observability/server'
 import { buildRequestContext } from '@/lib/observability/shared'
 import { computeSignature } from '@/lib/signatures/hmac'
+import { resolveN8nSharedSecret } from '@/lib/security/n8n-outbound'
 import {
   PROJECT_EXECUTION_PHASES,
   PROJECT_EXECUTION_STATES,
@@ -312,7 +313,9 @@ export async function POST(
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
-    const n8nSecret = process.env.DOA_N8N_WEBHOOK_SECRET
+    // Canonical name is DOA_N8N_INBOUND_SECRET; DOA_N8N_WEBHOOK_SECRET kept
+    // as a legacy fallback. See lib/security/n8n-outbound.ts.
+    const n8nSecret = resolveN8nSharedSecret()
     if (n8nSecret) {
       const sig = createHmac('sha256', n8nSecret).update(webhookBodyStr).digest('hex')
       headers['x-doa-signature'] = sig
@@ -333,7 +336,7 @@ export async function POST(
         entityId: id,
         metadata: {
           stage: 'hmac_secret_missing',
-          reason: 'DOA_N8N_WEBHOOK_SECRET no definido en produccion',
+          reason: 'n8n shared secret no definido en produccion',
         },
         userAgent: requestContext.userAgent,
         ipAddress: requestContext.ipAddress,
@@ -341,12 +344,12 @@ export async function POST(
       })
       return jsonResponse(500, {
         error:
-          'Configuracion invalida: DOA_N8N_WEBHOOK_SECRET es obligatorio en produccion. ' +
+          'Configuracion invalida: DOA_N8N_INBOUND_SECRET (o DOA_N8N_WEBHOOK_SECRET como fallback) es obligatorio en produccion. ' +
           'Define el secreto compartido antes de despachar deliveries.',
       })
     } else {
       console.warn(
-        'send-delivery: DOA_N8N_WEBHOOK_SECRET no definido (modo dev), llamada sin firma. En produccion esta path devolvera 500.',
+        'send-delivery: DOA_N8N_INBOUND_SECRET/DOA_N8N_WEBHOOK_SECRET no definido (modo dev), llamada sin firma. En produccion esta path devolvera 500.',
       )
     }
 

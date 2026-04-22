@@ -36,6 +36,7 @@ import { createHmac } from 'node:crypto'
 import { requireUserApi } from '@/lib/auth/require-user'
 import { logServerEvent } from '@/lib/observability/server'
 import { buildRequestContext } from '@/lib/observability/shared'
+import { resolveN8nSharedSecret } from '@/lib/security/n8n-outbound'
 import {
   PROJECT_EXECUTION_STATES,
   PROJECT_EXECUTION_STATE_TO_PHASE,
@@ -170,7 +171,9 @@ async function fireProjectStateWebhook(params: {
   const bodyStr = JSON.stringify(body)
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
 
-  const secret = process.env.DOA_N8N_WEBHOOK_SECRET
+  // Canonical name is DOA_N8N_INBOUND_SECRET; DOA_N8N_WEBHOOK_SECRET kept
+  // as a legacy fallback. See lib/security/n8n-outbound.ts.
+  const secret = resolveN8nSharedSecret()
   if (secret) {
     headers['x-doa-signature'] = createHmac('sha256', secret).update(bodyStr).digest('hex')
   } else if (process.env.NODE_ENV === 'production') {
@@ -186,7 +189,7 @@ async function fireProjectStateWebhook(params: {
       entityType: 'project',
       entityId: proyectoId,
       metadata: {
-        reason: 'DOA_N8N_WEBHOOK_SECRET_missing_in_production',
+        reason: 'n8n_shared_secret_missing_in_production',
         from_state: fromState,
         to_state: toState,
       },
@@ -197,7 +200,7 @@ async function fireProjectStateWebhook(params: {
     return
   } else {
     console.warn(
-      'transicion: DOA_N8N_WEBHOOK_SECRET no definido (modo dev), llamada sin firma.',
+      'transicion: DOA_N8N_INBOUND_SECRET/DOA_N8N_WEBHOOK_SECRET no definido (modo dev), llamada sin firma.',
     )
   }
 

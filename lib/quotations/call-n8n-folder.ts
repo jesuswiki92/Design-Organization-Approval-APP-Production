@@ -6,16 +6,28 @@
  * Swaps out the local `mkdir` that `/api/incoming-requests/[id]/open-project`
  * used to do. Posts to the n8n workflow `AMS - Crear Carpeta Drive Proyecto`
  * (id `cqxT0uIYH7VB4Gir`) which:
- *   1. Verifies our `x-doa-signature` HMAC (shared secret `DOA_N8N_WEBHOOK_SECRET`).
+ *   1. Verifies our `x-doa-signature` HMAC.
  *   2. Creates the main Drive folder under `DOA_DRIVE_ROOT_FOLDER_ID`.
  *   3. Creates the 6 EASA Part 21J subfolders (must stay in sync with
  *      `lib/project-builder.ts` → `PROJECT_FOLDER_STRUCTURE`).
  *   4. Updates `doa_projects.drive_folder_id` + `drive_folder_url`.
  *   5. Returns `{ ok, folderId, folderUrl }`.
  *
- * Env vars (both required in production):
+ * HMAC secret resolution (post-E2E-hardening 2026-04-22):
+ *   - Canonical env var is `DOA_N8N_INBOUND_SECRET`. This is the same
+ *     secret the n8n workflow verifies against, and is already the name
+ *     used by every other HMAC surface in this app
+ *     (`lib/security/webhook.ts`, `/api/forms/issue-link`).
+ *   - `DOA_N8N_WEBHOOK_SECRET` is accepted as a legacy fallback for
+ *     retro-compat with older docs / deployments. If both are set to
+ *     DIFFERENT values we log a warning and prefer the canonical one.
+ *   - At least one must be present in production; missing both is a
+ *     hard failure.
+ *
+ * Env vars:
  *   N8N_FOLDER_WEBHOOK_URL   — e.g. https://sswebhook.testn8n.com/webhook/doa-project-folder-create
- *   DOA_N8N_WEBHOOK_SECRET   — shared HMAC secret (same value on both stacks).
+ *   DOA_N8N_INBOUND_SECRET   — shared HMAC secret (canonical, preferred).
+ *   DOA_N8N_WEBHOOK_SECRET   — legacy fallback; same value as above.
  *
  * HMAC contract matches `app/api/projects/[id]/transition/route.ts` —
  * `x-doa-signature` = hex(HMAC-SHA256(JSON.stringify(body), secret)).
@@ -25,6 +37,8 @@
 import 'server-only'
 
 import { createHmac } from 'node:crypto'
+
+import { resolveN8nSharedSecret } from '@/lib/security/n8n-outbound'
 
 const N8N_TIMEOUT_MS = 15_000
 
@@ -84,11 +98,11 @@ export async function createProjectFolder(
     )
   }
 
-  const secret = process.env.DOA_N8N_WEBHOOK_SECRET
+  const secret = resolveN8nSharedSecret()
   if (!secret && process.env.NODE_ENV === 'production') {
     throw new CreateProjectFolderError(
       'webhook_secret_missing',
-      'DOA_N8N_WEBHOOK_SECRET is required in production for signed webhook calls.',
+      'DOA_N8N_INBOUND_SECRET (or legacy DOA_N8N_WEBHOOK_SECRET) is required in production for signed webhook calls.',
     )
   }
 
