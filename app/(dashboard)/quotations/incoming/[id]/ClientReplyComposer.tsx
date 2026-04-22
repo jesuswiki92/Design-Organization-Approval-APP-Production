@@ -61,7 +61,7 @@ type ClientReplyComposerProps = {
 /** Texto que la IA pone donde iria el enlace al form */
 const FORM_INTAKE_PLACEHOLDER = '(Form intake here)'
 /** Marcador que reemplaza al placeholder con text legible para el client */
-const FORM_LINK_MARKER = '[Acceder al form del project]'
+const FORM_LINK_MARKER = '[Acceder al formulario del proyecto]'
 
 /**
  * Genera el mensaje inicial que se muestra en el campo de text.

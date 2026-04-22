@@ -17,7 +17,7 @@ type IncomingQueryPayload = {
 }
 
 const FORM_INTAKE_PLACEHOLDER = '(Form intake here)'
-const FORM_LINK_MARKER = '[Acceder al form del project]'
+const FORM_LINK_MARKER = '[Acceder al formulario del proyecto]'
 
 function jsonResponse(status: number, error: string) {
   return Response.json({ error }, { status })
@@ -44,7 +44,7 @@ function toHtmlEmail(message: string, formUrl: string | null) {
 
   if (formUrl) {
     // Si hay URL de form, reemplazar el marcador por un enlace clicable
-    const linkHtml = `<a href="${escapeHtml(formUrl)}" style="color:#0284c7;font-weight:600;text-decoration:underline;">Acceder al form del project</a>`
+    const linkHtml = `<a href="${escapeHtml(formUrl)}" style="color:#0284c7;font-weight:600;text-decoration:underline;">Acceder al formulario del proyecto</a>`
 
     if (html.includes(escapeHtml(FORM_LINK_MARKER))) {
       html = html.replace(escapeHtml(FORM_LINK_MARKER), linkHtml)
@@ -150,7 +150,9 @@ export async function POST(
       formToken: null,
       formUrl: resolvedFormUrl,
       formVariant: null,
-      body: finalMessage,
+      // Rendered message under multiple keys for forward compat.
+      // NOTE: top-level `body` is now reserved for the ES wrapper below,
+      // so the rendered HTML lives under `message` / `mensaje` / `clientMessage`.
       mensaje: finalMessage,
       message: finalMessage,
       clientMessage: finalMessage,
@@ -167,6 +169,20 @@ export async function POST(
         formToken: null,
         formUrl: resolvedFormUrl,
         formVariant: null,
+      },
+      // ES-contract wrapper that n8n workflow "AMS - Enviar Correo al Cliente"
+      // actually reads ($json.body.consulta.* and $json.body.body).
+      // Keep this shape stable — older n8n workflows depend on it.
+      body: {
+        consulta: {
+          id,
+          codigo: query.codigo ?? null,
+          remitente: to,
+          asunto: subject,
+          clasificacion: query.classification ?? null,
+          cuerpo_original: query.cuerpoOriginal ?? null,
+        },
+        body: finalMessage,
       },
     }
 
