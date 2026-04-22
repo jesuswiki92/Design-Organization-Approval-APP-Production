@@ -424,7 +424,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
     if (useDoaEmails) {
       // Usar emails de doa_emails
       const inc: ThreadEmail[] = liveEmails
-        .filter((e) => e.direction === "entrante")
+        .filter((e) => e.direction === "inbound")
         .map((e) => ({
           id: e.id,
           direction: "incoming" as EmailDirection,
@@ -438,7 +438,7 @@ export function CenterColumnCollapsible({ emails: initialEmails = [], query, hid
         }))
 
       const out: ThreadEmail[] = liveEmails
-        .filter((e) => e.direction === "saliente")
+        .filter((e) => e.direction === "outbound")
         .map((e) => ({
           id: e.id,
           direction: "outgoing" as EmailDirection,
