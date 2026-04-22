@@ -679,6 +679,13 @@ export interface IncomingRequest {
   id: string
   // Date y hora en que se recibio la request
   created_at: string
+  // Date y hora de la ultima modification de la fila. Mantenida por el trigger
+  // `trg_doa_incoming_requests_set_updated_at` en Supabase. No escribir desde la app.
+  updated_at?: string
+  // FK opcional al client (doa_clients.id) asociado a la request. Puede ser
+  // null si la request proviene de un sender que no tiene match en doa_clients
+  // (p.ej. email de proveedor gratuito como gmail.com).
+  client_id?: string | null
   // Subject del email o title de la request (puede estar vacio)
   subject: string | null
   // Quien send la request - email o name del sender (puede estar vacio)
