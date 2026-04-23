@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import { requireUserApi } from '@/lib/auth/require-user'
+import { ensureFormLink } from '@/lib/forms/ensure-form-link'
 import { logServerEvent } from '@/lib/observability/server'
 import { buildRequestContext } from '@/lib/observability/shared'
 
@@ -117,12 +118,23 @@ export async function POST(
       )
     }
 
-    // Resolve the form URL with a 3-step fallback chain:
+    // Resolve the form URL with a 4-step fallback chain. The client's message
+    // still contains the FORM_LINK_MARKER even when the composer didn't know
+    // about a URL, so we try hard to obtain one. Only when the reviewer has
+    // EXPLICITLY removed the form (urlFormulario === null) do we skip the
+    // resolution — otherwise an empty/undefined value falls through to the
+    // server-side chain below.
+    //
     //   1) persistedUrl — URL sent by the composer (query.urlFormulario from page.tsx)
     //   2) doa_incoming_requests.form_url — denormalized column written by n8n
     //   3) doa_form_tokens — build `${NEXT_PUBLIC_APP_URL}/f/${token}` from the latest
     //      unused, unexpired token for this request. Mirrors page.tsx fallback.
-    // Without (3) an empty form_url column silently strips the marker from the email.
+    //   4) ensureFormLink() — mint a new token on the fly via the admin client
+    //      when the real intake flow never emitted one (closes regression
+    //      BUG-02 for requests that came in outside the n8n Outlook path).
+    // `null` explicitly means "form removed by reviewer" — respect that and
+    // skip the fallback chain so the email goes out without a link.
+    const formExplicitlyRemoved = query.urlFormulario === null
     const persistedUrl =
       typeof query.urlFormulario === 'string' ? query.urlFormulario.trim() : ''
 
@@ -170,7 +182,28 @@ export async function POST(
       return `${appUrl.replace(/\/$/, '')}/f/${tokenRow.token}`
     }
 
-    const formUrl = persistedUrl || (await resolveFormUrlFromDb())
+    let formUrl = ''
+    if (!formExplicitlyRemoved) {
+      formUrl = persistedUrl || (await resolveFormUrlFromDb())
+
+      // Layer 4: last-resort mint. If the message still carries the marker
+      // but we could not resolve a URL, emit a brand-new token so the
+      // reviewer's click is never silently dropped.
+      if (!formUrl && message.includes(FORM_LINK_MARKER)) {
+        const minted = await ensureFormLink({ incomingRequestId: id })
+        if (minted.ok) {
+          formUrl = minted.url
+          console.warn(
+            `[send-client] incoming_request_id=${id} minted form URL on the fly (source=${minted.source}) because none was resolvable from composer/DB/token fallbacks.`,
+          )
+        } else {
+          console.error(
+            `[send-client] incoming_request_id=${id} failed to mint form URL on the fly:`,
+            minted,
+          )
+        }
+      }
+    }
 
     // Defensive warning: composer submitted a message that still contains the
     // marker but we could not resolve a form URL. The email will be sent with
