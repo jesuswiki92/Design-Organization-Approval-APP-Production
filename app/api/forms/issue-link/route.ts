@@ -77,9 +77,11 @@ export async function POST(request: Request) {
   } else {
     const sigCheck = await requireWebhookSignature(raw, request.headers)
     if (!sigCheck.ok) {
+      // 500 for misconfiguration (server fault), 401 for client auth failures.
+      const isServerMisconfig = sigCheck.reason === 'secret_not_configured'
       return NextResponse.json(
-        { error: 'unauthorized', reason: sigCheck.reason },
-        { status: 401 },
+        { error: isServerMisconfig ? 'server_misconfigured' : 'unauthorized', reason: sigCheck.reason },
+        { status: isServerMisconfig ? 500 : 401 },
       )
     }
   }

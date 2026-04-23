@@ -24,15 +24,20 @@
  * Design decisions:
  * - The helper operates on the RAW string body (not parsed JSON) so that the
  *   HMAC computed by the sender matches byte-for-byte.
- * - If `DOA_N8N_INBOUND_SECRET` is not set, the helper logs a
- *   `webhook.auth.unconfigured` event ONCE per process (module-level flag) and
- *   allows the request through. This keeps dev envs unblocked while forcing
- *   a visible warning.
+ * - If `DOA_N8N_INBOUND_SECRET` is not set:
+ *     - In production (`NODE_ENV === 'production'`) the helper FAILS CLOSED.
+ *       It logs `webhook.auth.unconfigured` with severity=error and returns
+ *       `{ ok: false, reason: 'secret_not_configured' }`. Callers MUST return
+ *       500 (not 401), since this is a server misconfiguration, not a client
+ *       failure. Fixed as S1 in the 2026-04-23 security audit.
+ *     - In non-production the helper logs a one-shot warn event and allows
+ *       the request through to keep dev envs unblocked.
  * - Failure paths log `webhook.auth.rejected` (severity=warn) with enough
  *   context to triage without leaking the signature.
  *
  * Env vars:
- *   DOA_N8N_INBOUND_SECRET  — shared secret. Required in production.
+ *   DOA_N8N_INBOUND_SECRET  — shared secret. REQUIRED in production; the
+ *                             helper refuses every request otherwise.
  *
  * Consumers (current):
  *   (none — there are no inbound webhooks yet; this helper exists so the first
@@ -94,6 +99,29 @@ export async function requireWebhookSignature(
   const secret = process.env.DOA_N8N_INBOUND_SECRET
 
   if (!secret || secret.trim().length === 0) {
+    // Fail-closed in production (S1 in 2026-04-23 security audit). We refuse
+    // every request when the secret is missing so that a misconfigured deploy
+    // cannot silently accept unauthenticated webhooks.
+    if (process.env.NODE_ENV === 'production') {
+      if (!unconfiguredLogged) {
+        unconfiguredLogged = true
+        await logServerEvent({
+          eventName: 'webhook.auth.unconfigured',
+          eventCategory: 'security',
+          outcome: 'failure',
+          severity: 'error',
+          metadata: {
+            note: 'DOA_N8N_INBOUND_SECRET is not configured; refusing unauthenticated webhook',
+          },
+        })
+      }
+      console.error(
+        '[webhook.auth] DOA_N8N_INBOUND_SECRET is not configured; refusing unauthenticated webhook',
+      )
+      return { ok: false, reason: 'secret_not_configured' }
+    }
+
+    // Non-production fallback: keep dev unblocked but log loudly.
     if (!unconfiguredLogged) {
       unconfiguredLogged = true
       await logServerEvent({
@@ -102,7 +130,7 @@ export async function requireWebhookSignature(
         outcome: 'info',
         severity: 'warn',
         metadata: {
-          note: 'DOA_N8N_INBOUND_SECRET is not set. Inbound webhooks are accepted without signature verification.',
+          note: 'DOA_N8N_INBOUND_SECRET is not set. Inbound webhooks are accepted without signature verification (dev only).',
         },
       })
     }
