@@ -64,3 +64,9 @@ docs
 
 # Next.js build output that may exist locally
 .vercel
+
+# Deploy-side scripts — not needed in the image, executed only on the VPS host.
+# Keeping them out of the image avoids shipping host-side paths into production.
+deploy.sh
+ops/
+scripts/forensics-*.sh
