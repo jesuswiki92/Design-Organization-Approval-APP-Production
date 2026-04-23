@@ -53,6 +53,11 @@ next-env.d.ts
 .npm-cache/
 VPS_DEPLOYMENT_RUNBOOK_PRIVATE.txt
 VPS_DEPLOYMENT_RUNBOOK_CODEX_PRIVATE.txt
+
+# Swarm runtime compose — lives only on the VPS and contains secrets
+# (SUPABASE_SERVICE_ROLE_KEY, webhook secrets). Never commit to git.
+docker-compose.swarm.yml
+docker-compose.swarm.yml.bak.*
 rag-backend/venv/
 rag-backend/__pycache__/
 rag-backend/**/__pycache__/
