@@ -35,7 +35,7 @@ import { useMemo, useState } from "react"
 // Funcion de Next.js para navegar entre paginas y refrescar data
 import { useRouter } from "next/navigation"
 // Iconos decorativos para los botones y mensajes de status
-import { CheckCircle2, ExternalLink, LoaderCircle, Mail, Send, Trash2, Undo2 } from "lucide-react"
+import { CheckCircle2, ExternalLink, Eye, LoaderCircle, Mail, Send, Trash2, Undo2 } from "lucide-react"
 
 // Componentes visuales reutilizables de la libreria shadcn/ui
 import { Button } from "@/components/ui/button"
@@ -126,6 +126,14 @@ export function ClientReplyComposer({
   const [formRemoved, setFormRemoved] = useState(false)
   // Respaldo del mensaje antes de quitar el form (para deshacer)
   const [messageBeforeRemoval, setMessageBeforeRemoval] = useState<string | null>(null)
+  // URL del formulario resuelta/emitida on-demand por el boton "Check form"
+  // (tiene preferencia sobre query.urlFormulario si existe, para que el Send
+  // reutilice exactamente el mismo token que ya se abrio en preview)
+  const [previewFormUrl, setPreviewFormUrl] = useState<string | null>(null)
+  // Status del boton de preview: "idle" | "loading" | "error"
+  const [previewStatus, setPreviewStatus] = useState<"idle" | "loading" | "error">(
+    "idle",
+  )
 
   // Mensaje limpio sin espacios extra al started_at y al final
   const trimmedMessage = useMemo(() => message.trim(), [message])
@@ -159,6 +167,43 @@ export function ClientReplyComposer({
   }
 
   /**
+   * Abre el formulario publico en una nueva pestana para que el user_label
+   * revise exactamente lo que recibira el client antes de enviar el email.
+   * Si ya existe token valido lo reutiliza, si no, emite uno nuevo via
+   * /api/incoming-requests/[id]/form-link.
+   */
+  async function handleCheckForm() {
+    setPreviewStatus("loading")
+    setFeedback(null)
+    try {
+      const response = await fetch(
+        `/api/incoming-requests/${query.id}/form-link`,
+        { method: "POST" },
+      )
+      const payload = (await response.json().catch(() => null)) as
+        | { url?: string; error?: string }
+        | null
+
+      if (!response.ok || !payload?.url) {
+        throw new Error(payload?.error || "Could not generate the form link.")
+      }
+
+      setPreviewFormUrl(payload.url)
+      setPreviewStatus("idle")
+      // Abrir en nueva pestana (noopener por seguridad)
+      window.open(payload.url, "_blank", "noopener,noreferrer")
+    } catch (error) {
+      setPreviewStatus("error")
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Unexpected error generating the form link.",
+      )
+      setStatus("error")
+    }
+  }
+
+  /**
    * Funcion que se ejecuta al pulsar el boton "Send".
    * Envia el mensaje al webhook commercial a traves de la API de la app.
    */
@@ -184,8 +229,12 @@ export function ClientReplyComposer({
             codigo: query.codigo,
             subject: query.subject,
             sender: query.sender,
-            // Si el user_label quito el form, send null para que la API no lo incluya
-            urlFormulario: formRemoved ? null : query.urlFormulario,
+            // Si el user_label quito el form, send null para que la API no lo incluya.
+            // Si ya se genero una URL via "Check form", reutilizar ese mismo token
+            // (asi el email lleva la misma URL que acaba de revisar el user_label).
+            urlFormulario: formRemoved
+              ? null
+              : (previewFormUrl ?? query.urlFormulario),
             classification: query.classification,
             cuerpoOriginal: query.cuerpoOriginal,
             respuestaIa: query.respuestaIa,
@@ -311,8 +360,7 @@ export function ClientReplyComposer({
         </div>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-
+      <div className="mt-4 flex flex-col items-stretch gap-2">
         <Button onClick={handleSubmit} disabled={status === "submitting" || !trimmedMessage}>
           {status === "submitting" ? (
             <>
@@ -326,6 +374,29 @@ export function ClientReplyComposer({
             </>
           )}
         </Button>
+
+        {/* Boton secundario: abre el formulario publico en nueva pestana para
+            que el user_label revise exactamente lo que recibira el client. */}
+        {!formRemoved ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCheckForm}
+            disabled={previewStatus === "loading" || status === "submitting"}
+          >
+            {previewStatus === "loading" ? (
+              <>
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Generating link...
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                Check form before sending
+              </>
+            )}
+          </Button>
+        ) : null}
       </div>
 
       {feedback ? (
