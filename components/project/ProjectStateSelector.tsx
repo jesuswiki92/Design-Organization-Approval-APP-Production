@@ -22,8 +22,8 @@
  * ============================================================================
  */
 
-import { useEffect, useState, useTransition, type MouseEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, type MouseEvent } from 'react'
+import { toast } from 'sonner'
 
 import {
   PROJECT_EXECUTION_STATE_CONFIG,
@@ -41,22 +41,18 @@ export function ProjectStateSelector({
   proyectoId,
   currentState,
 }: ProjectStateSelectorProps) {
-  const router = useRouter()
   const initial = currentState && isProjectExecutionStateCode(currentState)
     ? (currentState as ProjectExecutionState)
     : null
   const [selectedState, setSelectedState] = useState<ProjectExecutionState | null>(initial)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
-  const [message, setMessage] = useState<string | null>(null)
-  const [, startTransition] = useTransition()
+  const [status] = useState<'idle' | 'saving' | 'error'>('idle')
+  const [message] = useState<string | null>(null)
 
   useEffect(() => {
     const next = currentState && isProjectExecutionStateCode(currentState)
       ? (currentState as ProjectExecutionState)
       : null
     setSelectedState(next)
-    setStatus('idle')
-    setMessage(null)
   }, [currentState])
 
   // Si no tenemos execution_status valido, no renderizamos selector (el padre
@@ -82,56 +78,13 @@ export function ProjectStateSelector({
     event.stopPropagation()
   }
 
-  async function handleChange(nextStateRaw: string) {
+  function handleChange(nextStateRaw: string) {
     if (!nextStateRaw) return
     if (!isProjectExecutionStateCode(nextStateRaw)) return
     const nextState = nextStateRaw as ProjectExecutionState
     if (nextState === selectedState) return
-
-    const previousState = selectedState
     setSelectedState(nextState)
-    setStatus('saving')
-    setMessage(null)
-
-    try {
-      const response = await fetch(`/api/projects/${proyectoId}/transition`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target_state: nextState }),
-      })
-
-      if (response.status === 409) {
-        // Puede ser requires_input → redirect al tab del detalle.
-        const data = (await response.json().catch(() => ({}))) as {
-          requires_input?: boolean
-          redirect_url?: string
-          error?: string
-        }
-        if (data?.requires_input && typeof data.redirect_url === 'string') {
-          // Revertimos el optimistic porque la transicion NO ocurrio aun
-          // — se completa en el form del detalle.
-          setSelectedState(previousState)
-          setStatus('idle')
-          router.push(data.redirect_url)
-          return
-        }
-        throw new Error(data?.error ?? 'Conflicto en la transicion.')
-      }
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as { error?: string }
-        throw new Error(data?.error ?? `HTTP ${response.status}`)
-      }
-
-      setStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setSelectedState(previousState)
-      setStatus('error')
-      setMessage(
-        error instanceof Error ? error.message : 'Error al cambiar el status.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   return (
@@ -146,7 +99,7 @@ export function ProjectStateSelector({
         onClick={stopProp}
         onChange={(event) => {
           event.stopPropagation()
-          void handleChange(event.target.value)
+          handleChange(event.target.value)
         }}
         className="h-7 w-full truncate rounded-md border border-slate-200 bg-slate-50 px-1.5 text-[10px] font-medium uppercase tracking-wide text-slate-500 outline-none transition-colors hover:border-sky-300 focus:border-sky-300 focus:ring-2 focus:ring-sky-100 disabled:cursor-wait disabled:opacity-70"
       >

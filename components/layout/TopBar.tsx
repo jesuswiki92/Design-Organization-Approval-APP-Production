@@ -2,18 +2,16 @@
 
 /**
  * ============================================================================
- * TOPBAR — Warm Executive
+ * TOPBAR — Warm Executive (UI-only frame)
  * ============================================================================
  * Barra superior con crumb serif-italic, buscador quieto y acceso a Expert.
- * Observabilidad (trackUiEvent) preservada en logout.
+ * Auth y observability desconectados — los handlers muestran toast.
  * ============================================================================
  */
 
 import Link from 'next/link'
 import { Search, Bell, Bot, LogOut } from 'lucide-react'
-import { trackUiEvent } from '@/lib/observability/client'
-import { createClient } from '@/lib/supabase/client'
-import { usePathname, useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 interface TopBarProps {
   title: string
@@ -21,37 +19,8 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, subtitle }: TopBarProps) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
-
-  async function handleLogout() {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      await trackUiEvent({
-        eventName: 'auth.logout',
-        eventCategory: 'auth',
-        outcome: 'success',
-        route: pathname,
-        metadata: { source: 'topbar' },
-      })
-
-      router.push('/login')
-      router.refresh()
-    } catch (error) {
-      await trackUiEvent({
-        eventName: 'auth.logout',
-        eventCategory: 'auth',
-        outcome: 'failure',
-        route: pathname,
-        metadata: {
-          source: 'topbar',
-          error_name: error instanceof Error ? error.name : 'UnknownError',
-        },
-      })
-    }
+  function handleLogout() {
+    toast.info('Acción desconectada')
   }
 
   return (

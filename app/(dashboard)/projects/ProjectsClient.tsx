@@ -36,10 +36,9 @@
 // --- IMPORTACIONES ---
 
 import Link from 'next/link'
-import { startTransition, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
-import { createClient } from '@/lib/supabase/client'
 import {
   ChevronDown,
   Inbox,
@@ -143,51 +142,16 @@ function ProjectStateControl({
   // El dropdown usa directamente project.status (que viene del status local del padre).
   // No mantenemos un selectedState propio para evitar desincronizaciones.
 
-  async function handleChange(nextState: string) {
+  function handleChange(nextState: string) {
     if (!nextState || nextState === project.status) {
       return
     }
 
-    const previousState = project.status
-
-    // Actualizar optimistamente el status del padre PRIMERO (mueve la tarjeta)
+    // Actualizar optimistamente el status local (la tarjeta se mueve visualmente)
     onEstadoChange?.(project.id, nextState)
-    setStatus('saving')
+    setStatus('idle')
     setMessage(null)
-
-    try {
-      const response = await fetch('/api/webhooks/project-state', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_id: project.id,
-          status: nextState
-        }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string }
-        | null
-
-      if (!response.ok || !payload?.ok) {
-        throw new Error(
-          payload?.error || 'No se pudo actualizar el status del project.',
-        )
-      }
-
-      setStatus('idle')
-      // Supabase Realtime se encarga de actualizar el status local automaticamente.
-      // No es necesario hacer router.refresh().
-    } catch (error) {
-      // REVERTIR: restaurar el status anterior en el padre y limpiar el override optimista
-      onEstadoRevert?.(project.id, previousState)
-      setStatus('error')
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error actualizando el status.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   // Construir opciones: TODOS los 6 statuses del workflow de projects
@@ -209,7 +173,7 @@ function ProjectStateControl({
         id={`project-state-${project.id}`}
         value={project.status}
         disabled={status === 'saving'}
-        onChange={(event) => void handleChange(event.target.value)}
+        onChange={(event) => handleChange(event.target.value)}
         className="h-8 min-w-[140px] rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[color:var(--ink-3)] outline-none transition-colors hover:border-[color:var(--ink-4)] focus:border-[color:var(--ink-4)] focus:ring-4 focus:ring-[color:var(--ink-4)] disabled:cursor-wait disabled:opacity-70"
       >
         {allOptions.map((option) => (
@@ -236,49 +200,22 @@ function ProjectStateControl({
  * Replica el patron de IncomingQueryDeleteControl de QuotationStatesBoard.
  */
 function ProjectDeleteControl({ project }: { project: Project }) {
-  const router = useRouter()
-  const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
-  const [message, setMessage] = useState<string | null>(null)
+  const [status] = useState<'idle' | 'deleting' | 'error'>('idle')
+  const [message] = useState<string | null>(null)
 
-  async function handleDelete() {
+  function handleDelete() {
     const confirmed = window.confirm(
       `¿Seguro que quieres borrar el project "${project.project_number} — ${project.title}"?`,
     )
     if (!confirmed) return
-
-    setStatus('deleting')
-    setMessage(null)
-
-    try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: 'DELETE',
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo borrar el project.')
-      }
-
-      setStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setStatus('error')
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error borrando el project.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   return (
     <div className="space-y-1">
       <button
         type="button"
-        onClick={() => void handleDelete()}
+        onClick={() => handleDelete()}
         disabled={status === 'deleting'}
         className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-wait disabled:opacity-70"
         aria-label={`Borrar project ${project.project_number}`}
@@ -723,42 +660,6 @@ export function ProjectsClient({
   useEffect(() => {
     setProyectos(initialProyectos)
   }, [initialProyectos])
-
-  // --- Supabase Realtime: suscripcion a cambios en doa_projects ---
-  // Escucha INSERT, UPDATE y DELETE en la table y actualiza el status local
-  // automaticamente sin necesidad de router.refresh().
-  useEffect(() => {
-    const supabase = createClient()
-
-    const channel = supabase
-      .channel('projects-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'doa_projects' },
-        (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setProyectos((prev) =>
-              prev.map((p) =>
-                p.id === (payload.new as Project).id
-                  ? { ...p, ...(payload.new as Project) }
-                  : p,
-              ),
-            )
-          } else if (payload.eventType === 'INSERT') {
-            setProyectos((prev) => [...prev, payload.new as Project])
-          } else if (payload.eventType === 'DELETE') {
-            setProyectos((prev) =>
-              prev.filter((p) => p.id !== (payload.old as { id: string }).id),
-            )
-          }
-        },
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
 
   // Callback para actualizar el status de un project localmente (optimista).
   // La tarjeta se mueve inmediatamente; luego Supabase Realtime confirma el cambio real.

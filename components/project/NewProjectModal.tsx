@@ -17,9 +17,9 @@
  * ============================================================================
  */
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
 import { Loader2, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 import {
   CATEGORY_LABELS,
@@ -52,8 +52,6 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
 }
 
 function NewProjectModalContent({ onOpenChange }: Pick<Props, 'onOpenChange'>) {
-  const router = useRouter()
-
   // --- Form state ---
   const [title, setTitulo] = useState('')
   const [description, setDescripcion] = useState('')
@@ -70,58 +68,16 @@ function NewProjectModalContent({ onOpenChange }: Pick<Props, 'onOpenChange'>) {
   const [priority, setPrioridad] = useState<'high' | 'medium' | 'low' | ''>('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
-  // --- Data sources ---
-  const [clients, setClientes] = useState<ClienteOption[]>([])
-  const [manufacturers, setFabricantes] = useState<string[]>([])
-  const [models, setModelos] = useState<ModeloOption[]>([])
+  // --- Data sources (frame-only: vacios) ---
+  const clients: ClienteOption[] = []
+  const manufacturers: string[] = []
+  const models: ModeloOption[] = []
 
   // --- UI state ---
-  const [loadingClientes, setLoadingClientes] = useState(true)
-  const [loadingModelos, setLoadingModelos] = useState(false)
+  const loadingClientes = false
+  const loadingModelos = false
   const [submitting, setSubmitting] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-
-  // Cargar clients y manufacturers al montar
-  useEffect(() => {
-    let cancelled = false
-    void fetch('/api/clients')
-      .then((r) => r.json())
-      .then((data) => {
-        if (cancelled) return
-        setClientes(Array.isArray(data.clients) ? data.clients : [])
-      })
-      .catch((err) => console.error('[NewProjectModal] clients:', err))
-      .finally(() => !cancelled && setLoadingClientes(false))
-
-    void fetch('/api/aircraft/manufacturers')
-      .then((r) => r.json())
-      .then((data) => {
-        if (cancelled) return
-        setFabricantes(Array.isArray(data.manufacturers) ? data.manufacturers : [])
-      })
-      .catch((err) => console.error('[NewProjectModal] manufacturers:', err))
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  // Cargar models al cambiar manufacturer
-  useEffect(() => {
-    if (!manufacturer) return
-    let cancelled = false
-    void fetch(`/api/aircraft/models?manufacturer=${encodeURIComponent(manufacturer)}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (cancelled) return
-        setModelos(Array.isArray(data.models) ? data.models : [])
-      })
-      .catch((err) => console.error('[NewProjectModal] models:', err))
-      .finally(() => !cancelled && setLoadingModelos(false))
-    return () => {
-      cancelled = true
-    }
-  }, [manufacturer])
+  const [errorMsg] = useState<string | null>(null)
 
   const templatesByCategory = useMemo(() => {
     const map = new Map<string, ComplianceTemplate[]>()
@@ -132,13 +88,9 @@ function NewProjectModalContent({ onOpenChange }: Pick<Props, 'onOpenChange'>) {
     return map
   }, [])
 
-  const clienteSeleccionado = clients.find((c) => c.id === clienteId) ?? null
-
   function handleManufacturerChange(nextManufacturer: string) {
     setFabricante(nextManufacturer)
     setModelo('')
-    setModelos([])
-    setLoadingModelos(Boolean(nextManufacturer))
   }
 
   function toggleTemplate(code: string) {
@@ -163,64 +115,12 @@ function NewProjectModalContent({ onOpenChange }: Pick<Props, 'onOpenChange'>) {
     })
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setErrorMsg(null)
-
-    if (!title.trim()) {
-      setErrorMsg('El title es obligatorio.')
-      return
-    }
-
     setSubmitting(true)
-    try {
-      const payload = {
-        title: title.trim(),
-        description: description.trim() || null,
-        client_id: clienteId || null,
-        client_name: clienteSeleccionado?.name ?? null,
-        manufacturer: manufacturer || null,
-        model: model || null,
-        msn: msn.trim() || null,
-        tcds_code: tcdsCode.trim() || null,
-        tcds_code_short: tcdsCodeShort.trim() || null,
-        owner: owner.trim() || null,
-        checker: checker.trim() || null,
-        approval: approval.trim() || null,
-        estimated_delivery_date: fechaEntrega || null,
-        priority: priority || null,
-        plantilla_codes: Array.from(selected),
-      }
-
-      const res = await fetch('/api/projects/create-manual', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      const data = await res.json().catch(() => ({}))
-
-      if (!res.ok || !data?.ok) {
-        setErrorMsg(
-          typeof data?.error === 'string'
-            ? data.error
-            : `Error ${res.status} creando el project.`,
-        )
-        setSubmitting(false)
-        return
-      }
-
-      const projectId = data?.project?.id
-      if (typeof projectId === 'string' && projectId) {
-        router.push(`/engineering/projects/${projectId}`)
-      } else {
-        onOpenChange(false)
-      }
-    } catch (err) {
-      console.error('[NewProjectModal] submit:', err)
-      setErrorMsg(err instanceof Error ? err.message : 'Error de red.')
-      setSubmitting(false)
-    }
+    toast.info('Acción desconectada')
+    setSubmitting(false)
+    onOpenChange(false)
   }
 
   return (

@@ -12,9 +12,9 @@
  */
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { startTransition, useState } from 'react'
+import { useState } from 'react'
 import { Calendar, Plane, Trash2, User } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
 import type { Project } from '@/types/database'
@@ -33,9 +33,8 @@ export function ProjectCard({
   project: ProjectCardData
   showStateSelector?: boolean
 }) {
-  const router = useRouter()
-  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
-  const [deleteMessage, setDeleteMessage] = useState<string | null>(null)
+  const [deleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
+  const [deleteMessage] = useState<string | null>(null)
   const aircraft = project.tcds_code_short ?? project.aircraft ?? null
   const client = project.client_name ?? null
   const owner = project.owner ?? null
@@ -44,38 +43,12 @@ export function ProjectCard({
   const done = project.deliverables_completados ?? 0
   const hasDeliverables = total > 0
 
-  async function handleDelete() {
+  function handleDelete() {
     const confirmed = window.confirm(
       `Seguro que quieres borrar el proyecto "${project.project_number}"? Se eliminara de la app, pero no se borraran las carpetas locales del proyecto.`,
     )
     if (!confirmed) return
-
-    setDeleteStatus('deleting')
-    setDeleteMessage(null)
-
-    try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: 'DELETE',
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo borrar el proyecto.')
-      }
-
-      setDeleteStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setDeleteStatus('error')
-      setDeleteMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error borrando el proyecto.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   return (
@@ -147,7 +120,7 @@ export function ProjectCard({
 
       <button
         type="button"
-        onClick={() => void handleDelete()}
+        onClick={() => handleDelete()}
         disabled={deleteStatus === 'deleting'}
         className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] text-[color:var(--err)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-70"
         aria-label={`Borrar proyecto ${project.project_number}`}

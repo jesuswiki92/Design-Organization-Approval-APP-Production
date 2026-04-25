@@ -64,6 +64,7 @@ import {
   Settings2,         // Configuracion
   Trash2,            // Borrar
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 // Componentes visuales reutilizables (shadcn/ui)
 import { Button } from '@/components/ui/button'
@@ -250,37 +251,9 @@ function IncomingQueryStateControl({
     }
 
     setSelectedState(nextState)
-    setStatus('saving')
+    setStatus('idle')
     setMessage(null)
-
-    try {
-      const response = await fetch(`/api/incoming-requests/${card.id}/state`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: nextState }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo actualizar el status.')
-      }
-
-      setStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setSelectedState(card.stateCode ?? '')
-      setStatus('error')
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error actualizando el status.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   return (
@@ -335,32 +308,9 @@ function IncomingQueryDeleteControl({
     )
     if (!confirmed) return
 
-    setStatus('deleting')
+    setStatus('idle')
     setMessage(null)
-
-    try {
-      const response = await fetch(`/api/incoming-requests/${card.id}`, {
-        method: 'DELETE',
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo borrar la request.')
-      }
-
-      setStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setStatus('error')
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error borrando la request.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   return (
@@ -412,36 +362,9 @@ function IncomingQueryArchiveControl({
     )
     if (!confirmed) return
 
-    setStatus('saving')
+    setStatus('idle')
     setMessage(null)
-
-    try {
-      const response = await fetch(`/api/incoming-requests/${card.id}/state`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: INCOMING_REQUEST_STATUSES.ARCHIVED }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null
-
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo archive la request.')
-      }
-
-      setStatus('idle')
-      startTransition(() => router.refresh())
-    } catch (error) {
-      setStatus('error')
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : 'Se produjo un error archivando la request.',
-      )
-    }
+    toast.info('Acción desconectada')
   }
 
   return (
@@ -1086,63 +1009,14 @@ export function QuotationStatesBoard({
       [scope]: { status: 'saving', message: null },
     }))
 
-    try {
-      const response = await fetch('/api/workflow/state-config', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          scope,
-          states: rows.map((row) => ({
-            stateCode: row.state_code,
-            label: row.label,
-            shortLabel: row.short_label,
-            description: row.description,
-            colorToken: row.color_token,
-            sortOrder: row.sort_order,
-          })),
-        }),
-      })
-
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string; rows?: WorkflowStateConfigRow[] }
-        | null
-
-      if (!response.ok || !payload?.rows) {
-        throw new Error(
-          payload?.error || 'No se pudo guardar la configuración de statuses.',
-        )
-      }
-
-      const savedRows = (payload.rows ?? []).map(stripResolvedStateMeta)
-
-      setStateConfigRows((current) =>
-        replaceWorkflowStateRowsForScope(current, scope, savedRows),
-      )
-      setDraftConfigRows((current) => ({
-        ...current,
-        [scope]: savedRows,
-      }))
-      setSaveState((current) => ({
-        ...current,
-        [scope]: {
-          status: 'success',
-          message: 'Configuración guardada correctamente en Supabase.',
-        },
-      }))
-    } catch (error) {
-      setSaveState((current) => ({
-        ...current,
-        [scope]: {
-          status: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Se produjo un error inesperado al guardar los statuses.',
-        },
-      }))
-    }
+    toast.info('Acción desconectada')
+    setSaveState((current) => ({
+      ...current,
+      [scope]: {
+        status: 'idle',
+        message: null,
+      },
+    }))
   }
 
   return (
