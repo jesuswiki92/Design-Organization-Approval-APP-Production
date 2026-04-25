@@ -705,7 +705,7 @@
             msg='This link has expired. Please request a new one.';
           }
         }else if(resp.status===400){
-          msg='Please check the highlighted fields and try again.';
+          msg=(data&&data.message)||'Please check the highlighted fields and try again.';
         }else if(resp.status>=500){
           msg='Something went wrong on our side. Please try again in a moment.';
         }else{

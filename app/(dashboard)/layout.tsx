@@ -36,7 +36,13 @@ import { Sidebar } from '@/components/layout/Sidebar'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     /* Contenedor primary: ocupa toda la pantalla. Fondo papel cálido (Warm Executive). */
-    <div className="flex h-screen overflow-hidden bg-[color:var(--paper)] text-[color:var(--ink)]">
+    <div className="relative flex h-screen overflow-hidden bg-[color:var(--paper)] text-[color:var(--ink)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[color:var(--paper)] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-[color:var(--ink)] focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       {/* RouteViewTracker usa useSearchParams(); en Next.js 16 eso requiere un
           Suspense boundary para no abortar la generacion estatica de paginas
           hijas (p.ej. /engineering/portfolio). El tracker no pinta nada, asi
@@ -47,9 +53,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Barra lateral izquierda con el menu de navegacion */}
       <Sidebar />
       {/* Area de contenido primary donde se muestra la page activa */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex min-w-0 flex-1 flex-col overflow-hidden focus:outline-none"
+      >
         {children}
-      </div>
+      </main>
     </div>
   )
 }

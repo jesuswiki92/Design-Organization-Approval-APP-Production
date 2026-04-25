@@ -411,26 +411,24 @@ export default function HistoricalProjectEntryClient({
    * Busca documents de compliance_docs_md que coincidan con una family documental.
    * Compara por name de folder (family) o por referencia de archivo.
    */
-  const findComplianceDocsForFamily = useMemo(() => {
-    if (!complianceDocsSafe) return (_familia: string, _archivoRef: string | null) => []
-    const docsMap = complianceDocsSafe
-    return (family: string, archivoRef: string | null) => {
-      const matches: Array<{ ref: string; title: string; content_md: string }> = []
-      for (const [ref, doc] of Object.entries(docsMap)) {
-        if (!doc || typeof doc !== 'object') continue
-        // Coincidencia por name de family (ej: "01.Change Classification")
-        if (doc.family === family) {
-          matches.push({ ref, title: doc.title ?? ref, content_md: doc.content_md ?? '' })
-          continue
-        }
-        // Coincidencia por referencia de archivo (ej: archivo_referencia contiene "20885-12-01")
-        if (archivoRef && archivoRef.includes(ref)) {
-          matches.push({ ref, title: doc.title ?? ref, content_md: doc.content_md ?? '' })
-        }
+  function findComplianceDocsForFamily(family: string, archivoRef: string | null) {
+    if (!complianceDocsSafe) return []
+
+    const matches: Array<{ ref: string; title: string; content_md: string }> = []
+    for (const [ref, doc] of Object.entries(complianceDocsSafe)) {
+      if (!doc || typeof doc !== 'object') continue
+      // Coincidencia por name de family (ej: "01.Change Classification")
+      if (doc.family === family) {
+        matches.push({ ref, title: doc.title ?? ref, content_md: doc.content_md ?? '' })
+        continue
       }
-      return matches
+      // Coincidencia por referencia de archivo (ej: archivo_referencia contiene "20885-12-01")
+      if (archivoRef && archivoRef.includes(ref)) {
+        matches.push({ ref, title: doc.title ?? ref, content_md: doc.content_md ?? '' })
+      }
     }
-  }, [complianceDocsSafe])
+    return matches
+  }
 
   /**
    * Alterna la visibilidad del contenido markdown de una family documental.

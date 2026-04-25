@@ -36,6 +36,36 @@ type RpcResult =
   | { error: 'token_used' }
   | { error: 'internal'; message?: string }
 
+function getFirstValidationMessage(details: unknown): string | null {
+  if (!Array.isArray(details) || details.length === 0) return null
+  const first = details[0]
+  if (!first || typeof first !== 'object') return null
+  const message = 'message' in first ? first.message : null
+  return typeof message === 'string' && message.trim().length > 0
+    ? message.trim()
+    : null
+}
+
+function mapRpcInternalMessage(message: string | undefined): {
+  status: number
+  message?: string
+} {
+  if (!message) return { status: 500 }
+
+  if (
+    message.includes('doa_clientes_datos_generales_tipo_cliente_check') ||
+    message.includes('customer_type')
+  ) {
+    return {
+      status: 400,
+      message:
+        'customer_type must be one of: airline, mro, private, manufacturer, other',
+    }
+  }
+
+  return { status: 500 }
+}
+
 export async function POST(
   request: Request,
   context: { params: Promise<{ token: string }> },
@@ -61,8 +91,15 @@ export async function POST(
 
   const validation = submitFormSchema.safeParse(raw)
   if (!validation.success) {
+    const issues = validation.error.issues
     return NextResponse.json(
-      { error: 'invalid_payload', details: validation.error.issues },
+      {
+        error: 'invalid_payload',
+        details: issues,
+        message:
+          getFirstValidationMessage(issues) ??
+          'Please review the form fields and try again.',
+      },
       { status: 400 },
     )
   }
@@ -111,11 +148,20 @@ export async function POST(
         )
       case 'internal':
       default:
+        const mapped = mapRpcInternalMessage(
+          'message' in result ? result.message : undefined,
+        )
         console.error(
           '[/f/[token]/submit] rpc internal error:',
           'message' in result ? result.message : '(no message)',
         )
-        return NextResponse.json({ error: 'internal' }, { status: 500 })
+        return NextResponse.json(
+          {
+            error: mapped.status === 400 ? 'invalid_payload' : 'internal',
+            ...(mapped.message ? { message: mapped.message } : {}),
+          },
+          { status: mapped.status },
+        )
     }
   }
 

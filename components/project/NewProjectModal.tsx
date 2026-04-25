@@ -46,6 +46,12 @@ type Props = {
 }
 
 export function NewProjectModal({ open, onOpenChange }: Props) {
+  if (!open) return null
+
+  return <NewProjectModalContent onOpenChange={onOpenChange} />
+}
+
+function NewProjectModalContent({ onOpenChange }: Pick<Props, 'onOpenChange'>) {
   const router = useRouter()
 
   // --- Form state ---
@@ -70,16 +76,14 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
   const [models, setModelos] = useState<ModeloOption[]>([])
 
   // --- UI state ---
-  const [loadingClientes, setLoadingClientes] = useState(false)
+  const [loadingClientes, setLoadingClientes] = useState(true)
   const [loadingModelos, setLoadingModelos] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // Cargar clients y manufacturers al abrir
+  // Cargar clients y manufacturers al montar
   useEffect(() => {
-    if (!open) return
     let cancelled = false
-    setLoadingClientes(true)
     void fetch('/api/clients')
       .then((r) => r.json())
       .then((data) => {
@@ -100,17 +104,12 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
     return () => {
       cancelled = true
     }
-  }, [open])
+  }, [])
 
   // Cargar models al cambiar manufacturer
   useEffect(() => {
-    if (!manufacturer) {
-      setModelos([])
-      setModelo('')
-      return
-    }
+    if (!manufacturer) return
     let cancelled = false
-    setLoadingModelos(true)
     void fetch(`/api/aircraft/models?manufacturer=${encodeURIComponent(manufacturer)}`)
       .then((r) => r.json())
       .then((data) => {
@@ -124,26 +123,6 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
     }
   }, [manufacturer])
 
-  // Reset al close
-  useEffect(() => {
-    if (open) return
-    setTitulo('')
-    setDescripcion('')
-    setClienteId('')
-    setFabricante('')
-    setModelo('')
-    setMsn('')
-    setTcdsCode('')
-    setTcdsCodeShort('')
-    setOwner('')
-    setChecker('')
-    setApproval('')
-    setFechaEntrega('')
-    setPrioridad('')
-    setSelected(new Set())
-    setErrorMsg(null)
-  }, [open])
-
   const templatesByCategory = useMemo(() => {
     const map = new Map<string, ComplianceTemplate[]>()
     for (const cat of CATEGORY_ORDER) map.set(cat, [])
@@ -154,6 +133,13 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
   }, [])
 
   const clienteSeleccionado = clients.find((c) => c.id === clienteId) ?? null
+
+  function handleManufacturerChange(nextManufacturer: string) {
+    setFabricante(nextManufacturer)
+    setModelo('')
+    setModelos([])
+    setLoadingModelos(Boolean(nextManufacturer))
+  }
 
   function toggleTemplate(code: string) {
     setSelected((prev) => {
@@ -236,8 +222,6 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
       setSubmitting(false)
     }
   }
-
-  if (!open) return null
 
   return (
     <div
@@ -329,7 +313,7 @@ export function NewProjectModal({ open, onOpenChange }: Props) {
               <label className="text-xs font-medium text-slate-600">Manufacturer</label>
               <select
                 value={manufacturer}
-                onChange={(e) => setFabricante(e.target.value)}
+                onChange={(e) => handleManufacturerChange(e.target.value)}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-300 focus:outline-none"
               >
                 <option value="">Seleccionar manufacturer...</option>

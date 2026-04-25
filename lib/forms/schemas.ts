@@ -36,6 +36,24 @@ export type IssueLinkInput = z.infer<typeof issueLinkSchema>
 
 // ─── /f/[token]/submit ────────────────────────────────────────────────────
 
+/**
+ * Allowed values for `customer_type` — MUST stay in sync with the DB check
+ * constraint `doa_clientes_datos_generales_tipo_cliente_check` on
+ * `doa_clients.client_type` (ARRAY['airline','mro','private','manufacturer','other']).
+ *
+ * Keep in sync with:
+ *   - `doa_forms.html` (cliente_desconocido) `<select id="customer_type">` options
+ *   - `types/database.ts` DoaClient.client_type union
+ *   - Formularios/formulario_cliente_desconocido.html
+ */
+export const CUSTOMER_TYPE_VALUES = [
+  'airline',
+  'mro',
+  'private',
+  'manufacturer',
+  'other',
+] as const
+
 const clientBlockSchema = z.object({
   company_name: z.string().min(1),
   vat_number: z.string().optional(),
@@ -44,7 +62,11 @@ const clientBlockSchema = z.object({
   address: z.string().optional(),
   company_phone: z.string().optional(),
   website: z.string().optional(),
-  customer_type: z.string().min(1),
+  customer_type: z.enum(CUSTOMER_TYPE_VALUES, {
+    errorMap: () => ({
+      message: `customer_type must be one of: ${CUSTOMER_TYPE_VALUES.join(', ')}`,
+    }),
+  }),
   contact_first_name: z.string().min(1),
   contact_last_name: z.string().min(1),
   contact_email: z.string().email(),

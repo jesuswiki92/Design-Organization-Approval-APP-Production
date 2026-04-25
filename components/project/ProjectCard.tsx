@@ -46,7 +46,7 @@ export function ProjectCard({
 
   async function handleDelete() {
     const confirmed = window.confirm(
-      `Seguro que quieres borrar el project "${project.project_number}"? Se eliminara de la app, pero no se borraran las carpetas locales del project.`,
+      `Seguro que quieres borrar el proyecto "${project.project_number}"? Se eliminara de la app, pero no se borraran las carpetas locales del proyecto.`,
     )
     if (!confirmed) return
 
@@ -63,7 +63,7 @@ export function ProjectCard({
         | null
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo borrar el project.')
+        throw new Error(payload?.error || 'No se pudo borrar el proyecto.')
       }
 
       setDeleteStatus('idle')
@@ -73,7 +73,7 @@ export function ProjectCard({
       setDeleteMessage(
         error instanceof Error
           ? error.message
-          : 'Se produjo un error borrando el project.',
+          : 'Se produjo un error borrando el proyecto.',
       )
     }
   }
@@ -150,15 +150,15 @@ export function ProjectCard({
         onClick={() => void handleDelete()}
         disabled={deleteStatus === 'deleting'}
         className="absolute right-2.5 top-2.5 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[color:var(--line)] bg-[color:var(--paper)] text-[color:var(--err)] transition-colors hover:bg-[color:var(--paper-3)] disabled:cursor-wait disabled:opacity-70"
-        aria-label={`Borrar project ${project.project_number}`}
-        title="Borrar project"
+        aria-label={`Borrar proyecto ${project.project_number}`}
+        title="Borrar proyecto"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
 
       {deleteStatus === 'deleting' ? (
         <p className="mt-2 text-[11px] text-[color:var(--ink-3)]">
-          Borrando project...
+          Borrando proyecto...
         </p>
       ) : null}
       {deleteMessage ? (

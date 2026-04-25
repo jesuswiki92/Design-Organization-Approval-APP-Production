@@ -59,7 +59,6 @@ import { PublicFormLinkCard } from './PublicFormLinkCard'
 // import { PreliminaryScopePanel } from './PreliminaryScopePanel'
 import { PreparaProyectoPanel } from './PreparaProyectoPanel'
 import { QuotationInfoSection } from './QuotationInfoSection'
-import PreliminaryScopeAnalyzer from './PreliminaryScopeAnalyzer'
 import ClassificationWorkspaceClient from './ClassificationWorkspaceClient'
 import { ReferenceProjectButton } from './ReferenceProjectButton'
 import { TcdsStatusBanner } from './TcdsStatusBanner'
@@ -1045,7 +1044,7 @@ export default async function IncomingQuotationDetailPage({
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-amber-900">
-                    Awaiting the client's form response
+                    Awaiting the client&apos;s form response
                   </h2>
                   <p className="mt-0.5 text-sm text-amber-700">
                     The intake form has been sent. When the client completes it,
@@ -2196,5 +2195,4 @@ export default async function IncomingQuotationDetailPage({
     </div>
   )
 }
-
 

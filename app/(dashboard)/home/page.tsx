@@ -90,7 +90,7 @@ export default function HomePage() {
     <div className="flex h-full flex-col overflow-hidden">
       <TopBar title="Home" subtitle="your morning" />
 
-      <main className="flex-1 overflow-y-auto px-8 py-8">
+      <div className="flex-1 overflow-y-auto px-8 py-8">
         {/* ---- Saludo ---- */}
         <header className="mb-7 max-w-3xl">
           <h1 className="font-[family-name:var(--font-heading)] text-[44px] leading-[1.05] tracking-[-0.8px] text-[color:var(--ink)]">
@@ -259,7 +259,7 @@ export default function HomePage() {
             ))}
           </ul>
         </section>
-      </main>
+      </div>
     </div>
   )
 }

@@ -94,7 +94,6 @@ function classifyResult(answers: Answer[]): 'major' | 'minor' | 'undetermined' {
 export default function ChangeClassificationPanel({
   consultaId,
   referenceProjectId,
-  classificationData,
   onAnswersChange,
   onLogEntry,
   onAnalyzingChange,
@@ -105,7 +104,6 @@ export default function ChangeClassificationPanel({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loaded, setLoaded] = useState(false)
 
   const addLogEntry = useCallback((message: string, type: LogEntry['type'] = 'info') => {
     onLogEntry?.(message, type)
@@ -132,8 +130,6 @@ export default function ChangeClassificationPanel({
         }
       } catch {
         // Silent fail on load
-      } finally {
-        setLoaded(true)
       }
     }
     load()
@@ -485,7 +481,7 @@ function getWeightBadge(weightKg: number, mtowKg: number | null | undefined): {
   return { label: `${pctStr}% MTOW`, className: 'bg-red-50 text-red-700' }
 }
 
-function ClassificationDataPanel({ data }: { data: ClassificationData }) {
+export function ClassificationDataPanel({ data }: { data: ClassificationData }) {
   const [weightItemsOpen, setWeightItemsOpen] = useState(false)
 
   const estimatedWeight = data.estimated_weight_kg ? parseFloat(data.estimated_weight_kg) : null
@@ -713,12 +709,8 @@ type QuestionRowProps = {
 }
 
 function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCritical }: QuestionRowProps) {
-  const [showJustification, setShowJustification] = useState(!!answer.justification)
-
-  // Auto-show justification when AI fills it
-  useEffect(() => {
-    if (answer.justification) setShowJustification(true)
-  }, [answer.justification])
+  const [showJustification, setShowJustification] = useState(false)
+  const justificationVisible = showJustification || Boolean(answer.justification)
 
   return (
     <div
@@ -743,7 +735,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
           <p className="text-xs leading-relaxed text-[color:var(--ink-2)]">{question.q}</p>
 
           {/* Justification */}
-          {showJustification && (
+          {justificationVisible && (
             <textarea
               value={answer.justification}
               onChange={(e) => onSetJustification(question.n, e.target.value)}
@@ -803,7 +795,7 @@ function QuestionRow({ question, answer, onSetAnswer, onSetJustification, isCrit
             NO
           </button>
 
-          {!showJustification && (
+          {!justificationVisible && (
             <button
               onClick={() => setShowJustification(true)}
               className="ml-1 rounded p-1 text-[color:var(--ink-4)] hover:text-[color:var(--ink-2)]"

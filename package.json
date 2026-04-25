@@ -2,6 +2,9 @@
   "name": "doa-ops-hub",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,7 +26,7 @@
     "jszip": "^3.10.1",
     "lightningcss": "^1.32.0",
     "lucide-react": "^0.577.0",
-    "next": "16.2.1",
+    "next": "^16.2.4",
     "openai": "^6.32.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -39,7 +42,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.1",
+    "eslint-config-next": "^16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

@@ -46,7 +46,7 @@ export default function SettingsPage() {
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
       <TopBar title="Settings" subtitle="Configuracion general de la aplicacion" />
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
+      <div className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
         <section className="rounded-[24px] border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-6 py-5 shadow-[0_18px_45px_rgba(148,163,184,0.16)]">
           <h2 className="text-2xl font-semibold text-slate-950">Configuracion general</h2>
           <p className="mt-1 text-sm leading-7 text-[color:var(--ink-3)]">
@@ -143,7 +143,7 @@ export default function SettingsPage() {
         <p className="text-center text-xs text-[color:var(--ink-3)]">
           Estos modulos se activaran conforme se desarrollen las funcionalidades correspondientes.
         </p>
-      </main>
+      </div>
     </div>
   )
 }
