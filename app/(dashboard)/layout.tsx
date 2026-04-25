@@ -24,9 +24,6 @@
  */
 
 // Componente de la barra lateral de navegacion (menu izquierdo)
-import { Suspense } from 'react'
-
-import { RouteViewTracker } from '@/components/observability/RouteViewTracker'
 import { Sidebar } from '@/components/layout/Sidebar'
 
 /**
@@ -43,13 +40,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         Skip to main content
       </a>
-      {/* RouteViewTracker usa useSearchParams(); en Next.js 16 eso requiere un
-          Suspense boundary para no abortar la generacion estatica de paginas
-          hijas (p.ej. /engineering/portfolio). El tracker no pinta nada, asi
-          que el fallback es null. */}
-      <Suspense fallback={null}>
-        <RouteViewTracker scope="dashboard" />
-      </Suspense>
       {/* Barra lateral izquierda con el menu de navegacion */}
       <Sidebar />
       {/* Area de contenido primary donde se muestra la page activa */}
