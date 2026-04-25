@@ -1,10 +1,10 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
-// Baseline HTTP security headers (finding H4 in the 2026-04-23 security audit).
-// CSP is shipped in Report-Only mode first so that any inline-script / data-URL
-// edge case surfaces in the browser console without breaking the app; promote
-// to enforcing Content-Security-Policy once report logs are clean.
+// Baseline HTTP security headers. CSP is shipped in Report-Only mode first
+// so that any inline-script / data-URL edge case surfaces in the browser
+// console without breaking the app; promote to enforcing
+// Content-Security-Policy once report logs are clean.
 const securityHeaders = [
   {
     key: 'Strict-Transport-Security',
@@ -25,7 +25,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://ssn8n.testn8n.com https://doa.testn8n.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
     ].join('; '),
   },
 ];
