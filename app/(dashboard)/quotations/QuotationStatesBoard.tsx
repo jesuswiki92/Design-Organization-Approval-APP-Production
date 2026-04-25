@@ -42,8 +42,6 @@
 
 // Navegacion entre paginas
 import Link from 'next/link'
-// Hook para refrescar data de la page
-import { useRouter } from 'next/navigation'
 // Hooks de React para manejar statuses, efectos y optimizaciones
 import {
   startTransition,   // Marca actualizaciones como no urgentes
@@ -73,7 +71,6 @@ import { Textarea } from '@/components/ui/textarea'
 // Funciones para manejar la configuracion de statuses del workflow
 import {
   getWorkflowStateColorOptions,         // Opciones de colores disponibles
-  replaceWorkflowStateRowsForScope,     // Reemplazar filas de un scope
   resolveWorkflowStateRows,             // Resolver filas con valores por defecto
   WORKFLOW_STATE_SCOPES,                // Constantes de scopes del workflow
 } from '@/lib/workflow-state-config'
@@ -90,9 +87,7 @@ import { INCOMING_REQUEST_STATUSES } from '@/lib/workflow-states'
 import { QuotationStateSelector } from './QuotationStateSelector'
 // Funciones y tipos para requests entrantes
 import {
-  getQuotationBoardStateOptions,
   type IncomingQuery,
-  type QuotationBoardStateOption,
 } from './incoming-queries'
 // Tipos y funciones para los data del tablero
 import type { QuotationLane } from './quotation-board-data'
@@ -117,8 +112,6 @@ type ScopeSaveState = {
   message: string | null
 }
 
-/** Opcion de status para el selector del pipeline de cotizaciones */
-type BoardStateOption = QuotationBoardStateOption
 
 const quotationPillBaseClass =
   'inline-flex items-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--ink)] shadow-[0_1px_0_rgba(255,255,255,0.65)_inset]'
@@ -218,71 +211,6 @@ function stripResolvedStateMeta(row: WorkflowStateConfigRow) {
 }
 
 /**
- * Selector desplegable para cambiar el status de una request entrante.
- * Cuando el user_label selecciona un new status, envia el cambio a la API
- * y refresca la page para mostrar los data actualizados.
- */
-function IncomingQueryStateControl({
-  card,
-  options,
-}: {
-  card: QuotationCard
-  options: BoardStateOption[]
-}) {
-  const router = useRouter()
-  const [selectedState, setSelectedState] = useState(card.stateCode ?? '')
-  const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
-  const [message, setMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    setSelectedState(card.stateCode ?? '')
-    setStatus('idle')
-    setMessage(null)
-  }, [card.stateCode])
-
-  if (card.kind !== 'incoming_query' || !card.stateCode) {
-    return null
-  }
-
-  async function handleChange(nextState: string) {
-    if (!nextState || nextState === card.stateCode) {
-      setSelectedState(card.stateCode ?? '')
-      return
-    }
-
-    setSelectedState(nextState)
-    setStatus('idle')
-    setMessage(null)
-    toast.info('Acción desconectada')
-  }
-
-  return (
-    <div className="space-y-1">
-      <label className="sr-only" htmlFor={`incoming-state-${card.id}`}>
-        Cambiar status de la request
-      </label>
-      <select
-        id={`incoming-state-${card.id}`}
-        value={selectedState}
-        disabled={status === 'saving'}
-        onChange={(event) => void handleChange(event.target.value)}
-        className="h-8 min-w-[140px] rounded-lg border border-[color:var(--line)] bg-[color:var(--paper)] px-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[color:var(--ink-2)] outline-none transition-colors hover:border-[color:var(--umber)] focus:border-[color:var(--umber)] focus:ring-2 focus:ring-[color:var(--umber)]/20 disabled:cursor-wait disabled:opacity-70"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {status === 'saving' ? (
-        <p className="text-[11px] text-[color:var(--ink-3)]">Guardando status...</p>
-      ) : null}
-      {message ? <p className="text-[11px] text-[color:var(--err)]">{message}</p> : null}
-    </div>
-  )
-}
-
-/**
  * Boton para borrar una request entrante del tablero.
  * Pide confirmacion al user_label antes de eliminar.
  * Llama a la API DELETE y refresca la page.
@@ -294,7 +222,6 @@ function IncomingQueryDeleteControl({
   card: QuotationCard
   compact?: boolean
 }) {
-  const router = useRouter()
   const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
@@ -348,7 +275,6 @@ function IncomingQueryArchiveControl({
   card: QuotationCard
   compact?: boolean
 }) {
-  const router = useRouter()
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
 
@@ -434,10 +360,8 @@ function IncomingClientIdentityBlock({ card }: { card: QuotationCard }) {
  */
 function BoardCard({
   card,
-  stateOptions,
 }: {
   card: QuotationCard
-  stateOptions: BoardStateOption[]
 }) {
   return (
     <article className="doa-kanban-card">
@@ -485,11 +409,9 @@ function BoardCard({
  */
 function BoardLane({
   lane,
-  stateOptions,
   onDeleteLane,
 }: {
   lane: QuotationLane
-  stateOptions: BoardStateOption[]
   onDeleteLane: (laneId: string) => void
 }) {
   return (
@@ -516,7 +438,7 @@ function BoardLane({
 
       <div className="mt-3 flex-1 space-y-3">
         {lane.cards.map((card) => (
-          <BoardCard key={card.id} card={card} stateOptions={stateOptions} />
+          <BoardCard key={card.id} card={card} />
         ))}
 
         {lane.cards.length === 0 ? (
@@ -536,11 +458,9 @@ function BoardLane({
  */
 function ListRow({
   lane,
-  stateOptions,
   onDeleteLane,
 }: {
   lane: QuotationLane
-  stateOptions: BoardStateOption[]
   onDeleteLane: (laneId: string) => void
 }) {
   const leadCard = lane.cards[0]
@@ -855,7 +775,7 @@ export function QuotationStatesBoard({
   // --- ESTADOS DEL COMPONENTE ---
 
   // Configuracion actual de statuses (fuente de verdad para el tablero)
-  const [stateConfigRows, setStateConfigRows] = useState<WorkflowStateConfigRow[]>([
+  const [stateConfigRows] = useState<WorkflowStateConfigRow[]>([
     ...initialEditableRows.quotation_board,
     ...initialEditableRows.incoming_queries,
     ...initialEditableRows.project_board,
@@ -918,11 +838,6 @@ export function QuotationStatesBoard({
   const lanes = useMemo(
     () => [...defaultQuotationLanes(stateConfigRows, initialIncomingQueries), ...customLanes],
     [customLanes, initialIncomingQueries, stateConfigRows],
-  )
-  // Opciones del selector de status para requests entrantes
-  const incomingStateOptions = useMemo(
-    () => getQuotationBoardStateOptions(stateConfigRows),
-    [stateConfigRows],
   )
   // Metricas: total de tarjetas y total de columnas
   const metrics = useMemo(() => {
@@ -1002,8 +917,6 @@ export function QuotationStatesBoard({
 
   /** Guardar la configuracion de un scope en Supabase via API */
   async function handleSaveScope(scope: WorkflowStateScope) {
-    const rows = draftConfigRows[scope]
-
     setSaveState((current) => ({
       ...current,
       [scope]: { status: 'saving', message: null },
@@ -1182,7 +1095,6 @@ export function QuotationStatesBoard({
                   <BoardLane
                     key={lane.id}
                     lane={lane}
-                    stateOptions={incomingStateOptions}
                     onDeleteLane={handleDeleteLane}
                   />
                 ))}
@@ -1219,7 +1131,6 @@ export function QuotationStatesBoard({
                     <ListRow
                       key={lane.id}
                       lane={lane}
-                      stateOptions={incomingStateOptions}
                       onDeleteLane={handleDeleteLane}
                     />
                   ))}

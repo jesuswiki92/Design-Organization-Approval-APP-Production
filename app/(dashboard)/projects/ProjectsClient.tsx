@@ -129,12 +129,10 @@ function ProjectStateControl({
   project,
   stateConfigRows,
   onEstadoChange,
-  onEstadoRevert,
 }: {
   project: Project
   stateConfigRows: WorkflowStateConfigRow[]
   onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
-  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
@@ -250,12 +248,10 @@ function BoardCard({
   project,
   stateConfigRows,
   onEstadoChange,
-  onEstadoRevert,
 }: {
   project: Project
   stateConfigRows: WorkflowStateConfigRow[]
   onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
-  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
   return (
     <article className="rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] p-3.5 shadow-[0_14px_32px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-0.5 hover:border-[color:var(--ink-4)]">
@@ -331,7 +327,7 @@ function BoardCard({
 
       {/* Selector de status + boton detalle */}
       <div className="mt-3 space-y-2">
-        <ProjectStateControl project={project} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} onEstadoRevert={onEstadoRevert} />
+        <ProjectStateControl project={project} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} />
         <div className="flex items-center justify-between">
           <ProjectDeleteControl project={project} />
           <Link
@@ -362,13 +358,11 @@ function BoardLane({
   projects,
   stateConfigRows,
   onEstadoChange,
-  onEstadoRevert,
 }: {
   stateMeta: ResolvedWorkflowStateMeta
   projects: Project[]
   stateConfigRows: WorkflowStateConfigRow[]
   onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
-  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
   // Filtrar projects que estan en este status (incluyendo statuses legacy)
   const laneProyectos = projects.filter((project) => {
@@ -414,7 +408,6 @@ function BoardLane({
             project={project}
             stateConfigRows={stateConfigRows}
             onEstadoChange={onEstadoChange}
-            onEstadoRevert={onEstadoRevert}
           />
         ))}
 
@@ -438,13 +431,11 @@ function TableroView({
   resolvedStates,
   stateConfigRows,
   onEstadoChange,
-  onEstadoRevert,
 }: {
   projects: Project[]
   resolvedStates: ResolvedWorkflowStateMeta[]
   stateConfigRows: WorkflowStateConfigRow[]
   onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
-  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
   return (
     <div className="px-5 py-5">
@@ -463,7 +454,6 @@ function TableroView({
                 projects={projects}
                 stateConfigRows={stateConfigRows}
                 onEstadoChange={onEstadoChange}
-                onEstadoRevert={onEstadoRevert}
               />
             ))}
         </div>
@@ -478,12 +468,10 @@ function ListaView({
   projects,
   stateConfigRows,
   onEstadoChange,
-  onEstadoRevert,
 }: {
   projects: Project[]
   stateConfigRows: WorkflowStateConfigRow[]
   onEstadoChange?: (proyectoId: string, nuevoEstado: string) => void
-  onEstadoRevert?: (proyectoId: string, estadoAnterior: string) => void
 }) {
   return (
     <div className="px-5 py-5">
@@ -575,7 +563,7 @@ function ListaView({
                         >
                           {meta.label}
                         </span>
-                        <ProjectStateControl project={project} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} onEstadoRevert={onEstadoRevert} />
+                        <ProjectStateControl project={project} stateConfigRows={stateConfigRows} onEstadoChange={onEstadoChange} />
                       </div>
                     </td>
 
@@ -667,15 +655,6 @@ export function ProjectsClient({
     setProyectos((prev) =>
       prev.map((p) =>
         p.id === proyectoId ? { ...p, status: nuevoEstado as PersistedProjectStatus } : p,
-      ),
-    )
-  }, [])
-
-  // Callback para revertir un cambio optimista (cuando la API falla).
-  const handleEstadoRevert = useCallback((proyectoId: string, estadoAnterior: string) => {
-    setProyectos((prev) =>
-      prev.map((p) =>
-        p.id === proyectoId ? { ...p, status: estadoAnterior as PersistedProjectStatus } : p,
       ),
     )
   }, [])
@@ -879,7 +858,6 @@ export function ProjectsClient({
                   resolvedStates={resolvedStates}
                   stateConfigRows={initialStateConfigRows}
                   onEstadoChange={handleEstadoChange}
-                  onEstadoRevert={handleEstadoRevert}
                 />
               </TabsContent>
 
@@ -888,7 +866,6 @@ export function ProjectsClient({
                   projects={filtered}
                   stateConfigRows={initialStateConfigRows}
                   onEstadoChange={handleEstadoChange}
-                  onEstadoRevert={handleEstadoRevert}
                 />
               </TabsContent>
             </>

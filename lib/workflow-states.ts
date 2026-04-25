@@ -632,7 +632,7 @@ export function getAllowedProjectTransitions(status: string) {
  * @param state - El status al que se quiere cambiar
  * @returns true si se debe pedir una razon al user_label, false si no
  */
-export function requiresWorkflowReason(entity: 'project', state: string) {
+export function requiresWorkflowReason(_entity: 'project', state: string) {
   return PROJECT_REASON_REQUIRED.has(state as ProjectStatus)
 }
 
