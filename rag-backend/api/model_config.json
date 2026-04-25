@@ -1,9 +1,0 @@
-{
-  "id": "google/gemini-3-flash-preview",
-  "name": "Google: Gemini 3 Flash Preview",
-  "temperature": 0.2,
-  "max_tokens": 2000,
-  "top_k": 10,
-  "relevance_threshold": 0.3,
-  "system_prompt": ""
-}
