@@ -48,8 +48,8 @@ export default async function DatabaseTablePage({
         </div>
 
         <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
-          <div className="flex h-full min-h-64 items-center justify-center px-6 text-sm text-[color:var(--ink-3)]">
-            Table desconectada durante reestructuracion. Request BASES-DE-DATOS.md para reconectar.
+          <div className="flex h-full min-h-64 items-center justify-center px-6 text-sm text-muted-foreground">
+            Sin datos
           </div>
         </section>
       </div>
