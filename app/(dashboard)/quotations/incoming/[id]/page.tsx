@@ -1,15 +1,15 @@
 /**
  * ============================================================================
- * PAGINA DE DETALLE DE CONSULTA ENTRANTE — solo Comunicaciones
+ * PAGINA DE DETALLE DE CONSULTA ENTRANTE — layout completo (placeholders + Comunicaciones)
  * ============================================================================
  * Server component (async). Lee la solicitud entrante de
- * `doa_incoming_requests_v2` y los emails asociados de `doa_emails_v2`, y
- * renderiza UNICAMENTE la sección "Comunicaciones" con la estética antigua
- * (warm-executive palette: tarjeta redondeada, borde izquierdo umber, icono Mail).
+ * `doa_incoming_requests_v2` y los emails asociados de `doa_emails_v2`.
  *
- * El resto de bloques antiguos (review summary, datos del cliente, aircraft,
- * técnico, alcance, documentación, quotation, panel de decisión) NO se
- * renderizan en esta versión: el usuario solo pidió reactivar Comunicaciones.
+ * Visualmente recupera el layout antiguo (warm-executive palette): 9 secciones
+ * con tarjeta redondeada, borde lateral coloreado, icono e header en la fuente
+ * heading. Solo "Comunicaciones" (sección 2) lee data real (`doa_emails_v2`)
+ * y monta `<CenterColumnCollapsible>`. Las otras 8 secciones renderizan un
+ * placeholder "Próximamente — se reactivará en una fase futura".
  *
  * Si la solicitud no existe o cualquier fetch falla, se renderiza un estado
  * "Solicitud no encontrada".
@@ -17,7 +17,19 @@
  */
 
 import Link from 'next/link'
-import { ArrowLeft, Mail } from 'lucide-react'
+import {
+  ArrowLeft,
+  ClipboardList,
+  FileText,
+  type LucideIcon,
+  Mail,
+  Plane,
+  Receipt,
+  ScanSearch,
+  Settings,
+  Sparkles,
+  UserRound,
+} from 'lucide-react'
 
 import { TopBar } from '@/components/layout/TopBar'
 import { supabaseServer } from '@/lib/supabase/server'
@@ -44,6 +56,98 @@ export const dynamic = 'force-dynamic'
 
 const pillBaseClass =
   'inline-flex items-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--paper-2)] px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--ink)] shadow-[0_1px_0_rgba(255,255,255,0.65)_inset]'
+
+// ---------------------------------------------------------------------------
+// Sección reutilizable (chrome de tarjeta + header coloreado + <details>)
+// ---------------------------------------------------------------------------
+
+/**
+ * Tailwind v4 (JIT) analiza los archivos buscando strings literales de clases.
+ * Por eso el mapa de color → clases concretas: si construyésemos los nombres con
+ * template literals (p.e. `border-l-[color:var(--${color})]`), Tailwind no los
+ * detectaría y el CSS no se emitiría.
+ */
+type SectionColor = 'umber' | 'cobalt' | 'terracotta' | 'ink-3'
+
+const SECTION_COLOR_CLASSES: Record<SectionColor, { border: string; tint: string; icon: string }> = {
+  umber: {
+    border: 'border-l-[color:var(--umber)]',
+    tint: 'bg-[color:var(--umber)]/15',
+    icon: 'text-[color:var(--umber)]',
+  },
+  cobalt: {
+    border: 'border-l-[color:var(--cobalt)]',
+    tint: 'bg-[color:var(--cobalt)]/15',
+    icon: 'text-[color:var(--cobalt)]',
+  },
+  terracotta: {
+    border: 'border-l-[color:var(--terracotta)]',
+    tint: 'bg-[color:var(--terracotta)]/15',
+    icon: 'text-[color:var(--terracotta)]',
+  },
+  'ink-3': {
+    border: 'border-l-[color:var(--ink-3)]',
+    tint: 'bg-[color:var(--ink-3)]/15',
+    icon: 'text-[color:var(--ink-3)]',
+  },
+}
+
+type SectionProps = {
+  title: string
+  label: string
+  icon: LucideIcon
+  color: SectionColor
+  defaultOpen?: boolean
+  children: React.ReactNode
+}
+
+function Section({ title, label, icon: Icon, color, defaultOpen = false, children }: SectionProps) {
+  const { border: borderClass, tint: tintClass, icon: iconClass } = SECTION_COLOR_CLASSES[color]
+
+  return (
+    <section
+      className={cn(
+        'rounded-[22px] border border-[color:var(--ink-4)] border-l-4 bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]',
+        borderClass,
+      )}
+    >
+      <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
+        <span className={cn('flex h-8 w-8 items-center justify-center rounded-full', tintClass)}>
+          <Icon className={cn('h-4 w-4', iconClass)} />
+        </span>
+        <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">
+          {title}
+        </h2>
+      </div>
+      <details className="group" open={defaultOpen}>
+        <summary className="flex cursor-pointer items-center gap-1 px-5 py-3 text-xs font-medium text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)]">
+          <svg
+            className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+          Ver {label}
+        </summary>
+        <div className="px-5 pb-4">{children}</div>
+      </details>
+    </section>
+  )
+}
+
+function ComingSoonPlaceholder() {
+  return (
+    <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-12 text-center">
+      <p className="text-sm font-medium text-[color:var(--ink-2)]">Próximamente</p>
+      <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">
+        Esta sección se reactivará en una fase futura.
+      </p>
+    </div>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Loaders auxiliares
@@ -244,34 +348,76 @@ export default async function IncomingRequestDetailPage({
           </span>
         </div>
 
-        {/*
-          --- Comunicaciones (single section, warm-executive palette) ---
-          Decisión: el compositor de respuestas se oculta (`hideComposer`).
-          El componente actual depende solo de `doa_emails_v2`; el envío
-          pertenecía a un webhook que ya no existe en este slice.
-        */}
-        <section className="rounded-[22px] border border-[color:var(--ink-4)] border-l-4 border-l-[color:var(--umber)] bg-[color:var(--paper-2)] shadow-[0_10px_24px_rgba(74,60,36,0.08)]">
-          <div className="flex items-center gap-3 border-b border-[color:var(--ink-4)] px-5 py-3.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[color:var(--umber)]/15">
-              <Mail className="h-4 w-4 text-[color:var(--umber)]" />
-            </span>
-            <h2 className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[color:var(--ink)]">
-              Comunicaciones
-            </h2>
-          </div>
-          <div className="px-5 py-4">
-            <CenterColumnCollapsible
-              hideComposer
-              emails={emails}
-              query={{
-                id: query.id,
-                codigo: query.codigo,
-                subject: query.subject,
-                sender: query.sender,
-              }}
-            />
-          </div>
-        </section>
+        {/* 1. Resumen de revisión — placeholder */}
+        <Section
+          title="Resumen de revisión"
+          label="resumen de revisión"
+          icon={ClipboardList}
+          color="cobalt"
+          defaultOpen
+        >
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 2. Comunicaciones — REAL DATA */}
+        <Section
+          title="Comunicaciones"
+          label="hilo de emails"
+          icon={Mail}
+          color="umber"
+          defaultOpen
+        >
+          <CenterColumnCollapsible
+            hideComposer
+            emails={emails}
+            query={{
+              id: query.id,
+              codigo: query.codigo,
+              subject: query.subject,
+              sender: query.sender,
+            }}
+          />
+        </Section>
+
+        {/* 3. Datos del cliente — placeholder */}
+        <Section title="Datos del cliente" label="datos del cliente" icon={UserRound} color="cobalt">
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 4. Datos de aircraft — placeholder */}
+        <Section title="Datos de aircraft" label="datos de aircraft" icon={Plane} color="terracotta">
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 5. Datos técnicos del proyecto — placeholder */}
+        <Section
+          title="Datos técnicos del proyecto"
+          label="datos técnicos"
+          icon={Settings}
+          color="ink-3"
+        >
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 6. Alcance preliminar — placeholder */}
+        <Section title="Alcance preliminar" label="alcance preliminar" icon={ScanSearch} color="umber">
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 7. Documentación — placeholder */}
+        <Section title="Documentación" label="documentación" icon={FileText} color="cobalt">
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 8. Oferta / Quotation — placeholder */}
+        <Section title="Oferta / Quotation" label="oferta" icon={Receipt} color="terracotta">
+          <ComingSoonPlaceholder />
+        </Section>
+
+        {/* 9. Decisión — placeholder */}
+        <Section title="Decisión" label="panel de decisión" icon={Sparkles} color="umber">
+          <ComingSoonPlaceholder />
+        </Section>
       </div>
     </div>
   )
