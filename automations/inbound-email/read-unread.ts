@@ -4,13 +4,20 @@
  * ============================================================================
  *
  * Slice 1 (read-only). Solo LEE los mensajes con `isRead eq false` del Inbox
- * del buzón configurado en `OUTLOOK_MAILBOX`. No marca como leídos, no
+ * del usuario delegado (el dueño del refresh_token). No marca como leídos, no
  * responde, no toca Supabase. Devuelve un array tipado.
  *
- * Endpoint Graph: /users/{mailbox}/mailFolders/Inbox/messages
- * Filtro:        isRead eq false
- * Orden:         receivedDateTime asc (procesar primero los más antiguos)
- * Selección:     campos mínimos para identificación + cuerpo del mensaje
+ * Endpoint Graph: /me/mailFolders/Inbox/messages
+ *   - En flujo delegado el endpoint es `/me/...`, NO `/users/{mailbox}/...`.
+ *     El usuario propietario del access_token (resuelto por MSAL a partir del
+ *     refresh_token) determina el buzón.
+ *   - `OUTLOOK_MAILBOX` se mantiene como variable informativa: validamos que
+ *     esté seteada para confirmar que alguien configuró la automatización,
+ *     pero no la usamos en la URL de Graph.
+ *
+ * Filtro:    isRead eq false
+ * Orden:     receivedDateTime asc (procesar primero los más antiguos)
+ * Selección: campos mínimos para identificación + cuerpo del mensaje
  */
 
 import { getGraphClient } from './graph-client'
@@ -72,10 +79,14 @@ export async function readUnreadEmails(
     )
   }
 
+  // `mailbox` se valida arriba pero no se usa en la URL: en flujo delegado
+  // el endpoint es `/me`, vinculado al refresh_token que MSAL canjea.
+  void mailbox
+
   const client = getGraphClient()
 
   const response = (await client
-    .api(`/users/${mailbox}/mailFolders/Inbox/messages`)
+    .api('/me/mailFolders/Inbox/messages')
     .filter('isRead eq false')
     .orderby('receivedDateTime asc')
     .select(SELECT_FIELDS)
