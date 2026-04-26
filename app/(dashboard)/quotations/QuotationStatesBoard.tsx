@@ -42,6 +42,7 @@
 
 // Navegacion entre paginas
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 // Hooks de React para manejar statuses, efectos y optimizaciones
 import {
   startTransition,   // Marca actualizaciones como no urgentes
@@ -224,20 +225,45 @@ function IncomingQueryDeleteControl({
 }) {
   const [status, setStatus] = useState<'idle' | 'deleting' | 'error'>('idle')
   const [message, setMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   if (card.kind !== 'incoming_query') {
     return null
   }
 
   async function handleDelete() {
+    if (card.kind !== 'incoming_query') return
     const confirmed = window.confirm(
-      `¿Seguro que quieres borrar la request "${card.title}"? Esta acción eliminará la card del tablero.`,
+      `¿Seguro que quieres borrar la request "${card.title}"? Esta acción ELIMINARÁ la fila completa de la base de datos junto con sus correos, tokens y respuestas de formulario asociadas.`,
     )
     if (!confirmed) return
 
-    setStatus('idle')
+    setStatus('deleting')
     setMessage(null)
-    toast.info('Acción desconectada')
+    try {
+      const res = await fetch(`/api/incoming-requests/${card.id}`, {
+        method: 'DELETE',
+      })
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        error?: string
+      }
+      if (!res.ok || json.ok !== true) {
+        const errorMessage = json.error ?? `HTTP ${res.status}`
+        setStatus('error')
+        setMessage(errorMessage)
+        toast.error(`No se pudo borrar: ${errorMessage}`)
+        return
+      }
+      setStatus('idle')
+      toast.success('Request eliminada')
+      router.refresh()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      setStatus('error')
+      setMessage(errorMessage)
+      toast.error(`Error al borrar: ${errorMessage}`)
+    }
   }
 
   return (
