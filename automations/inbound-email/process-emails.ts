@@ -19,6 +19,7 @@
 import { readUnreadEmails } from './read-unread'
 import { classifyEmail, type ClassificationLabel } from './classify'
 import { saveAsIncoming } from './save-as-incoming'
+import { saveInboundEmail } from './save-email-record'
 import { markAsRead } from './mark-as-read'
 
 export interface ProcessEmailsOptions {
@@ -77,6 +78,31 @@ export async function processEmails(
         classification: classification.clasificacion,
         outlookConversationId: email.conversationId ?? null,
       })
+
+      try {
+        await saveInboundEmail({
+          incomingRequestId: saved.id,
+          fromAddr: senderEmail,
+          toAddr: process.env.OUTLOOK_MAILBOX ?? null,
+          subject: email.subject ?? '',
+          body: email.body?.content ?? bodyPreview,
+          sentAt: email.receivedDateTime ?? new Date().toISOString(),
+          messageId: email.internetMessageId ?? null,
+        })
+      } catch (emailRecordErr) {
+        const emailRecordMessage =
+          emailRecordErr instanceof Error
+            ? emailRecordErr.message
+            : String(emailRecordErr)
+        console.error(
+          `process-emails: error guardando doa_emails_v2 para messageId=${messageId}:`,
+          emailRecordErr,
+        )
+        errors.push({
+          messageId,
+          error: `email-record-save-failed: ${emailRecordMessage}`,
+        })
+      }
 
       await markAsRead(messageId)
 

@@ -41,6 +41,7 @@ import type {
   IncomingRequest,
 } from '@/types/database'
 
+import { ClientDetailPanel } from '../../../clients/ClientDetailPanel'
 import {
   buildIncomingClientLookup,
   resolveIncomingClientRecord,
@@ -307,6 +308,10 @@ export default async function IncomingRequestDetailPage({
   const clientLookup = buildIncomingClientLookup(clients, contacts)
   const query = toIncomingQuery(data as unknown as IncomingRequest, clientLookup)
   const matchedClient = resolveIncomingClientRecord(query.sender, clients, contacts)
+  const senderEmail =
+    query.clientIdentity.kind === 'known'
+      ? query.clientIdentity.email
+      : query.clientIdentity.senderEmail
 
   const clientBadgeLabel =
     query.clientIdentity.kind === 'known'
@@ -379,9 +384,21 @@ export default async function IncomingRequestDetailPage({
           />
         </Section>
 
-        {/* 3. Datos del cliente — placeholder */}
+        {/* 3. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
         <Section title="Datos del cliente" label="datos del cliente" icon={UserRound} color="cobalt">
-          <ComingSoonPlaceholder />
+          {matchedClient ? (
+            <ClientDetailPanel client={matchedClient} />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-8 text-center">
+              <p className="text-sm font-medium text-[color:var(--ink-2)]">Cliente desconocido</p>
+              <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">
+                Esta solicitud todavía no se ha podido vincular con un cliente registrado en la base de datos.
+              </p>
+              {senderEmail ? (
+                <p className="mt-3 text-xs text-[color:var(--ink-3)]">Remitente: <span className="font-mono">{senderEmail}</span></p>
+              ) : null}
+            </div>
+          )}
         </Section>
 
         {/* 4. Datos de aircraft — placeholder */}

@@ -26,3 +26,6 @@ export type {
 
 export { classifyEmail } from './classify'
 export type { ClassificationLabel, ClassificationResult } from './classify'
+
+export { saveInboundEmail } from './save-email-record'
+export type { SaveInboundEmailInput } from './save-email-record'
