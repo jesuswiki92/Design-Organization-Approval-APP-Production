@@ -383,6 +383,7 @@ export default async function IncomingRequestDetailPage({
             aiReply={query.respuestaIa}
             incomingId={query.id}
             clientKind={matchedClient ? 'known' : 'unknown'}
+            incomingStatus={(data as { status?: string | null }).status ?? 'new'}
           />
         </Section>
 

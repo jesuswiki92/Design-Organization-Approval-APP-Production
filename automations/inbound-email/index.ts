@@ -39,3 +39,6 @@ export type {
 
 export { fetchAttachments } from './fetch-attachments'
 export type { InboundAttachment } from './fetch-attachments'
+
+export { sendReply } from './send-reply'
+export type { SendReplyInput, SendReplyResult } from './send-reply'

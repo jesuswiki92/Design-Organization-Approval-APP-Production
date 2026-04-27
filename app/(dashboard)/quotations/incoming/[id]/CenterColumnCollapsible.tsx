@@ -21,7 +21,8 @@
 
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { ChevronDown, Inbox, Loader2, Mail, Send, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -50,6 +51,8 @@ type CenterColumnCollapsibleProps = {
   incomingId: string
   /** Tipo de cliente — controla el copy del badge y la plantilla del POST. */
   clientKind: ClientKind
+  /** Estado actual de la request. El bloque IA solo se muestra cuando es 'new'. */
+  incomingStatus: string
 }
 
 type EmailDirection = "incoming" | "outgoing"
@@ -241,8 +244,20 @@ function AIDraftBlock({
   initialAiReply: string | null
   clientKind: ClientKind
 }) {
+  const router = useRouter()
   const [reply, setReply] = useState<string | null>(initialAiReply)
+  const [editedBody, setEditedBody] = useState<string>(initialAiReply ?? "")
   const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  // Si la prop cambia (regeneración server-side, refresh, etc.) sincronizamos
+  // el textarea para reflejar el nuevo borrador. Si el usuario tiene cambios
+  // locales sin guardar, esto los descarta — es coherente con la semántica de
+  // "regenerar = reemplazar".
+  useEffect(() => {
+    setReply(initialAiReply)
+    setEditedBody(initialAiReply ?? "")
+  }, [initialAiReply])
 
   const kindLabel = clientKind === "known" ? "Cliente conocido" : "Cliente desconocido"
 
@@ -268,6 +283,7 @@ function AIDraftBlock({
       }
 
       setReply(json.body)
+      setEditedBody(json.body)
       toast.success(
         `Respuesta generada (Cliente ${
           (json.kind ?? clientKind) === "known" ? "conocido" : "desconocido"
@@ -281,6 +297,46 @@ function AIDraftBlock({
     }
   }
 
+  async function handleSend() {
+    if (!editedBody.trim()) {
+      toast.error("El cuerpo del email está vacío.")
+      return
+    }
+    setSending(true)
+    try {
+      const res = await fetch(
+        `/api/incoming-requests/${incomingId}/send-reply`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body: editedBody }),
+        },
+      )
+
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        error?: string
+        persisted?: boolean
+      }
+
+      if (!res.ok || !json.ok) {
+        const message = json.error || `Error ${res.status}`
+        toast.error(`No se pudo enviar el correo: ${message}`)
+        return
+      }
+
+      toast.success("Correo enviado al cliente")
+      router.refresh()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido"
+      toast.error(`No se pudo enviar el correo: ${message}`)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const busy = loading || sending
+
   return (
     <div className="flex flex-col rounded-2xl border border-dashed border-[color:var(--cobalt)]/50 bg-[color:var(--paper)] px-4 py-3 shadow-sm">
       {/* Header pill — deja claro que es borrador IA, no un email real */}
@@ -293,22 +349,30 @@ function AIDraftBlock({
 
       {reply ? (
         <>
-          <pre className="mt-3 whitespace-pre-wrap break-words rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/60 p-3 font-sans text-[13px] leading-6 text-[color:var(--ink-2)]">
-            {reply}
-          </pre>
+          <textarea
+            value={editedBody}
+            onChange={(e) => setEditedBody(e.target.value)}
+            disabled={busy}
+            rows={Math.min(20, Math.max(8, editedBody.split("\n").length + 1))}
+            className={cn(
+              "mt-3 w-full resize-y whitespace-pre-wrap break-words rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/60 p-3 font-sans text-[13px] leading-6 text-[color:var(--ink-2)] outline-none transition-colors focus:border-[color:var(--cobalt)] focus:bg-[color:var(--paper-2)]",
+              busy && "cursor-not-allowed opacity-70",
+            )}
+            spellCheck
+          />
+
+          <p className="mt-2 text-[10px] text-[color:var(--ink-3)]">
+            El placeholder <code className="font-mono">{"{{FORM_LINK}}"}</code> se sustituirá por la URL real al enviar.
+          </p>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-[10px] text-[color:var(--ink-3)]">
-              El placeholder <code className="font-mono">{"{{FORM_LINK}}"}</code> se sustituirá por la URL real al enviar.
-            </p>
-
             <button
               type="button"
               onClick={handleGenerate}
-              disabled={loading}
+              disabled={busy}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--ink)] transition-colors hover:bg-[color:var(--paper)]",
-                loading && "cursor-not-allowed opacity-70",
+                busy && "cursor-not-allowed opacity-70",
               )}
             >
               {loading ? (
@@ -317,6 +381,23 @@ function AIDraftBlock({
                 <Sparkles className="h-3 w-3" />
               )}
               {loading ? "Regenerando…" : "Regenerar"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={busy || !editedBody.trim()}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border border-[color:var(--cobalt)] bg-[color:var(--cobalt)] px-4 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors hover:bg-[color:var(--cobalt)]/90",
+                (busy || !editedBody.trim()) && "cursor-not-allowed opacity-70",
+              )}
+            >
+              {sending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Send className="h-3 w-3" />
+              )}
+              {sending ? "Enviando…" : "Mandar al cliente"}
             </button>
           </div>
         </>
@@ -329,10 +410,10 @@ function AIDraftBlock({
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={loading}
+            disabled={busy}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--ink)] px-4 py-2 text-xs font-medium text-[color:var(--paper)] transition-colors hover:bg-[color:var(--ink-2)]",
-              loading && "cursor-not-allowed opacity-70",
+              busy && "cursor-not-allowed opacity-70",
             )}
           >
             {loading ? (
@@ -378,6 +459,7 @@ export function CenterColumnCollapsible({
   aiReply,
   incomingId,
   clientKind,
+  incomingStatus,
 }: CenterColumnCollapsibleProps) {
   // Marcamos `_query` como leído para evitar warning del linter cuando no se
   // usa: en esta versión no hace falta porque solo leemos `emails`.
@@ -469,12 +551,17 @@ export function CenterColumnCollapsible({
               ))}
               {/* Borrador IA: vive bajo el último email entrante porque ese email
                   es el contexto que está siendo respondido. Solo se renderiza si
-                  hay al menos un entrante — sin contexto no hay nada que responder. */}
-              <AIDraftBlock
-                incomingId={incomingId}
-                initialAiReply={aiReply}
-                clientKind={clientKind}
-              />
+                  hay al menos un entrante Y la request todavía está en 'new' —
+                  cuando el envío al cliente sucede, el status pasa a
+                  'awaiting_form' y el bloque desaparece (la respuesta enviada
+                  aparece en la columna derecha como outbound). */}
+              {incomingStatus === "new" ? (
+                <AIDraftBlock
+                  incomingId={incomingId}
+                  initialAiReply={aiReply}
+                  clientKind={clientKind}
+                />
+              ) : null}
             </>
           ) : (
             <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-4 py-6">
