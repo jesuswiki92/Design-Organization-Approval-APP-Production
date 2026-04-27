@@ -8,20 +8,17 @@
  * OPENROUTER_CLASSIFIER_MODEL; fallback `anthropic/claude-sonnet-4.5`.
  *
  * Devuelve siempre un `ClassificationResult` valido — si el LLM responde algo
- * fuera de las tres etiquetas o el JSON no parsea, degrada a
- * "Pending classification" para que el orquestador no aborte el lote.
+ * fuera de las tres etiquetas o el JSON no parsea, degrada a "Other" para que
+ * el orquestador no aborte el lote.
  */
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const DEFAULT_MODEL = 'anthropic/claude-sonnet-4.5'
 
 const SYSTEM_PROMPT =
-  "You are an email classifier for an aeronautical DOA. Analyze the subject and body of the email and return only valid JSON. Use exclusively one of these labels for the 'clasificacion' field: Client requests new project, Client requests modification to existing project, Pending classification. Use 'Client requests new project' when the client presents a need or project from scratch. Use 'Client requests modification to existing project' when the client mentions changes, adjustments, or extensions to an existing project. Use 'Pending classification' if the email is ambiguous or does not allow a confident decision. Return exclusively a JSON object with two keys: clasificacion and razon. razon must be a short sentence in English of maximum 20 words."
+  "You are an email classifier for an aeronautical DOA. Analyze the subject and body of the email and return only valid JSON. Use exclusively one of these labels for the 'clasificacion' field: New project, Modification, Other. Use 'New project' when the client presents a need or project from scratch. Use 'Modification' when the client mentions changes, adjustments, or extensions to an existing project. Use 'Other' for anything else (notifications, conversations not coming from a real client request, ambiguous, spam, etc.). Return exclusively a JSON object with two keys: clasificacion and razon. razon must be a short sentence in English of maximum 20 words."
 
-export type ClassificationLabel =
-  | 'Client requests new project'
-  | 'Client requests modification to existing project'
-  | 'Pending classification'
+export type ClassificationLabel = 'New project' | 'Modification' | 'Other'
 
 export interface ClassificationResult {
   clasificacion: ClassificationLabel
@@ -29,13 +26,13 @@ export interface ClassificationResult {
 }
 
 const VALID_LABELS: ReadonlySet<ClassificationLabel> = new Set<ClassificationLabel>([
-  'Client requests new project',
-  'Client requests modification to existing project',
-  'Pending classification',
+  'New project',
+  'Modification',
+  'Other',
 ])
 
 const FALLBACK: ClassificationResult = {
-  clasificacion: 'Pending classification',
+  clasificacion: 'Other',
   razon: 'Classifier returned invalid output',
 }
 

@@ -128,7 +128,7 @@ function normalizeEmailCandidate(value: string | null | undefined) {
   return normalized.length > 0 ? normalized : null
 }
 
-function extractSenderEmail(sender: string | null | undefined) {
+export function extractSenderEmail(sender: string | null | undefined) {
   const raw = sender?.trim() ?? ''
   if (!raw) return null
 

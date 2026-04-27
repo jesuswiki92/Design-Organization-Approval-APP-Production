@@ -47,6 +47,7 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
+import { AIReplySection } from './AIReplySection'
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 
 export const dynamic = 'force-dynamic'
@@ -384,7 +385,22 @@ export default async function IncomingRequestDetailPage({
           />
         </Section>
 
-        {/* 3. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
+        {/* 3. AI Reply — REAL DATA (manual draft via OpenRouter) */}
+        <Section
+          title="AI Reply"
+          label="respuesta IA"
+          icon={Sparkles}
+          color="cobalt"
+          defaultOpen={Boolean(query.respuestaIa)}
+        >
+          <AIReplySection
+            incomingId={query.id}
+            initialReply={query.respuestaIa}
+            kind={matchedClient ? 'known' : 'unknown'}
+          />
+        </Section>
+
+        {/* 4. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
         <Section title="Datos del cliente" label="datos del cliente" icon={UserRound} color="cobalt">
           {matchedClient ? (
             <ClientDetailPanel client={matchedClient} defaultOpen />
@@ -401,12 +417,12 @@ export default async function IncomingRequestDetailPage({
           )}
         </Section>
 
-        {/* 4. Datos de aircraft — placeholder */}
+        {/* 5. Datos de aircraft — placeholder */}
         <Section title="Datos de aircraft" label="datos de aircraft" icon={Plane} color="terracotta">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 5. Datos técnicos del proyecto — placeholder */}
+        {/* 6. Datos técnicos del proyecto — placeholder */}
         <Section
           title="Datos técnicos del proyecto"
           label="datos técnicos"
@@ -416,22 +432,22 @@ export default async function IncomingRequestDetailPage({
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 6. Alcance preliminar — placeholder */}
+        {/* 7. Alcance preliminar — placeholder */}
         <Section title="Alcance preliminar" label="alcance preliminar" icon={ScanSearch} color="umber">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 7. Documentación — placeholder */}
+        {/* 8. Documentación — placeholder */}
         <Section title="Documentación" label="documentación" icon={FileText} color="cobalt">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 8. Oferta / Quotation — placeholder */}
+        {/* 9. Oferta / Quotation — placeholder */}
         <Section title="Oferta / Quotation" label="oferta" icon={Receipt} color="terracotta">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 9. Decisión — placeholder */}
+        {/* 10. Decisión — placeholder */}
         <Section title="Decisión" label="panel de decisión" icon={Sparkles} color="umber">
           <ComingSoonPlaceholder />
         </Section>
