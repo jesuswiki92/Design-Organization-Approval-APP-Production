@@ -22,13 +22,16 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ChevronDown, Inbox, Send, Mail } from "lucide-react"
+import { ChevronDown, Inbox, Loader2, Mail, Send, Sparkles } from "lucide-react"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { DoaEmail } from "@/types/database"
 
 // ---------------------------------------------------------------------------
 // Tipos
 // ---------------------------------------------------------------------------
+
+type ClientKind = "known" | "unknown"
 
 type CenterColumnCollapsibleProps = {
   /** Emails de la tabla doa_emails_v2 ya ordenados cronologicamente. */
@@ -39,8 +42,14 @@ type CenterColumnCollapsibleProps = {
     subject: string
     sender: string
   }
-  /** Si true, no muestra el compositor (siempre true en esta version). */
+  /** Si true, no muestra el compositor (siempre true en esta version). Legacy, ignorado. */
   hideComposer?: boolean
+  /** Borrador IA persistido en `doa_incoming_requests_v2.respuesta_ia`. */
+  aiReply: string | null
+  /** UUID de la request en `doa_incoming_requests_v2`. */
+  incomingId: string
+  /** Tipo de cliente — controla el copy del badge y la plantilla del POST. */
+  clientKind: ClientKind
 }
 
 type EmailDirection = "incoming" | "outgoing"
@@ -215,6 +224,134 @@ function EmailCard({
   )
 }
 
+/**
+ * Bloque de borrador IA que vive DENTRO de la columna de "EMAILS DEL CLIENTE",
+ * justo debajo del último email entrante. Visualmente es DISTINTO a una tarjeta
+ * de email real (borde dasheado, paper más claro, pill cobalt) para que nadie lo
+ * confunda con un correo recibido — es nuestra futura respuesta, todavía no
+ * enviada. Cuando el envío esté implementado en sub-slice B, este bloque
+ * desaparecerá y el email pasará a la columna de la derecha como outbound.
+ */
+function AIDraftBlock({
+  incomingId,
+  initialAiReply,
+  clientKind,
+}: {
+  incomingId: string
+  initialAiReply: string | null
+  clientKind: ClientKind
+}) {
+  const [reply, setReply] = useState<string | null>(initialAiReply)
+  const [loading, setLoading] = useState(false)
+
+  const kindLabel = clientKind === "known" ? "Cliente conocido" : "Cliente desconocido"
+
+  async function handleGenerate() {
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `/api/incoming-requests/${incomingId}/draft-reply`,
+        { method: "POST" },
+      )
+
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        body?: string
+        kind?: ClientKind
+        error?: string
+      }
+
+      if (!res.ok || !json.ok || !json.body) {
+        const message = json.error || `Error ${res.status}`
+        toast.error(`No se pudo generar la respuesta: ${message}`)
+        return
+      }
+
+      setReply(json.body)
+      toast.success(
+        `Respuesta generada (Cliente ${
+          (json.kind ?? clientKind) === "known" ? "conocido" : "desconocido"
+        })`,
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido"
+      toast.error(`No se pudo generar la respuesta: ${message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col rounded-2xl border border-dashed border-[color:var(--cobalt)]/50 bg-[color:var(--paper)] px-4 py-3 shadow-sm">
+      {/* Header pill — deja claro que es borrador IA, no un email real */}
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--cobalt)]/40 bg-[color:var(--cobalt)]/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--cobalt)]">
+          <Sparkles className="h-3 w-3" />
+          Borrador IA — {kindLabel}
+        </span>
+      </div>
+
+      {reply ? (
+        <>
+          <pre className="mt-3 whitespace-pre-wrap break-words rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/60 p-3 font-sans text-[13px] leading-6 text-[color:var(--ink-2)]">
+            {reply}
+          </pre>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[10px] text-[color:var(--ink-3)]">
+              El placeholder <code className="font-mono">{"{{FORM_LINK}}"}</code> se sustituirá por la URL real al enviar.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={loading}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--ink)] transition-colors hover:bg-[color:var(--paper)]",
+                loading && "cursor-not-allowed opacity-70",
+              )}
+            >
+              {loading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Sparkles className="h-3 w-3" />
+              )}
+              {loading ? "Regenerando…" : "Regenerar"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="mt-3 flex flex-col items-center gap-3 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 px-4 py-6 text-center">
+          <p className="text-xs text-[color:var(--ink-3)]">
+            Aún no se ha generado respuesta IA.
+          </p>
+
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={loading}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full border border-[color:var(--ink-4)] bg-[color:var(--ink)] px-4 py-2 text-xs font-medium text-[color:var(--paper)] transition-colors hover:bg-[color:var(--ink-2)]",
+              loading && "cursor-not-allowed opacity-70",
+            )}
+          >
+            {loading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            {loading ? "Generando…" : "Generar respuesta IA"}
+          </button>
+
+          <p className="text-[10px] text-[color:var(--ink-3)]">
+            El placeholder <code className="font-mono">{"{{FORM_LINK}}"}</code> se sustituirá por la URL real al enviar.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function EmptyResponsePlaceholder() {
   return (
     <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)]/80 px-4 py-6">
@@ -238,6 +375,9 @@ function EmptyResponsePlaceholder() {
 export function CenterColumnCollapsible({
   emails = [],
   query: _query,
+  aiReply,
+  incomingId,
+  clientKind,
 }: CenterColumnCollapsibleProps) {
   // Marcamos `_query` como leído para evitar warning del linter cuando no se
   // usa: en esta versión no hace falta porque solo leemos `emails`.
@@ -318,14 +458,24 @@ export function CenterColumnCollapsible({
       <div className="grid grid-cols-2 gap-4 items-start">
         <div className="space-y-3">
           {entrantes.length > 0 ? (
-            entrantes.map((email) => (
-              <EmailCard
-                key={email.id}
-                email={email}
-                isOpen={openStates[email.id] ?? false}
-                onToggle={() => toggleEmail(email.id)}
+            <>
+              {entrantes.map((email) => (
+                <EmailCard
+                  key={email.id}
+                  email={email}
+                  isOpen={openStates[email.id] ?? false}
+                  onToggle={() => toggleEmail(email.id)}
+                />
+              ))}
+              {/* Borrador IA: vive bajo el último email entrante porque ese email
+                  es el contexto que está siendo respondido. Solo se renderiza si
+                  hay al menos un entrante — sin contexto no hay nada que responder. */}
+              <AIDraftBlock
+                incomingId={incomingId}
+                initialAiReply={aiReply}
+                clientKind={clientKind}
               />
-            ))
+            </>
           ) : (
             <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/50 px-4 py-6">
               <div className="text-center">

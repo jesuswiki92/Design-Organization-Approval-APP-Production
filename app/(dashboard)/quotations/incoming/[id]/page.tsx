@@ -47,7 +47,6 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
-import { AIReplySection } from './AIReplySection'
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
 
 export const dynamic = 'force-dynamic'
@@ -365,7 +364,7 @@ export default async function IncomingRequestDetailPage({
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 2. Comunicaciones — REAL DATA */}
+        {/* 2. Comunicaciones — REAL DATA (incluye borrador IA en la columna izquierda) */}
         <Section
           title="Comunicaciones"
           label="hilo de emails"
@@ -374,7 +373,6 @@ export default async function IncomingRequestDetailPage({
           defaultOpen
         >
           <CenterColumnCollapsible
-            hideComposer
             emails={emails}
             query={{
               id: query.id,
@@ -382,25 +380,13 @@ export default async function IncomingRequestDetailPage({
               subject: query.subject,
               sender: query.sender,
             }}
-          />
-        </Section>
-
-        {/* 3. AI Reply — REAL DATA (manual draft via OpenRouter) */}
-        <Section
-          title="AI Reply"
-          label="respuesta IA"
-          icon={Sparkles}
-          color="cobalt"
-          defaultOpen={Boolean(query.respuestaIa)}
-        >
-          <AIReplySection
+            aiReply={query.respuestaIa}
             incomingId={query.id}
-            initialReply={query.respuestaIa}
-            kind={matchedClient ? 'known' : 'unknown'}
+            clientKind={matchedClient ? 'known' : 'unknown'}
           />
         </Section>
 
-        {/* 4. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
+        {/* 3. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
         <Section title="Datos del cliente" label="datos del cliente" icon={UserRound} color="cobalt">
           {matchedClient ? (
             <ClientDetailPanel client={matchedClient} defaultOpen />
@@ -417,12 +403,12 @@ export default async function IncomingRequestDetailPage({
           )}
         </Section>
 
-        {/* 5. Datos de aircraft — placeholder */}
+        {/* 4. Datos de aircraft — placeholder */}
         <Section title="Datos de aircraft" label="datos de aircraft" icon={Plane} color="terracotta">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 6. Datos técnicos del proyecto — placeholder */}
+        {/* 5. Datos técnicos del proyecto — placeholder */}
         <Section
           title="Datos técnicos del proyecto"
           label="datos técnicos"
@@ -432,22 +418,22 @@ export default async function IncomingRequestDetailPage({
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 7. Alcance preliminar — placeholder */}
+        {/* 6. Alcance preliminar — placeholder */}
         <Section title="Alcance preliminar" label="alcance preliminar" icon={ScanSearch} color="umber">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 8. Documentación — placeholder */}
+        {/* 7. Documentación — placeholder */}
         <Section title="Documentación" label="documentación" icon={FileText} color="cobalt">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 9. Oferta / Quotation — placeholder */}
+        {/* 8. Oferta / Quotation — placeholder */}
         <Section title="Oferta / Quotation" label="oferta" icon={Receipt} color="terracotta">
           <ComingSoonPlaceholder />
         </Section>
 
-        {/* 10. Decisión — placeholder */}
+        {/* 9. Decisión — placeholder */}
         <Section title="Decisión" label="panel de decisión" icon={Sparkles} color="umber">
           <ComingSoonPlaceholder />
         </Section>
