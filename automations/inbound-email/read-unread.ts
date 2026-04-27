@@ -44,6 +44,7 @@ export interface UnreadEmail {
   conversationId: string
   bodyPreview: string
   body: UnreadEmailBody
+  hasAttachments: boolean
 }
 
 interface GraphMessagesResponse {
@@ -66,6 +67,7 @@ const SELECT_FIELDS = [
   'conversationId',
   'bodyPreview',
   'body',
+  'hasAttachments',
 ].join(',')
 
 export async function readUnreadEmails(

@@ -21,6 +21,7 @@ import { classifyEmail, type ClassificationLabel } from './classify'
 import { saveAsIncoming } from './save-as-incoming'
 import { saveInboundEmail } from './save-email-record'
 import { markAsRead } from './mark-as-read'
+import { saveEmailToDisk } from './save-to-disk'
 
 export interface ProcessEmailsOptions {
   limit?: number
@@ -31,10 +32,17 @@ export interface ProcessEmailError {
   error: string
 }
 
+export interface ProcessEmailArchived {
+  entryNumber: string
+  emailFilePath: string
+  attachmentsSaved: number
+}
+
 export interface ProcessEmailResult {
   messageId: string
   incomingRequestId: string
   classification: ClassificationLabel
+  archived: ProcessEmailArchived | null
 }
 
 export interface ProcessEmailsSummary {
@@ -104,12 +112,37 @@ export async function processEmails(
         })
       }
 
+      let archived: ProcessEmailArchived | null = null
+      try {
+        const diskResult = await saveEmailToDisk({
+          entryNumber: saved.entryNumber,
+          email,
+        })
+        archived = {
+          entryNumber: saved.entryNumber,
+          emailFilePath: diskResult.emailFilePath,
+          attachmentsSaved: diskResult.attachmentsSaved,
+        }
+      } catch (archiveErr) {
+        const archiveMessage =
+          archiveErr instanceof Error ? archiveErr.message : String(archiveErr)
+        console.error(
+          `process-emails: error archivando email en disco para messageId=${messageId}:`,
+          archiveErr,
+        )
+        errors.push({
+          messageId,
+          error: `email-archive-failed: ${archiveMessage}`,
+        })
+      }
+
       await markAsRead(messageId)
 
       results.push({
         messageId,
         incomingRequestId: saved.id,
         classification: classification.clasificacion,
+        archived,
       })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

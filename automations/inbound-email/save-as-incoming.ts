@@ -31,7 +31,7 @@ export interface SaveAsIncomingInput {
 
 export async function saveAsIncoming(
   input: SaveAsIncomingInput,
-): Promise<{ id: string }> {
+): Promise<{ id: string; entryNumber: string }> {
   const payload = {
     subject: truncate(input.subject ?? '', SUBJECT_MAX),
     sender: truncate(input.sender ?? '', SENDER_MAX),
@@ -44,7 +44,7 @@ export async function saveAsIncoming(
   const { data, error } = await supabaseServer
     .from('doa_incoming_requests_v2')
     .insert(payload)
-    .select('id')
+    .select('id, entry_number')
     .single()
 
   if (error) {
@@ -55,5 +55,12 @@ export async function saveAsIncoming(
     throw new Error('Supabase insert error: no id returned')
   }
 
-  return { id: data.id as string }
+  const entryNumber = (data as { entry_number?: string | null }).entry_number
+  if (!entryNumber) {
+    throw new Error(
+      'Supabase insert error: no entry_number returned (¿el trigger auto_generate_numero_entrada está activo?)',
+    )
+  }
+
+  return { id: data.id as string, entryNumber }
 }

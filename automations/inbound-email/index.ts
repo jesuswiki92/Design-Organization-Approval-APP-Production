@@ -22,6 +22,7 @@ export type {
   ProcessEmailsSummary,
   ProcessEmailError,
   ProcessEmailResult,
+  ProcessEmailArchived,
 } from './process-emails'
 
 export { classifyEmail } from './classify'
@@ -29,3 +30,12 @@ export type { ClassificationLabel, ClassificationResult } from './classify'
 
 export { saveInboundEmail } from './save-email-record'
 export type { SaveInboundEmailInput } from './save-email-record'
+
+export { saveEmailToDisk } from './save-to-disk'
+export type {
+  SaveEmailToDiskInput,
+  SaveEmailToDiskResult,
+} from './save-to-disk'
+
+export { fetchAttachments } from './fetch-attachments'
+export type { InboundAttachment } from './fetch-attachments'
