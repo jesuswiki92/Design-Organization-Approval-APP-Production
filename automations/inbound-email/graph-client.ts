@@ -36,6 +36,7 @@ const AUTHORITY_COMMON = 'https://login.microsoftonline.com/common'
 
 export const GRAPH_DELEGATED_SCOPES = [
   'https://graph.microsoft.com/Mail.ReadWrite',
+  'https://graph.microsoft.com/Mail.Send',
   'offline_access',
 ]
 

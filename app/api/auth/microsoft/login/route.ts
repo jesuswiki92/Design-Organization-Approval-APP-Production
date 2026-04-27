@@ -17,6 +17,7 @@
  *
  * Scopes pedidos:
  *   - https://graph.microsoft.com/Mail.ReadWrite — leer/marcar/responder mails
+ *   - https://graph.microsoft.com/Mail.Send       — enviar respuestas al cliente
  *   - offline_access                              — devuelve refresh_token
  */
 
