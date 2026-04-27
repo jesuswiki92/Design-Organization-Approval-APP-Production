@@ -3,16 +3,23 @@
  * POST /api/incoming-requests/[id]/draft-reply
  * ============================================================================
  *
- * Sub-Slice A. Genera (manualmente, on-demand) una respuesta IA para una
- * solicitud entrante y la persiste en `doa_incoming_requests_v2.ai_reply`.
+ * Genera (manualmente, on-demand) una respuesta IA para una solicitud entrante
+ * y la persiste en `doa_incoming_requests_v2.ai_reply`.
+ *
+ * IMPORTANTE — change vs sub-slice A: aquí también garantizamos un token de
+ * formulario para esta `incoming_request_id` (reuse si ya existe, INSERT en
+ * caso contrario) y *sustituimos* el placeholder `{{FORM_LINK}}` en el cuerpo
+ * generado antes de persistirlo. Así el operador ve el enlace real ya en el
+ * textarea y `/send-reply` solo hace de sender, sin generar nada nuevo.
  *
  * Decide entre prompt "known" / "unknown" segun si el sender resuelve a un
- * cliente registrado. Devuelve el body generado y el `kind` correspondiente.
+ * cliente registrado. Devuelve `{ ok, body, kind, formUrl }`.
  *
  * Sin auth (frame-only). Cuando se reconecte auth se le pondra un guard.
  * ============================================================================
  */
 
+import crypto from 'node:crypto'
 import { NextResponse } from 'next/server'
 
 import { draftReply } from '@/automations/inbound-email/draft-reply'
@@ -25,6 +32,9 @@ import type { Client, ClientContact, IncomingRequest } from '@/types/database'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+const FORM_LINK_TOKEN = '{{FORM_LINK}}'
+const TOKEN_TTL_DAYS = 30
 
 async function loadClients(): Promise<Client[]> {
   const { data, error } = await supabaseServer
@@ -82,6 +92,68 @@ async function loadClientContacts(): Promise<ClientContact[]> {
   return (data ?? []) as unknown as ClientContact[]
 }
 
+/**
+ * Build the human-readable slug used as the public URL fragment.
+ * Pattern: `{entry_number_lower}-{token_first_6}` (e.g. `qry-2026-0001-9a8039`).
+ *
+ * If `entry_number` is missing (a row could exist before the auto-numbering
+ * trigger has run when inserted via DB tooling), fall back to the first 8
+ * chars of the row id, lowercased — still unique across the system.
+ */
+function buildSlug(entryNumber: string | null | undefined, requestId: string, token: string): string {
+  const base = (entryNumber ?? '').trim().toLowerCase() || requestId.slice(0, 8).toLowerCase()
+  const suffix = token.replace(/-/g, '').slice(0, 6).toLowerCase()
+  return `${base}-${suffix}`
+}
+
+/**
+ * Reuse an existing token row for this incoming_request_id, otherwise mint a
+ * new one. Returns the slug (the URL-friendly identifier). Throws on hard
+ * Supabase errors — caller must convert to a 500 response.
+ */
+async function ensureFormToken(params: {
+  incomingId: string
+  entryNumber: string | null | undefined
+  clientKind: 'known' | 'unknown'
+}): Promise<string> {
+  // 1) Reuse if a row already exists (we have a unique index on
+  //    incoming_request_id, so at most one row).
+  const { data: existing, error: existingError } = await supabaseServer
+    .from('doa_form_tokens_v2')
+    .select('slug')
+    .eq('incoming_request_id', params.incomingId)
+    .maybeSingle()
+
+  if (existingError) {
+    throw new Error(`Supabase select error (doa_form_tokens_v2): ${existingError.message}`)
+  }
+
+  if (existing?.slug) {
+    return existing.slug as string
+  }
+
+  // 2) Mint a new row.
+  const token = crypto.randomUUID()
+  const slug = buildSlug(params.entryNumber, params.incomingId, token)
+  const expiresAt = new Date(Date.now() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString()
+
+  const { error: insertError } = await supabaseServer
+    .from('doa_form_tokens_v2')
+    .insert({
+      token,
+      slug,
+      incoming_request_id: params.incomingId,
+      expires_at: expiresAt,
+      client_kind: params.clientKind,
+    })
+
+  if (insertError) {
+    throw new Error(`Supabase insert error (doa_form_tokens_v2): ${insertError.message}`)
+  }
+
+  return slug
+}
+
 export async function POST(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -123,7 +195,39 @@ export async function POST(
       clients,
       contacts,
     )
+    const clientKind: 'known' | 'unknown' = matchedClient ? 'known' : 'unknown'
 
+    // 1) Ensure a form token exists for this request and build the public URL.
+    let slug: string
+    try {
+      slug = await ensureFormToken({
+        incomingId: id,
+        entryNumber: incoming.entry_number,
+        clientKind,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown form-token error'
+      console.error('draft-reply: ensureFormToken failed', error)
+      return NextResponse.json({ ok: false, error: message }, { status: 500 })
+    }
+
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3010'
+    const formUrl = `${baseUrl}/f/${slug}`
+
+    // 2) Persist form_url on the request now (operator may want to see it
+    //    even before regenerating the AI body, e.g. via DB inspection).
+    const { error: formUrlError } = await supabaseServer
+      .from('doa_incoming_requests_v2')
+      .update({ form_url: formUrl })
+      .eq('id', id)
+
+    if (formUrlError) {
+      console.error('draft-reply: error updating form_url', formUrlError)
+      // Non-fatal: the URL is also derivable from the slug. Continue.
+    }
+
+    // 3) Generate the AI body.
     const senderEmail =
       extractSenderEmail(incoming.sender) ?? incoming.sender ?? ''
 
@@ -134,9 +238,18 @@ export async function POST(
       companyName: matchedClient?.name ?? null,
     })
 
+    // 4) Substitute {{FORM_LINK}} with the real URL — if the placeholder is
+    //    missing (the model occasionally drops it), append the URL on a new
+    //    line so the operator sees it inline.
+    const draftedBody = result.body ?? ''
+    const substitutedBody = draftedBody.includes(FORM_LINK_TOKEN)
+      ? draftedBody.split(FORM_LINK_TOKEN).join(formUrl)
+      : `${draftedBody.trimEnd()}\n\n${formUrl}\n`
+
+    // 5) Persist the substituted body.
     const { error: updateError } = await supabaseServer
       .from('doa_incoming_requests_v2')
-      .update({ ai_reply: result.body })
+      .update({ ai_reply: substitutedBody })
       .eq('id', id)
 
     if (updateError) {
@@ -149,8 +262,9 @@ export async function POST(
 
     return NextResponse.json({
       ok: true,
-      body: result.body,
-      kind: matchedClient ? 'known' : 'unknown',
+      body: substitutedBody,
+      kind: clientKind,
+      formUrl,
     })
   } catch (error) {
     const message =

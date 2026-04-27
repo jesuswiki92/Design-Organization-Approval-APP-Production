@@ -3,11 +3,15 @@
  * POST /api/incoming-requests/[id]/send-reply
  * ============================================================================
  *
- * Sub-Slice B. Recibe el body editado por el usuario (sobre el borrador IA),
- * sustituye {{FORM_LINK}} por la URL real `/f/<token>`, lo envía vía Graph
- * (/me/sendMail) y persiste el outbound en `doa_emails_v2` + actualiza
+ * Recibe el body editado por el usuario (sobre el borrador IA) y lo envía vía
+ * Microsoft Graph (/me/sendMail). El cuerpo YA debería traer la URL del
+ * formulario inlined (la sustitución ocurre en `/draft-reply` cuando se genera
+ * el borrador), pero como red defensiva, si todavía aparece `{{FORM_LINK}}`
+ * lo reemplazamos por el `form_url` ya persistido en la fila.
+ *
+ * Persiste el outbound en `doa_emails_v2` y actualiza
  * `doa_incoming_requests_v2` (status -> awaiting_form, last_client_draft,
- * reply_body, reply_sent_at, form_url, client_email_sent_at).
+ * reply_body, reply_sent_at, client_email_sent_at).
  *
  * Si Graph falla, devolvemos 500 sin tocar la DB.
  * Si Graph va bien pero la persistencia falla, devolvemos 500 con
@@ -18,7 +22,6 @@
  * ============================================================================
  */
 
-import crypto from 'node:crypto'
 import { NextResponse } from 'next/server'
 
 import { sendReply } from '@/automations/inbound-email/send-reply'
@@ -35,20 +38,30 @@ interface SendReplyRequestBody {
   body?: unknown
 }
 
-/** Convierte saltos de línea de texto plano a HTML mínimo (\n → <br>). */
+/**
+ * Convierte el cuerpo plano editado a HTML mínimo:
+ *   - Si todavía aparece `{{FORM_LINK}}`, lo sustituye por un anchor (defensa
+ *     en profundidad: el draft ya debería traer la URL inline).
+ *   - Convierte saltos de línea a `<br>` (sin renderizar markdown).
+ *   - Si el body no contiene la URL del formulario por ningún lado, la
+ *     anexa al final como anchor para garantizar que el cliente reciba el
+ *     enlace.
+ */
 function toHtmlBody(body: string, formUrl: string): string {
-  // 1) sustituir el placeholder {{FORM_LINK}} por un anchor; si no aparece,
-  //    apéndicelo en una línea aparte para garantizar que el cliente reciba
-  //    el enlace.
   const anchor = `<a href="${formUrl}">${formUrl}</a>`
+
   let withLink: string
   if (body.includes(FORM_LINK_TOKEN)) {
     withLink = body.split(FORM_LINK_TOKEN).join(anchor)
+  } else if (body.includes(formUrl)) {
+    // Plain-text URL appears (the draft endpoint inlines it). Wrap it as an
+    // anchor for nicer rendering in the client.
+    withLink = body.split(formUrl).join(anchor)
   } else {
+    // Last-resort safety net: append the URL.
     withLink = `${body}\n\n${anchor}`
   }
 
-  // 2) saltos de línea -> <br> (sin renderizar markdown: out of scope).
   return withLink.replace(/\r\n/g, '\n').replace(/\n/g, '<br>')
 }
 
@@ -113,13 +126,22 @@ export async function POST(
     )
   }
 
-  // 4) Generar token + URL del formulario
-  const token = crypto.randomUUID()
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3010'
-  const formUrl = `${baseUrl}/f/${token}`
+  // 4) Read the previously generated form_url. The draft endpoint is
+  //    responsible for creating it; if it's missing here, the operator hit
+  //    "Mandar al cliente" without ever clicking "Generar respuesta IA".
+  const formUrl = incoming.form_url?.trim() ?? ''
+  if (!formUrl) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          'No form URL found. Generate AI reply first to create the form token.',
+      },
+      { status: 400 },
+    )
+  }
 
-  // 5+6+7) Construir HTML body con FORM_LINK sustituido y \n -> <br>
+  // 5+6+7) Construir HTML body con FORM_LINK / URL plana sustituidos
   const htmlBody = toHtmlBody(editedBody, formUrl)
 
   // 8) Subject
@@ -188,7 +210,6 @@ export async function POST(
         last_client_draft: editedBody,
         reply_body: htmlBody,
         reply_sent_at: sentAtIso,
-        form_url: formUrl,
       })
       .eq('id', id)
 
