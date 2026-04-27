@@ -387,7 +387,7 @@ export default async function IncomingRequestDetailPage({
         {/* 3. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
         <Section title="Datos del cliente" label="datos del cliente" icon={UserRound} color="cobalt">
           {matchedClient ? (
-            <ClientDetailPanel client={matchedClient} />
+            <ClientDetailPanel client={matchedClient} defaultOpen />
           ) : (
             <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-8 text-center">
               <p className="text-sm font-medium text-[color:var(--ink-2)]">Cliente desconocido</p>

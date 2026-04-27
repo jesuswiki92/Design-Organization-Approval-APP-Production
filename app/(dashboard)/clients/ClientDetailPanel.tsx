@@ -34,9 +34,11 @@ function formatContactName(contact: ClientContact) {
 export function ClientDetailPanel({
   client,
   onClose,
+  defaultOpen = false,
 }: {
   client: ClientWithContacts
   onClose?: () => void
+  defaultOpen?: boolean
 }) {
   const address = formatAddress(client)
 
@@ -60,7 +62,7 @@ export function ClientDetailPanel({
       </div>
 
       <div className="px-5 py-3">
-        <details className="group">
+        <details className="group" open={defaultOpen}>
           <summary className="flex cursor-pointer list-none items-center gap-1 text-xs text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)] [&::-webkit-details-marker]:hidden">
             <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
             <span>Ver ficha completa</span>
