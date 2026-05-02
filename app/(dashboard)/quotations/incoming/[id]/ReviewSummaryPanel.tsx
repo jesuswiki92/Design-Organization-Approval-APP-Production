@@ -18,7 +18,7 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, CheckCircle2, HelpCircle, Loader2, Save } from "lucide-react"
+import { AlertTriangle, CheckCircle2, HelpCircle, Loader2, Save, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
@@ -27,6 +27,36 @@ import type {
   ProjectClassification,
   ProjectClassificationKind,
 } from "@/types/database"
+
+// ---------------------------------------------------------------------------
+// AI suggestion shape — mirrors automations/inbound-email/suggest-classification.ts
+// ---------------------------------------------------------------------------
+
+type SuggestionAnswer = "yes" | "no" | "unknown"
+type SuggestionDecision = "major" | "minor" | "unknown"
+type SuggestionConfidence = "high" | "medium" | "low"
+
+type ClassificationSuggestion = {
+  decision: SuggestionDecision
+  is_repair: boolean
+  suggested_archetype_code: string | null
+  archetype_confidence: SuggestionConfidence
+  triggers: Record<
+    "GT-A" | "GT-B" | "GT-C" | "GT-D" | "GT-E" | "GT-F" | "GT-G",
+    { answer: SuggestionAnswer; reason: string }
+  >
+  repair_triggers: Record<string, { answer: SuggestionAnswer; reason: string }> | null
+  justification: string
+  similar_reference_projects: string[]
+  confidence_overall: SuggestionConfidence
+  model_used: string
+}
+
+type AiState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "populated"; suggestion: ClassificationSuggestion }
+  | { status: "error"; message: string }
 
 // ---------------------------------------------------------------------------
 // Types & helpers
@@ -111,6 +141,7 @@ export function ReviewSummaryPanel({
     existingClassification?.final_statement ?? "",
   )
   const [saving, setSaving] = useState(false)
+  const [aiState, setAiState] = useState<AiState>({ status: "idle" })
 
   // Compute suggested classification from current answers.
   const summary = useMemo(() => {
@@ -137,6 +168,66 @@ export function ReviewSummaryPanel({
 
   function setAnswer(code: string, value: TriggerAnswer) {
     setAnswers((prev) => ({ ...prev, [code]: value }))
+  }
+
+  /**
+   * Calls the suggest endpoint and pre-fills the wizard with the AI proposal.
+   * Failures surface as a toast and reset the state to idle so the user can
+   * still complete the wizard manually — the AI is an assistant, not a gate.
+   */
+  async function handleAutoFill() {
+    setAiState({ status: "loading" })
+    try {
+      const res = await fetch(
+        `/api/incoming-requests/${incomingId}/classification/suggest`,
+        { method: "POST" },
+      )
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        error?: string
+        suggestion?: ClassificationSuggestion
+      }
+
+      if (!res.ok || !json.ok || !json.suggestion) {
+        const errorMessage = json.error ?? `HTTP ${res.status}`
+        toast.error(`AI auto-fill failed: ${errorMessage}`)
+        setAiState({ status: "error", message: errorMessage })
+        return
+      }
+
+      const suggestion = json.suggestion
+
+      // Map the 7 GT-X answers onto the local `answers` state, keyed by trigger
+      // code. Triggers in the catalog that are NOT in {GT-A..G} are kept as
+      // "unknown" — should not happen for the generic catalog but stays safe.
+      setAnswers((prev) => {
+        const next: Record<string, TriggerAnswer> = { ...prev }
+        for (const trigger of triggers) {
+          const entry =
+            suggestion.triggers[trigger.code as keyof typeof suggestion.triggers]
+          if (entry && (entry.answer === "yes" || entry.answer === "no" || entry.answer === "unknown")) {
+            next[trigger.code] = entry.answer
+          }
+        }
+        return next
+      })
+
+      // Decision: prefer 'major'/'minor'. If the model returns 'unknown' we
+      // leave the dropdown on 'Pending' so the engineer chooses explicitly.
+      if (suggestion.decision === "major" || suggestion.decision === "minor") {
+        setDecision(suggestion.decision)
+      } else {
+        setDecision("")
+      }
+
+      setJustification(suggestion.justification)
+      setAiState({ status: "populated", suggestion })
+      toast.success("AI suggestion applied — review and edit before saving")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error"
+      toast.error(`AI auto-fill failed: ${message}`)
+      setAiState({ status: "error", message })
+    }
   }
 
   async function handleSave() {
@@ -197,8 +288,64 @@ export function ReviewSummaryPanel({
     )
   }
 
+  const aiLoading = aiState.status === "loading"
+  const aiPopulated = aiState.status === "populated"
+
   return (
     <div className="space-y-4">
+      {/* AI auto-fill controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
+            AI assistant
+          </p>
+          <p className="mt-0.5 text-xs text-[color:var(--ink-2)]">
+            Pre-fill the wizard from the incoming data. You can edit every answer afterwards.
+          </p>
+          {aiPopulated ? (
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[color:var(--cobalt)]/40 bg-[color:var(--cobalt)]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--cobalt)]">
+              <Sparkles className="h-3 w-3" />
+              AI suggestion ({aiState.suggestion.model_used.split("/").pop() ?? aiState.suggestion.model_used}, confidence: {aiState.suggestion.confidence_overall})
+            </span>
+          ) : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleAutoFill}
+          disabled={aiLoading || triggers.length === 0}
+          className={cn(
+            "inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[color:var(--cobalt)] bg-[color:var(--cobalt)]/10 px-4 py-1.5 text-[11px] font-semibold text-[color:var(--cobalt)] transition-colors hover:bg-[color:var(--cobalt)]/20",
+            (aiLoading || triggers.length === 0) && "cursor-not-allowed opacity-60",
+          )}
+        >
+          {aiLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Sparkles className="h-3 w-3" />
+          )}
+          {aiLoading ? "Thinking…" : "Auto-fill with AI"}
+        </button>
+      </div>
+
+      {/* Suggested archetype hint (if AI has run) */}
+      {aiPopulated && aiState.suggestion.suggested_archetype_code ? (
+        <div className="rounded-xl border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-4 py-2 text-xs text-[color:var(--ink-2)]">
+          <span className="font-semibold uppercase tracking-[0.1em] text-[color:var(--ink-3)]">
+            Suggested archetype:
+          </span>{" "}
+          <span className="font-mono">{aiState.suggestion.suggested_archetype_code}</span>
+          <span className="ml-2 text-[color:var(--ink-3)]">
+            ({aiState.suggestion.archetype_confidence} confidence)
+          </span>
+          {aiState.suggestion.is_repair ? (
+            <span className="ml-2 rounded-full border border-[color:var(--terracotta)]/40 bg-[color:var(--terracotta)]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[color:var(--terracotta)]">
+              Repair
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* Suggested classification banner */}
       <SuggestionBadge kind={summary.kind} reason={summary.reason} />
 
