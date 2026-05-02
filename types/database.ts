@@ -1162,3 +1162,163 @@ export interface IssueLinkResponse {
   token: string
   expires_at: string
 }
+
+// ===========================================================================
+// DOA v2 — Classification, archetypes, document templates, projects v2
+// ===========================================================================
+
+/**
+ * Row in `doa_classification_triggers`. Each trigger maps a question that the
+ * lead engineer answers when classifying a change as Major / Minor / Repair.
+ * Generic triggers (GT-A..G) have `discipline = null`; discipline-specific
+ * triggers (e.g. structures, EWIS) carry the discipline name.
+ */
+export interface ClassificationTrigger {
+  code: string
+  label: string
+  severity: string
+  short_explanation: string | null
+  source_ref: string | null
+  discipline: string | null
+  parent_trigger_code: string | null
+  sort_order: number
+  created_at: string
+}
+
+/** Applicability of a document template for a given classification. */
+export type DocumentRequirement = 'required' | 'conditional' | 'not_applicable'
+
+/**
+ * Row in `doa_document_templates`. Catalog of every template (F12-XX, F18-XX)
+ * the DOA can produce.
+ */
+export interface DocumentTemplate {
+  code: string
+  title: string
+  prepared_by_role: string
+  approved_by_role: string
+  applies_to_stage_codes: string[]
+  doc_category: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Row in `doa_documents_required_matrix`. For each template_code, declares
+ * whether it is required / conditional / not_applicable per classification
+ * (minor change, major change, minor repair, major repair).
+ */
+export interface DocumentRequiredMatrixRow {
+  template_code: string
+  minor_change: DocumentRequirement
+  major_change: DocumentRequirement
+  minor_repair: DocumentRequirement
+  major_repair: DocumentRequirement
+  note: string | null
+  created_at: string
+}
+
+/**
+ * Joined row used by the Documentation panel: matrix entry + template metadata
+ * + a flag indicating whether the template is "typical" for the suggested
+ * archetype (so we can highlight it with a star).
+ */
+export interface DocumentRequiredEntry {
+  template_code: string
+  title: string
+  doc_category: string
+  requirement: DocumentRequirement
+  is_typical_for_archetype: boolean
+  note: string | null
+}
+
+/**
+ * Row in `doa_project_archetypes`. Each archetype groups a "type of project"
+ * (e.g. antenna installation, cargo in cabin, skin repair) and lists the
+ * typical document codes that should accompany it.
+ */
+export interface ProjectArchetype {
+  code: string
+  title: string
+  description: string | null
+  typical_aircraft_classes: string[]
+  typical_classification: string
+  typical_documents: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+/** Classification kind chosen for a project. */
+export type ProjectClassificationKind = 'minor' | 'major'
+
+/**
+ * Row in `doa_projects_v2`. Frame-only minimal shape used by the incoming
+ * detail page. Many fields are stored as text/jsonb and decoded as needed.
+ */
+export interface ProjectV2 {
+  id: string
+  project_code: string
+  entry_number: number | null
+  title: string
+  family_prefix: string | null
+  year: string | null
+  classification: ProjectClassificationKind | null
+  is_repair: boolean
+  route: string | null
+  aircraft_id: string | null
+  msn_list: unknown
+  client_id: string | null
+  contact_id: string | null
+  archetype_code: string | null
+  op_state: string
+  current_stage: number | null
+  planned_hours: number | null
+  actual_hours: number
+  deadline: string | null
+  is_blocked: boolean
+  blocked_reason: string | null
+  created_from_consultation_id: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+  created_by_user_id: string | null
+  updated_by_user_id: string | null
+}
+
+/**
+ * Row in `doa_project_classifications`. Stores the answers to the 7 generic
+ * triggers, repair triggers and discipline findings, plus the engineer's
+ * final decision and justification.
+ */
+export interface ProjectClassification {
+  id: string
+  project_id: string
+  trigger_a_general_configuration: boolean | null
+  trigger_b_principles_construction: boolean | null
+  trigger_c_assumptions_invalidated: boolean | null
+  trigger_d_appreciable_effect: boolean | null
+  trigger_e_cert_basis_adjustment: boolean | null
+  trigger_f_compliance_not_accepted: boolean | null
+  trigger_g_agency_limitations_altered: boolean | null
+  discipline_findings: Record<string, unknown>
+  repair_affects_pse: boolean | null
+  repair_extensive_substantiation: boolean | null
+  repair_compliance_in_question: boolean | null
+  repair_moc_not_accepted: boolean | null
+  repair_affects_als: boolean | null
+  decision: ProjectClassificationKind | null
+  cpr_significance: string | null
+  suggested_archetype_code: string | null
+  decided_by_engineer_user_id: string | null
+  decided_by_engineer_at: string | null
+  decided_by_cve_user_id: string | null
+  decided_by_cve_at: string | null
+  decided_by_hoa_user_id: string | null
+  decided_by_hoa_at: string | null
+  justifications: Record<string, unknown>
+  final_statement: string | null
+  created_at: string
+  updated_at: string
+}

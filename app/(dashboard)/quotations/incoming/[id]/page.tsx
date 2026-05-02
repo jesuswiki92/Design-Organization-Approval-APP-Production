@@ -36,10 +36,17 @@ import { supabaseServer } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 import type {
   Aircraft,
+  ClassificationTrigger,
   Client,
   ClientContact,
+  DocumentRequiredEntry,
+  DocumentRequirement,
   DoaEmail,
   IncomingRequest,
+  ProjectArchetype,
+  ProjectClassification,
+  ProjectClassificationKind,
+  ProjectV2,
 } from '@/types/database'
 
 import { ClientDetailPanel } from '../../../clients/ClientDetailPanel'
@@ -50,6 +57,9 @@ import {
 } from '../../incoming-queries'
 import { AircraftPanel } from './AircraftPanel'
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
+import { DocumentationPanel } from './DocumentationPanel'
+import { PreliminaryScopePanel } from './PreliminaryScopePanel'
+import { ReviewSummaryPanel } from './ReviewSummaryPanel'
 import { TechnicalProjectPanel } from './TechnicalProjectPanel'
 
 export const dynamic = 'force-dynamic'
@@ -299,6 +309,253 @@ async function loadEmails(incomingRequestId: string): Promise<DoaEmail[]> {
 }
 
 // ---------------------------------------------------------------------------
+// Loaders for the new panels (Review summary / Preliminary scope / Documentation)
+// ---------------------------------------------------------------------------
+
+/** Loads the 7 generic GT-A..GT-G triggers used by the classification wizard. */
+async function loadGenericTriggers(): Promise<ClassificationTrigger[]> {
+  const { data, error } = await supabaseServer
+    .from('doa_classification_triggers')
+    .select('*')
+    .is('discipline', null)
+    .order('sort_order', { ascending: true })
+
+  if (error) {
+    console.error('incoming detail: error fetching classification triggers', error)
+    return []
+  }
+  return (data ?? []) as unknown as ClassificationTrigger[]
+}
+
+/** Loads the catalog of project archetypes used for heuristic detection. */
+async function loadProjectArchetypes(): Promise<ProjectArchetype[]> {
+  const { data, error } = await supabaseServer
+    .from('doa_project_archetypes')
+    .select('*')
+    .eq('is_active', true)
+    .order('code', { ascending: true })
+
+  if (error) {
+    console.error('incoming detail: error fetching project archetypes', error)
+    return []
+  }
+  return (data ?? []) as unknown as ProjectArchetype[]
+}
+
+/**
+ * Heuristic archetype detection from the request subject. Looks for keywords
+ * that map to specific archetype codes; falls back to null when nothing
+ * matches.
+ */
+function detectArchetype(
+  subject: string | null | undefined,
+  archetypes: ProjectArchetype[],
+): ProjectArchetype | null {
+  if (!subject) return null
+  const text = subject.toLowerCase()
+
+  const byCode = (code: string) => archetypes.find((a) => a.code === code) ?? null
+
+  if (/(defibrillator|\baed\b)/.test(text)) return byCode('defibrillator-install')
+  if (/cargo/.test(text)) return byCode('cargo-in-cabin')
+  if (/(skin|fairing).*(repair|damage)|repair.*(skin|fairing)/.test(text))
+    return byCode('skin-repair')
+  if (/composite.*repair|repair.*composite/.test(text)) return byCode('composite-repair')
+  if (/wifi|connectivity|wap\b|sdu\b/.test(text)) return byCode('wifi-install')
+  if (/antenna.*(removal|remove)/.test(text)) return byCode('antenna-removal')
+  if (/antenna|satcom|iridium|\bvhf\b/.test(text)) return byCode('antenna-install')
+  if (/medevac|stretcher/.test(text)) return byCode('medevac-fit')
+  if (/livery|decals?/.test(text)) return byCode('livery-change')
+  if (/lopa/.test(text)) return byCode('lopa-change')
+  if (/eel\b|emergency equipment layout/.test(text)) return byCode('eel-change')
+  if (/crew rest|bunk/.test(text)) return byCode('crew-rest')
+  if (/wiring|gad/.test(text)) return byCode('wiring-mod')
+  if (/rack/.test(text)) return byCode('rack-install')
+  if (/interior|refurb/.test(text)) return byCode('interior-refurb')
+
+  return null
+}
+
+/**
+ * Loads up to 3 reference projects (`metadata.reference_template = true`),
+ * preferring those whose `archetype_code` matches the detected one. Falls
+ * back to any reference template when no archetype is detected.
+ */
+async function loadReferenceProjects(
+  archetypeCode: string | null,
+): Promise<ProjectV2[]> {
+  let query = supabaseServer
+    .from('doa_projects_v2')
+    .select('*')
+    .eq('metadata->>reference_template', 'true')
+    .limit(3)
+
+  if (archetypeCode) {
+    query = query.eq('archetype_code', archetypeCode)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('incoming detail: error fetching reference projects', error)
+    return []
+  }
+
+  let rows = (data ?? []) as unknown as ProjectV2[]
+
+  // If the archetype-filtered query returned nothing, fall back to any
+  // reference template so the panel always has something to show.
+  if (archetypeCode && rows.length === 0) {
+    const { data: fallback, error: fallbackError } = await supabaseServer
+      .from('doa_projects_v2')
+      .select('*')
+      .eq('metadata->>reference_template', 'true')
+      .limit(3)
+
+    if (fallbackError) {
+      console.error('incoming detail: error fetching fallback reference projects', fallbackError)
+      return []
+    }
+    rows = (fallback ?? []) as unknown as ProjectV2[]
+  }
+
+  return rows
+}
+
+/**
+ * Looks up the v2 project tied to this incoming and its classification, if
+ * any. Returns null entries gracefully when nothing exists yet.
+ */
+async function loadProjectAndClassification(
+  incomingId: string,
+): Promise<{ project: ProjectV2 | null; classification: ProjectClassification | null }> {
+  const { data: project, error: projectError } = await supabaseServer
+    .from('doa_projects_v2')
+    .select('*')
+    .eq('created_from_consultation_id', incomingId)
+    .maybeSingle()
+
+  if (projectError) {
+    console.error('incoming detail: error fetching v2 project', projectError)
+    return { project: null, classification: null }
+  }
+
+  const projectRow = (project ?? null) as unknown as ProjectV2 | null
+  if (!projectRow) {
+    return { project: null, classification: null }
+  }
+
+  const { data: classification, error: classificationError } = await supabaseServer
+    .from('doa_project_classifications')
+    .select('*')
+    .eq('project_id', projectRow.id)
+    .maybeSingle()
+
+  if (classificationError) {
+    console.error('incoming detail: error fetching project classification', classificationError)
+    return { project: projectRow, classification: null }
+  }
+
+  return {
+    project: projectRow,
+    classification: (classification ?? null) as unknown as ProjectClassification | null,
+  }
+}
+
+/** Document templates needed to render the Documentation panel. */
+type DocumentMatrixRow = {
+  template_code: string
+  minor_change: DocumentRequirement
+  major_change: DocumentRequirement
+  minor_repair: DocumentRequirement
+  major_repair: DocumentRequirement
+  note: string | null
+}
+
+type DocumentTemplateRow = {
+  code: string
+  title: string
+  doc_category: string
+}
+
+/** Resolves which matrix column to use for a (classification, repair) tuple. */
+function matrixColumn(
+  classification: ProjectClassificationKind,
+  isRepair: boolean,
+): keyof Pick<DocumentMatrixRow, 'minor_change' | 'major_change' | 'minor_repair' | 'major_repair'> {
+  if (classification === 'major') return isRepair ? 'major_repair' : 'major_change'
+  return isRepair ? 'minor_repair' : 'minor_change'
+}
+
+/**
+ * Returns the joined MDL: matrix rows + template metadata, filtered to those
+ * that are NOT `not_applicable` for the resolved classification, plus a flag
+ * for templates that belong to the detected archetype's typical_documents.
+ */
+async function loadDocumentationEntries(
+  classification: ProjectClassificationKind,
+  isRepair: boolean,
+  detectedArchetype: ProjectArchetype | null,
+): Promise<{ entries: DocumentRequiredEntry[]; totalCatalog: number }> {
+  const [matrixResult, templatesResult] = await Promise.all([
+    supabaseServer
+      .from('doa_documents_required_matrix')
+      .select('template_code, minor_change, major_change, minor_repair, major_repair, note'),
+    supabaseServer
+      .from('doa_document_templates')
+      .select('code, title, doc_category')
+      .eq('is_active', true),
+  ])
+
+  if (matrixResult.error) {
+    console.error('incoming detail: error fetching document matrix', matrixResult.error)
+    return { entries: [], totalCatalog: 0 }
+  }
+  if (templatesResult.error) {
+    console.error('incoming detail: error fetching document templates', templatesResult.error)
+    return { entries: [], totalCatalog: 0 }
+  }
+
+  const matrixRows = (matrixResult.data ?? []) as unknown as DocumentMatrixRow[]
+  const templateRows = (templatesResult.data ?? []) as unknown as DocumentTemplateRow[]
+  const templatesByCode = new Map(templateRows.map((t) => [t.code, t]))
+
+  const column = matrixColumn(classification, isRepair)
+  const typicalSet = new Set(detectedArchetype?.typical_documents ?? [])
+
+  const entries: DocumentRequiredEntry[] = matrixRows
+    .map((row) => {
+      const requirement = row[column]
+      const template = templatesByCode.get(row.template_code)
+      if (!template) return null
+      return {
+        template_code: row.template_code,
+        title: template.title,
+        doc_category: template.doc_category,
+        requirement,
+        is_typical_for_archetype: typicalSet.has(row.template_code),
+        note: row.note,
+      } satisfies DocumentRequiredEntry
+    })
+    .filter((entry): entry is DocumentRequiredEntry =>
+      entry !== null && entry.requirement !== 'not_applicable',
+    )
+    .sort((a, b) => {
+      // Required first, conditional after, ordered by template_code within each group.
+      const order: Record<DocumentRequiredEntry['requirement'], number> = {
+        required: 0,
+        conditional: 1,
+        not_applicable: 2,
+      }
+      const diff = order[a.requirement] - order[b.requirement]
+      if (diff !== 0) return diff
+      return a.template_code.localeCompare(b.template_code)
+    })
+
+  return { entries, totalCatalog: templateRows.length }
+}
+
+// ---------------------------------------------------------------------------
 // Estado "no encontrada"
 // ---------------------------------------------------------------------------
 
@@ -355,12 +612,37 @@ export default async function IncomingRequestDetailPage({
 
   const incoming = data as unknown as IncomingRequest
 
-  const [clients, contacts, emails, aircraftMatches] = await Promise.all([
+  const [
+    clients,
+    contacts,
+    emails,
+    aircraftMatches,
+    triggers,
+    archetypes,
+    projectAndClassification,
+  ] = await Promise.all([
     loadClients(),
     loadClientContacts(),
     loadEmails(id),
     loadAircraftMatches(incoming.tcds_number),
+    loadGenericTriggers(),
+    loadProjectArchetypes(),
+    loadProjectAndClassification(id),
   ])
+
+  const detectedArchetype = detectArchetype(incoming.subject, archetypes)
+  const referenceProjects = await loadReferenceProjects(detectedArchetype?.code ?? null)
+
+  // Resolve effective classification for the Documentation MDL: prefer the
+  // saved decision, otherwise default to Minor + non-repair (conservative).
+  const savedDecision = projectAndClassification.classification?.decision ?? null
+  const effectiveClassification: ProjectClassificationKind = savedDecision ?? 'minor'
+  const isRepair = projectAndClassification.project?.is_repair ?? false
+  const documentationData = await loadDocumentationEntries(
+    effectiveClassification,
+    isRepair,
+    detectedArchetype,
+  )
 
   const clientLookup = buildIncomingClientLookup(clients, contacts)
   const query = toIncomingQuery(incoming, clientLookup)
@@ -430,7 +712,7 @@ export default async function IncomingRequestDetailPage({
           </span>
         </div>
 
-        {/* 1. Resumen de revisión — placeholder */}
+        {/* 1. Review summary — REAL DATA (classification wizard) */}
         <Section
           title="Review summary"
           label="review summary"
@@ -438,7 +720,11 @@ export default async function IncomingRequestDetailPage({
           color="cobalt"
           defaultOpen
         >
-          <ComingSoonPlaceholder />
+          <ReviewSummaryPanel
+            incomingId={id}
+            triggers={triggers}
+            existingClassification={projectAndClassification.classification}
+          />
         </Section>
 
         {/* 2. Comunicaciones — REAL DATA (incluye borrador IA en la columna izquierda) */}
@@ -508,14 +794,22 @@ export default async function IncomingRequestDetailPage({
           <TechnicalProjectPanel incoming={incoming} />
         </Section>
 
-        {/* 6. Alcance preliminar — placeholder */}
+        {/* 6. Preliminary scope — REAL DATA (similar reference projects) */}
         <Section title="Preliminary scope" label="preliminary scope" icon={ScanSearch} color="umber">
-          <ComingSoonPlaceholder />
+          <PreliminaryScopePanel
+            detectedArchetype={detectedArchetype}
+            referenceProjects={referenceProjects}
+          />
         </Section>
 
-        {/* 7. Documentación — placeholder */}
+        {/* 7. Documentation — REAL DATA (Master Document List) */}
         <Section title="Documentation" label="documentation" icon={FileText} color="cobalt">
-          <ComingSoonPlaceholder />
+          <DocumentationPanel
+            entries={documentationData.entries}
+            totalCatalog={documentationData.totalCatalog}
+            classification={savedDecision}
+            isRepair={isRepair}
+          />
         </Section>
 
         {/* 8. Oferta / Quotation — placeholder */}
