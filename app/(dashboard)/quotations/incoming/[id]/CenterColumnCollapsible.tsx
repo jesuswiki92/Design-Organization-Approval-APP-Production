@@ -23,7 +23,17 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronDown, Inbox, Loader2, Mail, Send, Sparkles } from "lucide-react"
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Inbox,
+  Link2,
+  Loader2,
+  Mail,
+  Send,
+  Sparkles,
+} from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import type { DoaEmail } from "@/types/database"
@@ -73,10 +83,10 @@ type ThreadEmail = {
 // ---------------------------------------------------------------------------
 
 function formatDateSpanish(isoDate: string | null | undefined): string {
-  if (!isoDate) return "Fecha no disponible"
+  if (!isoDate) return "Date unavailable"
   const date = new Date(isoDate)
-  if (Number.isNaN(date.getTime())) return "Fecha no disponible"
-  return new Intl.DateTimeFormat("es-ES", {
+  if (Number.isNaN(date.getTime())) return "Date unavailable"
+  return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -219,7 +229,7 @@ function EmailCard({
             </p>
           )}
           <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-6 text-[color:var(--ink-2)]">
-            {plainBody.length > 0 ? plainBody : "Sin contenido"}
+            {plainBody.length > 0 ? plainBody : "No content"}
           </pre>
         </div>
       )}
@@ -259,7 +269,7 @@ function AIDraftBlock({
     setEditedBody(initialAiReply ?? "")
   }, [initialAiReply])
 
-  const kindLabel = clientKind === "known" ? "Cliente conocido" : "Cliente desconocido"
+  const kindLabel = clientKind === "known" ? "Known client" : "Unknown client"
 
   async function handleGenerate() {
     setLoading(true)
@@ -278,20 +288,20 @@ function AIDraftBlock({
 
       if (!res.ok || !json.ok || !json.body) {
         const message = json.error || `Error ${res.status}`
-        toast.error(`No se pudo generar la respuesta: ${message}`)
+        toast.error(`Could not generate reply: ${message}`)
         return
       }
 
       setReply(json.body)
       setEditedBody(json.body)
       toast.success(
-        `Respuesta generada (Cliente ${
-          (json.kind ?? clientKind) === "known" ? "conocido" : "desconocido"
+        `Reply generated (${
+          (json.kind ?? clientKind) === "known" ? "Known client" : "Unknown client"
         })`,
       )
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error desconocido"
-      toast.error(`No se pudo generar la respuesta: ${message}`)
+      const message = error instanceof Error ? error.message : "Unknown error"
+      toast.error(`Could not generate reply: ${message}`)
     } finally {
       setLoading(false)
     }
@@ -299,7 +309,7 @@ function AIDraftBlock({
 
   async function handleSend() {
     if (!editedBody.trim()) {
-      toast.error("El cuerpo del email está vacío.")
+      toast.error("The email body is empty.")
       return
     }
     setSending(true)
@@ -321,15 +331,15 @@ function AIDraftBlock({
 
       if (!res.ok || !json.ok) {
         const message = json.error || `Error ${res.status}`
-        toast.error(`No se pudo enviar el correo: ${message}`)
+        toast.error(`Could not send email: ${message}`)
         return
       }
 
-      toast.success("Correo enviado al cliente")
+      toast.success("Email sent to client")
       router.refresh()
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error desconocido"
-      toast.error(`No se pudo enviar el correo: ${message}`)
+      const message = error instanceof Error ? error.message : "Unknown error"
+      toast.error(`Could not send email: ${message}`)
     } finally {
       setSending(false)
     }
@@ -343,7 +353,7 @@ function AIDraftBlock({
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--cobalt)]/40 bg-[color:var(--cobalt)]/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[color:var(--cobalt)]">
           <Sparkles className="h-3 w-3" />
-          Borrador IA — {kindLabel}
+          AI draft — {kindLabel}
         </span>
       </div>
 
@@ -362,7 +372,7 @@ function AIDraftBlock({
           />
 
           <p className="mt-2 text-[10px] text-[color:var(--ink-3)]">
-            El placeholder <code className="font-mono">{"{{FORM_LINK}}"}</code> se sustituirá por la URL real al enviar.
+            The <code className="font-mono">{"{{FORM_LINK}}"}</code> placeholder will be replaced with the actual URL on send.
           </p>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -380,7 +390,7 @@ function AIDraftBlock({
               ) : (
                 <Sparkles className="h-3 w-3" />
               )}
-              {loading ? "Regenerando…" : "Regenerar"}
+              {loading ? "Regenerating…" : "Regenerate"}
             </button>
 
             <button
@@ -397,14 +407,14 @@ function AIDraftBlock({
               ) : (
                 <Send className="h-3 w-3" />
               )}
-              {sending ? "Enviando…" : "Mandar al cliente"}
+              {sending ? "Sending…" : "Send to client"}
             </button>
           </div>
         </>
       ) : (
         <div className="mt-3 flex flex-col items-center gap-3 rounded-xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)]/40 px-4 py-6 text-center">
           <p className="text-xs text-[color:var(--ink-3)]">
-            Aún no se ha generado respuesta IA.
+            No AI reply has been generated yet.
           </p>
 
           <button
@@ -421,14 +431,173 @@ function AIDraftBlock({
             ) : (
               <Sparkles className="h-3.5 w-3.5" />
             )}
-            {loading ? "Generando…" : "Generar respuesta IA"}
+            {loading ? "Generating…" : "Generate AI reply"}
           </button>
 
           <p className="text-[10px] text-[color:var(--ink-3)]">
-            El placeholder <code className="font-mono">{"{{FORM_LINK}}"}</code> se sustituirá por la URL real al enviar.
+            The <code className="font-mono">{"{{FORM_LINK}}"}</code> placeholder will be replaced with the actual URL on send.
           </p>
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Panel manual para generar (o reusar) la URL del formulario publico.
+ * Vive arriba del hilo, fuera del bloque IA: el flow inbound-email ya genera
+ * la URL automaticamente al disparar el draft, pero este boton cubre los casos
+ * en los que el operador necesita una URL nueva o el draft IA no se ha
+ * lanzado todavia.
+ */
+function FormUrlPanel({ incomingId }: { incomingId: string }) {
+  type ApiResponse = {
+    ok?: boolean
+    url?: string
+    slug?: string
+    clientKind?: "known" | "unknown"
+    expiresAt?: string
+    reused?: boolean
+    error?: string
+    message?: string
+  }
+
+  type Result = {
+    url: string
+    expiresAt: string
+    reused: boolean
+  }
+
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<Result | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  function formatExpiresAt(iso: string): string {
+    const date = new Date(iso)
+    if (Number.isNaN(date.getTime())) return iso
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date)
+  }
+
+  async function handleGenerate() {
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `/api/incoming-requests/${incomingId}/form-url`,
+        { method: "POST" },
+      )
+      const json = (await res.json().catch(() => ({}))) as ApiResponse
+
+      if (!res.ok || !json.ok || !json.url || !json.expiresAt) {
+        const message = json.message || json.error || `Error ${res.status}`
+        toast.error(`Error generating URL: ${message}`)
+        return
+      }
+
+      setResult({
+        url: json.url,
+        expiresAt: json.expiresAt,
+        reused: Boolean(json.reused),
+      })
+      setCopied(false)
+      toast.success(
+        json.reused ? "Reusing existing token" : "Form URL generated",
+      )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error generating URL"
+      toast.error(`Error generating URL: ${message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleCopy() {
+    if (!result?.url) return
+    try {
+      await navigator.clipboard.writeText(result.url)
+      setCopied(true)
+      toast.success("Copied!")
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not copy"
+      toast.error(`Could not copy: ${message}`)
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[color:var(--cobalt)]/15">
+            <Link2 className="h-3.5 w-3.5 text-[color:var(--cobalt)]" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-2)]">
+              Form URL
+            </p>
+            <p className="text-[11px] text-[color:var(--ink-3)]">
+              Generate the public URL to send to the client.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={loading}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full border border-[color:var(--cobalt)] bg-[color:var(--cobalt)] px-4 py-1.5 text-[11px] font-semibold text-white shadow-sm transition-colors hover:bg-[color:var(--cobalt)]/90",
+            loading && "cursor-not-allowed opacity-70",
+          )}
+        >
+          {loading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <Link2 className="h-3 w-3" />
+          )}
+          {loading ? "Generating..." : "Generate form URL"}
+        </button>
+      </div>
+
+      {result ? (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-stretch gap-2">
+            <input
+              type="text"
+              readOnly
+              value={result.url}
+              onFocus={(event) => event.currentTarget.select()}
+              className="min-w-0 flex-1 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 font-mono text-[12px] text-[color:var(--ink-2)] outline-none focus:border-[color:var(--cobalt)]"
+            />
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[color:var(--ink-4)] bg-[color:var(--paper)] px-3 py-1.5 text-[11px] font-medium text-[color:var(--ink)] transition-colors hover:bg-[color:var(--paper-3)]",
+                copied && "border-emerald-300 text-emerald-600",
+              )}
+            >
+              {copied ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+
+          <p className="text-[10px] text-[color:var(--ink-3)]">
+            {result.reused
+              ? `Reusing existing token. Expires on ${formatExpiresAt(result.expiresAt)}.`
+              : `URL generated. Expires on ${formatExpiresAt(result.expiresAt)}.`}
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -439,10 +608,10 @@ function EmptyResponsePlaceholder() {
       <div className="text-center">
         <Send className="mx-auto h-5 w-5 text-[color:var(--ink-3)]" />
         <p className="mt-2 text-xs font-medium text-[color:var(--ink-2)]">
-          Sin respuestas enviadas
+          No replies sent
         </p>
         <p className="mt-0.5 text-[10px] text-[color:var(--ink-3)]">
-          (compositor desactivado en esta versión)
+          (composer disabled in this version)
         </p>
       </div>
     </div>
@@ -471,8 +640,8 @@ export function CenterColumnCollapsible({
       .map((e) => ({
         id: e.id,
         direction: "incoming" as EmailDirection,
-        label: "Email entrante",
-        contactLabel: "De",
+        label: "Inbound email",
+        contactLabel: "From",
         contactValue: e.from_email,
         date: e.date,
         body: e.body,
@@ -484,8 +653,8 @@ export function CenterColumnCollapsible({
       .map((e) => ({
         id: e.id,
         direction: "outgoing" as EmailDirection,
-        label: "Respuesta enviada",
-        contactLabel: "Para",
+        label: "Reply sent",
+        contactLabel: "To",
         contactValue: e.to_email ?? e.from_email,
         date: e.date,
         body: e.body,
@@ -513,7 +682,7 @@ export function CenterColumnCollapsible({
           <Mail className="h-3 w-3 text-[color:var(--ink-3)]" />
         </div>
         <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-3)]">
-          Hilo de comunicación
+          Communication thread
         </h3>
         <span className="rounded-full bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--ink-3)]">
           {totalEmails} {totalEmails === 1 ? "email" : "emails"}
@@ -525,16 +694,19 @@ export function CenterColumnCollapsible({
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-sky-400" />
           <span className="text-[10px] font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-            Emails del cliente
+            Client emails
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-emerald-400" />
           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-500">
-            Nuestras respuestas
+            Our replies
           </span>
         </div>
       </div>
+
+      {/* Accion manual: generar URL del formulario publico (independiente del flow IA) */}
+      <FormUrlPanel incomingId={incomingId} />
 
       {/* Grid 2 columnas: izquierda entrantes, derecha salientes */}
       <div className="grid grid-cols-2 gap-4 items-start">
@@ -568,7 +740,7 @@ export function CenterColumnCollapsible({
               <div className="text-center">
                 <Inbox className="mx-auto h-5 w-5 text-[color:var(--ink-4)]" />
                 <p className="mt-2 text-xs font-medium text-[color:var(--ink-3)]">
-                  Sin emails entrantes
+                  No inbound emails
                 </p>
               </div>
             </div>

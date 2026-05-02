@@ -16,9 +16,9 @@ import {
 import type { ClientContact, ClientWithContacts } from '@/types/database'
 
 const TIPO_LABEL: Record<string, string> = {
-  airline: 'Aerolínea',
+  airline: 'Airline',
   mro: 'MRO',
-  private: 'Privado',
+  private: 'Private',
   manufacturer: 'Manufacturer',
   other: 'Other',
 }
@@ -65,13 +65,13 @@ export function ClientDetailPanel({
         <details className="group" open={defaultOpen}>
           <summary className="flex cursor-pointer list-none items-center gap-1 text-xs text-[color:var(--ink-3)] hover:text-[color:var(--ink-2)] [&::-webkit-details-marker]:hidden">
             <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
-            <span>Ver ficha completa</span>
+            <span>View full record</span>
           </summary>
 
           <div className="flex flex-col gap-5 pt-4">
             <div className="flex flex-col gap-2.5">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                Ficha completa
+                Full record
               </h3>
               <div className="grid gap-3">
                 {[
@@ -79,7 +79,7 @@ export function ClientDetailPanel({
                   address
                     ? {
                         icon: <MapPin size={13} />,
-                        label: 'Address / ubicación',
+                        label: 'Address',
                         value: address,
                       }
                     : null,
@@ -87,35 +87,35 @@ export function ClientDetailPanel({
                     ? { icon: <Phone size={13} />, label: 'Phone', value: client.phone }
                     : null,
                   client.vat_tax_id
-                    ? { icon: <Hash size={13} />, label: 'NIF / VAT', value: client.vat_tax_id }
+                    ? { icon: <Hash size={13} />, label: 'VAT / Tax ID', value: client.vat_tax_id }
                     : null,
                   client.website
-                    ? { icon: <Globe size={13} />, label: 'Web', value: client.website }
+                    ? { icon: <Globe size={13} />, label: 'Website', value: client.website }
                     : null,
                   client.email_domain
                     ? {
                         icon: <Globe size={13} />,
-                        label: 'Dominio email',
+                        label: 'Email domain',
                         value: client.email_domain,
                       }
                     : null,
                   client.client_type
                     ? {
                         icon: <Building2 size={13} />,
-                        label: 'Tipo de client',
+                        label: 'Client type',
                         value: TIPO_LABEL[client.client_type] ?? client.client_type,
                       }
                     : null,
                   {
                     icon: <BadgeCheck size={13} />,
                     label: 'Status',
-                    value: client.is_active ? 'Active' : 'Inactivo',
+                    value: client.is_active ? 'Active' : 'Inactive',
                   },
                   client.created_at
                     ? {
                         icon: <Hash size={13} />,
-                        label: 'Creado',
-                        value: new Date(client.created_at).toLocaleDateString('es-ES'),
+                        label: 'Created',
+                        value: new Date(client.created_at).toLocaleDateString('en-GB'),
                       }
                     : null,
                 ]
@@ -145,7 +145,7 @@ export function ClientDetailPanel({
 
             <div className="flex flex-col gap-2.5">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[color:var(--ink-3)]">
-                Contactos
+                Contacts
               </h3>
 
               {client.contacts.length > 0 ? (
@@ -169,7 +169,7 @@ export function ClientDetailPanel({
                             ) : null}
                             {!contact.is_active ? (
                               <span className="rounded-full border border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-3)]">
-                                Inactivo
+                                Inactive
                               </span>
                             ) : null}
                           </div>
@@ -196,7 +196,7 @@ export function ClientDetailPanel({
                 </div>
               ) : (
                 <div className="rounded-[18px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-4 py-4 text-sm text-[color:var(--ink-3)]">
-                  Este client no tiene contacts registrados todavía.
+                  This client has no contacts registered yet.
                 </div>
               )}
             </div>
@@ -211,14 +211,14 @@ export function EmptyClientDetail() {
   return (
     <div className="flex h-full min-h-0 flex-col rounded-[22px] border border-[color:var(--ink-4)] bg-[color:var(--paper)] shadow-[0_10px_24px_rgba(148,163,184,0.12)]">
       <div className="border-b border-[color:var(--ink-4)] bg-[color:var(--paper-2)] px-5 py-4">
-        <h2 className="text-base font-semibold text-slate-950">Detalle del client</h2>
+        <h2 className="text-base font-semibold text-slate-950">Client details</h2>
       </div>
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full rounded-[26px] border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper-2)] p-6 text-center">
-          <p className="text-sm font-semibold text-slate-950">Selecciona un client</p>
+          <p className="text-sm font-semibold text-slate-950">Select a client</p>
           <p className="mt-2 text-sm leading-6 text-[color:var(--ink-3)]">
-            La zona izquierda muestra name, address y phone. Al pulsar una fila, aquí verás
-            el resto de la información disponible del client.
+            The left panel shows name, address and phone. Click a row to see the rest of
+            the client&apos;s available information here.
           </p>
         </div>
       </div>

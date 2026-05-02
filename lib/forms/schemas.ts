@@ -1,109 +1,220 @@
 /**
  * ============================================================================
- * Public client form — Zod schemas (known + unknown variants)
+ * Public form payload schemas — matches the inline JS payload built by the
+ * HTML templates stored in `public.doa_forms`.
  * ============================================================================
  *
- * Used by `POST /api/forms/[token]/submit` to validate the JSON body posted
- * from `app/f/[token]/PublicFormClient.tsx`. We share a single
- * `projectFormSchema` between both client kinds; the unknown variant adds a
- * `company` block and a `contact` block on top.
+ * Wire shape (sent by the inline IIFE in both templates):
  *
- * Notes on field shapes:
- *   - All booleans here are real `boolean`. The handler converts them to the
- *     legacy 'true'/'false' text format before writing to
- *     `doa_incoming_requests_v2.is_aog` / `has_drawings` (those columns are
- *     `text`, not `boolean`, despite the column names suggesting otherwise).
- *     `doa_form_submissions_v2` keeps them as real booleans.
- *   - `desired_timeline` accepts free text (e.g. "Q2 2026") OR an ISO date
- *     ("2026-06-01"). The handler attempts a best-effort parse to populate
- *     `doa_incoming_requests_v2.target_date` (a real `date` column), and
- *     falls back to null on failure.
- *   - `affected_aircraft_count` defaults to 1 when missing.
+ *   known   → { form_token, aircraft: {...}, technical: {...} }
+ *   unknown → { form_token, client: {...}, aircraft: {...}, technical: {...} }
+ *
+ * `client_kind` is NOT sent over the wire — the canonical source of truth is
+ * the `doa_form_tokens_v2.client_kind` column. The submit handler discriminates
+ * on that and picks `unknownSubmitSchema` / `knownSubmitSchema` accordingly.
+ *
+ * Booleans coming from <select yes/no> are coerced via `lazyBool` (accepts
+ * 'true'/'false'/'1'/'0'/'yes'/'no' or real booleans). Many `impact_*` fields
+ * are SELECTs with an extra `no_se`/`not_sure` value, so they stay as plain
+ * strings.
  * ============================================================================
  */
 
 import { z } from 'zod'
 
-/** Trim and coerce empty strings to undefined so optional() works as expected. */
+// ---------------------------------------------------------------------------
+// Coercion helpers
+// ---------------------------------------------------------------------------
+
 const optionalString = z
-  .string()
-  .trim()
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v === null || v === undefined) return undefined
+    const s = String(v).trim()
+    return s.length > 0 ? s : undefined
+  })
+
+const requiredString = z
+  .string({ message: 'Required' })
+  .transform((v) => v.trim())
+  .refine((v) => v.length > 0, { message: 'Required' })
+
+const lazyBool = z
+  .union([z.boolean(), z.string(), z.null(), z.undefined()])
+  .transform((v, ctx) => {
+    if (typeof v === 'boolean') return v
+    if (v === null || v === undefined) return undefined
+    const s = String(v).trim().toLowerCase()
+    if (s === '') return undefined
+    if (s === 'true' || s === '1' || s === 'yes') return true
+    if (s === 'false' || s === '0' || s === 'no') return false
+    ctx.addIssue({ code: 'custom', message: `Invalid boolean: ${v}` })
+    return z.NEVER
+  })
   .optional()
-  .transform((v) => (v && v.length > 0 ? v : undefined))
 
-const requiredString = z.string().trim().min(1)
+const lazyInt = z
+  .union([z.number(), z.string(), z.null(), z.undefined()])
+  .transform((v, ctx) => {
+    if (v === null || v === undefined || v === '') return undefined
+    const n = typeof v === 'number' ? v : parseInt(String(v), 10)
+    if (!Number.isFinite(n)) {
+      ctx.addIssue({ code: 'custom', message: `Invalid integer: ${v}` })
+      return z.NEVER
+    }
+    return Math.trunc(n)
+  })
+  .optional()
 
-/** Project block — same fields for both known and unknown clients. */
-export const projectFormSchema = z.object({
+const lazyFloat = z
+  .union([z.number(), z.string(), z.null(), z.undefined()])
+  .transform((v, ctx) => {
+    if (v === null || v === undefined || v === '') return undefined
+    const n = typeof v === 'number' ? v : parseFloat(String(v))
+    if (!Number.isFinite(n)) {
+      ctx.addIssue({ code: 'custom', message: `Invalid number: ${v}` })
+      return z.NEVER
+    }
+    return n
+  })
+  .optional()
+
+const isoDateOptional = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((v, ctx) => {
+    if (v === null || v === undefined) return undefined
+    const s = String(v).trim()
+    if (s === '') return undefined
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      ctx.addIssue({ code: 'custom', message: `Invalid date (YYYY-MM-DD): ${v}` })
+      return z.NEVER
+    }
+    return s
+  })
+
+const urlOptional = z
+  .union([z.string(), z.null(), z.undefined()])
+  .transform((v, ctx) => {
+    if (v === null || v === undefined) return undefined
+    const s = String(v).trim()
+    if (s === '') return undefined
+    try {
+      new URL(s)
+      return s
+    } catch {
+      ctx.addIssue({ code: 'custom', message: `Invalid URL: ${v}` })
+      return z.NEVER
+    }
+  })
+
+// ---------------------------------------------------------------------------
+// Aircraft block (shared)
+// ---------------------------------------------------------------------------
+
+export const aircraftBlockSchema = z.object({
+  tcds_number: optionalString,
   aircraft_manufacturer: optionalString,
-  aircraft_model: requiredString,
-  registration: optionalString,
-  project_type: z.enum(['New project', 'Modification']),
-  modification_description: requiredString,
-  affected_aircraft_count: z
-    .number()
-    .int()
-    .min(1)
-    .default(1),
-  ata_chapter: optionalString,
-  applicable_regulation: optionalString,
-  has_previous_approval: z.boolean().default(false),
-  reference_document: optionalString,
-  aircraft_location: optionalString,
-  desired_timeline: optionalString,
-  is_aog: z.boolean().default(false),
-  has_drawings: z.boolean().default(false),
-  additional_notes: optionalString,
+  aircraft_model: optionalString,
+  aircraft_count: lazyInt
+    .transform((v) => (v === undefined || v < 1 ? 1 : v)),
+  aircraft_msn: optionalString,
+  tcds_pdf_url: urlOptional,
 })
 
-export type ProjectFormData = z.infer<typeof projectFormSchema>
+export type AircraftBlock = z.infer<typeof aircraftBlockSchema>
 
-/** Company block — only present for unknown-client submissions. */
-export const companyFormSchema = z.object({
+// ---------------------------------------------------------------------------
+// Technical block (shared)
+// ---------------------------------------------------------------------------
+
+const itemWeightEntrySchema = z
+  .object({
+    name: optionalString,
+    weight_added_kg: lazyFloat,
+    weight_removed_kg: lazyFloat,
+  })
+  .passthrough()
+
+export type ItemWeightEntry = z.infer<typeof itemWeightEntrySchema>
+
+export const technicalBlockSchema = z.object({
+  work_type: optionalString,
+  modification_summary: optionalString,
+  operational_goal: optionalString,
+  existing_project_code: optionalString,
+  has_equipment: optionalString,
+  equipment_details: optionalString,
+  has_drawings: lazyBool,
+  has_previous_mod: optionalString,
+  previous_mod_ref: optionalString,
+  has_manufacturer_docs: lazyBool,
+  target_date: isoDateOptional,
+  is_aog: lazyBool,
+  aircraft_location: optionalString,
+  additional_notes: optionalString,
+  impact_location: optionalString,
+  impact_structural_attachment: optionalString,
+  impact_structural_interface: optionalString,
+  impact_electrical: optionalString,
+  impact_avionics: optionalString,
+  impact_cabin_layout: lazyBool,
+  impact_pressurized: optionalString,
+  impact_operational_change: optionalString,
+  installation_drawings: z.array(z.string()).optional().default([]),
+  items_weight_list: z.array(itemWeightEntrySchema).optional().default([]),
+  installation_weight_kg: lazyFloat,
+  fuselage_position: optionalString,
+  sta_location: optionalString,
+  affects_primary_structure: optionalString,
+  ad_reference: optionalString,
+  motivated_by_ad: optionalString,
+})
+
+export type TechnicalBlock = z.infer<typeof technicalBlockSchema>
+
+// ---------------------------------------------------------------------------
+// Client block (only present in the unknown variant)
+// ---------------------------------------------------------------------------
+
+export const clientBlockSchema = z.object({
+  customer_type: optionalString,
   company_name: requiredString,
-  vat_tax_id: requiredString,
+  vat_number: optionalString,
   country: requiredString,
   city: optionalString,
   address: optionalString,
   company_phone: optionalString,
   website: optionalString,
-})
-
-export type CompanyFormData = z.infer<typeof companyFormSchema>
-
-/** Contact block — only present for unknown-client submissions. */
-export const contactFormSchema = z.object({
   contact_first_name: requiredString,
   contact_last_name: requiredString,
-  contact_email: z.string().trim().email(),
+  contact_email: z
+    .string()
+    .trim()
+    .min(1, 'Required')
+    .email('Invalid email'),
   contact_phone: optionalString,
-  position_role: optionalString,
+  contact_role: optionalString,
 })
 
-export type ContactFormData = z.infer<typeof contactFormSchema>
+export type ClientBlock = z.infer<typeof clientBlockSchema>
 
-/** Schema for `clientKind === 'known'` — only the project block. */
-export const knownClientFormSchema = z.object({
-  client_kind: z.literal('known'),
-  project: projectFormSchema,
+// ---------------------------------------------------------------------------
+// Top-level submit schemas
+// ---------------------------------------------------------------------------
+
+export const knownSubmitSchema = z.object({
+  form_token: optionalString,
+  aircraft: aircraftBlockSchema,
+  technical: technicalBlockSchema,
 })
 
-export type KnownClientFormInput = z.infer<typeof knownClientFormSchema>
+export type KnownSubmitInput = z.infer<typeof knownSubmitSchema>
 
-/** Schema for `clientKind === 'unknown'` — company + contact + project. */
-export const unknownClientFormSchema = z.object({
-  client_kind: z.literal('unknown'),
-  company: companyFormSchema,
-  contact: contactFormSchema,
-  project: projectFormSchema,
+export const unknownSubmitSchema = z.object({
+  form_token: optionalString,
+  client: clientBlockSchema,
+  aircraft: aircraftBlockSchema,
+  technical: technicalBlockSchema,
 })
 
-export type UnknownClientFormInput = z.infer<typeof unknownClientFormSchema>
-
-/** Discriminated union — pick the right schema by `client_kind`. */
-export const submitFormSchema = z.discriminatedUnion('client_kind', [
-  knownClientFormSchema,
-  unknownClientFormSchema,
-])
-
-export type SubmitFormInput = z.infer<typeof submitFormSchema>
+export type UnknownSubmitInput = z.infer<typeof unknownSubmitSchema>

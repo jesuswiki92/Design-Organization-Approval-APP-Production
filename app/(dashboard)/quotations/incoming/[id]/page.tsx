@@ -35,6 +35,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { supabaseServer } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 import type {
+  Aircraft,
   Client,
   ClientContact,
   DoaEmail,
@@ -47,7 +48,9 @@ import {
   resolveIncomingClientRecord,
   toIncomingQuery,
 } from '../../incoming-queries'
+import { AircraftPanel } from './AircraftPanel'
 import { CenterColumnCollapsible } from './CenterColumnCollapsible'
+import { TechnicalProjectPanel } from './TechnicalProjectPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,7 +134,7 @@ function Section({ title, label, icon: Icon, color, defaultOpen = false, childre
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
-          Ver {label}
+          View {label}
         </summary>
         <div className="px-5 pb-4">{children}</div>
       </details>
@@ -142,9 +145,9 @@ function Section({ title, label, icon: Icon, color, defaultOpen = false, childre
 function ComingSoonPlaceholder() {
   return (
     <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-12 text-center">
-      <p className="text-sm font-medium text-[color:var(--ink-2)]">Próximamente</p>
+      <p className="text-sm font-medium text-[color:var(--ink-2)]">Coming soon</p>
       <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">
-        Esta sección se reactivará en una fase futura.
+        This section will be reactivated in a future phase.
       </p>
     </div>
   )
@@ -211,6 +214,57 @@ async function loadClientContacts(): Promise<ClientContact[]> {
 }
 
 /**
+ * Looks up the master TCDS catalog (`public.doa_aircraft`) for every variant
+ * whose `tcds_code` matches the incoming request's `tcds_number`. Returns an
+ * empty array when there is no `tcds_number` or when no row matches — the
+ * panel handles both the "match" and "not found" UI states.
+ *
+ * Multiple variants of the same TCDS are returned (sorted by `model`) so the
+ * panel can show key data of the simplest variant while keeping the rest
+ * available for future drill-down.
+ */
+async function loadAircraftMatches(
+  tcdsNumber: string | null | undefined,
+): Promise<Aircraft[]> {
+  if (!tcdsNumber || tcdsNumber.trim() === '') return []
+
+  const { data, error } = await supabaseServer
+    .from('doa_aircraft')
+    .select(
+      `
+      id,
+      tcds_code,
+      tcds_code_short,
+      tcds_issue,
+      tcds_date,
+      tcds_pdf_url,
+      manufacturer,
+      country,
+      type,
+      model,
+      engine,
+      mtow_kg,
+      mlw_kg,
+      base_regulation,
+      category,
+      eligible_msn,
+      notes,
+      created_at,
+      updated_at
+      `,
+    )
+    .eq('tcds_code', tcdsNumber.trim())
+    .order('model', { ascending: true })
+
+  if (error) {
+    console.error('incoming detail: error fetching aircraft catalog match', error)
+    return []
+  }
+
+  return (data ?? []) as unknown as Aircraft[]
+}
+
+/**
  * Lee los emails asociados a una solicitud desde `doa_emails_v2`.
  * Aliasea `from_addr → from_email`, `to_addr → to_email`, `sent_at → date`
  * para encajar con el shape de `DoaEmail` definido en `types/database.ts`.
@@ -251,7 +305,7 @@ async function loadEmails(incomingRequestId: string): Promise<DoaEmail[]> {
 function NotFound({ id }: { id: string }) {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
-      <TopBar title="Solicitud no encontrada" subtitle={`id: ${id}`} />
+      <TopBar title="Request not found" subtitle={`id: ${id}`} />
 
       <div className="flex-1 space-y-6 overflow-y-auto p-6 text-[color:var(--ink)]">
         <Link
@@ -259,15 +313,15 @@ function NotFound({ id }: { id: string }) {
           className="inline-flex items-center gap-1.5 text-sm text-[color:var(--ink-3)] transition-colors hover:text-[color:var(--ink-2)]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver a Quotations
+          Back to Quotations
         </Link>
 
         <div className="rounded-2xl border border-[color:var(--line)] bg-[color:var(--paper-2)] p-8 text-center">
           <h2 className="font-[family-name:var(--font-heading)] text-2xl text-[color:var(--ink)]">
-            Solicitud no encontrada
+            Request not found
           </h2>
           <p className="mt-2 text-sm text-[color:var(--ink-3)]">
-            No existe ninguna solicitud con id {id}
+            No request exists with id {id}
           </p>
         </div>
       </div>
@@ -299,15 +353,38 @@ export default async function IncomingRequestDetailPage({
     return <NotFound id={id} />
   }
 
-  const [clients, contacts, emails] = await Promise.all([
+  const incoming = data as unknown as IncomingRequest
+
+  const [clients, contacts, emails, aircraftMatches] = await Promise.all([
     loadClients(),
     loadClientContacts(),
     loadEmails(id),
+    loadAircraftMatches(incoming.tcds_number),
   ])
 
   const clientLookup = buildIncomingClientLookup(clients, contacts)
-  const query = toIncomingQuery(data as unknown as IncomingRequest, clientLookup)
-  const matchedClient = resolveIncomingClientRecord(query.sender, clients, contacts)
+  const query = toIncomingQuery(incoming, clientLookup)
+
+  // Resolve linked client. Two pathways:
+  //   1) explicit FK `client_id` on the incoming row → trusted link.
+  //   2) heuristic from `sender` email → suggested match (legacy / pre-FK rows).
+  // We prefer the explicit FK, falling back to the heuristic for legacy rows.
+  const linkedClientById = incoming.client_id
+    ? clients.find((client) => client.id === incoming.client_id) ?? null
+    : null
+  const linkedClientWithContacts = linkedClientById
+    ? {
+        ...linkedClientById,
+        contacts: contacts.filter((contact) => contact.client_id === linkedClientById.id),
+      }
+    : null
+  const heuristicClient = resolveIncomingClientRecord(query.sender, clients, contacts)
+  const matchedClient = linkedClientWithContacts ?? heuristicClient
+  const clientLinkSource: 'fk' | 'heuristic' | null = linkedClientWithContacts
+    ? 'fk'
+    : heuristicClient
+      ? 'heuristic'
+      : null
   const senderEmail =
     query.clientIdentity.kind === 'known'
       ? query.clientIdentity.email
@@ -316,7 +393,7 @@ export default async function IncomingRequestDetailPage({
   const clientBadgeLabel =
     query.clientIdentity.kind === 'known'
       ? matchedClient?.name ?? query.clientIdentity.companyName
-      : 'Cliente desconocido'
+      : 'Unknown client'
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[color:var(--paper)]">
@@ -328,7 +405,7 @@ export default async function IncomingRequestDetailPage({
           className="inline-flex items-center gap-1.5 text-sm text-[color:var(--ink-3)] transition-colors hover:text-[color:var(--ink-2)]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver a Quotations
+          Back to Quotations
         </Link>
 
         {/* Status pill row: clasificación + estado backend + cliente */}
@@ -355,8 +432,8 @@ export default async function IncomingRequestDetailPage({
 
         {/* 1. Resumen de revisión — placeholder */}
         <Section
-          title="Resumen de revisión"
-          label="resumen de revisión"
+          title="Review summary"
+          label="review summary"
           icon={ClipboardList}
           color="cobalt"
           defaultOpen
@@ -366,8 +443,8 @@ export default async function IncomingRequestDetailPage({
 
         {/* 2. Comunicaciones — REAL DATA (incluye borrador IA en la columna izquierda) */}
         <Section
-          title="Comunicaciones"
-          label="hilo de emails"
+          title="Communications"
+          label="email thread"
           icon={Mail}
           color="umber"
           defaultOpen
@@ -387,55 +464,67 @@ export default async function IncomingRequestDetailPage({
           />
         </Section>
 
-        {/* 3. Datos del cliente — REAL DATA (ClientDetailPanel o fallback "desconocido") */}
-        <Section title="Datos del cliente" label="datos del cliente" icon={UserRound} color="cobalt">
+        {/* 3. Datos del cliente — REAL DATA (ClientDetailPanel + suggested-match banner) */}
+        <Section title="Client details" label="client details" icon={UserRound} color="cobalt">
           {matchedClient ? (
-            <ClientDetailPanel client={matchedClient} defaultOpen />
+            <div className="space-y-3">
+              {clientLinkSource === 'heuristic' ? (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-700">
+                  <span className="font-semibold uppercase tracking-[0.12em]">Possible client:</span>{' '}
+                  heuristic match based on sender email. Review and link manually to confirm.
+                </div>
+              ) : null}
+              <ClientDetailPanel client={matchedClient} defaultOpen />
+            </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-[color:var(--ink-4)] bg-[color:var(--paper)] px-5 py-8 text-center">
-              <p className="text-sm font-medium text-[color:var(--ink-2)]">Cliente desconocido</p>
+              <p className="text-sm font-medium text-[color:var(--ink-2)]">
+                No linked client
+              </p>
               <p className="mt-1.5 text-xs text-[color:var(--ink-3)]">
-                Esta solicitud todavía no se ha podido vincular con un cliente registrado en la base de datos.
+                This incoming request has no linked client yet.
               </p>
               {senderEmail ? (
-                <p className="mt-3 text-xs text-[color:var(--ink-3)]">Remitente: <span className="font-mono">{senderEmail}</span></p>
+                <p className="mt-3 text-xs text-[color:var(--ink-3)]">
+                  Sender: <span className="font-mono">{senderEmail}</span>
+                </p>
               ) : null}
             </div>
           )}
         </Section>
 
-        {/* 4. Datos de aircraft — placeholder */}
-        <Section title="Datos de aircraft" label="datos de aircraft" icon={Plane} color="terracotta">
-          <ComingSoonPlaceholder />
+        {/* 4. Datos de aircraft — REAL DATA + catalog match */}
+        <Section title="Aircraft data" label="aircraft data" icon={Plane} color="terracotta">
+          <AircraftPanel incoming={incoming} catalogMatches={aircraftMatches} />
         </Section>
 
-        {/* 5. Datos técnicos del proyecto — placeholder */}
+        {/* 5. Datos técnicos del proyecto — REAL DATA */}
         <Section
-          title="Datos técnicos del proyecto"
-          label="datos técnicos"
+          title="Project technical data"
+          label="technical data"
           icon={Settings}
           color="ink-3"
         >
-          <ComingSoonPlaceholder />
+          <TechnicalProjectPanel incoming={incoming} />
         </Section>
 
         {/* 6. Alcance preliminar — placeholder */}
-        <Section title="Alcance preliminar" label="alcance preliminar" icon={ScanSearch} color="umber">
+        <Section title="Preliminary scope" label="preliminary scope" icon={ScanSearch} color="umber">
           <ComingSoonPlaceholder />
         </Section>
 
         {/* 7. Documentación — placeholder */}
-        <Section title="Documentación" label="documentación" icon={FileText} color="cobalt">
+        <Section title="Documentation" label="documentation" icon={FileText} color="cobalt">
           <ComingSoonPlaceholder />
         </Section>
 
         {/* 8. Oferta / Quotation — placeholder */}
-        <Section title="Oferta / Quotation" label="oferta" icon={Receipt} color="terracotta">
+        <Section title="Quotation" label="quotation" icon={Receipt} color="terracotta">
           <ComingSoonPlaceholder />
         </Section>
 
         {/* 9. Decisión — placeholder */}
-        <Section title="Decisión" label="panel de decisión" icon={Sparkles} color="umber">
+        <Section title="Decision" label="decision panel" icon={Sparkles} color="umber">
           <ComingSoonPlaceholder />
         </Section>
       </div>

@@ -19,7 +19,6 @@
  * ============================================================================
  */
 
-import crypto from 'node:crypto'
 import { NextResponse } from 'next/server'
 
 import { draftReply } from '@/automations/inbound-email/draft-reply'
@@ -27,6 +26,7 @@ import {
   extractSenderEmail,
   resolveIncomingClientRecord,
 } from '@/app/(dashboard)/quotations/incoming-queries'
+import { ensureTokenForIncoming } from '@/lib/forms/token'
 import { supabaseServer } from '@/lib/supabase/server'
 import type { Client, ClientContact, IncomingRequest } from '@/types/database'
 
@@ -34,7 +34,6 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const FORM_LINK_TOKEN = '{{FORM_LINK}}'
-const TOKEN_TTL_DAYS = 30
 
 async function loadClients(): Promise<Client[]> {
   const { data, error } = await supabaseServer
@@ -92,68 +91,6 @@ async function loadClientContacts(): Promise<ClientContact[]> {
   return (data ?? []) as unknown as ClientContact[]
 }
 
-/**
- * Build the human-readable slug used as the public URL fragment.
- * Pattern: `{entry_number_lower}-{token_first_6}` (e.g. `qry-2026-0001-9a8039`).
- *
- * If `entry_number` is missing (a row could exist before the auto-numbering
- * trigger has run when inserted via DB tooling), fall back to the first 8
- * chars of the row id, lowercased — still unique across the system.
- */
-function buildSlug(entryNumber: string | null | undefined, requestId: string, token: string): string {
-  const base = (entryNumber ?? '').trim().toLowerCase() || requestId.slice(0, 8).toLowerCase()
-  const suffix = token.replace(/-/g, '').slice(0, 6).toLowerCase()
-  return `${base}-${suffix}`
-}
-
-/**
- * Reuse an existing token row for this incoming_request_id, otherwise mint a
- * new one. Returns the slug (the URL-friendly identifier). Throws on hard
- * Supabase errors — caller must convert to a 500 response.
- */
-async function ensureFormToken(params: {
-  incomingId: string
-  entryNumber: string | null | undefined
-  clientKind: 'known' | 'unknown'
-}): Promise<string> {
-  // 1) Reuse if a row already exists (we have a unique index on
-  //    incoming_request_id, so at most one row).
-  const { data: existing, error: existingError } = await supabaseServer
-    .from('doa_form_tokens_v2')
-    .select('slug')
-    .eq('incoming_request_id', params.incomingId)
-    .maybeSingle()
-
-  if (existingError) {
-    throw new Error(`Supabase select error (doa_form_tokens_v2): ${existingError.message}`)
-  }
-
-  if (existing?.slug) {
-    return existing.slug as string
-  }
-
-  // 2) Mint a new row.
-  const token = crypto.randomUUID()
-  const slug = buildSlug(params.entryNumber, params.incomingId, token)
-  const expiresAt = new Date(Date.now() + TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString()
-
-  const { error: insertError } = await supabaseServer
-    .from('doa_form_tokens_v2')
-    .insert({
-      token,
-      slug,
-      incoming_request_id: params.incomingId,
-      expires_at: expiresAt,
-      client_kind: params.clientKind,
-    })
-
-  if (insertError) {
-    throw new Error(`Supabase insert error (doa_form_tokens_v2): ${insertError.message}`)
-  }
-
-  return slug
-}
-
 export async function POST(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -200,14 +137,15 @@ export async function POST(
     // 1) Ensure a form token exists for this request and build the public URL.
     let slug: string
     try {
-      slug = await ensureFormToken({
+      const ensured = await ensureTokenForIncoming({
         incomingId: id,
         entryNumber: incoming.entry_number,
         clientKind,
       })
+      slug = ensured.slug
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown form-token error'
-      console.error('draft-reply: ensureFormToken failed', error)
+      console.error('draft-reply: ensureTokenForIncoming failed', error)
       return NextResponse.json({ ok: false, error: message }, { status: 500 })
     }
 

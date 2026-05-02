@@ -125,7 +125,10 @@ export interface AircraftModel {
 
 /**
  * FILA DE AERONAVE
- * Representa un registro de la table "doa_aircraft".
+ * Representa un registro de la table `public.doa_aircraft` — catálogo maestro
+ * de tipos certificados (TCDS). Se llena desde un proceso externo, sin sufijo
+ * `_v2`. Cada fila es UNA variante de un modelo (e.g. PC-12/47E) y un mismo
+ * `tcds_code` puede agrupar varias variantes.
  */
 export interface AircraftRow {
   id: string
@@ -133,19 +136,27 @@ export interface AircraftRow {
   tcds_code_short: string
   tcds_issue: string | null
   tcds_date: string | null
-  manufacturer: string | null
+  tcds_pdf_url: string | null
+  manufacturer: string
   country: string | null
-  type: string | null
-  model: string | null
+  type: string
+  model: string
   engine: string | null
   mtow_kg: number | null
   mlw_kg: number | null
   base_regulation: string | null
   category: string | null
-  eligible_msns: string | null
+  eligible_msn: string | null
   notes: string | null
   created_at: string
+  updated_at: string
 }
+
+/**
+ * Alias semántico — `Aircraft` describe una fila del catálogo maestro de
+ * tipos certificados. Misma forma que `AircraftRow`.
+ */
+export type Aircraft = AircraftRow
 
 // ─── doa_usuarios ─────────────────────────────────────────────────────────────
 
@@ -755,6 +766,39 @@ export interface IncomingRequest {
   reply_body?: string | null
   // Date y hora en que se send la response al client
   reply_sent_at?: string | null
+  // ── Campos denormalizados desde el formulario público ──────────────────
+  // Lista de items con peso añadido / removido (jsonb).
+  items_weight_list?: IncomingItemWeightEntry[] | null
+  // Peso total estimado de la instalación en kg.
+  installation_weight_kg?: number | null
+  // Posición longitudinal en el fuselaje: "above_floor" | "below_floor" | "mid"
+  fuselage_position?: string | null
+  // Estación de referencia (STA) de la instalación, p.e. "STA 110".
+  sta_location?: string | null
+  // ¿Afecta a la estructura primaria? text legacy.
+  affects_primary_structure?: string | null
+  // Referencia a una AD (Airworthiness Directive) si aplica.
+  ad_reference?: string | null
+  // ¿La modificación está motivada por una AD? "yes" | "no" | text libre.
+  related_to_ad?: string | null
+  // Impactos declarados por el cliente. Cada uno es text legacy
+  // ("yes"/"no"/"not_sure"/free string), excepto `impact_cabin_layout`
+  // que es "true"/"false".
+  impact_location?: string | null
+  impact_structural_attachment?: string | null
+  impact_structural_interface?: string | null
+  impact_electrical?: string | null
+  impact_avionics?: string | null
+  impact_cabin_layout?: string | null
+  impact_pressurized?: string | null
+  impact_operational_change?: string | null
+}
+
+/** Entrada del array `items_weight_list` (jsonb) de la request entrante. */
+export interface IncomingItemWeightEntry {
+  name: string | null
+  weight_added_kg: number | null
+  weight_removed_kg: number | null
 }
 
 /**
